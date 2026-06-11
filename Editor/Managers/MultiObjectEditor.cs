@@ -343,14 +343,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the object type for each selected object.
         /// </summary>
         /// <param name="objectType">Object type to set.</param>
-        public void SetObjectType(BeatmapObject.ObjectType objectType) => ForEachBeatmapObject(timelineObject =>
-        {
-            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-            beatmapObject.objectType = objectType;
-
-            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
-        });
+        public void SetObjectType(BeatmapObject.ObjectType objectType) => ForEachBeatmapObject(timelineObject => ObjectEditor.inst.SetObjectType(timelineObject.GetData<BeatmapObject>(), objectType));
 
         /// <summary>
         /// Sets the color blend mode for each selected object.

@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.Rendering;
 
 using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -115,12 +119,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public ParticleSystemData particleSystemDataCache;
 
+        public bool emittingParticles;
+
         Color primaryColor;
         Color secondaryColor;
 
-        const int PARTICLE_EASE_SAMPLES = 16;
-        const float PARTICLE_LOGICAL_END_BUFFER = 0.02f;
-        const float PARTICLE_SCRUB_MIN_DELTA = 0.016666668f;
         const float PARTICLE_SCRUB_STEP = 0.06666667f;
         const float PARTICLE_TIME_SYNC_TOLERANCE = 0.05f;
 
@@ -501,7 +504,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         // genuinely hate dealing with particles
 
-        public override void SetupParticles(Mesh particleMesh)
+        public override void SetupParticles(Mesh particleMesh, BeatmapObject beatmapObject)
         {
             if (!particleSystemDataCache)
                 return;
@@ -511,6 +514,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
 
             particleSystemRenderer = gameObject.GetComponent<ParticleSystemRenderer>();
+            StopParticles(ParticleSystemStopBehavior.StopEmittingAndClear);
+            particleSystem.useAutoRandomSeed = false;
+            particleSystem.randomSeed = (uint)RandomHelper.GetHash(beatmapObject.id, RandomHelper.CurrentSeed);
 
             var main = particleSystem.main;
             main.simulationSpace = (particleSystemDataCache.worldSpace ? ParticleSystemSimulationSpace.World : ParticleSystemSimulationSpace.Local);
@@ -526,7 +532,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 {
                     float num2 = (Mathf.Approximately(num, 0f) ? 0.0001f : 359.9999f);
                     shape.arc = num2;
-                    shape.arc = num;
+                    shape.arc = num; // the hell? it was like this in the vanilla code
                 }
                 shape.radiusThickness = Mathf.Clamp01(particleSystemDataCache.emitterRadius);
             }
@@ -545,31 +551,44 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             emission.rateOverTime = new ParticleSystem.MinMaxCurve(particleSystemDataCache.spawnRatePerSecond);
             emission.rateOverDistance = new ParticleSystem.MinMaxCurve(particleSystemDataCache.spawnRatePerUnit);
             emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
+            SetupParticlesTimeline(beatmapObject);
+        }
 
+        public override void SetupParticlesTimeline(BeatmapObject beatmapObject)
+        {
+            if (!particleSystem)
+                return;
+            var particlesSpawnDuration = beatmapObject.ParticlesSpawnDuration;
+            var main = particleSystem.main;
+            main.startLifetime = particlesSpawnDuration;
+            main.duration = beatmapObject.SpawnDuration;
+            main.loop = false;
+            main.startRotation = (beatmapObject.events != null && beatmapObject.events.Count > 2 ? beatmapObject.events[2][0].GetSecondaryValue(0) : 0f) * 0.017453292f;
+            StopParticles(ParticleSystemStopBehavior.StopEmittingAndClear);
             var velocityOverLifetime = particleSystem.velocityOverLifetime;
             velocityOverLifetime.enabled = true;
             velocityOverLifetime.space = ParticleSystemSimulationSpace.Local;
-            velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
-            velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
-            velocityOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            velocityOverLifetime.x = new ParticleSystem.MinMaxCurve(1f, beatmapObject.events[0].ToAnimationCurve(2, 0, 0f, particlesSpawnDuration, null, true));
+            velocityOverLifetime.y = new ParticleSystem.MinMaxCurve(1f, beatmapObject.events[0].ToAnimationCurve(2, 1, 0f, particlesSpawnDuration, null, true));
+            velocityOverLifetime.z = new ParticleSystem.MinMaxCurve(0f, AnimationCurve.Constant(0f, 1f, 0f));
             velocityOverLifetime.xMultiplier = 1f;
             velocityOverLifetime.yMultiplier = 1f;
             velocityOverLifetime.zMultiplier = 0f;
             var sizeOverLifetime = particleSystem.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
             sizeOverLifetime.separateAxes = true;
-            sizeOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
-            sizeOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
-            sizeOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            sizeOverLifetime.x = new ParticleSystem.MinMaxCurve(1f, beatmapObject.events[1].ToAnimationCurve(2, 0, 1f, particlesSpawnDuration, null, false));
+            sizeOverLifetime.y = new ParticleSystem.MinMaxCurve(1f, beatmapObject.events[1].ToAnimationCurve(2, 1, 1f, particlesSpawnDuration, null, false));
+            sizeOverLifetime.z = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Constant(0f, 1f, 1f));
             sizeOverLifetime.xMultiplier = 1f;
             sizeOverLifetime.yMultiplier = 1f;
             sizeOverLifetime.zMultiplier = 1f;
             var rotationOverLifetime = particleSystem.rotationOverLifetime;
             rotationOverLifetime.enabled = true;
             rotationOverLifetime.separateAxes = true;
-            rotationOverLifetime.x = new ParticleSystem.MinMaxCurve(0f);
-            rotationOverLifetime.y = new ParticleSystem.MinMaxCurve(0f);
-            rotationOverLifetime.z = new ParticleSystem.MinMaxCurve(0f);
+            rotationOverLifetime.x = new ParticleSystem.MinMaxCurve(0f, AnimationCurve.Constant(0f, 1f, 0f));
+            rotationOverLifetime.y = new ParticleSystem.MinMaxCurve(0f, AnimationCurve.Constant(0f, 1f, 0f));
+            rotationOverLifetime.z = new ParticleSystem.MinMaxCurve(1f, beatmapObject.events[2].ToAnimationCurve(2, 0, 0f, particlesSpawnDuration, (float degrees) => degrees * 0.017453292f, true));
             rotationOverLifetime.xMultiplier = 0f;
             rotationOverLifetime.yMultiplier = 0f;
             rotationOverLifetime.zMultiplier = 1f;
@@ -583,6 +602,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             var isPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
             var pitch = AudioManager.inst.CurrentAudioSource.pitch;
             var main = particleSystem.main;
+            var emission = particleSystem.emission;
+            emission.enabled = emittingParticles;
             var resync = RTMath.Distance(particleSystem.time, t) > PARTICLE_TIME_SYNC_TOLERANCE;
             if (resync)
             {
@@ -590,14 +611,12 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 if (t > PARTICLE_SCRUB_STEP)
                 {
                     particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                    InterpolateParticlesValues(0f);
                     var calc = 0f;
                     var start = true;
                     while (calc < t)
                     {
                         var particleTime = Mathf.Min(PARTICLE_SCRUB_STEP, t - calc);
                         calc += particleTime;
-                        InterpolateParticlesValues(particleTime);
                         particleSystem.Simulate(particleTime, true, start);
                         start = false;
                     }
@@ -608,8 +627,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                     particleSystem.Simulate(t, true, true, true);
                 }
             }
-            else
-                InterpolateParticlesValues(t);
             main.simulationSpeed = Mathf.Max(0f, pitch);
             if (isPlaying)
             {
@@ -623,22 +640,24 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 particleSystem.Pause(true);
         }
 
-        public void InterpolateParticlesValues(float t)
-        {
-            if (!particleSystemDataCache || !particleSystem)
-                return;
+        public void StartParticles() => emittingParticles = true;
 
-            var velocityOverLifetime = particleSystem.velocityOverLifetime;
-            var velocity = particleVelocitySequence.Interpolate(t);
-            velocityOverLifetime.x = velocity.x;
-            velocityOverLifetime.y = velocity.y;
-            var sizeOverLifetime = particleSystem.sizeOverLifetime;
-            var size = particleSizeSequence.Interpolate(t);
-            sizeOverLifetime.x = size.x;
-            sizeOverLifetime.y = size.y;
-            var rotationOverLifetime = particleSystem.rotationOverLifetime;
-            var rotation = particleRotationSequence.Interpolate(t);
-            rotationOverLifetime.z = rotation;
+        public void StopParticles(ParticleSystemStopBehavior stopBehavior = ParticleSystemStopBehavior.StopEmitting)
+        {
+            emittingParticles = false;
+            if (!particleSystem || particleSystem.isStopped && particleSystem.particleCount <= 0)
+                return;
+            particleSystem.Stop(true, stopBehavior);
+        }
+
+        public void ResetParticles()
+        {
+            emittingParticles = false;
+            if (!particleSystem)
+                return;
+            particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particleSystem.Simulate(0f, true, true, true);
+            particleSystem.Pause(true);
         }
 
         #endregion

@@ -33,13 +33,13 @@
       "collide_type": 2,
       "render": true,
       "opacity": 1.0
-    }//,
-    //{
-    //  "name": "Particles",
-    //  "collide_type": 0,
-    //  "special": true,
-    //  "render": true,
-    //  "opacity": 1.0
-    //}
+    },
+    {
+      "name": "Particles",
+      "collide_type": 0,
+      "special": true,
+      "render": true,
+      "opacity": 1.0
+    }
   ]
 }

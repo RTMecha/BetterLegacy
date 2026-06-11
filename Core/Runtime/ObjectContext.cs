@@ -19,6 +19,7 @@ namespace BetterLegacy.Core.Runtime
         public const string TEXT = "text";
         public const string POLYGONS = "polygons";
         public const string IMAGE = "image";
+        public const string PARTICLES = "particles";
         public const string KEYFRAMES = "keyframes";
         public const string MODIFIERS = "modifiers";
         public const string SELECTABLE = "selectable";

@@ -1658,7 +1658,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Helper), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Helper), labelAlignment: TextAnchor.MiddleCenter),
                                 ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Decoration), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Decoration), labelAlignment: TextAnchor.MiddleCenter),
                                 ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Empty), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Empty), labelAlignment: TextAnchor.MiddleCenter),
-                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Solid), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Solid), labelAlignment: TextAnchor.MiddleCenter));
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Solid), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Solid), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button(nameof(BeatmapObject.ObjectType.Particles), () => MultiObjectEditor.inst.SetObjectType(BeatmapObject.ObjectType.Particles), labelAlignment: TextAnchor.MiddleCenter));
 
                             #endregion
 
@@ -1831,13 +1832,385 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
 
-                            new LabelsElement("Render Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
-                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerInt()
+                            #region Particles
+
+                            new LabelsElement("Particles").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LabelsElement("Spawn Rate Per Second", "Spawn Rate Per Unit").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerSecond += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerSecond = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerSecond -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                }),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerUnit += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerUnit = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.spawnRatePerUnit -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                }));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Advanced), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new LabelElement("World Space")
+                                {
+                                    layoutElementValues = LayoutElementValues.Default.PreferredWidth(200f),
+                                },
+                                ButtonElement.Label1Button("On", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.worldSpace = true;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Off", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.worldSpace = false;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Swap", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.worldSpace = !beatmapObject.particleSystemData.worldSpace;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LabelsElement("Autokill").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
                             {
                                 standardArrowFunctions = false,
                                 leftArrowClicked = _val =>
                                 {
-                                    if (int.TryParse(_val, out int num))
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.autoKillOffset -= num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.autoKillOffset = num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.autoKillOffset += num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                                        });
+                                },
+                                rightGreaterArrowClicked = _val => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    float num = 0f;
+
+                                    if (beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime)
+                                        num = AudioManager.inst.CurrentAudioSource.time;
+                                    else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+
+                                    if (num < 0f)
+                                        num = 0f;
+
+                                    beatmapObject.particleSystemData.autoKillOffset = num;
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }),
+                                rightGreaterSprite = EditorSprites.DownArrow,
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ButtonElement.Label1Button("No Autokill", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.autoKillType = AutoKillType.NoAutokill;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Last KF", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.autoKillType = AutoKillType.LastKeyframe;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Last KF Offst", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.autoKillType = AutoKillType.LastKeyframeOffset;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                })),
+                                ButtonElement.Label1Button("Fixed Time", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.autoKillType = AutoKillType.FixedTime;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter),
+                                ButtonElement.Label1Button("Song Time", () => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.autoKillType = AutoKillType.SongTime;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                }), labelAlignment: TextAnchor.MiddleCenter));
+
+                            new LabelsElement("Emitter Shape Type").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                CreateAddSubButtons(
+                                    timelineObject => timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().particleSystemData,
+                                    timelineObject => (int)timelineObject.GetData<BeatmapObject>().particleSystemData.emitterShapeType,
+                                    EnumHelper.GetNames<ParticleSystemData.EmitterShapeType>().Length,
+                                    (timelineObject, num) =>
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.particleSystemData.emitterShapeType = (ParticleSystemData.EmitterShapeType)num;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                    }));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                ToButtonArray<ParticleSystemData.EmitterShapeType>(index => MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                {
+                                    if (!beatmapObject.particleSystemData)
+                                        return;
+
+                                    beatmapObject.particleSystemData.emitterShapeType = (ParticleSystemData.EmitterShapeType)index;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                })));
+
+                            new LabelsElement("Emitter Arc", "Emitter Radius").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterArc += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterArc = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterArc -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                }),
+                                new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                                {
+                                    standardArrowFunctions = false,
+                                    leftArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterRadius += num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    middleClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterRadius = num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                    rightArrowClicked = _val =>
+                                    {
+                                        if (float.TryParse(_val, out float num))
+                                            MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                            {
+                                                if (!beatmapObject.particleSystemData)
+                                                    return;
+
+                                                beatmapObject.particleSystemData.emitterRadius -= num;
+                                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                                            });
+                                    },
+                                }));
+
+                            new LabelsElement("Start Speed").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.startSpeed += num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                                middleClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.startSpeed = num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                                rightArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
+                                        MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
+                                        {
+                                            if (!beatmapObject.particleSystemData)
+                                                return;
+
+                                            beatmapObject.particleSystemData.startSpeed -= num;
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                        });
+                                },
+                            }).Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            #endregion
+
+                            new SpacerElement().Init(EditorElement.InitSettings.Default.Parent(parent));
+
+                            new LabelsElement("Render Depth").Init(EditorElement.InitSettings.Default.Parent(parent));
+                            new NumberInputElement("1", null, new NumberInputElement.ArrowHandlerFloat()
+                            {
+                                standardArrowFunctions = false,
+                                leftArrowClicked = _val =>
+                                {
+                                    if (float.TryParse(_val, out float num))
                                         MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                         {
                                             beatmapObject.Depth += num;
@@ -1846,7 +2219,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 },
                                 middleClicked = _val =>
                                 {
-                                    if (int.TryParse(_val, out int num))
+                                    if (float.TryParse(_val, out float num))
                                         MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                         {
                                             beatmapObject.Depth = num;
@@ -1855,7 +2228,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 },
                                 rightArrowClicked = _val =>
                                 {
-                                    if (int.TryParse(_val, out int num))
+                                    if (float.TryParse(_val, out float num))
                                         MultiObjectEditor.inst.ForEachBeatmapObject(beatmapObject =>
                                         {
                                             beatmapObject.Depth -= num;

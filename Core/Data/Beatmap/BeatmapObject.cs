@@ -212,7 +212,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             get
             {
-                var time = AudioManager.inst.CurrentAudioSource.time;
+                var time = this.GetParentRuntime().FixedTime;
                 var st = StartTime;
                 var akt = autoKillType;
                 var ako = autoKillOffset;
@@ -241,6 +241,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return length;
             }
         }
+
+        public bool ParticlesAlive
+        {
+            get
+            {
+                if (!particleSystemData)
+                    return false;
+
+                var time = this.GetParentRuntime().FixedTime;
+                var st = StartTime;
+                var akt = particleSystemData.autoKillType;
+                var ako = particleSystemData.autoKillOffset;
+                var l = ParticlesSpawnDuration;
+                return time >= st && (time <= l + st && akt != AutoKillType.NoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.NoAutokill || time < ako && akt == AutoKillType.SongTime);
+            }
+        }
+
+        public float ParticlesSpawnDuration => !particleSystemData ? 0f : Mathf.Clamp(GetObjectLifeLength(particleSystemData.autoKillType, particleSystemData.autoKillOffset, 0.0f, true), 0f, GetObjectLifeLength(0.0f, true));
 
         #endregion
 
@@ -636,6 +654,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Cached runtime modifiers.
         /// </summary>
         public RTModifiers runtimeModifiers;
+
+        /// <summary>
+        /// Cached runtime particles.
+        /// </summary>
+        public RTParticles runtimeParticles;
 
         /// <summary>
         /// Use for object modifiers.
@@ -1607,7 +1630,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             return sprite;
         }
 
-        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : autoKillType switch
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => GetObjectLifeLength(autoKillType, autoKillOffset, offset, noAutokill, collapse);
+
+        public float GetObjectLifeLength(AutoKillType autoKillType, float autoKillOffset, float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : autoKillType switch
         {
             AutoKillType.NoAutokill => noAutokill ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,

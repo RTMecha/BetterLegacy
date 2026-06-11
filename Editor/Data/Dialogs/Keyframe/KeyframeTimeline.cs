@@ -2994,6 +2994,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public GameObject keyframeEnd;
 
+        public GameObject particlesEnd;
+
         public static bool AllowTimeExactlyAtStart => false;
         public void ResizeKeyframeTimeline(IAnimatable animatable)
         {
@@ -3014,15 +3016,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Cursor.minValue = AllowTimeExactlyAtStart ? animatable.StartTime : animatable.StartTime + 0.001f;
             Cursor.maxValue = animatable.StartTime + objectLifeLength + ObjEditor.inst.ObjectLengthOffset;
 
+            var beatmapObject = animatable as BeatmapObject;
+
             if (!keyframeEnd)
             {
                 TimelineGrid.DeleteChildren();
                 keyframeEnd = ObjEditor.inst.KeyframeEndPrefab.Duplicate(TimelineGrid, "end keyframe");
+                if (beatmapObject)
+                {
+                    particlesEnd = ObjEditor.inst.KeyframeEndPrefab.Duplicate(TimelineGrid, "end particles");
+                    EditorThemeManager.ApplyGraphic(particlesEnd.GetComponent<Image>(), ThemeGroup.Paste);
+                }
             }
 
-            var rectTransform = keyframeEnd.transform.AsRT();
-            rectTransform.sizeDelta = new Vector2(4f, 122f);
-            rectTransform.anchoredPosition = new Vector2(objectLifeLength * ObjEditor.inst.Zoom * 14f, 0f);
+            keyframeEnd.transform.AsRT().sizeDelta = new Vector2(4f, 122f);
+            keyframeEnd.transform.AsRT().anchoredPosition = new Vector2(objectLifeLength * ObjEditor.inst.Zoom * 14f, 0f);
+            if (beatmapObject && particlesEnd)
+            {
+                particlesEnd.transform.AsRT().sizeDelta = new Vector2(4f, 122f);
+                particlesEnd.transform.AsRT().anchoredPosition = new Vector2(beatmapObject.GetObjectLifeLength(beatmapObject.particleSystemData.autoKillType, beatmapObject.particleSystemData.autoKillOffset) * ObjEditor.inst.Zoom * 14f, 0f);
+            }
         }
 
         public void UpdateRenderedKeyframes(IAnimatable animatable) => RenderedKeyframes = new List<TimelineKeyframe>(animatable.TimelineKeyframes);

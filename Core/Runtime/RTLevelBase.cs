@@ -92,6 +92,11 @@ namespace BetterLegacy.Core.Runtime
             modifiers = runtimeModifiers.ToList();
             objectModifiersEngine = new ObjectEngine(Modifiers);
 
+            IEnumerable<IRTObject> runtimeParticles = converter.ToRuntimeParticles(beatmapObjects);
+
+            particles = runtimeParticles.ToList();
+            particlesEngine = new ObjectEngine(Particles);
+
             IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(backgroundLayers);
             this.backgroundLayers = backgroundLayerObjects.ToList();
 
@@ -139,7 +144,8 @@ namespace BetterLegacy.Core.Runtime
             }
 
             OnBeatmapObjectsTick(); // objects update fourth
-            OnBackgroundObjectsTick(); // bgs update fifth
+            OnParticlesTick(); // particles update fifth
+            OnBackgroundObjectsTick(); // bgs update sixth
 
             PostTick();
             ScheduleTick();
@@ -179,6 +185,7 @@ namespace BetterLegacy.Core.Runtime
 
             objectEngine = null;
             objectModifiersEngine = null;
+            particlesEngine = null;
             backgroundEngine = null;
             bgModifiersEngine = null;
 
@@ -193,6 +200,7 @@ namespace BetterLegacy.Core.Runtime
         {
             objectEngine?.Recalculate();
             objectModifiersEngine?.Recalculate();
+            particlesEngine?.Recalculate();
             backgroundEngine?.Recalculate();
             bgModifiersEngine?.Recalculate();
             prefabEngine?.Recalculate();
@@ -299,9 +307,11 @@ namespace BetterLegacy.Core.Runtime
             {
                 runtimeObject.visualObject.colorSequence = collection.ColorSequence;
                 runtimeObject.visualObject.secondaryColorSequence = collection.SecondaryColorSequence;
-                runtimeObject.visualObject.particleVelocitySequence = collection.ParticlesVelocitySequence;
-                runtimeObject.visualObject.particleSizeSequence = collection.ParticlesSizeSequence;
-                runtimeObject.visualObject.particleRotationSequence = collection.ParticlesRotationSequence;
+                if (runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    solidObject.ResetParticles();
+                    solidObject.SetupParticlesTimeline(beatmapObject);
+                }
             }
 
             if (updateParents)
@@ -464,6 +474,12 @@ namespace BetterLegacy.Core.Runtime
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
                         }
+                        if (beatmapObject.runtimeParticles)
+                        {
+                            beatmapObject.runtimeParticles.StartTime = beatmapObject.StartTime;
+                            beatmapObject.runtimeParticles.KillTime = beatmapObject.StartTime + beatmapObject.ParticlesSpawnDuration;
+                            beatmapObject.runtimeParticles.SetActive(beatmapObject.ParticlesAlive);
+                        }
 
                         if (!runtimeObject)
                         {
@@ -490,6 +506,12 @@ namespace BetterLegacy.Core.Runtime
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
                         }
+                        if (beatmapObject.runtimeParticles)
+                        {
+                            beatmapObject.runtimeParticles.StartTime = beatmapObject.StartTime;
+                            beatmapObject.runtimeParticles.KillTime = beatmapObject.StartTime + beatmapObject.ParticlesSpawnDuration;
+                            beatmapObject.runtimeParticles.SetActive(beatmapObject.ParticlesAlive);
+                        }
 
                         if (!runtimeObject)
                             break;
@@ -501,6 +523,9 @@ namespace BetterLegacy.Core.Runtime
 
                         objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                         objectEngine?.Recalculate();
+
+                        particlesEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        particlesEngine?.Recalculate();
 
                         objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                         objectModifiersEngine?.Recalculate();
@@ -620,6 +645,10 @@ namespace BetterLegacy.Core.Runtime
 
                         break;
                     } // Text
+                case ObjectContext.PARTICLES: {
+                        UpdateObject(beatmapObject);
+                        break;
+                    }
                 case ObjectContext.KEYFRAMES: {
                         if (beatmapObject.runtimeModifiers)
                         {
@@ -627,6 +656,12 @@ namespace BetterLegacy.Core.Runtime
                             beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
+                        }
+                        if (beatmapObject.runtimeParticles)
+                        {
+                            beatmapObject.runtimeParticles.StartTime = beatmapObject.StartTime;
+                            beatmapObject.runtimeParticles.KillTime = beatmapObject.StartTime + beatmapObject.ParticlesSpawnDuration;
+                            beatmapObject.runtimeParticles.SetActive(beatmapObject.ParticlesAlive);
                         }
 
                         if (runtimeObject)
@@ -724,6 +759,7 @@ namespace BetterLegacy.Core.Runtime
 
             if (updateModifiers)
                 RemoveModifiers(beatmapObject);
+            RemoveParticles(beatmapObject);
         }
 
         /// <summary>
@@ -744,6 +780,7 @@ namespace BetterLegacy.Core.Runtime
 
             if (updateModifiers)
                 AddModifiers(beatmapObject);
+            AddParticles(beatmapObject);
         }
 
         /// <summary>
@@ -951,13 +988,10 @@ namespace BetterLegacy.Core.Runtime
 
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
-            visual.particleVelocitySequence = beatmapObject.cachedSequences.ParticlesVelocitySequence;
-            visual.particleSizeSequence = beatmapObject.cachedSequences.ParticlesSizeSequence;
-            visual.particleRotationSequence = beatmapObject.cachedSequences.ParticlesRotationSequence;
 
             if (beatmapObject.objectType == BeatmapObject.ObjectType.Particles)
             {
-                visual.SetupParticles(ShapeManager.inst.GetShape(beatmapObject.Shape, beatmapObject.ShapeOption)?.mesh);
+                visual.SetupParticles(ShapeManager.inst.GetShape(beatmapObject.Shape, beatmapObject.ShapeOption)?.mesh, beatmapObject);
             }
 
             runtimeObject.visualObject = visual;
@@ -1000,21 +1034,21 @@ namespace BetterLegacy.Core.Runtime
         {
             var runtimeModifiers = beatmapObject.runtimeModifiers;
 
-            if (runtimeModifiers)
+            if (!runtimeModifiers)
+                return;
+
+            runtimeModifiers.modifiers.ForLoop(modifier =>
             {
-                runtimeModifiers.modifiers.ForLoop(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = null;
-                });
+                modifier.RunInactive(modifier, beatmapObject);
+                ModifiersHelper.OnRemoveCache(modifier);
+                modifier.Result = null;
+            });
 
-                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                modifiers.Remove(runtimeModifiers);
+            objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+            modifiers.Remove(runtimeModifiers);
 
-                runtimeModifiers = null;
-                beatmapObject.runtimeModifiers = null;
-            }
+            runtimeModifiers = null;
+            beatmapObject.runtimeModifiers = null;
         }
 
         public void AddModifiers(BeatmapObject beatmapObject)
@@ -1024,6 +1058,51 @@ namespace BetterLegacy.Core.Runtime
             {
                 modifiers.Add(iRuntimeModifiers);
                 objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
+            }
+        }
+
+        #endregion
+
+        #region Particles
+
+        /// <summary>
+        /// Particles time engine.
+        /// </summary>
+        public ObjectEngine particlesEngine;
+
+        /// <summary>
+        /// Readonly collection of runtime particles.
+        /// </summary>
+        public IReadOnlyList<IRTObject> Particles => particles.AsReadOnly();
+
+        /// <summary>
+        /// List of runtime particles.
+        /// </summary>
+        public List<IRTObject> particles;
+
+        public virtual void OnParticlesTick() => particlesEngine?.Update(FixedTime);
+
+        public void RemoveParticles(BeatmapObject beatmapObject)
+        {
+            var runtimeParticles = beatmapObject.runtimeParticles;
+
+            if (!runtimeParticles)
+                return;
+
+            particlesEngine?.spawner?.RemoveObject(runtimeParticles, false);
+            particles.Remove(runtimeParticles);
+
+            runtimeParticles = null;
+            beatmapObject.runtimeParticles = null;
+        }
+
+        public void AddParticles(BeatmapObject beatmapObject)
+        {
+            var iRuntimeParticles = converter.ToIRuntimeParticles(beatmapObject);
+            if (iRuntimeParticles != null)
+            {
+                particles.Add(iRuntimeParticles);
+                particlesEngine?.spawner?.InsertObject(iRuntimeParticles, false);
             }
         }
 
@@ -1674,6 +1753,8 @@ namespace BetterLegacy.Core.Runtime
             objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+            particlesEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            particlesEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             backgroundEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             bgModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));

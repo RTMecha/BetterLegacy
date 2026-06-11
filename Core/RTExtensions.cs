@@ -2507,6 +2507,155 @@ namespace BetterLegacy.Core
 
         static float EasedTime(EventKeyframe prevKF, EventKeyframe nextKF, float time) => Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time)));
 
+        // Based on ObjectManager.BuildParticleTimelineCurve (hell)
+        public static AnimationCurve ToAnimationCurve(this List<EventKeyframe> sourceKeyframes, int source, int valueIndex, float defaultValue, float timelineLength, Func<float, float> valueTransform = null, bool velocityDerivative = false)
+        {
+            if (valueTransform == null)
+                valueTransform = x => x;
+            if (timelineLength <= 0f)
+                timelineLength = 0.01f;
+            if (sourceKeyframes == null || sourceKeyframes.Count == 0)
+                return AnimationCurve.Constant(0f, 1f, velocityDerivative ? 0f : valueTransform?.Invoke(defaultValue) ?? 0f);
+
+            var list = new List<Vector2>(sourceKeyframes.Count * 16 + 4);
+            float num = Mathf.Clamp01(sourceKeyframes[0].time / timelineLength);
+            if (velocityDerivative)
+            {
+                if (num > 0f)
+                {
+                    list.Add(new Vector2(0f, 0f));
+                    list.Add(new Vector2(num, 0f));
+                }
+            }
+            else
+            {
+                if (num > 0f)
+                    list.Add(new Vector2(0f, valueTransform.Invoke(defaultValue)));
+                list.Add(new Vector2(num, valueTransform.Invoke(source switch
+                {
+                    1 => sourceKeyframes[0].GetRandomValue(valueIndex, defaultValue),
+                    2 => sourceKeyframes[0].GetSecondaryValue(valueIndex, defaultValue),
+                    _ => sourceKeyframes[0].GetValue(valueIndex, defaultValue),
+                })));
+            }
+            for (int i = 1; i < sourceKeyframes.Count; i++)
+            {
+                float num2 = Mathf.Clamp01(sourceKeyframes[i - 1].time / timelineLength);
+                float num3 = Mathf.Clamp01(sourceKeyframes[i].time / timelineLength);
+                float num4 = valueTransform.Invoke(source switch
+                {
+                    1 => sourceKeyframes[i - 1].GetRandomValue(valueIndex, defaultValue),
+                    2 => sourceKeyframes[i - 1].GetSecondaryValue(valueIndex, defaultValue),
+                    _ => sourceKeyframes[i - 1].GetValue(valueIndex, defaultValue),
+                });
+                float num5 = valueTransform.Invoke(source switch
+                {
+                    1 => sourceKeyframes[i].GetRandomValue(valueIndex, defaultValue),
+                    2 => sourceKeyframes[i].GetSecondaryValue(valueIndex, defaultValue),
+                    _ => sourceKeyframes[i].GetValue(valueIndex, defaultValue),
+                });
+                float num6 = sourceKeyframes[i].time - sourceKeyframes[i - 1].time;
+                bool flag = Mathf.Approximately(num2, num3) || num6 < 1E-06f;
+                var curveType = sourceKeyframes[i].curve;
+                bool isInstant = curveType == Easing.Instant;
+                EaseFunction easeFunction = null;
+                if (!isInstant)
+                {
+                    try
+                    {
+                        easeFunction = Ease.GetEaseFunction(curveType);
+                    }
+                    catch
+                    {
+                        easeFunction = null;
+                    }
+                }
+                if (velocityDerivative)
+                {
+                    if (flag)
+                    {
+                        if (list.Count == 0 || !Mathf.Approximately(list[list.Count - 1].x, num3))
+                            list.Add(new Vector2(num3, 0f));
+                    }
+                    else if (!isInstant)
+                    {
+                        if (easeFunction == null)
+                        {
+                            float num7 = (num5 - num4) / num6;
+                            if (list.Count > 0 && Mathf.Approximately(list[list.Count - 1].x, num2))
+                                list[list.Count - 1] = new Vector2(num2, num7);
+                            else
+                                list.Add(new Vector2(num2, num7));
+                            list.Add(new Vector2(num3, num7));
+                        }
+                        else
+                        {
+                            float num8 = 0.03125f;
+                            for (int j = 0; j <= 16; j++)
+                            {
+                                float num9 = (float)j / 16f;
+                                float num10 = Mathf.Min(1f, num9 + num8);
+                                float num11 = Mathf.Max(0f, num9 - num8);
+                                float num12 = (easeFunction(num10) - easeFunction(num11)) / (num10 - num11);
+                                float num13 = (num5 - num4) * num12 / num6;
+                                float num14 = Mathf.Lerp(num2, num3, num9);
+                                if (list.Count > 0 && Mathf.Approximately(list[list.Count - 1].x, num14))
+                                    list[list.Count - 1] = new Vector2(num14, num13);
+                                else
+                                    list.Add(new Vector2(num14, num13));
+                            }
+                        }
+                    }
+                }
+                else if (flag)
+                {
+                    if (list.Count > 0 && Mathf.Approximately(list[list.Count - 1].x, num3))
+                        list[list.Count - 1] = new Vector2(num3, num5);
+                    else
+                        list.Add(new Vector2(num3, num5));
+                }
+                else if (isInstant)
+                {
+                    float num15 = (num3 - num2) * 0.001f;
+                    if (num15 <= 0f)
+                        num15 = float.Epsilon;
+                    list.Add(new Vector2(num3 - num15, num4));
+                    list.Add(new Vector2(num3, num5));
+                }
+                else if (easeFunction == null)
+                    list.Add(new Vector2(num3, num5));
+                else
+                {
+                    for (int k = 1; k <= 16; k++)
+                    {
+                        float num16 = (float)k / 16f;
+                        float num17 = easeFunction(num16);
+                        float num18 = Mathf.LerpUnclamped(num4, num5, num17);
+                        float num19 = Mathf.Lerp(num2, num3, num16);
+                        list.Add(new Vector2(num19, num18));
+                    }
+                }
+            }
+            if (list.Count == 0)
+                return AnimationCurve.Constant(0f, 1f, velocityDerivative ? 0f : valueTransform.Invoke(defaultValue));
+            if (list[list.Count - 1].x < 1f)
+                list.Add(new Vector2(1f, velocityDerivative ? 0f : list[list.Count - 1].y));
+            var keys = new Keyframe[list.Count];
+            for (int l = 0; l < list.Count; l++)
+            {
+                float x = list[l].x;
+                float y = list[l].y;
+                float num20 = ((l > 0) ? ((y - list[l - 1].y) / (x - list[l - 1].x)) : 0f);
+                float num21 = ((l < list.Count - 1) ? ((list[l + 1].y - y) / (list[l + 1].x - x)) : 0f);
+                if (l == 0)
+                    num20 = num21;
+                if (l == list.Count - 1)
+                    num21 = num20;
+                keys[l] = new Keyframe(x, y, num20, num21);
+            }
+            return new AnimationCurve(keys);
+        }
+
         #endregion
 
         #region Misc

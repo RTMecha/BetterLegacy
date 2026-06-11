@@ -4,6 +4,7 @@ using LSFunctions;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -64,10 +65,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public Sequence<Color> secondaryColorSequence;
 
-        public Sequence<Vector2> particleVelocitySequence;
-        public Sequence<Vector2> particleSizeSequence;
-        public Sequence<float> particleRotationSequence;
-
         /// <summary>
         /// If the object renders as a gradient.
         /// </summary>
@@ -112,7 +109,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             collider = null;
         }
 
-        public virtual void SetupParticles(Mesh particleMesh) { }
+        public virtual void SetupParticles(Mesh particleMesh, BeatmapObject beatmapObject) { }
+
+        public virtual void SetupParticlesTimeline(BeatmapObject beatmapObject) { }
 
         public virtual void InterpolateParticles(float t) { }
 

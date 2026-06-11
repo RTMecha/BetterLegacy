@@ -109,6 +109,36 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #region Particles
+
+        public GameObject ParticlesLabel { get; set; }
+
+        public Button ParticlesExpandButton { get; set; }
+
+        public GameObject ParticlesArea { get; set; }
+
+        public InputFieldStorage ParticlesSpawnRatePerSecondField { get; set; }
+
+        public InputFieldStorage ParticlesSpawnRatePerUnitField { get; set; }
+
+        public ToggleButtonStorage ParticlesWorldSpaceToggle { get; set; }
+
+        public Dropdown ParticlesAutokillDropdown { get; set; }
+
+        public InputField ParticlesAutokillField { get; set; }
+
+        public Button ParticlesAutokillSetButton { get; set; }
+
+        public Dropdown ParticlesEmitterShapeTypeDropdown { get; set; }
+
+        public InputFieldStorage ParticlesEmitterArcField { get; set; }
+
+        public InputFieldStorage ParticlesEmitterRadiusField { get; set; }
+
+        public InputFieldStorage ParticlesStartSpeedField { get; set; }
+
+        #endregion
+
         #region Render Depth / Type
 
         public RectTransform DepthParent { get; set; }
@@ -213,14 +243,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Content.Find("name/name").GetComponent<InputField>().characterLimit = 0;
 
             // Labels
-            for (int j = 0; j < Content.childCount; j++)
+            for (int i = 0; i < Content.childCount; i++)
             {
-                var label = Content.GetChild(j);
+                var label = Content.GetChild(i);
                 if (label.name == "label" || label.name == "collapselabel")
                 {
-                    for (int k = 0; k < label.childCount; k++)
+                    for (int j = 0; j < label.childCount; j++)
                     {
-                        var labelText = label.GetChild(k).GetComponent<Text>();
+                        var labelText = label.GetChild(j).GetComponent<Text>();
                         EditorThemeManager.ApplyLightText(labelText);
                     }
                 }
@@ -1763,6 +1793,100 @@ namespace BetterLegacy.Editor.Data.Dialogs
             GradientRotation = Content.Find("gradientrotation").GetComponent<InputFieldStorage>();
 
             InitShapes();
+
+            #endregion
+
+            #region Particles
+
+            var particlesIndex = Content.Find("shapesettings").GetSiblingIndex();
+            var particlesLabel = new LabelsElement(new LabelElement("Particles") { fontSize = 22, fontStyle = FontStyle.Bold, sizeDelta = new Vector2(300f, 32f) });
+            particlesLabel.Init(EditorElement.InitSettings.Default.Parent(Content).Name("particles label").Rect(RectValues.Default.SizeDelta(0f, 32f)).SiblingIndex(particlesIndex + 1));
+            ParticlesLabel = particlesLabel.GameObject;
+            ParticlesLabel.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(left: 8, right: 8, top: 0, bottom: 0);
+            var particlesLabelImage = ParticlesLabel.AddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(particlesLabelImage, ThemeGroup.Paste, true, opacity: 0.2f);
+
+            var particlesExpand = Content.Find("parent/more").gameObject.Duplicate(ParticlesLabel.transform);
+            ParticlesExpandButton = particlesExpand.GetComponent<Button>();
+            EditorThemeManager.ApplySelectable(ParticlesExpandButton, ThemeGroup.Function_2, false);
+
+            ParticlesArea = Creator.NewUIObject("particles", Content, particlesIndex + 2);
+            var particlesAreaLayout = ParticlesArea.AddComponent<VerticalLayoutGroup>();
+            particlesAreaLayout.childControlHeight = false;
+            particlesAreaLayout.spacing = 8f;
+            var particlesAreaContentSizeFitter = ParticlesArea.AddComponent<ContentSizeFitter>();
+            particlesAreaContentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+            var particlesAreaImage = ParticlesArea.AddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(particlesAreaImage, ThemeGroup.Paste, true, opacity: 0.1f);
+
+            new LabelsElement("Spawn Rate").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            new LabelsElement(new LabelElement("Per Second") { sizeDelta = new Vector2(140f, 20f) }, new LabelElement("Per Unit") { sizeDelta = new Vector2(140f, 20f) }).Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesSpawnRate = Creator.NewUIObject("spawn rate", ParticlesArea.transform);
+            particlesSpawnRate.transform.AsRT().sizeDelta = new Vector2(476.8f, 32f);
+            var particlesSpawnRateLayout = particlesSpawnRate.AddComponent<HorizontalLayoutGroup>();
+            particlesSpawnRateLayout.childControlHeight = false;
+            particlesSpawnRateLayout.childControlWidth = false;
+            particlesSpawnRateLayout.spacing = 8f;
+
+            var particlesSpawnRatePerSecond = EditorPrefabHolder.Instance.NumberInputField.Duplicate(particlesSpawnRate.transform, "spawn rate per second");
+            particlesSpawnRatePerSecond.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
+            ParticlesSpawnRatePerSecondField = particlesSpawnRatePerSecond.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(ParticlesSpawnRatePerSecondField.leftGreaterButton);
+            CoreHelper.Delete(ParticlesSpawnRatePerSecondField.middleButton);
+            CoreHelper.Delete(ParticlesSpawnRatePerSecondField.rightGreaterButton);
+            EditorThemeManager.ApplyInputField(ParticlesSpawnRatePerSecondField);
+            
+            var particlesSpawnRatePerUnit = EditorPrefabHolder.Instance.NumberInputField.Duplicate(particlesSpawnRate.transform, "spawn rate per unit");
+            particlesSpawnRatePerUnit.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
+            ParticlesSpawnRatePerUnitField = particlesSpawnRatePerUnit.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(ParticlesSpawnRatePerUnitField.leftGreaterButton);
+            CoreHelper.Delete(ParticlesSpawnRatePerUnitField.middleButton);
+            CoreHelper.Delete(ParticlesSpawnRatePerUnitField.rightGreaterButton);
+            EditorThemeManager.ApplyInputField(ParticlesSpawnRatePerUnitField);
+
+            var particlesWorldSpace = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ParticlesArea.transform, "world space");
+            ParticlesWorldSpaceToggle = particlesWorldSpace.GetComponent<ToggleButtonStorage>();
+            ParticlesWorldSpaceToggle.Text = "World Space";
+            EditorThemeManager.ApplyToggle(ParticlesWorldSpaceToggle);
+
+            new LabelsElement("Time of Death").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesAutokill = Content.Find("autokill").gameObject.Duplicate(ParticlesArea.transform, "autokill");
+            ParticlesAutokillDropdown = particlesAutokill.transform.Find("tod-dropdown").GetComponent<Dropdown>();
+            ParticlesAutokillField = particlesAutokill.transform.Find("tod-value").GetComponent<InputField>();
+            ParticlesAutokillSetButton = particlesAutokill.transform.Find("|").GetComponent<Button>();
+            CoreHelper.Delete(particlesAutokill.transform.Find("collapse"));
+
+            new LabelsElement("Emitter Shape Type").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesShapeType = EditorPrefabHolder.Instance.Dropdown.Duplicate(ParticlesArea.transform, "emitter shape type");
+            particlesShapeType.SetActive(true);
+            ParticlesEmitterShapeTypeDropdown = particlesShapeType.GetComponent<Dropdown>();
+            ParticlesEmitterShapeTypeDropdown.options = CoreHelper.ToOptionData<ParticleSystemData.EmitterShapeType>();
+            EditorThemeManager.ApplyDropdown(ParticlesEmitterShapeTypeDropdown);
+
+            new LabelsElement("Emitter Arc").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesEmitterArc = EditorPrefabHolder.Instance.NumberInputField.Duplicate(ParticlesArea.transform, "emitter arc");
+            ParticlesEmitterArcField = particlesEmitterArc.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(ParticlesEmitterArcField.middleButton);
+            EditorThemeManager.ApplyInputField(ParticlesEmitterArcField);
+
+            new LabelsElement("Emitter Radius").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesEmitterRadius = EditorPrefabHolder.Instance.NumberInputField.Duplicate(ParticlesArea.transform, "emitter radius");
+            ParticlesEmitterRadiusField = particlesEmitterRadius.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(ParticlesEmitterRadiusField.middleButton);
+            EditorThemeManager.ApplyInputField(ParticlesEmitterRadiusField);
+
+            new LabelsElement("Start Speed").Init(EditorElement.InitSettings.Default.Parent(ParticlesArea.transform));
+            var particlesStartSpeed = EditorPrefabHolder.Instance.NumberInputField.Duplicate(ParticlesArea.transform, "start speed");
+            ParticlesStartSpeedField = particlesStartSpeed.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(ParticlesStartSpeedField.leftGreaterButton);
+            CoreHelper.Delete(ParticlesStartSpeedField.middleButton);
+            CoreHelper.Delete(ParticlesStartSpeedField.rightGreaterButton);
+            EditorThemeManager.ApplyInputField(ParticlesStartSpeedField);
+
+            var particlesLine = Creator.NewUIObject("line", ParticlesArea.transform);
+            RectValues.Default.SizeDelta(356f, 6f).AssignToRectTransform(particlesLine.transform.AsRT());
+            var particlesLineImage = particlesLine.AddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(particlesLineImage, ThemeGroup.Toggle_1, true);
 
             #endregion
 

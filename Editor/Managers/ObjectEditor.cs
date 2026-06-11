@@ -92,6 +92,8 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool colorShifted;
 
+        public bool expandParticleValues;
+
         #region Creation
 
         /// <summary>
@@ -1378,6 +1380,7 @@ namespace BetterLegacy.Editor.Managers
             RenderBlendMode(beatmapObject);
             RenderGradient(beatmapObject);
             RenderShape(beatmapObject);
+            RenderParticles(beatmapObject);
             RenderDepth(beatmapObject);
 
             RenderLayers(beatmapObject);
@@ -2158,6 +2161,178 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => RTLevel.Current.UpdateObject(beatmapObject, context));
         }
 
+        /// <summary>
+        /// Renders the Particle values.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderParticles(BeatmapObject beatmapObject)
+        {
+            var active = beatmapObject.objectType == BeatmapObject.ObjectType.Particles && beatmapObject.particleSystemData;
+            Dialog.ParticlesLabel.SetActive(active);
+            Dialog.ParticlesArea.SetActive(active && expandParticleValues);
+            Dialog.ParticlesExpandButton.onClick.NewListener(() =>
+            {
+                expandParticleValues = !expandParticleValues;
+                RenderParticles(beatmapObject);
+            });
+
+            if (!active || !expandParticleValues)
+                return;
+
+            Dialog.ParticlesSpawnRatePerSecondField.SetTextWithoutNotify(beatmapObject.particleSystemData.spawnRatePerSecond.ToString());
+            Dialog.ParticlesSpawnRatePerSecondField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                beatmapObject.particleSystemData.spawnRatePerSecond = RTMath.Clamp(num, 0f, float.MaxValue);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.ParticlesSpawnRatePerSecondField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.ParticlesSpawnRatePerSecondField.inputField, max: float.MaxValue));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.ParticlesSpawnRatePerSecondField, max: float.MaxValue);
+
+            Dialog.ParticlesSpawnRatePerUnitField.SetTextWithoutNotify(beatmapObject.particleSystemData.spawnRatePerUnit.ToString());
+            Dialog.ParticlesSpawnRatePerUnitField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                beatmapObject.particleSystemData.spawnRatePerUnit = RTMath.Clamp(num, 0f, float.MaxValue);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.ParticlesSpawnRatePerUnitField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.ParticlesSpawnRatePerUnitField.inputField, max: float.MaxValue));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.ParticlesSpawnRatePerUnitField, max: float.MaxValue);
+
+            Dialog.ParticlesWorldSpaceToggle.SetIsOnWithoutNotify(beatmapObject.particleSystemData.worldSpace);
+            Dialog.ParticlesWorldSpaceToggle.OnValueChanged.NewListener(_val =>
+            {
+                beatmapObject.particleSystemData.worldSpace = _val;
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            Dialog.ParticlesAutokillDropdown.SetValueWithoutNotify((int)beatmapObject.particleSystemData.autoKillType);
+            Dialog.ParticlesAutokillDropdown.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.particleSystemData.autoKillType = (AutoKillType)_val;
+                // AutoKillType affects both physical object and timeline object.
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                //RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                RenderParticles(beatmapObject);
+                Dialog.Timeline.RenderMarkers(beatmapObject);
+            });
+
+            if (beatmapObject.particleSystemData.autoKillType == AutoKillType.FixedTime ||
+                beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime ||
+                beatmapObject.particleSystemData.autoKillType == AutoKillType.LastKeyframeOffset)
+            {
+                Dialog.ParticlesAutokillField.gameObject.SetActive(true);
+
+                Dialog.ParticlesAutokillField.SetTextWithoutNotify(beatmapObject.particleSystemData.autoKillOffset.ToString());
+                Dialog.ParticlesAutokillField.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        if (beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime)
+                        {
+                            float startTime = beatmapObject.StartTime;
+                            if (num < startTime)
+                                num = startTime + 0.1f;
+                        }
+
+                        if (num < 0f)
+                            num = 0f;
+
+                        beatmapObject.particleSystemData.autoKillOffset = num;
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+
+                        Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                        Dialog.Timeline.RenderMarkers(beatmapObject);
+                    }
+                });
+
+                Dialog.ParticlesAutokillSetButton.gameObject.SetActive(true);
+                Dialog.ParticlesAutokillSetButton.onClick.NewListener(() =>
+                {
+                    float num = 0f;
+
+                    if (beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime)
+                        num = AudioManager.inst.CurrentAudioSource.time;
+                    else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+
+                    if (num < 0f)
+                        num = 0f;
+
+                    Dialog.ParticlesAutokillField.text = num.ToString();
+                });
+
+                // Add Scrolling for easy changing of values.
+                TriggerHelper.AddEventTriggers(Dialog.ParticlesAutokillField.gameObject, TriggerHelper.ScrollDelta(Dialog.ParticlesAutokillField, 0.1f, 10f, 0f, float.PositiveInfinity));
+            }
+            else
+            {
+                Dialog.ParticlesAutokillField.gameObject.SetActive(false);
+                Dialog.ParticlesAutokillField.onValueChanged.ClearAll();
+                Dialog.ParticlesAutokillSetButton.gameObject.SetActive(false);
+                Dialog.ParticlesAutokillSetButton.onClick.ClearAll();
+            }
+
+            Dialog.ParticlesEmitterArcField.transform.GetPreviousSibling().gameObject.SetActive(beatmapObject.particleSystemData.emitterShapeType == ParticleSystemData.EmitterShapeType.Circle);
+            Dialog.ParticlesEmitterArcField.gameObject.SetActive(beatmapObject.particleSystemData.emitterShapeType == ParticleSystemData.EmitterShapeType.Circle);
+            Dialog.ParticlesEmitterRadiusField.transform.GetPreviousSibling().gameObject.SetActive(beatmapObject.particleSystemData.emitterShapeType == ParticleSystemData.EmitterShapeType.Circle);
+            Dialog.ParticlesEmitterRadiusField.gameObject.SetActive(beatmapObject.particleSystemData.emitterShapeType == ParticleSystemData.EmitterShapeType.Circle);
+
+            Dialog.ParticlesEmitterShapeTypeDropdown.SetValueWithoutNotify((int)beatmapObject.particleSystemData.emitterShapeType);
+            Dialog.ParticlesEmitterShapeTypeDropdown.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.particleSystemData.emitterShapeType = (ParticleSystemData.EmitterShapeType)_val;
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                RenderParticles(beatmapObject);
+            });
+
+            Dialog.ParticlesEmitterArcField.SetTextWithoutNotify(beatmapObject.particleSystemData.emitterArc.ToString());
+            Dialog.ParticlesEmitterArcField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                beatmapObject.particleSystemData.emitterArc = RTMath.Clamp(num, 0f, 360f);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.ParticlesEmitterArcField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.ParticlesEmitterArcField.inputField, 15f, 3f, max: 360f));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.ParticlesEmitterArcField, 15f, 3f, max: 360f);
+
+            Dialog.ParticlesEmitterRadiusField.SetTextWithoutNotify(beatmapObject.particleSystemData.emitterRadius.ToString());
+            Dialog.ParticlesEmitterRadiusField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                beatmapObject.particleSystemData.emitterRadius = RTMath.Clamp(num, 0f, 1f);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.ParticlesEmitterRadiusField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.ParticlesEmitterRadiusField.inputField, max: 1f));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.ParticlesEmitterRadiusField, max: 1f);
+
+            Dialog.ParticlesStartSpeedField.SetTextWithoutNotify(beatmapObject.particleSystemData.startSpeed.ToString());
+            Dialog.ParticlesStartSpeedField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+                beatmapObject.particleSystemData.startSpeed = Mathf.Max(0f, num);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+            });
+
+            TriggerHelper.AddEventTriggers(Dialog.ParticlesStartSpeedField.gameObject,
+                TriggerHelper.ScrollDelta(Dialog.ParticlesStartSpeedField.inputField, max: float.MaxValue));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.ParticlesStartSpeedField, max: float.MaxValue);
+        }
+
         void SetDepthSlider(BeatmapObject beatmapObject, float value, InputField inputField, Slider slider)
         {
             if (!EditorHelper.CheckComplexity("beatmap_object/depth_unlimited", Complexity.Advanced))
@@ -2607,18 +2782,31 @@ namespace BetterLegacy.Editor.Managers
             if (objectType == BeatmapObject.ObjectType.Particles)
             {
                 if (!beatmapObject.particleSystemData)
-                    beatmapObject.particleSystemData = new ParticleSystemData();
+                    beatmapObject.particleSystemData = new ParticleSystemData
+                    {
+                        spawnRatePerSecond = 1f,
+                        spawnRatePerUnit = 1f,
+                    };
                 for (int type = 0; type < beatmapObject.events.Count; type++)
                     for (int index = 0; index < beatmapObject.events[type].Count; index++)
-                        beatmapObject.events[type][index].SetSecondaryValues(new float[type == 2 ? 1 : 2]);
+                        beatmapObject.events[type][index].SetSecondaryValues(type switch
+                        {
+                            1 => new float[2] { 1f, 1f },
+                            2 => new float[1] { 0f },
+                            _ => new float[2],
+                        });
             }
 
             beatmapObject.objectType = objectType;
             // ObjectType affects both physical object and timeline object.
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
             if (changedToParticles)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            {
+                RTLevel.Current?.UpdateObject(beatmapObject);
+                //RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            }
+            else
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
 
             if (Dialog.IsCurrent)
                 RenderDialog(beatmapObject);

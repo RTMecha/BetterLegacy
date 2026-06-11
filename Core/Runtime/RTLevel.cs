@@ -123,6 +123,10 @@ namespace BetterLegacy.Core.Runtime
                 for (int i = 0; i < Current.objects.Count; i++)
                     Current.objects[i].Clear();
                 Current.objects.Clear();
+                
+                for (int i = 0; i < Current.particles.Count; i++)
+                    Current.particles[i].Clear();
+                Current.particles.Clear();
 
                 for (int i = 0; i < Current.bgObjects.Count; i++)
                     Current.bgObjects[i].Clear();
@@ -173,6 +177,10 @@ namespace BetterLegacy.Core.Runtime
                 for (int i = 0; i < Current.objects.Count; i++)
                     Current.objects[i].Clear();
                 Current.objects.Clear();
+
+                for (int i = 0; i < Current.particles.Count; i++)
+                    Current.particles[i].Clear();
+                Current.particles.Clear();
 
                 for (int i = 0; i < Current.bgObjects.Count; i++)
                     Current.bgObjects[i].Clear();
@@ -287,16 +295,21 @@ namespace BetterLegacy.Core.Runtime
                 Log($"Start object tick at: {sw.Elapsed}");
 
             OnBeatmapObjectsTick(); // objects update fifth
+            
+            if (logTick)
+                Log($"Start particles tick at: {sw.Elapsed}");
+
+            OnParticlesTick(); // particles update sixth
 
             if (logTick)
                 Log($"Start BG object tick at: {sw.Elapsed}");
 
-            OnBackgroundObjectsTick(); // bgs update sixth
+            OnBackgroundObjectsTick(); // bgs update seventh
 
             if (logTick)
                 Log($"Start prefab modifier tick at: {sw.Elapsed}");
 
-            OnPrefabModifiersTick(); // prefab modifiers update seventh
+            OnPrefabModifiersTick(); // prefab modifiers update eighth
 
             if (logTick)
                 Log($"Start prefab object tick at: {sw.Elapsed}");
