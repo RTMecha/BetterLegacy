@@ -1,4 +1,4 @@
-﻿# snapshot-2026.6.4 - (Story Playtest) [???]
+﻿# snapshot-2026.6.4 - (Story Playtest) [June 14, 2026]
 ## Fixes
 - Fixed a major issue with the last snapshot where the object editor broke.
 
