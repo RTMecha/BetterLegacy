@@ -19,6 +19,8 @@ namespace BetterLegacy.Core.Prefabs
             var visualObject = Creator.NewGameObject("visual", Particles.transform);
             var particleSystem = visualObject.AddComponent<ParticleSystem>();
             var particleSystemRenderer = visualObject.GetComponent<ParticleSystemRenderer>();
+
+            gameObject.SetActive(false);
         }
 
         public static void Init() => Instance = new CorePrefabHolder();
