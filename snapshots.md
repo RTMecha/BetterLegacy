@@ -1,4 +1,11 @@
-﻿# snapshot-2026.6.4 - (Story Playtest) [June 14, 2026]
+﻿# snapshot-2026.6.5 - (Story Playtest) [???]
+## Fixes
+- Fixed some levels and cutscenes in the story mode being skipped.
+- Fixed the particle prefab showing in the interfaces.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.6.4 - (Story Playtest) [June 14, 2026]
 ## Fixes
 - Fixed a major issue with the last snapshot where the object editor broke.
 
