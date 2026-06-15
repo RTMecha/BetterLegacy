@@ -857,9 +857,15 @@ namespace BetterLegacy.Story
 
         void EndFunction(StoryMode.Chapter storyChapter, StoryMode.LevelSequence storyLevel, StoryMode.LevelPath levelPath, Action onLevelEnd = null)
         {
+            CoreHelper.Log($"Story Chapter: {storyChapter}\n" +
+                $"Story Level: {storyLevel}\n" +
+                $"Path: {levelPath}\n" +
+                $"On Level End: {onLevelEnd != null}");
+
             LevelManager.Clear();
             RTLevel.Reinit(false);
             LevelManager.OnLevelEnd = null;
+            AudioManager.inst.SetMusicTime(0f);
             if (onLevelEnd != null)
             {
                 onLevelEnd.Invoke();

@@ -229,6 +229,9 @@ namespace BetterLegacy.Core.Managers
         /// <param name="level">The level to play.</param>
         public static IEnumerator IPlay(Level level)
         {
+            if (!level)
+                throw new ArgumentNullException(nameof(level));
+
             Log($"Start playing level:\n{level}\nIs Story: {level.isStory}");
 
             LoadingFromHere = true;
@@ -378,7 +381,7 @@ namespace BetterLegacy.Core.Managers
 
             while (!level.music)
                 yield return null;
-            if (reloadLevelMusic)
+            if (reloadLevelMusic || level.isStory)
                 AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
             GameManager.inst.songLength = level.music.length;
 
@@ -454,6 +457,8 @@ namespace BetterLegacy.Core.Managers
             yield return new WaitForSeconds(0.2f);
 
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
+            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                AudioManager.inst.CurrentAudioSource.Play();
             if (reloadLevelMusic)
                 SoundManager.inst.FadeTransition(AudioManager.inst.CurrentAudioSource, AudioManager.inst.musicSources[1 - AudioManager.inst.activeMusicSourceIndex], songFadeTransition, SoundManager.inst.MusicVolume);
             else
