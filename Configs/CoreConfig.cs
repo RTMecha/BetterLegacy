@@ -332,7 +332,7 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// Shows a helpful info overlay with some information about the current gamestate.
         /// </summary>
-        public Setting<bool> DebugInfo { get; set; }
+        public Setting<bool> ShowDebugInfo { get; set; }
 
         /// <summary>
         /// If the Debug Info menu should be created on game start. Requires restart to have this option take affect.
@@ -355,10 +355,20 @@ namespace BetterLegacy.Configs
         public Setting<Vector2> DebugPosition { get; set; }
 
         /// <summary>
+        /// Anchor behavior for the Debug Info menu.
+        /// </summary>
+        public Setting<DebugInfo.DisplayAnchor> DebugDisplayAnchor { get; set; }
+
+        public Setting<KeyCode> HideDebugKey { get; set; }
+
+        /// <summary>
         /// If in editor, code ran will have their results be notified.
         /// </summary>
         public Setting<bool> NotifyREPL { get; set; }
 
+        /// <summary>
+        /// The link to the Arcade Server. This is only for debugging purposes and as such is not to be changed unless you are debugging the Arcade server.
+        /// </summary>
         public Setting<string> ArcadeServerURL { get; set; }
 
         #endregion
@@ -469,11 +479,13 @@ namespace BetterLegacy.Configs
             #region Debugging
 
             DebugsOn = Bind(this, DEBUGGING, "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
-            DebugInfo = Bind(this, DEBUGGING, "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
+            ShowDebugInfo = Bind(this, DEBUGGING, "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
             DebugInfoStartup = Bind(this, DEBUGGING, "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
             DebugInfoToggleKey = BindEnum(this, DEBUGGING, "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
             DebugShowOnlyFPS = Bind(this, DEBUGGING, "Show Only FPS", true, "If the Debug Info menu should only display FPS.");
             DebugPosition = Bind(this, DEBUGGING, "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
+            DebugDisplayAnchor = BindEnum(this, DEBUGGING, "Debug Display Anchor", DebugInfo.DisplayAnchor.Free, "Anchor behavior for the Debug Info menu.");
+            HideDebugKey = BindEnum(this, DEBUGGING, "Hide Debug Key", KeyCode.None, "Key to hold to temporarily hide the debug info.");
             NotifyREPL = Bind(this, DEBUGGING, "Notify REPL", false, "If in editor, code ran will have their results be notified.");
             ArcadeServerURL = Bind(this, DEBUGGING, "Arcade Server URL", "https://betterlegacy.net/", "The link to the Arcade Server. This is only for debugging purposes and as such is not to be changed unless you are debugging the Arcade server.");
 
@@ -500,6 +512,7 @@ namespace BetterLegacy.Configs
             DiscordShowLevel.SettingChanged += DiscordChanged;
             DiscordRichPresenceID.SettingChanged += DiscordChanged;
             DebugInfoStartup.SettingChanged += DebugInfoChanged;
+            DebugDisplayAnchor.SettingChanged += DebugDisplayAnchorChanged;
 
             VSync.SettingChanged += FPSChanged;
             FPSLimit.SettingChanged += FPSChanged;
@@ -522,12 +535,17 @@ namespace BetterLegacy.Configs
 
         void OnCursorChanged() => CursorManager.onScreenTime = CursorVisibleTime.Value;
 
-        void FPSChanged()
+        void FPSChanged() => ProjectArrhythmia.Window.ApplySettings();
+
+        void DebugInfoChanged()
         {
-            ProjectArrhythmia.Window.ApplySettings();
+            if (DebugInfoStartup.Value)
+                DebugInfo.Init();
+            else
+                DebugInfo.Destroy();
         }
 
-        void DebugInfoChanged() => Core.Managers.DebugInfo.Init();
+        void DebugDisplayAnchorChanged() => DebugInfo.SetAnchor(DebugDisplayAnchor.Value);
 
         void DiscordChanged()
         {

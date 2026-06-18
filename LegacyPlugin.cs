@@ -239,7 +239,7 @@ namespace BetterLegacy
         {
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
 
-            DebugInfo.Update();
+            DebugInfo.TickAll();
 
             if (CoreConfig.Instance.PhysicsUpdateMatchFramerate.Value)
                 Time.fixedDeltaTime = Time.deltaTime;
@@ -280,7 +280,7 @@ namespace BetterLegacy
                 RTFile.OpenInFileBrowser.Open(RTFile.PersistentApplicationDirectory); // Opens the PA LocalLow folder via the custom keybind.
 
             if (Input.GetKeyDown(CoreConfig.Instance.DebugInfoToggleKey.Value))
-                CoreConfig.Instance.DebugInfo.Value = !CoreConfig.Instance.DebugInfo.Value; // Enables / disables the debug info via the custom keybind.
+                CoreConfig.Instance.ShowDebugInfo.Value = !CoreConfig.Instance.ShowDebugInfo.Value; // Enables / disables the debug info via the custom keybind.
         }
 
         void InitConfigs()
