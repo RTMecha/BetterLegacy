@@ -2724,7 +2724,10 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.MARKER_EDITOR: {
-                        RTMarkerEditor.inst.CopyAnnotations();
+                        if (MouseOverPreview)
+                            RTMarkerEditor.inst.CopyAnnotations();
+                        else
+                            RTMarkerEditor.inst.CopySelectedMarkers();
                         break;
                     }
             }
@@ -2812,7 +2815,10 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.MARKER_EDITOR: {
-                        RTMarkerEditor.inst.PasteAnnotations();
+                        if (MouseOverPreview)
+                            RTMarkerEditor.inst.PasteAnnotations();
+                        else
+                            RTMarkerEditor.inst.PasteMarkers(true);
                         break;
                     }
             }

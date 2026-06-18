@@ -1204,7 +1204,13 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Pastes all copied Markers to the level.
         /// </summary>
-        public void PasteMarkers()
+        public void PasteMarkers() => PasteMarkers(false);
+
+        /// <summary>
+        /// Pastes all copied Markers to the level.
+        /// </summary>
+        /// <param name="offset">If pasted markers should offset from the current song time.</param>
+        public void PasteMarkers(bool offset)
         {
             if (copiedMarkers.IsEmpty())
             {
@@ -1212,9 +1218,12 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            var time = AudioManager.inst.CurrentAudioSource.time - copiedMarkers.Min(x => x.time);
             GameData.Current.data.markers.AddRange(copiedMarkers.Select(x =>
             {
                 var copy = x.Copy();
+                if (offset)
+                    copy.time += time;
 
                 if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
                     copy.time = RTEditor.SnapToBPM(copy.time);
