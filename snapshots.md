@@ -1,7 +1,21 @@
 ﻿# snapshot-2026.6.5 - (Story Playtest) [???]
+## Features
+### Core
+- Added "Debug Display Anchor" setting to Config Manager > Core > Debugging. This anchors the Debug Info overlay to a part of the screen.
+- Added "Hide Debug Key" setting to Config Manager > Core > Debugging.
+
+## Changes
+### Core
+- Added a shadow backdrop to the Debug Info text. The clicking area has also been restricted to this rather than a big unseen area.
+- The "Create Debug Info" setting (Config Manager > Core > Debugging) now destroys the current Debug Info overlay when the setting is turned off.
+
+### Editor
+- Markers can now be copied & pasted using the Copy and Paste keybind functions. If you want to copy / paste markers, you need to focus your mouse cursor over the marker editor. If you want to copy / paste annotations, instead focus on the preview area.
+
 ## Fixes
 - Fixed some levels and cutscenes in the story mode being skipped.
 - Fixed the particle prefab showing in the interfaces.
+- Fixed log spam to do with the Debug Info overlay.
 
 -------------------------------------------------------------------
 
