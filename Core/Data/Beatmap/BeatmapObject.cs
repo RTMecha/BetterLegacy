@@ -212,7 +212,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             get
             {
-                var time = this.GetParentRuntime().FixedTime;
+                var time = this.GetParentRuntime()?.FixedTime ?? 0f;
                 var st = StartTime;
                 var akt = autoKillType;
                 var ako = autoKillOffset;
