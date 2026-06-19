@@ -289,7 +289,7 @@ namespace BetterLegacy.Core.Managers
             if (!init)
                 return;
 
-            var active = CoreConfig.Instance.ShowDebugInfo.Value && ProjectArrhythmia.State.InGame && !Input.GetKey(CoreConfig.Instance.HideDebugKey.Value);
+            var active = CoreConfig.Instance.ShowDebugInfo.Value && ProjectArrhythmia.State.InGame && !Input.GetKey(CoreConfig.Instance.HideDebugKey.Value) && (!ProjectArrhythmia.State.InEditorPreview || CoreConfig.Instance.ShowDebugInfoInGame.Value);
             infoArea.gameObject.SetActive(active);
 
             if (!active)

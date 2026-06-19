@@ -25,7 +25,7 @@ namespace BetterLegacy.Configs
 
         public override string TabName => "Core";
         public override Color TabColor => new Color(0.18f, 0.4151f, 1f, 1f);
-        public override string TabDesc => "The main systems of PA Legacy.";
+        public override string TabDesc => "The main systems of Project Arrhythmia.";
 
         #region Settings
 
@@ -359,7 +359,15 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<DebugInfo.DisplayAnchor> DebugDisplayAnchor { get; set; }
 
+        /// <summary>
+        /// Key to hold to temporarily hide the debug info.
+        /// </summary>
         public Setting<KeyCode> HideDebugKey { get; set; }
+
+        /// <summary>
+        /// If the Debug Info overlay should display in a level (includes arcade, story and editor preview mode).
+        /// </summary>
+        public Setting<bool> ShowDebugInfoInGame { get; set; }
 
         /// <summary>
         /// If in editor, code ran will have their results be notified.
@@ -486,6 +494,7 @@ namespace BetterLegacy.Configs
             DebugPosition = Bind(this, DEBUGGING, "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
             DebugDisplayAnchor = BindEnum(this, DEBUGGING, "Debug Display Anchor", DebugInfo.DisplayAnchor.Free, "Anchor behavior for the Debug Info menu.");
             HideDebugKey = BindEnum(this, DEBUGGING, "Hide Debug Key", KeyCode.None, "Key to hold to temporarily hide the debug info.");
+            ShowDebugInfoInGame = Bind(this, DEBUGGING, "Show Debug Info In Game", false, "If the Debug Info overlay should display in a level (includes arcade, story and editor preview mode).");
             NotifyREPL = Bind(this, DEBUGGING, "Notify REPL", false, "If in editor, code ran will have their results be notified.");
             ArcadeServerURL = Bind(this, DEBUGGING, "Arcade Server URL", "https://betterlegacy.net/", "The link to the Arcade Server. This is only for debugging purposes and as such is not to be changed unless you are debugging the Arcade server.");
 
