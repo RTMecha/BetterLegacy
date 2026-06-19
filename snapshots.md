@@ -1,13 +1,15 @@
-﻿# snapshot-2026.6.5 - (Story Playtest) [???]
+﻿# snapshot-2026.6.5 - (Story Playtest) [Jun 19, 2026]
 ## Features
 ### Core
 - Added "Debug Display Anchor" setting to Config Manager > Core > Debugging. This anchors the Debug Info overlay to a part of the screen.
-- Added "Hide Debug Key" setting to Config Manager > Core > Debugging.
+- Added "Hide Debug Key" setting to Config Manager > Core > Debugging. When the set key is held, the Debug Info overlay will temporarily be hidden.
+- Added "Show Debug Info In Game" setting to Config Manager > Core > Debugging. With this setting on, the Debug Info overlay will appear in-game or in the preview mode for the editor.
 
 ## Changes
 ### Core
 - Added a shadow backdrop to the Debug Info text. The clicking area has also been restricted to this rather than a big unseen area.
 - The "Create Debug Info" setting (Config Manager > Core > Debugging) now destroys the current Debug Info overlay when the setting is turned off.
+- Changed the Core Config description from saying "PA Legacy" to "Project Arrhythmia".
 
 ### Editor
 - Markers can now be copied & pasted using the Copy and Paste keybind functions. If you want to copy / paste markers, you need to focus your mouse cursor over the marker editor. If you want to copy / paste annotations, instead focus on the preview area.
@@ -19,7 +21,7 @@
 
 -------------------------------------------------------------------
 
-# snapshot-2026.6.4 - (Story Playtest) [June 14, 2026]
+# snapshot-2026.6.4 - (Story Playtest) [Jun 14, 2026]
 ## Fixes
 - Fixed a major issue with the last snapshot where the object editor broke.
 
