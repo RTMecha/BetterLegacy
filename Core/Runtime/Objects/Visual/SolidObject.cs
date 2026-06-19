@@ -620,6 +620,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                         particleSystem.Simulate(particleTime, true, start);
                         start = false;
                     }
+                    // this approach can cause an immense amount of lag but unfortunately this is how the official game handles it.
                 }
                 else
                 {
