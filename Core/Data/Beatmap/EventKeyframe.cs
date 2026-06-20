@@ -514,6 +514,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="isGradient">If the reference object is a gradient.</param>
         public void ConvertToHexColor(bool isGradient)
         {
+            if (random == 1)
+                return;
+
             random = 1;
 
             var startColorSlot = (int)values[0];
