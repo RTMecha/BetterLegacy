@@ -1276,6 +1276,8 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObj, PrefabObjectContext.TIME, false);
                     }
                     RTLevel.Current?.RecalculateObjectStates();
+
+                    RenderPrefabObjectOffset(prefabObject, prefab);
                 }));
         }
 
