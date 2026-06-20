@@ -1,4 +1,9 @@
-﻿# snapshot-2026.6.5 - (Story Playtest) [Jun 19, 2026]
+﻿# ???
+## Fixes
+- Converting color keyframes to use hex color no longer tries to convert if the keyframe already uses hex color.
+- The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
+
+# snapshot-2026.6.5 - (Story Playtest) [Jun 19, 2026]
 ## Features
 ### Core
 - Added "Debug Display Anchor" setting to Config Manager > Core > Debugging. This anchors the Debug Info overlay to a part of the screen.
