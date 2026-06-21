@@ -1,7 +1,21 @@
 ﻿# ???
+## Features
+### Editor
+- Added some command parameters to Example relating to markers and annotations.
+
+## Changes
+### Core
+- Increased the BG camera far clip plane from 1000 to 100000.
+
+### Editor
+- The keyframe selecting keybinds now check if the layer type is not the event layer to switch keyframe, otherwise it'll require the mouse to be over the object keyframe timeline.
+
 ## Fixes
 - Converting color keyframes to use hex color no longer tries to convert if the keyframe already uses hex color.
 - The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
+- Fixed the zoom value of the Capture Area not being saved and loaded.
+
+-------------------------------------------------------------------
 
 # snapshot-2026.6.5 - (Story Playtest) [Jun 19, 2026]
 ## Features
