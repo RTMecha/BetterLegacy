@@ -1046,6 +1046,7 @@ namespace BetterLegacy
     public enum NumberComparison
     {
         Equals,
+        NotEquals,
         LesserEquals,
         GreaterEquals,
         Lesser,

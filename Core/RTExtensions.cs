@@ -1821,6 +1821,7 @@ namespace BetterLegacy.Core
         public static bool Compare(this NumberComparison comparison, int a, int b) => comparison switch
         {
             NumberComparison.Equals => a == b,
+            NumberComparison.NotEquals => a != b,
             NumberComparison.LesserEquals => a <= b,
             NumberComparison.GreaterEquals => a >= b,
             NumberComparison.Lesser => a < b,
@@ -1837,6 +1838,7 @@ namespace BetterLegacy.Core
         public static bool Compare(this NumberComparison comparison, float a, float b) => comparison switch
         {
             NumberComparison.Equals => a == b,
+            NumberComparison.NotEquals => a != b,
             NumberComparison.LesserEquals => a <= b,
             NumberComparison.GreaterEquals => a >= b,
             NumberComparison.Lesser => a < b,
@@ -1853,6 +1855,7 @@ namespace BetterLegacy.Core
         public static bool Compare(this NumberComparison comparison, double a, double b) => comparison switch
         {
             NumberComparison.Equals => a == b,
+            NumberComparison.NotEquals => a != b,
             NumberComparison.LesserEquals => a <= b,
             NumberComparison.GreaterEquals => a >= b,
             NumberComparison.Lesser => a < b,
