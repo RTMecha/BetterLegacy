@@ -2270,6 +2270,7 @@ namespace BetterLegacy.Companion.Data
                 #region Timeline Marker
 
                 new ColorEqualsParameter(),
+                new MarkerHasAnnotationsParameter(),
 
                 #endregion
 
@@ -2333,6 +2334,15 @@ namespace BetterLegacy.Companion.Data
                 #region Timeline Marker
 
                 new SetMarkerColorParameter(),
+
+                new SetMarkerLayerParameter(),
+                new RemoveMarkerLayerParameter(),
+                new ClearMarkerLayersParameter(),
+
+                new MoveMarkerAnnotations(),
+                new ScaleMarkerAnnotations(),
+                new RotateMarkerAnnotations(),
+                new ClearMarkerAnnotations(),
 
                 #endregion
 
@@ -3027,7 +3037,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Gets objects on the current editor layer.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.IsCurrentLayer);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.IsCurrentLayer || x is TimelineMarker timelineMarker && timelineMarker.IsCurrentLayer);
             }
 
             public class SamePrefabGroupParameter : GetSelectableParameter
@@ -3334,6 +3344,25 @@ namespace BetterLegacy.Companion.Data
                     var color = Parser.TryParse(parameters[1], 0);
                     foreach (var selectable in selectables)
                         if (selectable is TimelineMarker timelineMarker && comparison.Compare(timelineMarker.ColorSlot, color))
+                            yield return selectable;
+                }
+            }
+
+            public class MarkerHasAnnotationsParameter : GetSelectableParameter
+            {
+                public override string Name => "has_annotations";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks if a marker has annotations.";
+
+                public override string AddToAutocomplete => "has_annotations true";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var value = Parser.TryParse(parameters[0], true);
+                    foreach (var selectable in selectables)
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker.annotations.IsEmpty() != value)
                             yield return selectable;
                 }
             }
@@ -3857,6 +3886,178 @@ namespace BetterLegacy.Companion.Data
                     {
                         if (selectable is TimelineMarker timelineMarker)
                             timelineMarker.ColorSlot = color;
+                    }
+                }
+            }
+
+            public class SetMarkerLayerParameter : ActionParameter
+            {
+                public override string Name => "set_layer";
+
+                public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Sets the layer of all selected markers. If the layer already exists in a marker, then it is skipped.";
+
+                public override string AddToAutocomplete => "set_layer 0";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var layer = Parser.TryParse(parameters[0], 0);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker && !timelineMarker.Marker.layers.Contains(layer))
+                            timelineMarker.Marker.layers.Add(layer);
+                    }
+                }
+            }
+
+            public class RemoveMarkerLayerParameter : ActionParameter
+            {
+                public override string Name => "remove_layer";
+
+                public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Removes the layer of all selected markers.";
+
+                public override string AddToAutocomplete => "remove_layer 0";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var layer = Parser.TryParse(parameters[0], 0);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                            timelineMarker.Marker.layers.Remove(layer);
+                    }
+                }
+            }
+
+            public class ClearMarkerLayersParameter : ActionParameter
+            {
+                public override string Name => "clear_layers";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Clears the layers of all selected markers.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                            timelineMarker.Marker.layers.Clear();
+                    }
+                }
+            }
+
+            public class MoveMarkerAnnotations : ActionParameter
+            {
+                public override string Name => "move_annotations";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Moves the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "move_annotations 0 0";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                        {
+                            for (int i = 0; i < timelineMarker.Marker.annotations.Count; i++)
+                            {
+                                var annotation = timelineMarker.Marker.annotations[i];
+                                for (int j = 0; j < annotation.points.Count; j++)
+                                    annotation.points[j] += pos;
+                            }
+                        }
+                    }
+                }
+            }
+
+            public class ScaleMarkerAnnotations : ActionParameter
+            {
+                public override string Name => "scale_annotations";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Scales the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "scale_annotations 0 0";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var sca = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                        {
+                            for (int i = 0; i < timelineMarker.Marker.annotations.Count; i++)
+                            {
+                                var annotation = timelineMarker.Marker.annotations[i];
+                                for (int j = 0; j < annotation.points.Count; j++)
+                                    annotation.points[j] = RTMath.Scale(annotation.points[j], sca);
+                            }
+                        }
+                    }
+                }
+            }
+
+            public class RotateMarkerAnnotations : ActionParameter
+            {
+                public override string Name => "rotate_annotations";
+
+                public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Rotates the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "rotate_annotations 0";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var rot = Parser.TryParse(parameters[0], 0f);
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                        {
+                            for (int i = 0; i < timelineMarker.Marker.annotations.Count; i++)
+                            {
+                                var annotation = timelineMarker.Marker.annotations[i];
+                                for (int j = 0; j < annotation.points.Count; j++)
+                                    annotation.points[j] = RTMath.Rotate(annotation.points[j], rot);
+                            }
+                        }
+                    }
+                }
+            }
+
+            public class ClearMarkerAnnotations : ActionParameter
+            {
+                public override string Name => "clear_annotations";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Clears the annotations of all selected markers.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                            timelineMarker.Marker.annotations.Clear();
                     }
                 }
             }

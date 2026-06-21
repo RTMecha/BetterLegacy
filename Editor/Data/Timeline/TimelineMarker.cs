@@ -158,6 +158,11 @@ namespace BetterLegacy.Editor.Data.Timeline
         public Color Color => MarkerEditor.inst.markerColors[Mathf.Clamp(Marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
 
         /// <summary>
+        /// If the timeline marker is on the currently viewed editor layer.
+        /// </summary>
+        public bool IsCurrentLayer => Marker.VisibleOnLayer(EditorTimeline.inst.Layer);
+
+        /// <summary>
         /// If the timeline marker is being dragged.
         /// </summary>
         public bool dragging;
@@ -277,7 +282,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             var markerColor = EditorConfig.Instance.ChangeSelectedMarkerColor.Value && selected ? EditorConfig.Instance.MarkerSelectionColor.Value : Color;
 
-            GameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || Marker.VisibleOnLayer(EditorTimeline.inst.Layer));
+            GameObject.SetActive(EditorConfig.Instance.ShowMarkersOnAllLayers.Value || IsCurrentLayer);
             RenderPosition();
             RenderArea();
             RenderTooltip(markerColor);
