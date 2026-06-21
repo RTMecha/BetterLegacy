@@ -151,6 +151,7 @@ namespace BetterLegacy.Editor.Data
             if (jn["move"] != null)
                 move = jn["move"].AsBool;
             pos = Parser.TryParse(jn["pos"], Vector2.zero);
+            zoom = jn["zoom"].AsFloat;
             rot = jn["rot"].AsFloat;
             if (jn["hide_players"] != null)
                 hidePlayers = jn["hide_players"].AsBool;
@@ -174,6 +175,8 @@ namespace BetterLegacy.Editor.Data
                 jn["move"] = move;
             if (pos.x != 0f || pos.y != 0f)
                 jn["pos"] = pos.ToJSON();
+            if (zoom != 1f)
+                jn["zoom"] = zoom;
             if (rot != 0f)
                 jn["rot"] = rot;
             if (hidePlayers)
