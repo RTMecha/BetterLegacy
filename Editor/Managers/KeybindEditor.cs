@@ -2119,7 +2119,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetFirstKeyframeInType(Keybind keybind)
         {
-            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
+            if (ObjectEditor.inst.Dialog.IsCurrent && (EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events || ObjectEditor.inst.Dialog.Timeline.MouseOver))
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2138,7 +2138,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetLastKeyframeInType(Keybind keybind)
         {
-            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
+            if (ObjectEditor.inst.Dialog.IsCurrent && (EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events || ObjectEditor.inst.Dialog.Timeline.MouseOver))
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2157,7 +2157,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetNextKeyframeInType(Keybind keybind)
         {
-            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
+            if (ObjectEditor.inst.Dialog.IsCurrent && (EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events || ObjectEditor.inst.Dialog.Timeline.MouseOver))
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
@@ -2179,7 +2179,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetPreviousKeyframeInType(Keybind keybind)
         {
-            if (ObjectEditor.inst.Dialog.IsCurrent && ObjectEditor.inst.Dialog.Timeline.MouseOver)
+            if (ObjectEditor.inst.Dialog.IsCurrent && (EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events || ObjectEditor.inst.Dialog.Timeline.MouseOver))
             {
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
