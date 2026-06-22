@@ -67,6 +67,92 @@ namespace BetterLegacy.Core
             #endregion
         };
 
+        public static string[][] valueNames = new string[][]
+        {
+            // Move
+            new string[] { "Position X", "Position Y" },
+            // Zoom
+            new string[] { "Zoom" },
+            // Rotation
+            new string[] { "Rotation" },
+            // Shake ID
+            new string[] { "Shake Intensity", "Direction X", "Direction Y", "Smoothness", "Speed" },
+            // Theme ID
+            new string[] { "Theme ID" },
+            // Chroma
+            new string[] { "Chromatic Aberation Amount" },
+            // Bloom
+            new string[] { "Bloom Amount", "Diffusion", "Threshold", "Anamorphic Ratio", "Color", "Hue", "Saturation", "Value" },
+            // Vignette
+            new string[] { "Intensity", "Smoothness", "Rounded", "Roundness", "Center X", "Center Y", "Color", "Hue", "Saturation", "Value" },
+            // Lens
+            new string[] { "Lens Distort Amount", "Center X", "Center Y", "Intensity X", "Intensity Y", "Scale" },
+            // Grain
+            new string[] { "Intensity Amount", "Size of Grains", "Colored" },
+            // Color Grading
+            new string[] { "Hueshift", "Contrast", "Red", "Green", "Blue", "Global", "Saturation", "Temperature", "Tint" },
+            // Ripples
+            new string[] { "Strength", "Speed", "Distance", "Height", "Width", "Mode" },
+            // Radial Blur
+            new string[] { "Intensity", "Iterations" },
+            // Color Split
+            new string[] { "Offset", "Mode" },
+            // Move Offset
+            new string[] { "Offset X", "Offset Y" },
+            // Gradient
+            new string[] { "Intensity", "Rotation", "Start Color", "End Color", "Mode", "Start Opacity", "Start Hue", "Start Saturation", "Start Value", "End Opacity", "End Hue", "End Saturation", "End Value" },
+            // Double Vision
+            new string[] { "Intensity", "Mode" },
+            // Scan Lines
+            new string[] { "Intensity", "Amount Horizontal", "Speed" },
+            // Blur
+            new string[] { "Intensity", "Iterations" },
+            // Pixelize
+            new string[] { "Amount" },
+            // BG
+            new string[] { "Color", "BG Objects Active", "Hue", "Saturation", "Value" },
+            // Invert
+            new string[] { "Invert Amount" },
+            // Timeline
+            new string[] { "Active", "Position X", "Position Y", "Scale X", "Scale Y", "Rotation", "Color", "Opacity", "Hue", "Saturation", "Value" },
+            // Player
+            new string[] { "Active", "Moveable", "Out of Bounds", "Position X", "Position Y", "Rotation", "Tail Color", "Tail Opacity", "Tail Hue", "Tail Saturation", "Tail Value" },
+            // Follow Player
+            new string[] { "Active", "Move Enabled", "Rotate Enabled", "Sharpness", "Offset", "Limit Left", "Limit Right", "Limit Up", "Limit Down", "Anchor" },
+            // Audio
+            new string[] { "Pitch", "Volume", "Pan Stereo" },
+            // Video Parent
+            new string[] { "Position X", "Position Y", "Position Z", "Scale X", "Scale Y", "Scale Z", "Rotation X", "Rotation Y", "Rotation Z", },
+            // Video
+            new string[] { "Position X", "Position Y", "Position Z", "Scale X", "Scale Y", "Scale Z", "Rotation X", "Rotation Y", "Rotation Z", "Render Type", },
+            // Sharpen
+            new string[] { "Intensity" },
+            // Bars
+            new string[] { "Intensity", "Direction" },
+            // Danger
+            new string[] { "Intensity", "Size", "Color", "Opacity", "Hue", "Saturation", "Value" },
+            // 3D Rotation
+            new string[] { "Rotation X", "Rotation Y" },
+            // Camera Depth
+            new string[] { "Position Z", "Depth", "Global", "Clip Align", "Zoom Multiply", "FOV Align", "FOV Multiply", "FOV", "Position X", "Position Y", "Rotation X", "Rotation Y", "Rotation Z" },
+            // Window Base
+            new string[] { "Force Resolution", "Width", "Height", "Allow Position Events" },
+            // Window Position X
+            new string[] { "Position X" },
+            // Window Position Y
+            new string[] { "Position Y" },
+            // Player Force
+            new string[] { "Force X", "Force Y" },
+            // Mosaic
+            new string[] { "Amount" },
+            // Analog Glitch
+            new string[] { "Enabled", "Color Drift", "Horizontal Shake", "Scan Line Jitter", "Vertical Jump" },
+            // Digital Glitch
+            new string[] { "Intensity" },
+            // Shockwave
+            new string[] { "Intensity", "Ring Amount", "Center X", "Center Y", "Scale X", "Scale Y", "Rotation", "Warp", "Elapsed" },
+        };
+
         /// <summary>
         /// The JSON names of all the events in BetterLegacy.
         /// </summary>

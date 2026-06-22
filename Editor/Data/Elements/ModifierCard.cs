@@ -2790,34 +2790,62 @@ namespace BetterLegacy.Editor.Data.Elements
                 #region Events
 
                 case nameof(ModifierFunctions.eventOffset): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
-                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames), _val =>
+                        {
+                            modifier.SetValue(1, _val.ToString());
+                            modifier.SetValue(2, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+                        DropdownGenerator(modifier, reference, "Value Index", 2, CoreHelper.StringToOptionData(EventLibrary.valueNames[RTMath.Clamp(modifier.GetInt(1, 0), 0, EventLibrary.valueNames.Length - 1)]));
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
+                        DropdownGenerator(modifier, reference, "Operation", 3, CoreHelper.ToOptionData<MathOperation>());
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetVariable): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
-                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames), _val =>
+                        {
+                            modifier.SetValue(1, _val.ToString());
+                            modifier.SetValue(2, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+                        DropdownGenerator(modifier, reference, "Value Index", 2, CoreHelper.StringToOptionData(EventLibrary.valueNames[RTMath.Clamp(modifier.GetInt(1, 0), 0, EventLibrary.valueNames.Length - 1)]));
                         SingleGenerator(modifier, reference, "Multiply Variable", 0, 1f);
+                        DropdownGenerator(modifier, reference, "Operation", 3, CoreHelper.ToOptionData<MathOperation>());
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetMath): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
-                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames), _val =>
+                        {
+                            modifier.SetValue(1, _val.ToString());
+                            modifier.SetValue(2, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+                        DropdownGenerator(modifier, reference, "Value Index", 2, CoreHelper.StringToOptionData(EventLibrary.valueNames[RTMath.Clamp(modifier.GetInt(1, 0), 0, EventLibrary.valueNames.Length - 1)]));
                         StringGenerator(modifier, reference, "Evaluation", 0);
+                        DropdownGenerator(modifier, reference, "Operation", 3, CoreHelper.ToOptionData<MathOperation>());
 
                         break;
                     }
                 case nameof(ModifierFunctions.eventOffsetAnimate): {
-                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames));
-                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(EventLibrary.displayNames), _val =>
+                        {
+                            modifier.SetValue(1, _val.ToString());
+                            modifier.SetValue(2, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+                        DropdownGenerator(modifier, reference, "Value Index", 2, CoreHelper.StringToOptionData(EventLibrary.valueNames[RTMath.Clamp(modifier.GetInt(1, 0), 0, EventLibrary.valueNames.Length - 1)]));
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Time", 3, 1f);
                         EaseGenerator(modifier, reference, 4);
                         BoolGenerator(modifier, reference, "Relative", 5, false);
+                        DropdownGenerator(modifier, reference, "Operation", 6, CoreHelper.ToOptionData<MathOperation>());
 
                         break;
                     }
@@ -2825,8 +2853,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData(EventLibrary.displayNames));
-                        IntegerGenerator(modifier, reference, "To Axis", 4, 0);
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData(EventLibrary.displayNames), _val =>
+                        {
+                            modifier.SetValue(3, _val.ToString());
+                            modifier.SetValue(4, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+                        DropdownGenerator(modifier, reference, "To Axis", 4, CoreHelper.StringToOptionData(EventLibrary.valueNames[RTMath.Clamp(modifier.GetInt(3, 0), 0, EventLibrary.valueNames.Length - 1)]));
 
                         SingleGenerator(modifier, reference, "Delay", 5, 0f);
 
@@ -2837,6 +2871,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Loop", 10, 99999f);
                         BoolGenerator(modifier, reference, "Use Visual", 11, false);
+                        DropdownGenerator(modifier, reference, "Operation", 12, CoreHelper.ToOptionData<MathOperation>());
 
                         break;
                     }
@@ -3263,11 +3298,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             false, // pentagon
                             false, // misc
                             true, // polygon
-                        }, _val =>
+                        },
+                        _val =>
                         {
                             var shapeType = (ShapeType)_val;
                             if (isBG && (shapeType == ShapeType.Text || shapeType == ShapeType.Image) || shapeType == ShapeType.Polygon)
                                 modifier.SetValue(0, "0");
+                            else
+                                modifier.SetValue(0, _val.ToString());
 
                             modifier.SetValue(1, "0");
                             RenderModifier(reference);
@@ -3275,7 +3313,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         });
 
                         var shape = modifier.GetInt(0, 0);
-                        DropdownGenerator(modifier, reference, "Shape Option", 1, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
+                        DropdownGenerator(modifier, reference, "Shape Option", 1, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
                         break;
                     }
