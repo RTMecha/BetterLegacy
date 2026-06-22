@@ -457,8 +457,13 @@ namespace BetterLegacy.Core.Runtime.Events
                             x = next;
 
                         float offset = 0f;
+                        MathOperation operation = MathOperation.Addition;
                         if (offsets.Count > i && offsets[i].Count > j && isLerper)
-                            offset = offsets[i][j];
+                        {
+                            var eventOffset = offsets[i][j];
+                            offset = eventOffset.value;
+                            operation = eventOffset.operation;
+                        }
 
                         if (float.IsNaN(offset) || float.IsInfinity(offset))
                             offset = 0f;
@@ -466,7 +471,8 @@ namespace BetterLegacy.Core.Runtime.Events
                         if (float.IsNaN(x) || float.IsInfinity(x))
                             x = next;
 
-                        events[i][j](x + offset);
+                        RTMath.Operation(ref x, offset, operation);
+                        events[i][j](x);
                     }
                 }
                 else if (!list.IsEmpty())
@@ -500,8 +506,13 @@ namespace BetterLegacy.Core.Runtime.Events
                             x = 1f;
 
                         float offset = 0f;
+                        MathOperation operation = MathOperation.Addition;
                         if (offsets.Count > i && offsets[i].Count > j && isLerper)
-                            offset = offsets[i][j];
+                        {
+                            var eventOffset = offsets[i][j];
+                            offset = eventOffset.value;
+                            operation = eventOffset.operation;
+                        }
 
                         if (float.IsNaN(offset) || float.IsInfinity(offset))
                             offset = 0f;
@@ -509,7 +520,8 @@ namespace BetterLegacy.Core.Runtime.Events
                         if (float.IsNaN(x) || float.IsInfinity(x))
                             x = allEvents[i][allEvents[i].Count - 1].values[j];
 
-                        events[i][j](x + offset + total);
+                        RTMath.Operation(ref x, offset, operation);
+                        events[i][j](x + total);
                     }
                 }
             }
@@ -557,23 +569,33 @@ namespace BetterLegacy.Core.Runtime.Events
                     bool isLerper = IsLerper(i, j);
 
                     float offset = 0f;
+                    MathOperation operation = MathOperation.Addition;
                     if (offsets.Count > i && offsets[i].Count > j && isLerper)
-                        offset = offsets[i][j];
+                    {
+                        var eventOffset = offsets[i][j];
+                        offset = eventOffset.value;
+                        operation = eventOffset.operation;
+                    }
 
                     if (float.IsNaN(offset) || float.IsInfinity(offset))
                         offset = 0f;
 
+                    var value = 0f;
                     var first = events[i][0];
                     if (events[i].Count == 1 || time < first.time)
                     {
-                        eventFunctions[i][j](first.values[j] + offset + total);
+                        value = first.values[j];
+                        RTMath.Operation(ref value, offset, operation);
+                        eventFunctions[i][j](value + total);
                         continue;
                     }
 
                     var last = events[i][events.Count - 1];
                     if (time >= last.time)
                     {
-                        eventFunctions[i][j](last.values[j] + offset + total);
+                        value = last.values[j];
+                        RTMath.Operation(ref value, offset, operation);
+                        eventFunctions[i][j](value + total);
                         continue;
                     }
 
@@ -604,12 +626,13 @@ namespace BetterLegacy.Core.Runtime.Events
                     if (!isLerper)
                         nextValue = 1f;
 
-                    var value = RTMath.Lerp(currentValue, nextValue, Ease.GetEaseFunction(next.curve)(RTMath.InverseLerp(current.time, next.time, time)));
+                    value = RTMath.Lerp(currentValue, nextValue, Ease.GetEaseFunction(next.curve)(RTMath.InverseLerp(current.time, next.time, time)));
 
                     if (float.IsNaN(value))
                         value = nextValue;
 
-                    eventFunctions[i][j](value + offset + total);
+                    RTMath.Operation(ref value, offset, operation);
+                    eventFunctions[i][j](value + total);
                 }
             }
 
@@ -2373,7 +2396,19 @@ namespace BetterLegacy.Core.Runtime.Events
         public void SetOffset(int eventType, int indexValue, float value)
         {
             if (offsets.InRange(eventType) && offsets[eventType].InRange(indexValue))
-                offsets[eventType][indexValue] = value;
+                offsets[eventType][indexValue].value = value;
+        }
+
+        /// <summary>
+        /// Sets an event offset operation.
+        /// </summary>
+        /// <param name="eventType">Event type to offset.</param>
+        /// <param name="indexValue">Event value index to offset.</param>
+        /// <param name="operation">Operation to set to the event when rendering.</param>
+        public void SetOffsetOperation(int eventType, int indexValue, MathOperation operation)
+        {
+            if (offsets.InRange(eventType) && offsets.InRange(indexValue))
+                offsets[eventType][indexValue].operation = operation;
         }
 
         /// <summary>
@@ -2381,12 +2416,12 @@ namespace BetterLegacy.Core.Runtime.Events
         /// </summary>
         public void ResetOffsets() => offsets = CreateOffsets();
 
-        List<List<float>> CreateOffsets()
+        List<List<EventOffset>> CreateOffsets()
         {
-            var list = new List<List<float>>();
+            var list = new List<List<EventOffset>>();
             for (int i = 0; i < events.Length; i++)
             {
-                list.Add(new List<float>());
+                list.Add(new List<EventOffset>());
                 for (int j = 0; j < events[i].Length; j++)
                     list[i].Add(0f);
             }
@@ -2396,7 +2431,43 @@ namespace BetterLegacy.Core.Runtime.Events
         /// <summary>
         /// Offsets that are added to each event. Good for dynamic events in levels.
         /// </summary>
-        public List<List<float>> offsets;
+        public List<List<EventOffset>> offsets;
+
+        /// <summary>
+        /// Represents a value to offset to an event.
+        /// </summary>
+        public class EventOffset
+        {
+            #region Constructors
+
+            public EventOffset() { }
+
+            public EventOffset(float value) => this.value = value;
+
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Value to offset.
+            /// </summary>
+            public float value;
+
+            /// <summary>
+            /// Operation of the offset.
+            /// </summary>
+            public MathOperation operation = MathOperation.Addition;
+
+            #endregion
+
+            #region Operators
+
+            public static implicit operator float(EventOffset eventOffset) => eventOffset.value;
+
+            public static implicit operator EventOffset(float value) => new EventOffset(value);
+
+            #endregion
+        }
 
         #endregion
     }

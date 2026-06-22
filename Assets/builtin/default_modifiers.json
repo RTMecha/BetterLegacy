@@ -2656,35 +2656,35 @@
 
       {
         "type": 1,
-        "commands": [ "eventOffset", "0", "0" ],
+        "commands": [ "eventOffset", "0", "0", "0" ],
         "value": "1",
         "const": "True",
         "compat": "level_control"
       }, // eventOffset
       {
         "type": 1,
-        "commands": [ "eventOffsetVariable", "0", "0" ],
+        "commands": [ "eventOffsetVariable", "0", "0", "0" ],
         "value": "1",
         "const": "True",
         "compat": "level_control"
       }, // eventOffsetVariable
       {
         "type": 1,
-        "commands": [ "eventOffsetMath", "0", "0" ],
+        "commands": [ "eventOffsetMath", "0", "0", "0" ],
         "value": "1",
         "const": "True",
         "compat": "level_control"
       }, // eventOffsetMath
       {
         "type": 1,
-        "commands": [ "eventOffsetAnimate", "0", "0", "1", "0", "False" ],
+        "commands": [ "eventOffsetAnimate", "0", "0", "1", "0", "False", "0" ],
         "value": "1",
         "const": "False",
         "compat": "level_control"
       }, // eventOffsetAnimate
       {
         "type": 1,
-        "commands": [ "eventOffsetCopyAxis", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False" ],
+        "commands": [ "eventOffsetCopyAxis", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False", "0" ],
         "value": "0",
         "const": "True",
         "compat": "obj"

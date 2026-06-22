@@ -8245,14 +8245,24 @@ namespace BetterLegacy.Core.Helpers
 
         public static void eventOffset(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifier.GetFloat(0, 1f, modifierLoop.variables));
+            if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
+                return;
+
+            var eventType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var valueIndex = modifier.GetInt(2, 0, modifierLoop.variables);
+            RTLevel.Current.eventEngine.SetOffset(eventType, valueIndex, modifier.GetFloat(0, 1f, modifierLoop.variables));
+            RTLevel.Current.eventEngine.SetOffsetOperation(eventType, valueIndex, Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, MathOperation.Addition));
         }
 
         public static void eventOffsetVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifierLoop.reference is IModifyable modifyable)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), modifyable.IntVariable * modifier.GetFloat(0, 1f, modifierLoop.variables));
+            if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null || modifierLoop.reference is not IModifyable modifyable)
+                return;
+
+            var eventType = modifier.GetInt(1, 0, modifierLoop.variables);
+            var valueIndex = modifier.GetInt(2, 0, modifierLoop.variables);
+            RTLevel.Current.eventEngine.SetOffset(eventType, valueIndex, modifyable.IntVariable * modifier.GetFloat(0, 1f, modifierLoop.variables));
+            RTLevel.Current.eventEngine.SetOffsetOperation(eventType, valueIndex, Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, MathOperation.Addition));
         }
 
         public static void eventOffsetMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -8261,7 +8271,10 @@ namespace BetterLegacy.Core.Helpers
             {
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, modifierLoop.variables), modifier.GetInt(2, 0, modifierLoop.variables), RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, evaluatable.GetObjectFunctions()));
+                var eventType = modifier.GetInt(1, 0, modifierLoop.variables);
+                var valueIndex = modifier.GetInt(2, 0, modifierLoop.variables);
+                RTLevel.Current.eventEngine.SetOffset(eventType, valueIndex, RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables, evaluatable.GetObjectFunctions()));
+                RTLevel.Current.eventEngine.SetOffsetOperation(eventType, valueIndex, Parser.TryParse(modifier.GetValue(3, modifierLoop.variables), true, MathOperation.Addition));
             }
         }
 
@@ -8277,21 +8290,27 @@ namespace BetterLegacy.Core.Helpers
             var list = RTLevel.Current.eventEngine.offsets;
 
             var eventType = modifier.GetInt(1, 0, modifierLoop.variables);
-            var indexValue = modifier.GetInt(2, 0, modifierLoop.variables);
+            var valueIndex = modifier.GetInt(2, 0, modifierLoop.variables);
+            var operation = Parser.TryParse(modifier.GetValue(6, modifierLoop.variables), true, MathOperation.Addition);
 
-            if (eventType < list.Count && indexValue < list[eventType].Count)
+            if (eventType < list.Count && valueIndex < list[eventType].Count)
             {
-                var value = modifier.GetBool(5, false, modifierLoop.variables) ? list[eventType][indexValue] + modifier.GetFloat(0, 0f, modifierLoop.variables) : modifier.GetFloat(0, 0f, modifierLoop.variables);
+                var value = modifier.GetBool(5, false, modifierLoop.variables) ? list[eventType][valueIndex] + modifier.GetFloat(0, 0f, modifierLoop.variables) : modifier.GetFloat(0, 0f, modifierLoop.variables);
 
                 var animation = new RTAnimation("Event Offset Animation");
                 animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
-                        new AnimationHandler<float>(new List<IKeyframe<float>>
-                        {
-                            new FloatKeyframe(0f, list[eventType][indexValue], Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(3, 1f, modifierLoop.variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
-                        }, x => RTLevel.Current.eventEngine.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
-                    };
+                        new FloatKeyframe(0f, list[eventType][valueIndex], Ease.Linear),
+                        new FloatKeyframe(modifier.GetFloat(3, 1f, modifierLoop.variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    },
+                    x =>
+                    {
+                        RTLevel.Current.eventEngine.SetOffset(eventType, valueIndex, x);
+                        RTLevel.Current.eventEngine.SetOffsetOperation(eventType, valueIndex, operation);
+                    }, interpolateOnComplete: true)
+                };
                 animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
@@ -8313,6 +8332,7 @@ namespace BetterLegacy.Core.Helpers
             var max = modifier.GetFloat(9, 0f, modifierLoop.variables);
             var loop = modifier.GetFloat(10, 0f, modifierLoop.variables);
             var useVisual = modifier.GetBool(11, false, modifierLoop.variables);
+            var operation = Parser.TryParse(modifier.GetValue(12, modifierLoop.variables), true, MathOperation.Addition);
 
             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -8322,6 +8342,7 @@ namespace BetterLegacy.Core.Helpers
             toAxis = Mathf.Clamp(toAxis, 0, RTLevel.Current.eventEngine.offsets[toType].Count - 1);
 
             if (!useVisual && beatmapObject.cachedSequences)
+            {
                 RTLevel.Current.eventEngine.SetOffset(toType, toAxis, fromType switch
                 {
                     0 => Mathf.Clamp((beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
@@ -8329,8 +8350,13 @@ namespace BetterLegacy.Core.Helpers
                     2 => Mathf.Clamp((beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
+                RTLevel.Current.eventEngine.SetOffsetOperation(toType, toAxis, operation);
+            }
             else if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
                 RTLevel.Current.eventEngine.SetOffset(toType, toAxis, Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+                RTLevel.Current.eventEngine.SetOffsetOperation(toType, toAxis, operation);
+            }
         }
 
         public static void vignetteTracksPlayer(Modifier modifier, ModifierLoop modifierLoop)
