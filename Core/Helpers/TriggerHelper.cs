@@ -492,30 +492,28 @@ namespace BetterLegacy.Core.Helpers
             if (timelineKeyframe.isObjectKeyframe)
             {
                 var animatable = timelineKeyframe.animatable;
-                if (animatable is not BeatmapObject beatmapObject)
-                    return;
-
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonElement("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineKeyframe.Time)),
+                    new ButtonElement("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(animatable.StartTime + timelineKeyframe.Time)),
                     new ButtonElement("Set KF to Cursor", () =>
                     {
-                        var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
-                        var selected = RTEventEditor.inst.SelectedKeyframes;
+                        var time = animatable.StartTime - AudioManager.inst.CurrentAudioSource.time;
+                        var selected = animatable.TimelineKeyframes.FindAll(x => x.Selected);
                         for (int i = 0; i < selected.Count; i++)
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                        ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(animatable);
+                        if (animatable is BeatmapObject beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }),
                     new SpacerElement(),
-                    new ButtonElement("Copy", () => ObjectEditor.inst.Dialog.Timeline.CopyKeyframes(beatmapObject)),
-                    new ButtonElement("Paste", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject)),
+                    new ButtonElement("Copy", () => ObjectEditor.inst.Dialog.Timeline.CopyKeyframes(animatable)),
+                    new ButtonElement("Paste", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(animatable)),
                     new ButtonElement("Copy Data", () =>
                     {
                         ObjectEditor.inst.Dialog.Timeline.CopyData(timelineKeyframe.Type, timelineKeyframe.eventKeyframe);
                         EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonElement("Paste Data", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.TimelineKeyframes.Where(x => x.Selected), beatmapObject)),
+                    new ButtonElement("Paste Data", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframeData(timelineKeyframe.Type, animatable.TimelineKeyframes.Where(x => x.Selected), animatable)),
                     new ButtonElement("Delete", RTEditor.inst.Delete),
                     new SpacerElement(),
                     new ButtonElement("Set to Camera", () =>
@@ -526,26 +524,29 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.position.x;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(animatable);
+                                    if (animatable is BeatmapObject beatmapObject)
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 1: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.orthographicSize / 20f;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(animatable);
+                                    if (animatable is BeatmapObject beatmapObject)
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 2: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(animatable);
+                                    if (animatable is BeatmapObject beatmapObject)
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
-                            case 3: {
+                            default: {
                                     EditorManager.inst.DisplayNotification("Cannot apply any camera values to the color keyframe.", 3f, EditorManager.NotificationType.Warning);
                                     break;
                                 }
