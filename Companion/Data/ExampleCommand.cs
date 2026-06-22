@@ -2238,12 +2238,11 @@ namespace BetterLegacy.Companion.Data
 
                 new DefaultSelectablesParameter(),
                 new SelectedParameter(),
-                new UnselectedParameter(),
                 new TimeComparisonParameter(),
                 new IndexComparisonParameter(),
                 new LockedParameter(),
-                new UnlockedParameter(),
                 new NameEqualsParameter(),
+                new NameContainsParameter(),
                 new NameRegexParameter(),
                 new DescriptionRegexParameter(),
                 new ContainsTagParameter(),
@@ -2259,9 +2258,7 @@ namespace BetterLegacy.Companion.Data
                 new LayerComparisonParameter(),
                 new BinComparisonParameter(),
                 new CollapsedParameter(),
-                new UncollapsedParameter(),
                 new HiddenParameter(),
-                new UnhiddenParameter(),
                 new ObjectTypeParameter(),
                 new AutokillTypeParameter(),
 
@@ -2436,6 +2433,13 @@ namespace BetterLegacy.Companion.Data
                 for (int i = 2; i < split.Length; i++)
                 {
                     var s = split[i];
+                    bool not = false;
+                    if (s.StartsWith("!"))
+                    {
+                        not = true;
+                        s = s.TrimStart('!');
+                    }
+
                     if (s == "->")
                     {
                         // convert rest of parameters to action parameters
@@ -2478,7 +2482,7 @@ namespace BetterLegacy.Companion.Data
                         s = split[i];
                         var nextSelectables = GetSelectables(CurrentType);
                         if (parameters.TryFind(x => x.Name == s && (x.RequiredSelectionType == SelectableType.Null || x.RequiredSelectionType == CurrentType), out GetSelectableParameter parameter))
-                            nextSelectables = parameter.GetSelectables(nextSelectables, parameter.GetParameters(split, ref i));
+                            nextSelectables = parameter.GetSelectables(nextSelectables, parameter.GetParameters(split, ref i), not);
                         selectables = selectables.Union(nextSelectables);
                         continue;
                     }
@@ -2494,7 +2498,7 @@ namespace BetterLegacy.Companion.Data
                     {
                         i++;
                         if (i < split.Length && orderByParameters.TryFind(x => x.Name == split[i], out GetSelectableParameter parameter))
-                            selectables = parameter.GetSelectables(selectables, parameter.GetParameters(split, ref i));
+                            selectables = parameter.GetSelectables(selectables, parameter.GetParameters(split, ref i), not);
                         continue;
                     }
 
@@ -2515,7 +2519,7 @@ namespace BetterLegacy.Companion.Data
                             actionParameter.Run(selectables, actionParameter.GetParameters(split, ref i));
                     }
                     else if (parameters.TryFind(x => x.Name == s && (x.RequiredSelectionType == SelectableType.Null || x.RequiredSelectionType == CurrentType), out GetSelectableParameter parameter))
-                        selectables = parameter.GetSelectables(selectables, parameter.GetParameters(split, ref i));
+                        selectables = parameter.GetSelectables(selectables, parameter.GetParameters(split, ref i), not);
                 }
                 if (actionMode) // since we're performing an action on specific objects, we don't select them.
                     return null;
@@ -2770,7 +2774,9 @@ namespace BetterLegacy.Companion.Data
             {
                 public virtual SelectableType RequiredSelectionType => SelectableType.Null;
 
-                public abstract IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters);
+                public abstract IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not);
+
+                public bool NotCheck(bool not, bool value) => not ? !value : value;
             }
 
             public abstract class ActionParameter : ParameterBase
@@ -2813,7 +2819,7 @@ namespace BetterLegacy.Companion.Data
 
                 public Func<ISelectable, TKey> keySelector;
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => Parser.TryParse(parameters[0], true) ? selectables.OrderBy(keySelector) : selectables.OrderByDescending(keySelector);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => Parser.TryParse(parameters[0], true) ? selectables.OrderBy(keySelector) : selectables.OrderByDescending(keySelector);
             }
 
             #region Get
@@ -2830,7 +2836,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "select objects";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => SelectCommand.GetSelectables(Parser.TryParse(parameters[0].ToLower().Remove("_"), true, SelectableType.Null));
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => SelectCommand.GetSelectables(Parser.TryParse(parameters[0].ToLower().Remove("_"), true, SelectableType.Null));
             }
 
             public class SelectedParameter : GetSelectableParameter
@@ -2839,18 +2845,9 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Selects already selected objects.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x.Selected);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => NotCheck(not, x.Selected));
             }
             
-            public class UnselectedParameter : GetSelectableParameter
-            {
-                public override string Name => "unselected";
-
-                public override string Description => "Selects unselected objects.";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => !x.Selected);
-            }
-
             public class TimeComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "time";
@@ -2861,20 +2858,20 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "time equals 0";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var time = Parser.TryParse(parameters[1], 0f);
 
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && comparison.Compare(timelineObject.Time, time))
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, comparison.Compare(timelineObject.Time, time)))
                             yield return selectable;
-                        if (selectable is TimelineKeyframe timelineKeyframe && comparison.Compare(timelineKeyframe.Time, time))
+                        if (selectable is TimelineKeyframe timelineKeyframe && NotCheck(not, comparison.Compare(timelineKeyframe.Time, time)))
                             yield return selectable;
-                        if (selectable is TimelineMarker timelineMarker && comparison.Compare(timelineMarker.Time, time))
+                        if (selectable is TimelineMarker timelineMarker && NotCheck(not, comparison.Compare(timelineMarker.Time, time)))
                             yield return selectable;
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && comparison.Compare(timelineCheckpoint.Time, time))
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && NotCheck(not, comparison.Compare(timelineCheckpoint.Time, time)))
                             yield return selectable;
                     }
                 }
@@ -2890,20 +2887,20 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "index 0";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var index = Parser.TryParse(parameters[1], 0);
 
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && comparison.Compare(timelineObject.Index, index))
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, comparison.Compare(timelineObject.Index, index)))
                             yield return selectable;
-                        if (selectable is TimelineKeyframe timelineKeyframe && comparison.Compare(timelineKeyframe.Index, index))
+                        if (selectable is TimelineKeyframe timelineKeyframe && NotCheck(not, comparison.Compare(timelineKeyframe.Index, index)))
                             yield return selectable;
-                        if (selectable is TimelineMarker timelineMarker && comparison.Compare(timelineMarker.Index, index))
+                        if (selectable is TimelineMarker timelineMarker && NotCheck(not, comparison.Compare(timelineMarker.Index, index)))
                             yield return timelineMarker;
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && comparison.Compare(timelineCheckpoint.Index, index))
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && NotCheck(not, comparison.Compare(timelineCheckpoint.Index, index)))
                             yield return selectable;
                     }
                 }
@@ -2915,36 +2912,18 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Checks if the object is locked.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && timelineObject.Locked)
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, timelineObject.Locked))
                             yield return selectable;
-                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.Locked)
+                        if (selectable is TimelineKeyframe timelineKeyframe && NotCheck(not, timelineKeyframe.Locked))
                             yield return selectable;
                     }
                 }
             }
             
-            public class UnlockedParameter : GetSelectableParameter
-            {
-                public override string Name => "unlocked";
-
-                public override string Description => "Checks if the object is unlocked.";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
-                {
-                    foreach (var selectable in selectables)
-                    {
-                        if (selectable is TimelineObject timelineObject && !timelineObject.Locked)
-                            yield return selectable;
-                        if (selectable is TimelineKeyframe timelineKeyframe && !timelineKeyframe.Locked)
-                            yield return selectable;
-                    }
-                }
-            }
-
             public class NameEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "name";
@@ -2955,12 +2934,34 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "name \"Object Name\"";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var name = parameters[0];
                     foreach (var selectable in selectables)
                     {
-                        if (GetName(selectable) == name)
+                        if (NotCheck(not, GetName(selectable) == name))
+                            yield return selectable;
+                    }
+                }
+            }
+
+            public class NameContainsParameter : GetSelectableParameter
+            {
+                public override string Name => "name_contains";
+
+                public override bool RequireQuotes => true;
+
+                public override string Description => "Checks if an objects name contains a value.";
+
+                public override string AddToAutocomplete => "name_contains \"Word\"";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var name = parameters[0];
+                    foreach (var selectable in selectables)
+                    {
+                        var n = GetName(selectable);
+                        if (NotCheck(not, !string.IsNullOrEmpty(n) && n.Contains(name)))
                             yield return selectable;
                     }
                 }
@@ -2974,14 +2975,14 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Checks an objects name using Regular Expression. Some knowledge of regex is required for this.";
 
-                public override string AddToAutocomplete => "name_regex match";
+                public override string AddToAutocomplete => "name_regex \"match\"";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var name = parameters[0];
                     foreach (var selectable in selectables)
                     {
-                        if (Regex.IsMatch(GetName(selectable), name))
+                        if (NotCheck(not, Regex.IsMatch(GetName(selectable), name)))
                             yield return selectable;
                     }
                 }
@@ -2997,12 +2998,12 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "desc_regex match";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var name = parameters[0];
                     foreach (var selectable in selectables)
                     {
-                        if (Regex.IsMatch(GetDescription(selectable), name))
+                        if (NotCheck(not, Regex.IsMatch(GetDescription(selectable), name)))
                             yield return selectable;
                     }
                 }
@@ -3018,11 +3019,11 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "tag \"Object Group\"";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var tag = parameters[0];
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable) && modifyable.Tags != null && modifyable.Tags.Contains(tag))
+                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable) && modifyable.Tags != null && NotCheck(not, modifyable.Tags.Contains(tag)))
                             yield return selectable;
                 }
             }
@@ -3037,7 +3038,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Gets objects on the current editor layer.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.IsCurrentLayer || x is TimelineMarker timelineMarker && timelineMarker.IsCurrentLayer);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.IsCurrentLayer) || x is TimelineMarker timelineMarker && NotCheck(not, timelineMarker.IsCurrentLayer));
             }
 
             public class SamePrefabGroupParameter : GetSelectableParameter
@@ -3046,7 +3047,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Gets objects with the same prefab instance.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var f = selectables.FirstOrDefault();
                     if (f == null || f is not TimelineObject firstObject || !firstObject.TryGetPrefabable(out IPrefabable main))
@@ -3054,7 +3055,7 @@ namespace BetterLegacy.Companion.Data
 
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetPrefabable(out IPrefabable prefabable) && main.SamePrefabInstance(prefabable))
+                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetPrefabable(out IPrefabable prefabable) && NotCheck(not, main.SamePrefabInstance(prefabable)))
                             yield return selectable;
                     }
                 }
@@ -3070,12 +3071,12 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "editor_group \"Editor Group\"";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var group = parameters[0];
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && timelineObject.Group == group)
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, timelineObject.Group == group))
                             yield return selectable;
                     }
                 }
@@ -3091,11 +3092,11 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "reference_type beatmap_object";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var type = Parser.TryParse(parameters[0].Remove("_"), true, TimelineObject.TimelineReferenceType.Null);
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && timelineObject.TimelineReference == type)
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, timelineObject.TimelineReference == type))
                             yield return selectable;
                 }
             }
@@ -3110,7 +3111,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "layer equals current_layer";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var layer = Parser.TryParse(parameters[1], 0);
@@ -3119,7 +3120,7 @@ namespace BetterLegacy.Companion.Data
                     {
                         if (selectable is TimelineObject timelineObject && comparison.Compare(timelineObject.Layer, layer))
                             yield return selectable;
-                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker && timelineMarker.Marker.layers.Any(x => comparison.Compare(x, layer)))
+                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker && NotCheck(not, timelineMarker.Marker.layers.Any(x => comparison.Compare(x, layer))))
                             yield return selectable;
                     }
                 }
@@ -3135,13 +3136,13 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "bin equals max_bin";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var bin = Parser.TryParse(parameters[1], 0);
 
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && comparison.Compare(timelineObject.Bin, bin))
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, comparison.Compare(timelineObject.Bin, bin)))
                             yield return selectable;
                 }
             }
@@ -3152,16 +3153,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Checks if the object is collapsed.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.Collapse);
-            }
-
-            public class UncollapsedParameter : GetSelectableParameter
-            {
-                public override string Name => "uncollapsed";
-
-                public override string Description => "Checks if the object is uncollapsed.";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && !timelineObject.Collapse);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.Collapse));
             }
 
             public class HiddenParameter : GetSelectableParameter
@@ -3170,16 +3162,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string Description => "Checks if an object is hidden.";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && timelineObject.Hidden);
-            }
-
-            public class UnhiddenParameter : GetSelectableParameter
-            {
-                public override string Name => "unhidden";
-
-                public override string Description => "Checks if an object is not hidden.";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters) => selectables.Where(x => x is TimelineObject timelineObject && !timelineObject.Hidden);
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.Hidden));
             }
 
             public class ObjectTypeParameter : GetSelectableParameter
@@ -3192,11 +3175,11 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "object_type normal";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var objectType = Parser.TryParse(parameters[0].Remove("_"), true, BeatmapObject.ObjectType.Normal);
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().objectType == objectType)
+                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && NotCheck(not, timelineObject.GetData<BeatmapObject>().objectType == objectType))
                             yield return selectable;
                 }
             }
@@ -3211,11 +3194,11 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "autokill_type no_autokill";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var autoKillType = Parser.TryParse(parameters[0].Remove("_"), true, AutoKillType.NoAutokill);
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().autoKillType == autoKillType)
+                        if (selectable is TimelineObject timelineObject && timelineObject.isBeatmapObject && NotCheck(not, timelineObject.GetData<BeatmapObject>().autoKillType == autoKillType))
                             yield return selectable;
                 }
             }
@@ -3234,7 +3217,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "event_type equals 0";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var typeStr = parameters[1];
@@ -3252,7 +3235,7 @@ namespace BetterLegacy.Companion.Data
                         yield break;
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineKeyframe timelineKeyframe && comparison.Compare(timelineKeyframe.Type, type))
+                        if (selectable is TimelineKeyframe timelineKeyframe && NotCheck(not, comparison.Compare(timelineKeyframe.Type, type)))
                             yield return selectable;
                     }
                 }
@@ -3268,13 +3251,13 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "event_coord 0 0";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var type = Parser.TryParse(parameters[0], 0);
                     var index = Parser.TryParse(parameters[1], 0);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.Type == type && timelineKeyframe.Index == index)
+                        if (selectable is TimelineKeyframe timelineKeyframe && NotCheck(not, timelineKeyframe.Type == type && timelineKeyframe.Index == index))
                             yield return selectable;
                     }
                 }
@@ -3290,14 +3273,14 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "event_value 0 equals 10";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var valueIndex = Parser.TryParse(parameters[0], 0);
                     var comparison = Parser.TryParse(parameters[1].Remove("_"), true, NumberComparison.Equals);
                     var value = Parser.TryParse(parameters[2], 0f);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && comparison.Compare(timelineKeyframe.eventKeyframe.GetValue(valueIndex), value))
+                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && NotCheck(not, comparison.Compare(timelineKeyframe.eventKeyframe.GetValue(valueIndex), value)))
                             yield return selectable;
                     }
                 }
@@ -3313,12 +3296,12 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "easing linear";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var easing = Parser.TryParse(parameters[0], true, Easing.Linear);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && timelineKeyframe.eventKeyframe.curve == easing)
+                        if (selectable is TimelineKeyframe timelineKeyframe && timelineKeyframe.eventKeyframe && NotCheck(not, timelineKeyframe.eventKeyframe.curve == easing))
                             yield return selectable;
                     }
                 }
@@ -3338,12 +3321,12 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "color equals 0";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
                     var color = Parser.TryParse(parameters[1], 0);
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineMarker timelineMarker && comparison.Compare(timelineMarker.ColorSlot, color))
+                        if (selectable is TimelineMarker timelineMarker && NotCheck(not, comparison.Compare(timelineMarker.ColorSlot, color)))
                             yield return selectable;
                 }
             }
@@ -3352,17 +3335,12 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "has_annotations";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks if a marker has annotations.";
 
-                public override string AddToAutocomplete => "has_annotations true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var value = Parser.TryParse(parameters[0], true);
                     foreach (var selectable in selectables)
-                        if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker.annotations.IsEmpty() != value)
+                        if (selectable is TimelineMarker timelineMarker && NotCheck(not, timelineMarker.Marker.annotations.IsEmpty()))
                             yield return selectable;
                 }
             }
@@ -3375,18 +3353,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "respawn";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks a checkpoints respawn value.";
 
-                public override string AddToAutocomplete => "respawn true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var respawn = Parser.TryParse(parameters[0], false);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.respawn == respawn)
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && NotCheck(not, timelineCheckpoint.Checkpoint.respawn))
                             yield return selectable;
                     }
                 }
@@ -3396,18 +3369,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "heal";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks a checkpoints heal value.";
 
-                public override string AddToAutocomplete => "heal true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var heal = Parser.TryParse(parameters[0], false);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.heal == heal)
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && NotCheck(not, timelineCheckpoint.Checkpoint.heal))
                             yield return selectable;
                     }
                 }
@@ -3417,18 +3385,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "set_time";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks a checkpoints set time value.";
 
-                public override string AddToAutocomplete => "set_time true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var setTime = Parser.TryParse(parameters[0], false);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.setTime == setTime)
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && NotCheck(not, timelineCheckpoint.Checkpoint.setTime))
                             yield return selectable;
                     }
                 }
@@ -3438,18 +3401,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "reverse";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks a checkpoints reverse value.";
 
-                public override string AddToAutocomplete => "reverse true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var reverse = Parser.TryParse(parameters[0], false);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.reverse == reverse)
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && NotCheck(not, timelineCheckpoint.Checkpoint.reverse))
                             yield return selectable;
                     }
                 }
@@ -3459,18 +3417,13 @@ namespace BetterLegacy.Companion.Data
             {
                 public override string Name => "auto_triggerable";
 
-                public override int ParameterCount => 1;
-
                 public override string Description => "Checks a checkpoints auto triggerable value.";
 
-                public override string AddToAutocomplete => "auto_triggerable true";
-
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
-                    var autoTriggerable = Parser.TryParse(parameters[0], false);
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && timelineCheckpoint.Checkpoint.autoTriggerable == autoTriggerable)
+                        if (selectable is TimelineCheckpoint timelineCheckpoint && timelineCheckpoint.Checkpoint && NotCheck(not, timelineCheckpoint.Checkpoint.autoTriggerable))
                             yield return selectable;
                     }
                 }
@@ -3490,7 +3443,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "metadata artist_name Kaixo";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var type = parameters[0];
                     var value = parameters[1];
@@ -3501,39 +3454,18 @@ namespace BetterLegacy.Companion.Data
                             continue;
 
                         var metadata = levelPanel.Item.metadata;
-                        switch (type)
+                        var accept = NotCheck(not, type switch
                         {
-                            case "arcade_id": {
-                                    if (metadata.arcadeID == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                            case "artist_name": {
-                                    if (metadata.artist.name == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                            case "creator_name": {
-                                    if (metadata.creator.name == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                            case "level_name": {
-                                    if (metadata.beatmap.name == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                            case "song_title": {
-                                    if (metadata.song.title == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                            case "difficulty": {
-                                    if (int.TryParse(value, out int num) ? metadata.song.difficulty == num : metadata.song.Difficulty == value)
-                                        yield return selectable;
-                                    break;
-                                }
-                        }
+                            "arcade_id" => metadata.arcadeID == value,
+                            "artist_name" => metadata.artist.name == value,
+                            "creator_name" => metadata.creator.name == value,
+                            "level_name" => metadata.beatmap.name == value,
+                            "song_title" => metadata.song.title == value,
+                            "difficulty" => int.TryParse(value, out int num) ? metadata.song.difficulty == num : metadata.song.Difficulty == value,
+                            _ => false,
+                        });
+                        if (accept)
+                            yield return selectable;
                     }
                 }
             }
@@ -3552,12 +3484,12 @@ namespace BetterLegacy.Companion.Data
 
                 public override string AddToAutocomplete => "contains_value value";
 
-                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters)
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
                 {
                     var value = parameters[0];
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is ModifierCard modifierCard && modifierCard.Modifier && modifierCard.Modifier.values.Contains(value))
+                        if (selectable is ModifierCard modifierCard && modifierCard.Modifier && NotCheck(not, modifierCard.Modifier.values.Contains(value)))
                             yield return selectable;
                     }
                 }
