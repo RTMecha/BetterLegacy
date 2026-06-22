@@ -1,5 +1,8 @@
 ﻿# ???
 ## Features
+### Core
+- Added an Operation value to eventOffset modifiers.
+
 ### Editor
 - Added some command parameters to Example relating to markers and annotations.
 
@@ -14,6 +17,7 @@
 - Converting color keyframes to use hex color no longer tries to convert if the keyframe already uses hex color.
 - The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
 - Fixed the zoom value of the Capture Area not being saved and loaded.
+- Fixed some buttons on the event keyframe context menu not working.
 
 -------------------------------------------------------------------
 
