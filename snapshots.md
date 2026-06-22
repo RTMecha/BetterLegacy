@@ -3,12 +3,13 @@
 ### Core
 - Added an Operation value to eventOffset modifiers.
 
-### Editor
-- Added some command parameters to Example relating to markers and annotations.
-
 ## Changes
 ### Core
 - Increased the BG camera far clip plane from 1000 to 100000.
+
+### Companion
+- Added some command parameters to Example relating to markers and annotations.
+- Boolean selection commands now allows for a ! (not) with some command parameters being changed to match this. (e.g. select objects !name "P_Trick Arrow" selects all objects that don't have the name "P_Trick Arrow")
 
 ### Editor
 - The keyframe selecting keybinds now check if the layer type is not the event layer to switch keyframe, otherwise it'll require the mouse to be over the object keyframe timeline.
