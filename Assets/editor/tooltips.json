@@ -1438,6 +1438,26 @@
           }, // localVariableExists
 
           {
+            "name": "Object Modifier - getVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getVariable (Action)",
+                "hint": "Gets the objects' variable and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getVariable
+          {
+            "name": "Object Modifier - getVariableOther (Action)",
+            "tooltips": [
+              {
+                "desc": "getVariableOther (Action)",
+                "hint": "Gets another objects' variable and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getVariableOther
+          {
             "name": "Object Modifier - addVariable (Action)",
             "tooltips": [
               {
@@ -1517,6 +1537,26 @@
               }
             ]
           }, // setVariableRandomOther
+          {
+            "name": "Object Modifier - setVariableMath (Action)",
+            "tooltips": [
+              {
+                "desc": "setVariableMath (Action)",
+                "hint": "Sets a calculated value to the object's variable.",
+                "lang": 0
+              }
+            ]
+          }, // setVariableMath
+          {
+            "name": "Object Modifier - setVariableMathOther (Action)",
+            "tooltips": [
+              {
+                "desc": "setVariableMathOther (Action)",
+                "hint": "Sets a calculated value to a group of object's variables.",
+                "lang": 0
+              }
+            ]
+          }, // setVariableMathOther
           {
             "name": "Object Modifier - loadVariable (Action)",
             "tooltips": [
@@ -4116,6 +4156,66 @@
               }
             ]
           }, // setPlayerJumpIntensityAll
+          {
+            "name": "Object Modifier - setPlayerMoveSpeed (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMoveSpeed (Action)",
+                "hint": "Sets the move speed of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMoveSpeed
+          {
+            "name": "Object Modifier - setPlayerMoveSpeedIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMoveSpeedIndex (Action)",
+                "hint": "Sets the move speed of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMoveSpeedIndex
+          {
+            "name": "Object Modifier - setPlayerMoveSpeedAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerMoveSpeedAll (Action)",
+                "hint": "Sets the move speed of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerMoveSpeedAll
+          {
+            "name": "Object Modifier - setPlayerBoostSpeed (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerBoostSpeed (Action)",
+                "hint": "Sets the boost speed of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerBoostSpeed
+          {
+            "name": "Object Modifier - setPlayerBoostSpeedIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerBoostSpeedIndex (Action)",
+                "hint": "Sets the boost speed of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerBoostSpeedIndex
+          {
+            "name": "Object Modifier - setPlayerBoostSpeedAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerBoostSpeedAll (Action)",
+                "hint": "Sets the boost speed of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerBoostSpeedAll
 
           {
             "name": "Object Modifier - setPlayerMask (Action)",
@@ -4437,7 +4537,27 @@
                 "lang": 0
               }
             ]
-          } // setCollisionOther
+          }, // setCollisionOther
+          {
+            "name": "Object Modifier - forceCollision (Action)",
+            "tooltips": [
+              {
+                "desc": "forceCollision (Action)",
+                "hint": "Turns the collision detection on or off regardless of conditions, specifically for objectCollide modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // forceCollision
+          {
+            "name": "Object Modifier - forceCollisionOther (Action)",
+            "tooltips": [
+              {
+                "desc": "forceCollisionOther (Action)",
+                "hint": "Turns the collision detection of a group of objects on or off regardless of conditions, specifically for objectCollide modifiers.",
+                "lang": 0
+              }
+            ]
+          } // forceCollisionOther
         ],
 
         // Enable

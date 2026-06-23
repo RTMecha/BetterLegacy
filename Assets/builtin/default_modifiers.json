@@ -331,6 +331,18 @@
 
       {
         "type": 1,
+        "name": "getVariable",
+        "values": [ "VAR" ],
+        "const": "False"
+      }, // getVariable
+      {
+        "type": 1,
+        "name": "getVariableOther",
+        "values": [ "VAR", "Object Group" ],
+        "const": "False"
+      }, // getVariableOther
+      {
+        "type": 1,
         "commands": [ "addVariable" ],
         "value": "1",
         "const": "False"
@@ -368,6 +380,18 @@
         "const": "False",
         "compat": "level_control"
       }, // setVariableOther
+      {
+        "type": 1,
+        "name": "setVariableMath",
+        "values": [ "1", "5" ],
+        "const": "False"
+      }, // setVariableMath
+      {
+        "type": 1,
+        "name": "setVariableMathOther",
+        "values": [ "1", "5", "Object Group" ],
+        "const": "False"
+      }, // setVariableMathOther
       {
         "type": 1,
         "commands": [ "loadVariable", "save_file", "chapter", "data" ],
@@ -2154,7 +2178,7 @@
         "commands": [ "playerEnableDamage" ],
         "value": "False",
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // playerEnableDamage
       {
         "type": 1,
@@ -2176,7 +2200,7 @@
         "name": "playerEnableJump",
         "values": [ "False" ],
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // playerEnableJump
       {
         "type": 1,
@@ -2198,7 +2222,7 @@
         "name": "playerEnableReversedJump",
         "values": [ "False" ],
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // playerEnableReversedJump
       {
         "type": 1,
@@ -2220,7 +2244,7 @@
         "name": "playerEnableWallJump",
         "values": [ "False" ],
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // playerEnableWallJump
       {
         "type": 1,
@@ -2242,7 +2266,7 @@
         "name": "setPlayerJumpGravity",
         "values": [ "1" ],
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // setPlayerJumpGravity
       {
         "type": 1,
@@ -2264,7 +2288,7 @@
         "name": "setPlayerJumpIntensity",
         "values": [ "1" ],
         "const": "True",
-        "compat": "level_control"
+        "compat": "obj"
       }, // setPlayerJumpIntensity
       {
         "type": 1,
@@ -2280,6 +2304,50 @@
         "const": "True",
         "compat": "level_control"
       }, // setPlayerJumpIntensityAll
+
+      {
+        "type": 1,
+        "name": "setPlayerMoveSpeed",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "obj"
+      }, // setPlayerMoveSpeed
+      {
+        "type": 1,
+        "name": "setPlayerMoveSpeedIndex",
+        "values": [ "0", "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerMoveSpeedIndex
+      {
+        "type": 1,
+        "name": "setPlayerMoveSpeedAll",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerMoveSpeedAll
+
+      {
+        "type": 1,
+        "name": "setPlayerBoostSpeed",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "obj"
+      }, // setPlayerBoostSpeed
+      {
+        "type": 1,
+        "name": "setPlayerBoostSpeedIndex",
+        "values": [ "0", "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerBoostSpeedIndex
+      {
+        "type": 1,
+        "name": "setPlayerBoostSpeedAll",
+        "values": [ "1" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setPlayerBoostSpeedAll
 
       {
         "type": 1,
@@ -2466,26 +2534,40 @@
       }, // bulletCollide
       {
         "type": 0,
-        "commands": [ "objectCollide" ],
-        "value": "Object Group",
+        "name": "objectCollide",
+        "values": [ "Object Group" ],
         "const": "True",
         "compat": "obj"
       }, // objectCollide
 
       {
         "type": 1,
-        "commands": [ "setCollision" ],
-        "value": "False",
+        "name": "setCollision",
+        "values": [ "False" ],
         "const": "True",
         "compat": "obj"
       }, // setCollision
       {
         "type": 1,
-        "commands": [ "setCollisionOther", "Object Group" ],
-        "value": "False",
+        "name": "setCollisionOther",
+        "values": [ "False", "Object Group" ],
         "const": "True",
         "compat": "full_beatmap"
-      } // setCollisionOther
+      }, // setCollisionOther
+      {
+        "type": 1,
+        "name": "forceCollision",
+        "values": [ "True" ],
+        "const": "True",
+        "compat": "obj"
+      }, // forceCollision
+      {
+        "type": 1,
+        "name": "forceCollisionOther",
+        "values": [ "True", "Object Group" ],
+        "const": "True",
+        "compat": "full_beatmap"
+      } // forceCollisionOther
     ],
 
     // Enable

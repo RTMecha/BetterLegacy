@@ -991,24 +991,30 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.playerVelocityYIndex),  ModifierFunctions.playerVelocityYIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerVelocityYAll),  ModifierFunctions.playerVelocityYAll, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierFunctions.playerEnableDamage),  ModifierFunctions.playerEnableDamage, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableDamage),  ModifierFunctions.playerEnableDamage, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableDamageIndex),  ModifierFunctions.playerEnableDamageIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableDamageAll),  ModifierFunctions.playerEnableDamageAll, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.playerEnableJump),  ModifierFunctions.playerEnableJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableJump),  ModifierFunctions.playerEnableJump, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableJumpIndex),  ModifierFunctions.playerEnableJumpIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableJumpAll),  ModifierFunctions.playerEnableJumpAll, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJump),  ModifierFunctions.playerEnableReversedJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJump),  ModifierFunctions.playerEnableReversedJump, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJumpIndex),  ModifierFunctions.playerEnableReversedJumpIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableReversedJumpAll),  ModifierFunctions.playerEnableReversedJumpAll, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.playerEnableWallJump),  ModifierFunctions.playerEnableWallJump, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.playerEnableWallJump),  ModifierFunctions.playerEnableWallJump, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpIndex),  ModifierFunctions.playerEnableWallJumpIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.playerEnableWallJumpAll),  ModifierFunctions.playerEnableWallJumpAll, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravity),  ModifierFunctions.setPlayerJumpGravity, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravity),  ModifierFunctions.setPlayerJumpGravity, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravityIndex),  ModifierFunctions.setPlayerJumpGravityIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpGravityAll),  ModifierFunctions.setPlayerJumpGravityAll, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensity),  ModifierFunctions.setPlayerJumpIntensity, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensity),  ModifierFunctions.setPlayerJumpIntensity, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityIndex),  ModifierFunctions.setPlayerJumpIntensityIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerJumpIntensityAll),  ModifierFunctions.setPlayerJumpIntensityAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMoveSpeed),  ModifierFunctions.setPlayerMoveSpeed, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMoveSpeedIndex),  ModifierFunctions.setPlayerMoveSpeedIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerMoveSpeedAll),  ModifierFunctions.setPlayerMoveSpeedAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerBoostSpeed),  ModifierFunctions.setPlayerBoostSpeed, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerBoostSpeedIndex),  ModifierFunctions.setPlayerBoostSpeedIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setPlayerBoostSpeedAll),  ModifierFunctions.setPlayerBoostSpeedAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerMask),  ModifierFunctions.setPlayerMask, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerMaskIndex),  ModifierFunctions.setPlayerMaskIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPlayerMaskAll),  ModifierFunctions.setPlayerMaskAll, ModifierCompatibility.LevelControlCompatible),
@@ -1105,6 +1111,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.clearLocalVariables),  ModifierFunctions.clearLocalVariables),
             new ModifierAction(nameof(ModifierFunctions.storeLocalVariables),  ModifierFunctions.storeLocalVariables),
 
+            new ModifierAction(nameof(ModifierFunctions.getVariable),  ModifierFunctions.getVariable),
+            new ModifierAction(nameof(ModifierFunctions.getVariableOther),  ModifierFunctions.getVariableOther),
             new ModifierAction(nameof(ModifierFunctions.addVariable),  ModifierFunctions.addVariable),
             new ModifierAction(nameof(ModifierFunctions.addVariableOther),  ModifierFunctions.addVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.subVariable),  ModifierFunctions.subVariable),
@@ -1113,6 +1121,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setVariableOther),  ModifierFunctions.setVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setVariableRandom),  ModifierFunctions.setVariableRandom),
             new ModifierAction(nameof(ModifierFunctions.setVariableRandomOther),  ModifierFunctions.setVariableRandomOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariableMath),  ModifierFunctions.setVariableMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariableMathOther),  ModifierFunctions.setVariableMathOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.animateVariableOther),  ModifierFunctions.animateVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.clampVariable),  ModifierFunctions.clampVariable),
             new ModifierAction(nameof(ModifierFunctions.clampVariableOther),  ModifierFunctions.clampVariableOther, ModifierCompatibility.LevelControlCompatible),
@@ -1355,6 +1365,8 @@ namespace BetterLegacy.Core.Helpers
             // collision
             new ModifierAction(nameof(ModifierFunctions.setCollision),  ModifierFunctions.setCollision, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setCollisionOther),  ModifierFunctions.setCollisionOther, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierFunctions.forceCollision),  ModifierFunctions.forceCollision, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.forceCollisionOther),  ModifierFunctions.forceCollisionOther, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
@@ -2269,6 +2281,7 @@ namespace BetterLegacy.Core.Helpers
             name == nameof(ModifierFunctions.axisLesserEquals) ||
             name == nameof(ModifierFunctions.getAxis) ||
             name == nameof(ModifierFunctions.getAxisMath) ||
+            name == nameof(ModifierFunctions.signalModifier) ||
             name == nameof(ModifierFunctions.activateModifier) ||
             name == nameof(ModifierFunctions.legacyTail) ||
             name == nameof(ModifierFunctions.applyColorGroup) ||
@@ -2276,6 +2289,9 @@ namespace BetterLegacy.Core.Helpers
             name.Contains("Other") ||
             name.Contains("copy") && name != nameof(ModifierFunctions.copyPlayerAxis) ||
             name.Contains("applyAnimation") ||
+            name == nameof(ModifierFunctions.callModifiers) ||
+            name == nameof(ModifierFunctions.callModifiersTrigger) ||
+            name == nameof(ModifierFunctions.addTag) ||
             name == nameof(ModifierFunctions.runAnimation);
 
         public static bool IsEditorModifier(string name) => name == "comment" || name == "region" || name == "endregion";
@@ -3912,6 +3928,20 @@ namespace BetterLegacy.Core.Helpers
         }
 
         // object variable
+        public static void getVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference != null)
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifierLoop.reference.IntVariable.ToString();
+        }
+        
+        public static void getVariableOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable || !GameData.Current.TryFindModifyableWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), out IModifyable modifyable))
+                return;
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifyable.IntVariable.ToString();
+        }
+
         public static void addVariable(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifier.values.Count == 2)
@@ -4056,6 +4086,43 @@ namespace BetterLegacy.Core.Helpers
 
             foreach (var beatmapObject in list)
                 beatmapObject.integerVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
+        }
+
+        public static void setVariableMath(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+
+            var value = (int)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables);
+
+            modifierLoop.reference.IntVariable = RTMath.ReturnOperation(modifierLoop.reference.IntVariable, value, Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, MathOperation.Set));
+        }
+
+        public static void setVariableMathOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IEvaluatable evaluatable)
+                return;
+
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables));
+            if (list.IsEmpty())
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(modifierLoop.variables, numberVariables);
+
+            foreach (var beatmapObject in list)
+            {
+                beatmapObject.SetOtherObjectVariables(numberVariables);
+                var value = (int)RTMath.Parse(modifier.GetValue(0, modifierLoop.variables), RTLevel.Current?.evaluationContext, numberVariables);
+
+                beatmapObject.IntVariable = RTMath.ReturnOperation(beatmapObject.IntVariable, value, Parser.TryParse(modifier.GetValue(1, modifierLoop.variables), true, MathOperation.Set));
+            }
         }
 
         public static void animateVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -7417,6 +7484,80 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (player.RuntimePlayer)
                     player.RuntimePlayer.allowWallJumping = enabled;
+            }
+        }
+
+        public static void setPlayerMoveSpeed(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedIdleSpeed = intensity;
+            });
+        }
+
+        public static void setPlayerMoveSpeedIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(1, 1f, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.modifiedIdleSpeed = intensity;
+        }
+
+        public static void setPlayerMoveSpeedAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedIdleSpeed = intensity;
+            }
+        }
+
+        public static void setPlayerBoostSpeed(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedBoostSpeed = intensity;
+            });
+        }
+
+        public static void setPlayerBoostSpeedIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(1, 1f, modifierLoop.variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.modifiedBoostSpeed = intensity;
+        }
+
+        public static void setPlayerBoostSpeedAll(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var intensity = modifier.GetFloat(0, 1f, modifierLoop.variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.modifiedBoostSpeed = intensity;
             }
         }
 
@@ -13614,6 +13755,33 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void forceCollision(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.collider)
+            {
+                solidObject.forceCollisionEnabled = modifier.GetBool(0, false, modifierLoop.variables);
+                solidObject.UpdateCollider();
+            }
+        }
+        
+        public static void forceCollisionOther(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not IPrefabable prefabable)
+                return;
+
+            var colliderEnabled = modifier.GetBool(0, false, modifierLoop.variables);
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
+
+            foreach (var beatmapObject in list)
+            {
+                if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.collider)
+                {
+                    solidObject.colliderEnabled = colliderEnabled;
+                    solidObject.UpdateCollider();
+                }
+            }
+        }
+
         #endregion
 
         #region Checkpoints
@@ -14804,8 +14972,11 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return false;
 
-            if (runtimeObject.visualObject is SolidObject solidObject)
+            if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+            {
                 solidObject.forceCollisionEnabled = true;
+                solidObject.UpdateCollider();
+            }
 
             if (!beatmapObject.detector)
             {
@@ -14826,10 +14997,13 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                 return false;
 
-            if (runtimeObject.visualObject is SolidObject solidObject)
+            if (runtimeObject.visualObject is SolidObject solidObject && !solidObject.forceCollisionEnabled)
+            {
                 solidObject.forceCollisionEnabled = true;
+                solidObject.UpdateCollider();
+            }
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject && x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
             return !list.IsEmpty() && list.Any(x => x.runtimeObject.visualObject.collider.IsTouching(runtimeObject.visualObject.collider));
         }
 
@@ -16508,6 +16682,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             var current = objects.GetAt(state - 1);
+            if (current == default)
+                return;
             foreach (var obj in current)
                 activeObjects.Add(obj);
         }

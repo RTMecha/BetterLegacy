@@ -1787,6 +1787,40 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
+                case nameof(ModifierFunctions.setPlayerMoveSpeed): {
+                        SingleGenerator(modifier, reference, "Move Speed", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerMoveSpeedIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Move Speed", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerMoveSpeedAll): {
+                        SingleGenerator(modifier, reference, "Move Speed", 0, 1f);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.setPlayerBoostSpeed): {
+                        SingleGenerator(modifier, reference, "Move Speed", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerBoostSpeedIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Move Speed", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setPlayerBoostSpeedAll): {
+                        SingleGenerator(modifier, reference, "Move Speed", 0, 1f);
+
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.setPlayerMask): {
                         DropdownGenerator(modifier, reference, "Comparison", 0, CoreHelper.ToOptionData<UnityEngine.Rendering.CompareFunction>());
                         DropdownGenerator(modifier, reference, "Pass", 1, CoreHelper.ToOptionData<UnityEngine.Rendering.StencilOp>());
@@ -2471,6 +2505,18 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
 
+                case nameof(ModifierFunctions.getVariable): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        break;
+                    }
+                case nameof(ModifierFunctions.getVariableOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.addVariable):
                 case nameof(ModifierFunctions.subVariable):
                 case nameof(ModifierFunctions.setVariable):
@@ -2488,6 +2534,18 @@ namespace BetterLegacy.Editor.Data.Elements
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
 
+                        break;
+                    }
+                case nameof(ModifierFunctions.setVariableMath): {
+                        StringGenerator(modifier, reference, "Value", 0);
+                        DropdownGenerator(modifier, reference, "Operation", 1, CoreHelper.ToOptionData<MathOperation>());
+                        break;
+                    }
+                case nameof(ModifierFunctions.setVariableMathOther): {
+                        var str = StringGenerator(modifier, reference, "Object Group", 2);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        StringGenerator(modifier, reference, "Value", 0);
+                        DropdownGenerator(modifier, reference, "Operation", 1, CoreHelper.ToOptionData<MathOperation>());
                         break;
                     }
                 case nameof(ModifierFunctions.animateVariableOther): {
@@ -4594,6 +4652,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierFunctions.setCollisionOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        BoolGenerator(modifier, reference, "On", 0, false);
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.forceCollision): {
+                        BoolGenerator(modifier, reference, "On", 0, false);
+                        break;
+                    }
+                case nameof(ModifierFunctions.forceCollisionOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
