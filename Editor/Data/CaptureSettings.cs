@@ -151,7 +151,8 @@ namespace BetterLegacy.Editor.Data
             if (jn["move"] != null)
                 move = jn["move"].AsBool;
             pos = Parser.TryParse(jn["pos"], Vector2.zero);
-            zoom = jn["zoom"].AsFloat;
+            if (jn["zoom"] != null)
+                zoom = jn["zoom"].AsFloat;
             rot = jn["rot"].AsFloat;
             if (jn["hide_players"] != null)
                 hidePlayers = jn["hide_players"].AsBool;
