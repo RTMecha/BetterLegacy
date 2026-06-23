@@ -915,6 +915,114 @@ namespace BetterLegacy.Core
             }
         }
 
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static double ReturnOperation(double num, double value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => num * value,
+            MathOperation.Divide => num / value,
+            MathOperation.Modulo => num % value,
+            MathOperation.Set => value,
+            _ => num,
+        };
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static float ReturnOperation(float num, float value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => num * value,
+            MathOperation.Divide => num / value,
+            MathOperation.Modulo => num % value,
+            MathOperation.Set => value,
+            _ => num,
+        };
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static int ReturnOperation(int num, int value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => num * value,
+            MathOperation.Divide => num / value,
+            MathOperation.Modulo => num % value,
+            MathOperation.Set => value,
+            _ => num,
+        };
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static Vector2 ReturnOperation(Vector2 num, Vector2 value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => num * value,
+            MathOperation.Divide => num / value,
+            MathOperation.Modulo => new Vector2(num.x % value.x, num.y % value.y),
+            MathOperation.Set => value,
+            _ => num,
+        };
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static Vector3 ReturnOperation(Vector3 num, Vector3 value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => new Vector3(num.x * value.x, num.y * value.y, num.z * value.z),
+            MathOperation.Divide => new Vector3(num.x / value.x, num.y / value.y, num.z / value.z),
+            MathOperation.Modulo => new Vector3(num.x % value.x, num.y % value.y, num.z % value.z),
+            MathOperation.Set => value,
+            _ => num,
+        };
+
+        /// <summary>
+        /// Performs any specified math operations, such as addition, subtraction, etc.
+        /// </summary>
+        /// <param name="num">Reference number to apply the operation to.</param>
+        /// <param name="value">Value to apply.</param>
+        /// <param name="operation">Math operator to use.</param>
+        /// <returns>Returns the calculated value.</returns>
+        public static Color ReturnOperation(Color num, Color value, MathOperation operation) => operation switch
+        {
+            MathOperation.Addition => num + value,
+            MathOperation.Subtract => num - value,
+            MathOperation.Multiply => num * value,
+            MathOperation.Divide => new Color(value.r == 0f ? num.r : num.r / value.r, value.g == 0f ? num.g : num.g / value.g, value.b == 0f ? num.b : num.b / value.b, value.a == 0f ? num.a : num.a / value.a),
+            MathOperation.Modulo => new Color(num.r % value.r, num.g % value.g, num.b % value.b, num.a % value.a),
+            MathOperation.Set => value,
+            _ => num,
+        };
+
         #endregion
 
         #region Misc
