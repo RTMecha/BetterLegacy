@@ -299,6 +299,14 @@ namespace BetterLegacy.Core.Components.Player
         public float idleSpeed = 20f;
         public float boostSpeed = 85f;
 
+        public float modifiedIdleSpeed = 1f;
+
+        public float modifiedBoostSpeed = 1f;
+
+        public float MoveSpeed => idleSpeed * modifiedIdleSpeed;
+
+        public float BoostSpeed => boostSpeed * modifiedBoostSpeed;
+
         public float SprintSneakSpeed
         {
             get
@@ -1817,7 +1825,7 @@ namespace BetterLegacy.Core.Components.Player
                 {
                     var vector = new Vector2(x, y * jumpBoostMultiplier);
 
-                    rb.velocity = PlayerForce + vector * boostSpeed * pitch * SpeedMultiplier;
+                    rb.velocity = PlayerForce + vector * BoostSpeed * pitch * SpeedMultiplier;
                     return;
                 }
 
@@ -1828,7 +1836,7 @@ namespace BetterLegacy.Core.Components.Player
                     lastMoveHorizontal = x;
 
                 var velocity = rb.velocity;
-                velocity.x = x * idleSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
+                velocity.x = x * MoveSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
                 rb.velocity = velocity;
 
                 return;
@@ -1864,7 +1872,7 @@ namespace BetterLegacy.Core.Components.Player
                     vector = new Vector2(lastMoveHorizontal, lastMoveVertical);
                     vector = vector.normalized;
 
-                    rb.velocity = PlayerForce + vector * boostSpeed * pitch * SpeedMultiplier;
+                    rb.velocity = PlayerForce + vector * BoostSpeed * pitch * SpeedMultiplier;
                     if (stretch && rb.velocity.magnitude > 0f)
                     {
                         float e = 1f + rb.velocity.magnitude * stretchAmount / 20f;
@@ -1877,7 +1885,7 @@ namespace BetterLegacy.Core.Components.Player
                     if (vector.magnitude > 1f)
                         vector = vector.normalized;
 
-                    var velocity = PlayerForce + vector * idleSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
+                    var velocity = PlayerForce + vector * MoveSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
 
                     if (velocity != Vector2.zero || resetVelocity)
                         rb.velocity = velocity;
@@ -4019,7 +4027,7 @@ namespace BetterLegacy.Core.Components.Player
             RaycastHit2D[] all;
             public RaycastHit2D[] All
             {
-                get => all != null ? all : GetAll();
+                get => all ?? GetAll();
                 set => all = value;
             }
 
