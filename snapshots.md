@@ -2,6 +2,10 @@
 ## Features
 ### Core
 - Added an Operation value to eventOffset modifiers.
+- Added setPlayerMoveSpeed and setPlayerBoostSpeed modifiers. No idea why they weren't there already lol.
+- Added getVariable modifiers. This gets the main number variable and passes it to other modifiers.
+- Added setVariableMath modifiers. Works like setVariable modifiers but gives more control over the math and operation.
+- Added forceCollision modifiers. These force the collision detection on regardless of editing state and select object setting. Used for objectCollide modifiers.
 
 ## Changes
 ### Core
