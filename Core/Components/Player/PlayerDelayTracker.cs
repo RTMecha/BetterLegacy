@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Components.Player
@@ -25,7 +26,7 @@ namespace BetterLegacy.Core.Components.Player
             float po = 1f - Mathf.Pow(1f - Mathf.Clamp(positionOffset, 0.001f, 1f), p);
             float so = 1f - Mathf.Pow(1f - Mathf.Clamp(scaleOffset, 0.001f, 1f), p);
             float ro = 1f - Mathf.Pow(1f - Mathf.Clamp(rotationOffset, 0.001f, 1f), p);
-            if (gameObject.name != "Player" && (!gameObject.name.ToLower().Contains("tail") || player.tailMode == 1))
+            if (gameObject.name != "Player" && (!gameObject.name.ToLower().Contains("tail") || player.tailMode == PlayerModel.TailBase.TailMode.DevPlus))
             {
                 transform.position += (target - transform.position) * po;
                 if (rotationParent)
@@ -34,7 +35,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (!scaleParent)
                     return;
 
-                if (gameObject.name.ToLower().Contains("tail") && player.tailMode == 1 && (player.rotateMode == RTPlayer.RotateMode.RotateToDirection || player.rotateMode == RTPlayer.RotateMode.RotateFlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipY))
+                if (gameObject.name.ToLower().Contains("tail") && player.tailMode == PlayerModel.TailBase.TailMode.DevPlus && (player.rotateMode == PlayerRotateMode.RotateToDirection || player.rotateMode == PlayerRotateMode.RotateFlipX || player.rotateMode == PlayerRotateMode.RotateFlipY))
                     transform.localScale = Vector3.Lerp(transform.localScale, leader.parent.localScale, so);
                 else
                     transform.localScale = Vector3.Lerp(transform.localScale, leader.localScale, so);

@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!player)
                 return;
 
-            if (player.rotateMode != RTPlayer.RotateMode.FlipX || lastMove)
+            if (player.rotateMode != PlayerRotateMode.FlipX || lastMove)
                 transform.position += transform.right * speed * 0.1f * AudioManager.inst.pitch * CoreHelper.TimeFrame;
             else
                 transform.position -= transform.right * speed * 0.1f * AudioManager.inst.pitch * CoreHelper.TimeFrame;

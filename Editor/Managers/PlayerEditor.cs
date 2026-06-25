@@ -1651,7 +1651,7 @@ namespace BetterLegacy.Editor.Managers
             RenderDropdown(Dialog.BaseTab.RotateMode.Dropdown, (int)currentModel.basePart.rotateMode,
                 onValueChanged: _val =>
                 {
-                    currentModel.basePart.rotateMode = (PlayerModel.Base.BaseRotateMode)_val;
+                    currentModel.basePart.rotateMode = (PlayerRotateMode)_val;
                     PlayerManager.UpdatePlayerModels();
                 });
 

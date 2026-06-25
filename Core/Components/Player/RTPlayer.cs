@@ -51,7 +51,7 @@ namespace BetterLegacy.Core.Components.Player
         //player-complete/trail/2
         //player-complete/trail/3
 
-        #region Base
+        #region Values
 
         /// <summary>
         /// If multiplayer nametags should display when there are more than one player on-screen.
@@ -166,7 +166,9 @@ namespace BetterLegacy.Core.Components.Player
         public ModifierLoop controlLoop = new ModifierLoop(null, new Dictionary<string, string>());
         public ModifierLoop modelLoop = new ModifierLoop(null, new Dictionary<string, string>());
 
-        #endregion
+        public bool Active { get; set; }
+
+        bool cleared;
 
         #region Game Mode
 
@@ -270,6 +272,26 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
+        #region Tail
+
+        /// <summary>
+        /// How the player tail should update.
+        /// </summary>
+        public static TailUpdateMode UpdateMode { get; set; } = TailUpdateMode.FixedUpdate;
+
+        public bool tailGrows = false;
+        public bool showBoostTail = false;
+        public float tailDistance = 2f;
+        public PlayerModel.TailBase.TailMode tailMode;
+        public enum TailUpdateMode
+        {
+            Update,
+            FixedUpdate,
+            LateUpdate
+        }
+
+        #endregion
+
         #region Velocities
 
         public static bool MultiplyByPitch => GameData.Current && GameData.Current.data && GameData.Current.data.level.multiplyPlayerSpeed;
@@ -330,9 +352,9 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Current rotation method assigned by the player model.
         /// </summary>
-        public RotateMode rotateMode = RotateMode.RotateToDirection;
+        public PlayerRotateMode rotateMode = PlayerRotateMode.RotateToDirection;
 
-        public bool FlippedLeft => (rotateMode == RotateMode.FlipX || rotateMode == RotateMode.RotateFlipX) && lastMovement.x < 0f;
+        public bool FlippedLeft => (rotateMode == PlayerRotateMode.FlipX || rotateMode == PlayerRotateMode.RotateFlipX) && lastMovement.x < 0f;
 
         public Vector2 lastMousePos;
 
@@ -453,45 +475,6 @@ namespace BetterLegacy.Core.Components.Player
             }
         }
 
-        #endregion
-
-        #region Enums
-
-        /// <summary>
-        /// How the player should rotate.
-        /// </summary>
-        public enum RotateMode
-        {
-            /// <summary>
-            /// The regular method of rotation. Rotates the player head to the direction the player is moving in.
-            /// </summary>
-            RotateToDirection,
-            /// <summary>
-            /// Does not rotate.
-            /// </summary>
-            None,
-            /// <summary>
-            /// Mirrors  the player model depending on whether they're moving left or right.
-            /// </summary>
-            FlipX,
-            /// <summary>
-            /// Flips the player model depending on whether they're moving up or down.
-            /// </summary>
-            FlipY,
-            /// <summary>
-            /// Rotates the player like <see cref="RotateMode.RotateToDirection"/>, except rotation is reset when the player is not moving.
-            /// </summary>
-            RotateReset,
-            /// <summary>
-            /// Rotates the player like <see cref="RotateToDirection"/> but also mirrors them like <see cref="FlipX"/>.
-            /// </summary>
-            RotateFlipX,
-            /// <summary>
-            /// Rotates the player like <see cref="RotateToDirection"/> but also flips them like <see cref="FlipY"/>.
-            /// </summary>
-            RotateFlipY
-        }
-
         /// <summary>
         /// Unused. Will move mouse to <see cref="GameMode"/>.
         /// </summary>
@@ -500,29 +483,7 @@ namespace BetterLegacy.Core.Components.Player
             KeyboardController,
             Mouse
         }
-
-        #endregion
-
-        #region Tail
-
-        /// <summary>
-        /// How the player tail should update.
-        /// </summary>
-        public static TailUpdateMode UpdateMode { get; set; } = TailUpdateMode.FixedUpdate;
-
-        public bool tailGrows = false;
-        public bool showBoostTail = false;
-        public float tailDistance = 2f;
-        public int tailMode;
-        public enum TailUpdateMode
-        {
-            Update,
-            FixedUpdate,
-            LateUpdate
-        }
-
-        #endregion
-
+        
         #region States
 
         #region Global
@@ -744,6 +705,8 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
+        #endregion
+
         #region Delegates
 
         public delegate void PlayerHitDelegate(int _health, Vector3 _pos);
@@ -793,6 +756,321 @@ namespace BetterLegacy.Core.Components.Player
         public RTAnimation jumpAnimationCustom;
 
         #endregion
+
+        #endregion
+
+        #endregion
+
+        #region Functions
+        
+        #region Init
+
+        public void Init()
+        {
+            customObjectParent = Creator.NewGameObject("Custom Objects", transform).transform;
+            customObjectParent.transform.localPosition = Vector3.zero;
+
+            animationController = gameObject.AddComponent<AnimationController>();
+            var anim = gameObject.GetComponent<Animator>();
+            //anim.keepAnimatorControllerStateOnDisable = true;
+            anim.enabled = false;
+
+            var rb = transform.Find("Player").gameObject;
+            this.rb = rb.GetComponent<Rigidbody2D>();
+
+            basePart = new RTPlayerObject
+            {
+                Player = this,
+
+                id = "0",
+                parent = transform,
+                gameObject = rb,
+            };
+            playerObjects.Add(basePart);
+
+            var circleCollider = rb.GetComponent<CircleCollider2D>();
+
+            circleCollider.enabled = false;
+
+            var polygonCollider = rb.AddComponent<PolygonCollider2D>();
+            circleCollider2D = circleCollider;
+            polygonCollider2D = polygonCollider;
+
+            if (ProjectArrhythmia.State.InEditor)
+                rb.AddComponent<PlayerSelector>().player = this;
+
+            var mat = LegacyResources.objectMaterial;
+
+            var head = transform.Find("Player/Player").gameObject;
+
+            var headMesh = head.GetComponent<MeshFilter>();
+            var headRenderer = head.GetComponent<MeshRenderer>();
+            headRenderer.material = mat;
+
+            polygonCollider.CreateCollider(headMesh);
+
+            polygonCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
+            polygonCollider.enabled = false;
+            circleCollider.enabled = true;
+
+            circleCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
+            rb.GetComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            DestroyImmediate(rb.GetComponent<OnTriggerEnterPass>());
+
+            var playerCollision = rb.AddComponent<PlayerCollision>();
+            playerCollision.player = this;
+
+            burst = head.transform.Find("burst-explosion").GetComponent<ParticleSystem>();
+            death = head.transform.Find("death-explosion").GetComponent<ParticleSystem>();
+            spawn = head.transform.Find("spawn-implosion").GetComponent<ParticleSystem>();
+
+            var headTrail = Creator.NewGameObject("super-trail", head.transform);
+            headTrail.transform.localPosition = Vector3.zero;
+            headTrail.layer = 8;
+
+            var headTrailRenderer = headTrail.AddComponent<TrailRenderer>();
+            headTrailRenderer.material = LegacyResources.trailMaterial;
+
+            var headParticles = Creator.NewGameObject("super-particles", head.transform);
+            headParticles.transform.localPosition = Vector3.zero;
+            headParticles.layer = 8;
+
+            var headParticleSystem = headParticles.AddComponent<ParticleSystem>();
+            var headParticleSystemRenderer = headParticles.GetComponent<ParticleSystemRenderer>();
+
+            var headParticleSystemMain = headParticleSystem.main;
+            headParticleSystemMain.simulationSpace = ParticleSystemSimulationSpace.World;
+            headParticleSystemMain.playOnAwake = false;
+            headParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
+            headParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
+
+            headParticleSystemRenderer.trailMaterial = mat;
+            headParticleSystemRenderer.material = mat;
+
+            this.head = new RTPlayerObject
+            {
+                Player = this,
+
+                id = "73362742",
+                parent = rb.transform,
+                gameObject = head,
+                meshFilter = headMesh,
+                renderer = headRenderer,
+                trailRenderer = headTrailRenderer,
+                particleSystem = headParticleSystem,
+                particleSystemRenderer = headParticleSystemRenderer,
+            };
+            playerObjects.Add(this.head);
+
+            var spawnPos = rb.transform.localPosition;
+
+            var faceBase = Creator.NewGameObject("face-base", rb.transform);
+            faceBase.transform.localPosition = Vector3.zero;
+
+            var faceParent = Creator.NewGameObject("face-parent", faceBase.transform);
+            faceParent.transform.localPosition = Vector3.zero;
+            faceParent.transform.localRotation = Quaternion.identity;
+
+            face = new RTPlayerObject
+            {
+                id = "6",
+                parent = faceBase.transform,
+                gameObject = faceParent,
+            };
+            playerObjects.Add(face);
+
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, rb.transform)); // base path
+
+            tailParent = transform.Find("trail");
+            tailTracker = Creator.NewGameObject("tail-tracker", rb.transform);
+            tailTracker.transform.localPosition = new Vector3(0f, 0f, 0.1f);
+            tailTracker.transform.localRotation = Quaternion.identity;
+
+            var boost = transform.Find("Player/boost").gameObject;
+            boost.transform.localScale = Vector3.zero;
+            var boostRenderer = boost.GetComponent<MeshRenderer>();
+            boostRenderer.material = mat;
+
+            var boostBase = Creator.NewGameObject("Boost Base", transform.Find("Player"));
+            boostBase.transform.localPosition = Vector3.zero;
+            boostBase.transform.localRotation = Quaternion.identity;
+            boostBase.layer = 8;
+            boost.transform.SetParent(boostBase.transform);
+            boost.transform.localPosition = Vector3.zero;
+            boost.transform.localRotation = Quaternion.identity;
+
+            var boostTrail = Creator.NewGameObject("boost-trail", boost.transform.parent);
+            boostTrail.transform.localPosition = Vector3.zero;
+            boostTrail.layer = 8;
+
+            var boostTrailRenderer = boostTrail.AddComponent<TrailRenderer>();
+            boostTrailRenderer.material = LegacyResources.trailMaterial;
+
+            var boostParticles = Creator.NewGameObject("boost-particles", boost.transform.parent);
+            boostParticles.transform.localPosition = Vector3.zero;
+            boostParticles.transform.localScale = Vector3.one;
+            boostParticles.layer = 8;
+
+            var boostParticleSystem = boostParticles.AddComponent<ParticleSystem>();
+            var boostParticleSystemRenderer = boostParticles.GetComponent<ParticleSystemRenderer>();
+
+            var main = boostParticleSystem.main;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.loop = false;
+            main.playOnAwake = false;
+            boostParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
+            boostParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
+
+            boostParticleSystemRenderer.trailMaterial = mat;
+            boostParticleSystemRenderer.material = mat;
+
+            this.boost = new RTPlayerObject
+            {
+                Player = this,
+
+                id = "1",
+                parent = boostBase.transform,
+                gameObject = boost,
+                meshFilter = boost.GetComponent<MeshFilter>(),
+                renderer = boostRenderer,
+                trailRenderer = boostTrailRenderer,
+                particleSystem = boostParticleSystem,
+                particleSystemRenderer = boostParticleSystemRenderer,
+            };
+            playerObjects.Add(this.boost);
+
+            var boostTail = boostBase.Duplicate(transform.Find("trail"), "Boost Tail");
+            boostTail.layer = 8;
+
+            var child = boostTail.transform.GetChild(0);
+
+            var boostDelayTracker = boostTail.AddComponent<PlayerDelayTracker>();
+            boostDelayTracker.leader = tailTracker.transform;
+            boostDelayTracker.player = this;
+
+            this.boostTail = new RTPlayerObject
+            {
+                Player = this,
+
+                id = "2",
+                parent = boostTail.transform,
+                gameObject = child.gameObject,
+                meshFilter = child.GetComponent<MeshFilter>(),
+                renderer = child.GetComponent<MeshRenderer>(),
+                trailRenderer = boostTail.GetComponentInChildren<TrailRenderer>(),
+                particleSystem = boostTail.GetComponentInChildren<ParticleSystem>(),
+                particleSystemRenderer = boostTail.GetComponentInChildren<ParticleSystemRenderer>(),
+                delayTracker = boostDelayTracker,
+            };
+            playerObjects.Add(this.boostTail);
+
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, boostTail.transform, showBoostTail));
+
+            for (int i = 1; i < 4; i++)
+            {
+                var name = $"Tail {i} Base";
+                var tailBase = Creator.NewGameObject(name, transform.Find("trail"));
+                var tail = tailParent.Find($"{i}");
+                tail.SetParent(tailBase.transform);
+                tailBase.layer = 8;
+
+                var tailRenderer = tail.GetComponent<MeshRenderer>();
+                tailRenderer.material = mat;
+
+                var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
+                playerDelayTracker.player = this;
+                playerDelayTracker.leader = tailTracker.transform;
+
+                var tailTrailRenderer = tail.GetComponent<TrailRenderer>();
+                tailTrailRenderer.material = LegacyResources.trailMaterial;
+
+                var tailParticles = Creator.NewGameObject("tail-particles", tailBase.transform);
+                tailParticles.transform.localPosition = Vector3.zero;
+                tailParticles.layer = 8;
+
+                var tailParticleSystem = tailParticles.AddComponent<ParticleSystem>();
+                var tailParticleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>();
+
+                var tailPSMain = tailParticleSystem.main;
+                tailPSMain.simulationSpace = ParticleSystemSimulationSpace.World;
+                tailPSMain.playOnAwake = false;
+                tailParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
+                tailParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
+
+                tailParticleSystemRenderer.trailMaterial = mat;
+                tailParticleSystemRenderer.material = mat;
+
+                var tailPart = new RTPlayerObject
+                {
+                    Player = this,
+
+                    id = (i + 99).ToString(),
+                    parent = tailBase.transform,
+                    gameObject = tail.gameObject,
+                    meshFilter = tail.GetComponent<MeshFilter>(),
+                    renderer = tailRenderer,
+                    delayTracker = playerDelayTracker,
+                    trailRenderer = tailTrailRenderer,
+                    particleSystem = tailParticleSystem,
+                    particleSystemRenderer = tailParticleSystemRenderer,
+                };
+                tailParts.Add(tailPart);
+                playerObjects.Add(tailPart);
+                tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
+                path.Add(new MovementPath(spawnPos, Quaternion.identity, tailBase.transform));
+            }
+
+            path.Add(new MovementPath(spawnPos, Quaternion.identity, null));
+
+            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}").GetComponent<Text>();
+
+            for (int i = 0; i < 3; i++)
+                healthObjects.Add(new HealthObject(healthText.transform.GetChild(i).gameObject, healthText.transform.GetChild(i).GetComponent<Image>()));
+
+            var barBase = Creator.NewUIObject("Bar Base", healthText.transform);
+
+            var barBaseLE = barBase.AddComponent<LayoutElement>();
+            barBaseIm = barBase.AddComponent<Image>();
+
+            barBaseLE.ignoreLayout = true;
+            barBase.transform.AsRT().anchoredPosition = new Vector2(-100f, 0f);
+            barBase.transform.AsRT().pivot = new Vector2(0f, 0.5f);
+            barBase.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+
+            var bar = Creator.NewUIObject("Bar", barBase.transform);
+
+            barIm = bar.AddComponent<Image>();
+            new RectValues(Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(0f, 0f)).AssignToRectTransform(barIm.rectTransform);
+
+            healthText.gameObject.SetActive(false);
+        }
+
+        void Start()
+        {
+            playerHitEvent += UpdateTail;
+
+            if (playerNeedsUpdating)
+            {
+                playerNeedsUpdating = false;
+                UpdateModel();
+                Spawn();
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (Core)
+                Core.RuntimePlayer = null;
+            Core = null;
+            Model = null;
+        }
+
+        public void InitDialogue() => RTPlayerDialogue.Init(this);
+
+        #endregion
+
+        #region Animations
 
         void InitSpawnAnimation()
         {
@@ -1144,314 +1422,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        #region Init
-
-        public void Init()
-        {
-            customObjectParent = Creator.NewGameObject("Custom Objects", transform).transform;
-            customObjectParent.transform.localPosition = Vector3.zero;
-
-            animationController = gameObject.AddComponent<AnimationController>();
-            var anim = gameObject.GetComponent<Animator>();
-            //anim.keepAnimatorControllerStateOnDisable = true;
-            anim.enabled = false;
-
-            var rb = transform.Find("Player").gameObject;
-            this.rb = rb.GetComponent<Rigidbody2D>();
-
-            basePart = new RTPlayerObject
-            {
-                Player = this,
-
-                id = "0",
-                parent = transform,
-                gameObject = rb,
-            };
-            playerObjects.Add(basePart);
-
-            var circleCollider = rb.GetComponent<CircleCollider2D>();
-
-            circleCollider.enabled = false;
-
-            var polygonCollider = rb.AddComponent<PolygonCollider2D>();
-            circleCollider2D = circleCollider;
-            polygonCollider2D = polygonCollider;
-
-            if (ProjectArrhythmia.State.InEditor)
-                rb.AddComponent<PlayerSelector>().player = this;
-
-            var mat = LegacyResources.objectMaterial;
-
-            var head = transform.Find("Player/Player").gameObject;
-
-            var headMesh = head.GetComponent<MeshFilter>();
-            var headRenderer = head.GetComponent<MeshRenderer>();
-            headRenderer.material = mat;
-
-            polygonCollider.CreateCollider(headMesh);
-
-            polygonCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
-            polygonCollider.enabled = false;
-            circleCollider.enabled = true;
-
-            circleCollider.isTrigger = ProjectArrhythmia.State.InEditor && ZenEditorIncludesSolid;
-            rb.GetComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-            DestroyImmediate(rb.GetComponent<OnTriggerEnterPass>());
-
-            var playerCollision = rb.AddComponent<PlayerCollision>();
-            playerCollision.player = this;
-
-            burst = head.transform.Find("burst-explosion").GetComponent<ParticleSystem>();
-            death = head.transform.Find("death-explosion").GetComponent<ParticleSystem>();
-            spawn = head.transform.Find("spawn-implosion").GetComponent<ParticleSystem>();
-
-            var headTrail = Creator.NewGameObject("super-trail", head.transform);
-            headTrail.transform.localPosition = Vector3.zero;
-            headTrail.layer = 8;
-
-            var headTrailRenderer = headTrail.AddComponent<TrailRenderer>();
-            headTrailRenderer.material = LegacyResources.trailMaterial;
-
-            var headParticles = Creator.NewGameObject("super-particles", head.transform);
-            headParticles.transform.localPosition = Vector3.zero;
-            headParticles.layer = 8;
-
-            var headParticleSystem = headParticles.AddComponent<ParticleSystem>();
-            var headParticleSystemRenderer = headParticles.GetComponent<ParticleSystemRenderer>();
-
-            var headParticleSystemMain = headParticleSystem.main;
-            headParticleSystemMain.simulationSpace = ParticleSystemSimulationSpace.World;
-            headParticleSystemMain.playOnAwake = false;
-            headParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
-            headParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
-
-            headParticleSystemRenderer.trailMaterial = mat;
-            headParticleSystemRenderer.material = mat;
-
-            this.head = new RTPlayerObject
-            {
-                Player = this,
-
-                id = "73362742",
-                parent = rb.transform,
-                gameObject = head,
-                meshFilter = headMesh,
-                renderer = headRenderer,
-                trailRenderer = headTrailRenderer,
-                particleSystem = headParticleSystem,
-                particleSystemRenderer = headParticleSystemRenderer,
-            };
-            playerObjects.Add(this.head);
-
-            var spawnPos = rb.transform.localPosition;
-
-            var faceBase = Creator.NewGameObject("face-base", rb.transform);
-            faceBase.transform.localPosition = Vector3.zero;
-
-            var faceParent = Creator.NewGameObject("face-parent", faceBase.transform);
-            faceParent.transform.localPosition = Vector3.zero;
-            faceParent.transform.localRotation = Quaternion.identity;
-
-            face = new RTPlayerObject
-            {
-                id = "6",
-                parent = faceBase.transform,
-                gameObject = faceParent,
-            };
-            playerObjects.Add(face);
-
-            path.Add(new MovementPath(spawnPos, Quaternion.identity, rb.transform)); // base path
-
-            tailParent = transform.Find("trail");
-            tailTracker = Creator.NewGameObject("tail-tracker", rb.transform);
-            tailTracker.transform.localPosition = new Vector3(0f, 0f, 0.1f);
-            tailTracker.transform.localRotation = Quaternion.identity;
-
-            var boost = transform.Find("Player/boost").gameObject;
-            boost.transform.localScale = Vector3.zero;
-            var boostRenderer = boost.GetComponent<MeshRenderer>();
-            boostRenderer.material = mat;
-
-            var boostBase = Creator.NewGameObject("Boost Base", transform.Find("Player"));
-            boostBase.transform.localPosition = Vector3.zero;
-            boostBase.transform.localRotation = Quaternion.identity;
-            boostBase.layer = 8;
-            boost.transform.SetParent(boostBase.transform);
-            boost.transform.localPosition = Vector3.zero;
-            boost.transform.localRotation = Quaternion.identity;
-
-            var boostTrail = Creator.NewGameObject("boost-trail", boost.transform.parent);
-            boostTrail.transform.localPosition = Vector3.zero;
-            boostTrail.layer = 8;
-
-            var boostTrailRenderer = boostTrail.AddComponent<TrailRenderer>();
-            boostTrailRenderer.material = LegacyResources.trailMaterial;
-
-            var boostParticles = Creator.NewGameObject("boost-particles", boost.transform.parent);
-            boostParticles.transform.localPosition = Vector3.zero;
-            boostParticles.transform.localScale = Vector3.one;
-            boostParticles.layer = 8;
-
-            var boostParticleSystem = boostParticles.AddComponent<ParticleSystem>();
-            var boostParticleSystemRenderer = boostParticles.GetComponent<ParticleSystemRenderer>();
-
-            var main = boostParticleSystem.main;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.loop = false;
-            main.playOnAwake = false;
-            boostParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
-            boostParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
-
-            boostParticleSystemRenderer.trailMaterial = mat;
-            boostParticleSystemRenderer.material = mat;
-
-            this.boost = new RTPlayerObject
-            {
-                Player = this,
-
-                id = "1",
-                parent = boostBase.transform,
-                gameObject = boost,
-                meshFilter = boost.GetComponent<MeshFilter>(),
-                renderer = boostRenderer,
-                trailRenderer = boostTrailRenderer,
-                particleSystem = boostParticleSystem,
-                particleSystemRenderer = boostParticleSystemRenderer,
-            };
-            playerObjects.Add(this.boost);
-
-            var boostTail = boostBase.Duplicate(transform.Find("trail"), "Boost Tail");
-            boostTail.layer = 8;
-
-            var child = boostTail.transform.GetChild(0);
-
-            var boostDelayTracker = boostTail.AddComponent<PlayerDelayTracker>();
-            boostDelayTracker.leader = tailTracker.transform;
-            boostDelayTracker.player = this;
-
-            this.boostTail = new RTPlayerObject
-            {
-                Player = this,
-
-                id = "2",
-                parent = boostTail.transform,
-                gameObject = child.gameObject,
-                meshFilter = child.GetComponent<MeshFilter>(),
-                renderer = child.GetComponent<MeshRenderer>(),
-                trailRenderer = boostTail.GetComponentInChildren<TrailRenderer>(),
-                particleSystem = boostTail.GetComponentInChildren<ParticleSystem>(),
-                particleSystemRenderer = boostTail.GetComponentInChildren<ParticleSystemRenderer>(),
-                delayTracker = boostDelayTracker,
-            };
-            playerObjects.Add(this.boostTail);
-
-            path.Add(new MovementPath(spawnPos, Quaternion.identity, boostTail.transform, showBoostTail));
-
-            for (int i = 1; i < 4; i++)
-            {
-                var name = $"Tail {i} Base";
-                var tailBase = Creator.NewGameObject(name, transform.Find("trail"));
-                var tail = tailParent.Find($"{i}");
-                tail.SetParent(tailBase.transform);
-                tailBase.layer = 8;
-
-                var tailRenderer = tail.GetComponent<MeshRenderer>();
-                tailRenderer.material = mat;
-
-                var playerDelayTracker = tailBase.AddComponent<PlayerDelayTracker>();
-                playerDelayTracker.player = this;
-                playerDelayTracker.leader = tailTracker.transform;
-
-                var tailTrailRenderer = tail.GetComponent<TrailRenderer>();
-                tailTrailRenderer.material = LegacyResources.trailMaterial;
-
-                var tailParticles = Creator.NewGameObject("tail-particles", tailBase.transform);
-                tailParticles.transform.localPosition = Vector3.zero;
-                tailParticles.layer = 8;
-
-                var tailParticleSystem = tailParticles.AddComponent<ParticleSystem>();
-                var tailParticleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>();
-
-                var tailPSMain = tailParticleSystem.main;
-                tailPSMain.simulationSpace = ParticleSystemSimulationSpace.World;
-                tailPSMain.playOnAwake = false;
-                tailParticleSystemRenderer.renderMode = ParticleSystemRenderMode.Mesh;
-                tailParticleSystemRenderer.alignment = ParticleSystemRenderSpace.View;
-
-                tailParticleSystemRenderer.trailMaterial = mat;
-                tailParticleSystemRenderer.material = mat;
-
-                var tailPart = new RTPlayerObject
-                {
-                    Player = this,
-
-                    id = (i + 99).ToString(),
-                    parent = tailBase.transform,
-                    gameObject = tail.gameObject,
-                    meshFilter = tail.GetComponent<MeshFilter>(),
-                    renderer = tailRenderer,
-                    delayTracker = playerDelayTracker,
-                    trailRenderer = tailTrailRenderer,
-                    particleSystem = tailParticleSystem,
-                    particleSystemRenderer = tailParticleSystemRenderer,
-                };
-                tailParts.Add(tailPart);
-                playerObjects.Add(tailPart);
-                tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
-                path.Add(new MovementPath(spawnPos, Quaternion.identity, tailBase.transform));
-            }
-
-            path.Add(new MovementPath(spawnPos, Quaternion.identity, null));
-
-            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}").GetComponent<Text>();
-
-            for (int i = 0; i < 3; i++)
-                healthObjects.Add(new HealthObject(healthText.transform.GetChild(i).gameObject, healthText.transform.GetChild(i).GetComponent<Image>()));
-
-            var barBase = Creator.NewUIObject("Bar Base", healthText.transform);
-
-            var barBaseLE = barBase.AddComponent<LayoutElement>();
-            barBaseIm = barBase.AddComponent<Image>();
-
-            barBaseLE.ignoreLayout = true;
-            barBase.transform.AsRT().anchoredPosition = new Vector2(-100f, 0f);
-            barBase.transform.AsRT().pivot = new Vector2(0f, 0.5f);
-            barBase.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
-
-            var bar = Creator.NewUIObject("Bar", barBase.transform);
-
-            barIm = bar.AddComponent<Image>();
-            new RectValues(Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(0f, 0f)).AssignToRectTransform(barIm.rectTransform);
-
-            healthText.gameObject.SetActive(false);
-        }
-
-        void Start()
-        {
-            playerHitEvent += UpdateTail;
-
-            if (playerNeedsUpdating)
-            {
-                playerNeedsUpdating = false;
-                UpdateModel();
-                Spawn();
-            }
-        }
-
-        void OnDestroy()
-        {
-            if (Core)
-                Core.RuntimePlayer = null;
-            Core = null;
-            Model = null;
-        }
-
-        public void InitDialogue() => RTPlayerDialogue.Init(this);
-
-        #endregion
-
-        #region Update Methods
+        #region Tick
 
         void Update()
         {
@@ -1541,7 +1512,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (FlippedLeft)
                 vector.x = -vector.x;
-            if ((rotateMode == RotateMode.FlipY || rotateMode == RotateMode.RotateFlipY) && lastMovement.y < 0f)
+            if ((rotateMode == PlayerRotateMode.FlipY || rotateMode == PlayerRotateMode.RotateFlipY) && lastMovement.y < 0f)
                 vector.y = -vector.y;
 
             face.gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
@@ -1622,7 +1593,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             path[0].pos = rb.transform.position;
             path[0].rot = rb.transform.rotation;
-            if (tailMode == 1 || ProjectArrhythmia.State.Paused)
+            if (tailMode == PlayerModel.TailBase.TailMode.DevPlus || ProjectArrhythmia.State.Paused)
                 return;
 
             for (int i = 1; i < path.Count; i++)
@@ -1642,7 +1613,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTailTransform()
         {
-            if (tailMode == 1 || ProjectArrhythmia.State.Paused)
+            if (tailMode == PlayerModel.TailBase.TailMode.DevPlus || ProjectArrhythmia.State.Paused)
                 return;
 
             var tailBaseTime = Model.tailBase.time;
@@ -1669,7 +1640,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateTailDev()
         {
-            if (tailMode != 1 || ProjectArrhythmia.State.Paused)
+            if (tailMode != PlayerModel.TailBase.TailMode.DevPlus || ProjectArrhythmia.State.Paused)
                 return;
 
             int num = 1;
@@ -1892,14 +1863,14 @@ namespace BetterLegacy.Core.Components.Player
 
                     if (stretch && rb.velocity.magnitude > 0f)
                     {
-                        if (rotateMode != RotateMode.None && rotateMode != RotateMode.FlipX && rotateMode != RotateMode.RotateFlipX)
+                        if (rotateMode != PlayerRotateMode.None && rotateMode != PlayerRotateMode.FlipX && rotateMode != PlayerRotateMode.RotateFlipX)
                         {
                             float e = 1f + rb.velocity.magnitude * stretchAmount / 20f;
                             player.transform.localScale = new Vector3(1f * e + stretchVector.x, 1f / e + stretchVector.y, 1f);
                         }
 
                         // I really need to figure out how to get stretching to work with non-RotateMode.RotateToDirection. One solution is to setup an additional parent that can be used to stretch, but not sure about doing that atm.
-                        if (rotateMode == RotateMode.None || rotateMode == RotateMode.FlipX || rotateMode == RotateMode.FlipY)
+                        if (rotateMode == PlayerRotateMode.None || rotateMode == PlayerRotateMode.FlipX || rotateMode == PlayerRotateMode.FlipY)
                         {
                             float e = 1f + rb.velocity.magnitude * stretchAmount / 20f;
 
@@ -1916,16 +1887,16 @@ namespace BetterLegacy.Core.Components.Player
 
                             switch (rotateMode)
                             {
-                                case RotateMode.RotateFlipX:
-                                case RotateMode.FlipX: {
+                                case PlayerRotateMode.RotateFlipX:
+                                case PlayerRotateMode.FlipX: {
                                         if (lastMovement.x > 0f)
                                             player.transform.localScale = new Vector3(xt, yt, 1f);
                                         if (lastMovement.x < 0f)
                                             player.transform.localScale = new Vector3(-xt, yt, 1f);
                                         break;
                                     }
-                                case RotateMode.RotateFlipY:
-                                case RotateMode.FlipY: {
+                                case PlayerRotateMode.RotateFlipY:
+                                case PlayerRotateMode.FlipY: {
                                         if (lastMovement.y > 0f)
                                             player.transform.localScale = new Vector3(xt, yt, 1f);
                                         if (lastMovement.y < 0f)
@@ -1947,16 +1918,16 @@ namespace BetterLegacy.Core.Components.Player
 
                         switch (rotateMode)
                         {
-                            case RotateMode.RotateFlipX:
-                            case RotateMode.FlipX: {
+                            case PlayerRotateMode.RotateFlipX:
+                            case PlayerRotateMode.FlipX: {
                                     if (lastMovement.x > 0f)
                                         player.transform.localScale = new Vector3(xt, yt, 1f);
                                     if (lastMovement.x < 0f)
                                         player.transform.localScale = new Vector3(-xt, yt, 1f);
                                     break;
                                 }
-                            case RotateMode.RotateFlipY:
-                            case RotateMode.FlipY: {
+                            case PlayerRotateMode.RotateFlipY:
+                            case PlayerRotateMode.FlipY: {
                                     if (lastMovement.y > 0f)
                                         player.transform.localScale = new Vector3(xt, yt, 1f);
                                     if (lastMovement.y < 0f)
@@ -1988,21 +1959,21 @@ namespace BetterLegacy.Core.Components.Player
                 var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
                 switch (rotateMode)
                 {
-                    case RotateMode.RotateToDirection: {
+                    case PlayerRotateMode.RotateToDirection: {
                             player.transform.rotation = c;
 
                             face.parent.localRotation = Quaternion.identity;
                             
                             break;
                         }
-                    case RotateMode.None: {
+                    case PlayerRotateMode.None: {
                             player.transform.rotation = Quaternion.identity;
 
                             face.parent.rotation = c;
 
                             break;
                         }
-                    case RotateMode.FlipX: {
+                    case PlayerRotateMode.FlipX: {
                             var vectorRotation = c.eulerAngles;
                             if (FlippedLeft)
                                 vectorRotation.z += 180f;
@@ -2022,7 +1993,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.FlipY: {
+                    case PlayerRotateMode.FlipY: {
                             var vectorRotation = c.eulerAngles;
                             if (lastMovement.y < 0f)
                                 vectorRotation.z += 90f;
@@ -2042,7 +2013,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateReset: {
+                    case PlayerRotateMode.RotateReset: {
                             if (!moved)
                             {
                                 animatingRotateReset = false;
@@ -2105,7 +2076,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateFlipX: {
+                    case PlayerRotateMode.RotateFlipX: {
                             var vectorRotation = c.eulerAngles;
                             if (FlippedLeft)
                                 vectorRotation.z += 180f;
@@ -2125,7 +2096,7 @@ namespace BetterLegacy.Core.Components.Player
 
                             break;
                         }
-                    case RotateMode.RotateFlipY: {
+                    case PlayerRotateMode.RotateFlipY: {
                             var vectorRotation = c.eulerAngles;
                             if (lastMovement.y < 0f)
                                 vectorRotation.z += 90f;
@@ -2150,7 +2121,7 @@ namespace BetterLegacy.Core.Components.Player
 
             var posCalc = (player.transform.position - lastPos);
 
-            if (!JumpMode && (rotateMode == RotateMode.RotateToDirection || rotateMode == RotateMode.RotateReset || rotateMode == RotateMode.RotateFlipX || rotateMode == RotateMode.RotateFlipY))
+            if (!JumpMode && (rotateMode == PlayerRotateMode.RotateToDirection || rotateMode == PlayerRotateMode.RotateReset || rotateMode == PlayerRotateMode.RotateFlipX || rotateMode == PlayerRotateMode.RotateFlipY))
             {
                 if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
                     lastMovement = posCalc;
@@ -2419,9 +2390,6 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Actions
 
-        public bool Active { get; set; }
-
-        bool cleared;
         public void Clear()
         {
             if (cleared)
@@ -2822,7 +2790,7 @@ namespace BetterLegacy.Core.Components.Player
             pulse.transform.localScale = new Vector3(currentModel.bulletPart.startScale.x, currentModel.bulletPart.startScale.y, 1f);
 
             var vec = new Vector3(currentModel.bulletPart.origin.x, currentModel.bulletPart.origin.y, 0f);
-            if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
+            if (rotateMode == PlayerRotateMode.FlipX && lastMovement.x < 0f)
                 vec.x = -vec.x;
 
             pulse.transform.position = player.transform.position + vec;
@@ -2953,19 +2921,19 @@ namespace BetterLegacy.Core.Components.Player
 
         public void PlaySpawnParticles()
         {
-            CoreHelper.Log($"Spawn particles");
+            //CoreHelper.Log($"Spawn particles");
             spawn.Play();
         }
 
         public void PlayDeathParticles()
         {
-            CoreHelper.Log($"Death particles");
+            //CoreHelper.Log($"Death particles");
             death.Play();
         }
 
         public void PlayHitParticles()
         {
-            CoreHelper.Log($"Hit particles");
+            //CoreHelper.Log($"Hit particles");
             burst.Play();
         }
 
@@ -3256,7 +3224,7 @@ namespace BetterLegacy.Core.Components.Player
             var control = Core?.GetControl() ?? currentModel.ToPlayerControl();
 
             tailDistance = currentModel.tailBase.distance;
-            tailMode = (int)currentModel.tailBase.mode;
+            tailMode = currentModel.tailBase.mode;
             tailGrows = currentModel.tailBase.grows;
 
             showBoostTail = currentModel.boostTailPart.active;
@@ -3271,7 +3239,7 @@ namespace BetterLegacy.Core.Components.Player
             stretchAmount = currentModel.stretchPart.amount;
             stretchEasing = currentModel.stretchPart.easing;
 
-            rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
+            rotateMode = currentModel.basePart.rotateMode;
 
             #endregion
 
@@ -3984,6 +3952,8 @@ namespace BetterLegacy.Core.Components.Player
                     _ => tailParts[reference.parent - 4].parent,
                 };
         }
+
+        #endregion
 
         #endregion
 

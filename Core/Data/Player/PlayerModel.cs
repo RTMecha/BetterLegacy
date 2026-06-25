@@ -640,7 +640,7 @@ namespace BetterLegacy.Core.Data.Player
 
             public float rotationSpeed = 0.2f;
 
-            public BaseRotateMode rotateMode = BaseRotateMode.RotateToDirection;
+            public PlayerRotateMode rotateMode = PlayerRotateMode.RotateToDirection;
 
             public bool collisionAccurate = false;
 
@@ -649,17 +649,6 @@ namespace BetterLegacy.Core.Data.Player
             public float sprintSpeed = 1.3f;
 
             public float sneakSpeed = 0.1f;
-
-            public enum BaseRotateMode
-            {
-                RotateToDirection,
-                None,
-                FlipX,
-                FlipY,
-                RotateReset,
-                RotateFlipX,
-                RotateFlipY
-            }
 
             public PAAnimation boostAnimation;
             public PAAnimation hitAnimation;
@@ -721,7 +710,7 @@ namespace BetterLegacy.Core.Data.Player
                 if (jn["hit_cooldown"] != null)
                     hitCooldown = jn["hit_cooldown"].AsFloat;
                 if (jn["rotate_mode"] != null)
-                    rotateMode = (BaseRotateMode)jn["rotate_mode"].AsInt;
+                    rotateMode = (PlayerRotateMode)jn["rotate_mode"].AsInt;
                 if (jn["rotate_ct"] != null)
                     rotationCurveType = (Easing)jn["rotate_ct"].AsInt;
                 if (jn["rotate_s"] != null)
@@ -777,7 +766,7 @@ namespace BetterLegacy.Core.Data.Player
                     jn["boost_max_time"] = maxBoostTime;
                 if (hitCooldown != 2.5f)
                     jn["hit_cooldown"] = hitCooldown;
-                if (rotateMode != BaseRotateMode.RotateToDirection)
+                if (rotateMode != PlayerRotateMode.RotateToDirection)
                     jn["rotate_mode"] = (int)rotateMode;
                 if (rotationCurveType != Easing.OutCirc)
                     jn["rotate_ct"] = (int)rotationCurveType;

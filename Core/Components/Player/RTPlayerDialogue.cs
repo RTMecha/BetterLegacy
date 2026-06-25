@@ -37,7 +37,7 @@ namespace BetterLegacy.Core.Components.Player
         public static void Init(RTPlayer runtimePlayer)
         {
             if (runtimePlayer.dialogue)
-                CoreHelper.Delete(runtimePlayer.dialogue);
+                CoreHelper.Delete(runtimePlayer.dialogue.gameObject);
 
             var canvas = UIManager.GenerateUICanvas("Dialogue Canvas", runtimePlayer.gameObject.transform);
             canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
@@ -185,7 +185,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Sets the current dialogue box style.

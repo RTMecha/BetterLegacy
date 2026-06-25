@@ -2497,6 +2497,41 @@ namespace BetterLegacy
 
     #region Misc
 
+    /// <summary>
+    /// How the player should rotate.
+    /// </summary>
+    public enum PlayerRotateMode
+    {
+        /// <summary>
+        /// The regular method of rotation. Rotates the player head to the direction the player is moving in.
+        /// </summary>
+        RotateToDirection,
+        /// <summary>
+        /// Does not rotate.
+        /// </summary>
+        None,
+        /// <summary>
+        /// Mirrors  the player model depending on whether they're moving left or right.
+        /// </summary>
+        FlipX,
+        /// <summary>
+        /// Flips the player model depending on whether they're moving up or down.
+        /// </summary>
+        FlipY,
+        /// <summary>
+        /// Rotates the player like <see cref="PlayerRotateMode.RotateToDirection"/>, except rotation is reset when the player is not moving.
+        /// </summary>
+        RotateReset,
+        /// <summary>
+        /// Rotates the player like <see cref="RotateToDirection"/> but also mirrors them like <see cref="FlipX"/>.
+        /// </summary>
+        RotateFlipX,
+        /// <summary>
+        /// Rotates the player like <see cref="RotateToDirection"/> but also flips them like <see cref="FlipY"/>.
+        /// </summary>
+        RotateFlipY
+    }
+
     public enum Direction
     {
         Horizontal,
