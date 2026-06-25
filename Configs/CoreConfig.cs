@@ -399,7 +399,7 @@ namespace BetterLegacy.Configs
             Resolution = Bind(this, SETTINGS, "Resolution", ResolutionType.p720, "The size of the game window in pixels.");
             VSync = Bind(this, SETTINGS, "VSync", true, "If FPS matches your monitors refresh rate.");
             FPSLimit = Bind(this, SETTINGS, "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
-            MasterVol = Bind(this, SETTINGS, "Volume Master", 8, "Total volume.", 0, 9);
+            MasterVol = Bind(this, SETTINGS, "Volume Master", 5, "Total volume.", 0, 9);
             MusicVol = Bind(this, SETTINGS, "Volume Music", 9, "Music volume.", 0, 9);
             SFXVol = Bind(this, SETTINGS, "Volume SFX", 9, "SFX volume.", 0, 9);
             Language = BindEnum(this, SETTINGS, "Language", BetterLegacy.Language.English, "The language the game is in.");
