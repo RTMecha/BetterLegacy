@@ -10,6 +10,7 @@
 ## Changes
 ### Core
 - Increased the BG camera far clip plane from 1000 to 100000.
+- Changed the default Master Volume setting to 5 instead of 8.
 
 ### Companion
 - Added some command parameters to Example relating to markers and annotations.
