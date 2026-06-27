@@ -4,12 +4,14 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Editor.Data;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents an annotation that displays in the editor. Useful for storyboarding and visual notes.
     /// </summary>
-    public class Annotation : PAObject<Annotation>
+    public class Annotation : PAObject<Annotation>, ISelectable
     {
         #region Constructors
 
@@ -62,7 +64,17 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        /// <summary>
+        /// If the annotation is selected.
+        /// </summary>
         public bool selected;
+
+        public bool Selected { get => selected; set => selected = value; }
+
+        /// <summary>
+        /// Amount to multiply / divide the thickness when reading from / writing to a VG format file.
+        /// </summary>
+        public static float thicknessVGMultiply = 0.1f;
 
         #endregion
 
@@ -82,6 +94,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             fixedCamera = orig.fixedCamera;
         }
 
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            id = jn["id"];
+            color = jn["c"].AsInt;
+            thickness = jn["t"].AsFloat * thicknessVGMultiply;
+            for (int i = 0; i < jn["p"].Count; i++)
+                points.Add(Parser.TryParse(jn["p"][i], Vector2.zero));
+        }
+
         public override void ReadJSON(JSONNode jn)
         {
             color = jn["c"].AsInt;
@@ -99,6 +120,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
             fixedCamera = jn["f"].AsBool;
             hidden = jn["h"].AsBool;
+        }
+
+        public override JSONNode ToJSONVG()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["id"] = id ?? GetStringID();
+            jn["c"] = color;
+            jn["t"] = thickness / thicknessVGMultiply;
+            for (int i = 0; i < points.Count; i++)
+                jn["p"][i] = points[i].ToJSON();
+
+            return jn;
         }
 
         public override JSONNode ToJSON()
