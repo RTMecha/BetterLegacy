@@ -52,6 +52,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < jn["markers"].Count; i++)
                 markers.Add(Marker.ParseVG(jn["markers"][i], version));
 
+            for (int i = 0; i < jn["annotations"].Count; i++)
+            {
+                var annotationJN = jn["annotations"][i];
+                var markerID = annotationJN["m"];
+                if (markers.TryFind(x => x.id == markerID, out Marker marker))
+                    marker.annotations.Add(Annotation.ParseVG(annotationJN, version));
+            }
+
             checkpoints.Clear();
             for (int i = 0; i < jn["checkpoints"].Count; i++)
                 checkpoints.Add(Checkpoint.ParseVG(jn["checkpoints"][i], version));

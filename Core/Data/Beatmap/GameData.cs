@@ -923,8 +923,26 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["themes"] = new JSONArray();
 
             if (!data.markers.IsEmpty())
+            {
+                var annotationIndex = 0;
                 for (int i = 0; i < data.markers.Count; i++)
-                    jn["markers"][i] = data.markers[i].ToJSONVG();
+                {
+                    var marker = data.markers[i];
+                    var markerID = marker.id;
+                    jn["markers"][i] = marker.ToJSONVG();
+                    if (string.IsNullOrEmpty(markerID))
+                    {
+                        markerID = GetStringID();
+                        jn["markers"][i]["ID"] = markerID;
+                    }
+                    for (int j = 0; j < marker.annotations.Count; j++)
+                    {
+                        jn["annotations"][annotationIndex] = marker.annotations[j].ToJSONVG();
+                        jn["annotations"][annotationIndex]["m"] = markerID;
+                        annotationIndex++;
+                    }
+                }
+            }
             else
                 jn["markers"] = new JSONArray();
 

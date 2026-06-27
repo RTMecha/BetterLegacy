@@ -98,6 +98,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             //id = LSText.randomString(16); // don't need to read the id
+            id = jn["ID"];
             name = jn["n"] ?? string.Empty;
             desc = jn["d"] ?? string.Empty;
             color = jn["c"].AsInt;
@@ -125,8 +126,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = Parser.NewJSONObject();
 
-            jn["ID"] = LSText.randomString(16);
-
+            jn["ID"] = id ?? LSText.randomString(16);
             jn["n"] = name ?? string.Empty;
             jn["d"] = desc ?? string.Empty;
             jn["c"] = color;
