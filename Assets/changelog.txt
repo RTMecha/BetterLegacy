@@ -1,20 +1,30 @@
-# snapshot-2026.6.5 - (Story Playtest) [Jun 19, 2026]
+# snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
 ## Features
 ### Core
-- Added "Debug Display Anchor" setting to Config Manager > Core > Debugging. This anchors the Debug Info overlay to a part of the screen.
-- Added "Hide Debug Key" setting to Config Manager > Core > Debugging. When the set key is held, the Debug Info overlay will temporarily be hidden.
-- Added "Show Debug Info In Game" setting to Config Manager > Core > Debugging. With this setting on, the Debug Info overlay will appear in-game or in the preview mode for the editor.
+- Added an Operation value to eventOffset modifiers.
+- Added setPlayerMoveSpeed and setPlayerBoostSpeed modifiers. No idea why they weren't there already lol.
+- Added getVariable modifiers. This gets the main number variable and passes it to other modifiers.
+- Added setVariableMath modifiers. Works like setVariable modifiers but gives more control over the math and operation.
+- Added forceCollision modifiers. These force the collision detection on regardless of editing state and select object setting. Used for objectCollide modifiers.
+
+### Editor
+- Added "Annotations Selected Flash Speed" setting to Config Manager > Editor > Markers.
 
 ## Changes
 ### Core
-- Added a shadow backdrop to the Debug Info text. The clicking area has also been restricted to this rather than a big unseen area.
-- The "Create Debug Info" setting (Config Manager > Core > Debugging) now destroys the current Debug Info overlay when the setting is turned off.
-- Changed the Core Config description from saying "PA Legacy" to "Project Arrhythmia".
+- Increased the BG camera far clip plane from 1000 to 100000.
+- Changed the default Master Volume setting to 5 instead of 8.
+
+### Companion
+- Added some command parameters to Example relating to markers and annotations.
+- Boolean selection commands now allows for a ! (not) with some command parameters being changed to match this. (e.g. select objects !name "P_Trick Arrow" selects all objects that don't have the name "P_Trick Arrow")
 
 ### Editor
-- Markers can now be copied & pasted using the Copy and Paste keybind functions. If you want to copy / paste markers, you need to focus your mouse cursor over the marker editor. If you want to copy / paste annotations, instead focus on the preview area.
+- The keyframe selecting keybinds now check if the layer type is not the event layer to switch keyframe, otherwise it'll require the mouse to be over the object keyframe timeline.
 
 ## Fixes
-- Fixed some levels and cutscenes in the story mode being skipped.
-- Fixed the particle prefab showing in the interfaces.
-- Fixed log spam to do with the Debug Info overlay.
+- Converting color keyframes to use hex color no longer tries to convert if the keyframe already uses hex color.
+- The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
+- Fixed the zoom value of the Capture Area not being saved and loaded.
+- Fixed some buttons on the event keyframe context menu not working.
+- Fixed more issues with story progression.
