@@ -134,6 +134,7 @@ Next: Multiplayer Snapshots
   Update: 1.9.0+  
   Notes:  
   - Same as downloadLevel except for level collections.
+- onBPM trigger modifier.
 
 ### Effects
 - Camera Jiggle  
