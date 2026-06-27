@@ -382,20 +382,6 @@
 								]
 							},
 							{
-								"name": "StorySaveInt",
-								"params": [
-									"Chapter",
-									0
-								]
-							},
-							{
-								"name": "StorySaveInt",
-								"params": [
-									"DOC01Progress",
-									6
-								]
-							},
-							{
 								"name": "UnlockAchievement",
 								"params": [ "story_doc01_secret" ]
 							},
