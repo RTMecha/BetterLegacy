@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
 ## Features
 ### Core
 - Added an Operation value to eventOffset modifiers.
@@ -6,6 +6,9 @@
 - Added getVariable modifiers. This gets the main number variable and passes it to other modifiers.
 - Added setVariableMath modifiers. Works like setVariable modifiers but gives more control over the math and operation.
 - Added forceCollision modifiers. These force the collision detection on regardless of editing state and select object setting. Used for objectCollide modifiers.
+
+### Editor
+- Added "Annotations Selected Flash Speed" setting to Config Manager > Editor > Markers.
 
 ## Changes
 ### Core
@@ -24,6 +27,7 @@
 - The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
 - Fixed the zoom value of the Capture Area not being saved and loaded.
 - Fixed some buttons on the event keyframe context menu not working.
+- Fixed more issues with story progression.
 
 -------------------------------------------------------------------
 
