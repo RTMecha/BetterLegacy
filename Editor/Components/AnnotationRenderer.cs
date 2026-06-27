@@ -100,7 +100,7 @@ namespace BetterLegacy.Editor.Components
             if (marker && !marker.VisibleOnLayer(EditorTimeline.inst.Layer))
                 color.a *= EditorConfig.Instance.AnnotationOtherLayerOpacity.Value;
             if (annotation.selected)
-                color += new Color(1f, 1f, 1f, 0f) * (Mathf.PingPong(Time.time * 2, 2f) - 1f);
+                color += new Color(1f, 1f, 1f, 0f) * (Mathf.PingPong(Time.time * EditorConfig.Instance.AnnotationSelectedFlashSpeed.Value, 2f) - 1f);
 
             for (int p = 0; p < annotation.points.Count - 1; p++)
             {

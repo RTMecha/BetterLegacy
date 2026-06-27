@@ -226,6 +226,7 @@ namespace BetterLegacy.Configs
         public Setting<float> AnnotationOpacity { get; set; }
         public Setting<float> AnnotationOtherLayerOpacity { get; set; }
         public Setting<bool> AnnotationsDisplayInPreviewMode { get; set; }
+        public Setting<float> AnnotationSelectedFlashSpeed { get; set; }
 
         #endregion
 
@@ -704,6 +705,7 @@ namespace BetterLegacy.Configs
             AnnotationOpacity = Bind(this, MARKERS, "Annotation Opacity", 1f, "Opacity of all shown annotations.", maxValue: 1f);
             AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.", maxValue: 1f);
             AnnotationsDisplayInPreviewMode = Bind(this, MARKERS, "Annotations Display In Preview Mode", false, "If annotations should display in the playtest mode.");
+            AnnotationSelectedFlashSpeed = Bind(this, MARKERS, "Annotations Selected Flash Speed", 2f, "How fast the selected annotations should flash.");
 
             #endregion
 
