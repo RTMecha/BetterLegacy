@@ -49,6 +49,7 @@ namespace BetterLegacy.Companion.Data
         - select objects name "NAME" select modifiers -> log notify_count edit prefab_group_only true
         - select objects name "NAME" -> mirror horizontal
         - select objects name "keyframer" select object_keyframes event_coord 0 0 -> log edit value 0 set 10 select objects name "keyframer" -> update keyframes
+        - select markers select annotations color equals 0
         - create beatmap_object 24 start_time current_time add_editor_bin 0 1 pos_kf [time set 5 value 0 set evaluate (cos((index*15)/radToDeg)*50) value 1 set evaluate (sin((index*15)/radToDeg)*50) value 2 set 0 relative false] rot_kf [time set 0 value 0 set evaluate ((index*15)) relative false]
         - create prefab_object 8 "Mouth Controller" start_time current_time add_editor_bin 0 1 pos evaluate (cos((index*45)/radToDeg)*20) evaluate (sin((index*45)/radToDeg)*20) rot evaluate((index*45))
         - select objects selected edit beatmap_object parent [select objects name "TESTPARENT"]
@@ -941,6 +942,18 @@ namespace BetterLegacy.Companion.Data
                 new ModifierElseIfParameter(),
             };
 
+            public static List<EditParameter<Annotation>> annotationParameters = new List<EditParameter<Annotation>>
+            {
+                new AnnotationColorParameter(),
+                new AnnotationHexColorParameter(),
+                new AnnotationThicknessParameter(),
+                new AnnotationFixedCameraParameter(),
+                new AnnotationHiddenParameter(),
+                new AnnotationMoveParameter(),
+                new AnnotationScaleParameter(),
+                new AnnotationRotateParameter(),
+            };
+
             #endregion
 
             #region Functions
@@ -1079,6 +1092,19 @@ namespace BetterLegacy.Companion.Data
                                 CoroutineHelper.StartCoroutine(ModifiersEditorDialog.Current.RenderModifiers(ModifiersEditorDialog.Current.CurrentObject));
                             break;
                         }
+                    case SelectCommand.SelectableType.Annotations: {
+                            index = 0;
+                            count = selectables.Count(x => x is Annotation);
+                            foreach (var selectable in selectables)
+                            {
+                                if (selectable is not Annotation annotation)
+                                    continue;
+                                CurrentEdit.annotation = annotation;
+                                Apply(input, 0, annotation, parameters, annotationParameters);
+                                index++;
+                            }
+                            break;
+                        }
                 }
                 CurrentEdit.Reset();
             }
@@ -1167,6 +1193,7 @@ namespace BetterLegacy.Companion.Data
                 public static Checkpoint checkpoint;
                 public static Modifier modifier;
                 public static EventKeyframe eventKeyframe;
+                public static Annotation annotation;
 
                 public static void Reset()
                 {
@@ -1177,6 +1204,7 @@ namespace BetterLegacy.Companion.Data
                     checkpoint = null;
                     modifier = null;
                     eventKeyframe = null;
+                    annotation = null;
                 }
             }
 
@@ -2107,6 +2135,129 @@ namespace BetterLegacy.Companion.Data
 
             #endregion
 
+            #region Annotation
+
+            public class AnnotationColorParameter : EditParameter<Annotation>
+            {
+                public override string Name => "color";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Color of the annotation.";
+
+                public override string AddToAutocomplete => "color 0";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
+            }
+            
+            public class AnnotationHexColorParameter : EditParameter<Annotation>
+            {
+                public override string Name => "hex_color";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Color of the annotation.";
+
+                public override string AddToAutocomplete => "hex_color ffffff";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.hexColor = parameters[0];
+            }
+
+            public class AnnotationThicknessParameter : EditParameter<Annotation>
+            {
+                public override string Name => "thickness";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Thickness of the annotation.";
+
+                public override string AddToAutocomplete => "thickness 4";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.thickness = Parser.TryParse(parameters[0], 4f);
+            }
+
+            public class AnnotationFixedCameraParameter : EditParameter<Annotation>
+            {
+                public override string Name => "fixed_camera";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Fixed Camera state of the annotation.";
+
+                public override string AddToAutocomplete => "fixed_camera true";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.fixedCamera = Parser.TryParse(parameters[0], true);
+            }
+            
+            public class AnnotationHiddenParameter : EditParameter<Annotation>
+            {
+                public override string Name => "hidden";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Hidden state of the annotation.";
+
+                public override string AddToAutocomplete => "hidden true";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.hidden = Parser.TryParse(parameters[0], true);
+            }
+
+            public class AnnotationMoveParameter : EditParameter<Annotation>
+            {
+                public override string Name => "move";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Moves the points of the annotation.";
+
+                public override string AddToAutocomplete => "move 0 0";
+
+                public override void Apply(Annotation obj, string[] parameters)
+                {
+                    var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    for (int i = 0; i < obj.points.Count; i++)
+                        obj.points[i] += pos;
+                }
+            }
+
+            public class AnnotationScaleParameter : EditParameter<Annotation>
+            {
+                public override string Name => "scale";
+
+                public override int ParameterCount => 2;
+
+                public override string Description => "Scales the points of the annotation.";
+
+                public override string AddToAutocomplete => "scale 1 1";
+
+                public override void Apply(Annotation obj, string[] parameters)
+                {
+                    var sca = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    for (int i = 0; i < obj.points.Count; i++)
+                        obj.points[i] = RTMath.Scale(obj.points[i], sca);
+                }
+            }
+
+            public class AnnotationRotateParameter : EditParameter<Annotation>
+            {
+                public override string Name => "rotate";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Rotates the points of the annotation.";
+
+                public override string AddToAutocomplete => "rotate 0";
+
+                public override void Apply(Annotation obj, string[] parameters)
+                {
+                    var rot = Parser.TryParse(parameters[0], 0f);
+                    for (int i = 0; i < obj.points.Count; i++)
+                        obj.points[i] = RTMath.Rotate(obj.points[i], rot);
+                }
+            }
+
+            #endregion
+
             #endregion
         }
 
@@ -2301,6 +2452,15 @@ namespace BetterLegacy.Companion.Data
                 new ContainsModifierValue(),
 
                 #endregion
+
+                #region Annotations
+
+                new AnnotationColorComparisonParameter(),
+                new AnnotationHexColorEqualsParameter(),
+                new AnnotationThicknessComparisonParameter(),
+                new AnnotationHiddenParameter(),
+
+                #endregion
             };
 
             /// <summary>
@@ -2393,8 +2553,10 @@ namespace BetterLegacy.Companion.Data
                 if (selectables == null)
                     return;
 
-                foreach (var selectable in GetSelectables(CurrentType))
-                    selectable.Selected = false;
+                var s = GetSelectables(CurrentType);
+                if (s != null)
+                    foreach (var selectable in s)
+                        selectable.Selected = false;
                 foreach (var selectable in selectables)
                     selectable.Selected = true;
                 switch (CurrentType)
@@ -2440,6 +2602,7 @@ namespace BetterLegacy.Companion.Data
                         s = s.TrimStart('!');
                     }
 
+                    // switch to action mode.
                     if (s == "->")
                     {
                         // convert rest of parameters to action parameters
@@ -2447,12 +2610,14 @@ namespace BetterLegacy.Companion.Data
                         continue;
                     }
 
+                    // switch back to selectable mode.
                     if (s == "if")
                     {
                         actionMode = false;
                         continue;
                     }
 
+                    // gets a new selection.
                     if (s == "select")
                     {
                         actionMode = false;
@@ -2467,12 +2632,15 @@ namespace BetterLegacy.Companion.Data
                                 selectables = GetModifiers(selectables);
                             else if (CurrentType == SelectableType.ObjectKeyframes)
                                 selectables = GetObjectKeyframes(selectables);
+                            else if (CurrentType == SelectableType.Annotations)
+                                selectables = GetMarkerAnnotations(selectables);
                             else
                                 selectables = GetSelectables(CurrentType);
                         }
                         continue;
                     }
 
+                    // combines the current selection with another selection.
                     if (s == "union")
                     {
                         actionMode = false;
@@ -2487,6 +2655,7 @@ namespace BetterLegacy.Companion.Data
                         continue;
                     }
 
+                    // switch to edit mode.
                     if (s == "edit")
                     {
                         new EditCommand().ConsumeInput(input, split.Range(i + 1, split.Length - 1).ToArray(), CurrentType, selectables);
@@ -2494,6 +2663,7 @@ namespace BetterLegacy.Companion.Data
                         return selectables;
                     }
 
+                    // orders the selection.
                     if (s == "orderby")
                     {
                         i++;
@@ -2613,6 +2783,18 @@ namespace BetterLegacy.Companion.Data
                             yield return eventKeyframe.timelineKeyframe;
                         }
                     }
+                }
+            }
+
+            public static IEnumerable<ISelectable> GetMarkerAnnotations(IEnumerable<ISelectable> selectables)
+            {
+                foreach (var selectable in selectables)
+                {
+                    if (selectable is not TimelineMarker timelineMarker)
+                        continue;
+
+                    for (int i = 0; i < timelineMarker.Marker.annotations.Count; i++)
+                        yield return timelineMarker.Marker.annotations[i];
                 }
             }
 
@@ -2768,6 +2950,7 @@ namespace BetterLegacy.Companion.Data
                 NotePlanners,
                 OSTPlanners,
                 Modifiers,
+                Annotations,
             }
 
             public abstract class GetSelectableParameter : ParameterBase
@@ -3118,7 +3301,7 @@ namespace BetterLegacy.Companion.Data
 
                     foreach (var selectable in selectables)
                     {
-                        if (selectable is TimelineObject timelineObject && comparison.Compare(timelineObject.Layer, layer))
+                        if (selectable is TimelineObject timelineObject && NotCheck(not, comparison.Compare(timelineObject.Layer, layer)))
                             yield return selectable;
                         if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker && NotCheck(not, timelineMarker.Marker.layers.Any(x => comparison.Compare(x, layer))))
                             yield return selectable;
@@ -3317,6 +3500,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
                 public override string Description => "Compares a markers color slot.";
 
                 public override string AddToAutocomplete => "color equals 0";
@@ -3334,6 +3519,8 @@ namespace BetterLegacy.Companion.Data
             public class MarkerHasAnnotationsParameter : GetSelectableParameter
             {
                 public override string Name => "has_annotations";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
 
                 public override string Description => "Checks if a marker has annotations.";
 
@@ -3439,6 +3626,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 2;
 
+                public override SelectableType RequiredSelectionType => SelectableType.Levels;
+
                 public override string Description => "Checks a levels metadata for its values.";
 
                 public override string AddToAutocomplete => "metadata artist_name Kaixo";
@@ -3480,6 +3669,8 @@ namespace BetterLegacy.Companion.Data
 
                 public override int ParameterCount => 1;
 
+                public override SelectableType RequiredSelectionType => SelectableType.Modifiers;
+
                 public override string Description => "Checks if a modifier contains a value.";
 
                 public override string AddToAutocomplete => "contains_value value";
@@ -3491,6 +3682,102 @@ namespace BetterLegacy.Companion.Data
                     {
                         if (selectable is ModifierCard modifierCard && modifierCard.Modifier && NotCheck(not, modifierCard.Modifier.values.Contains(value)))
                             yield return selectable;
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Annotations
+
+            public class AnnotationColorComparisonParameter : GetSelectableParameter
+            {
+                public override string Name => "color";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation color.";
+
+                public override string AddToAutocomplete => "color equals 0";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
+                    var color = Parser.TryParse(parameters[1], 0);
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, comparison.Compare(annotation.color, color)))
+                            yield return annotation;
+                    }
+                }
+            }
+            
+            public class AnnotationHexColorEqualsParameter : GetSelectableParameter
+            {
+                public override string Name => "hex_color";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation custom hex color.";
+
+                public override string AddToAutocomplete => "hex_color ffffff";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var hexColor = parameters[0];
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, annotation.hexColor == hexColor))
+                            yield return annotation;
+                    }
+                }
+            }
+
+            public class AnnotationThicknessComparisonParameter : GetSelectableParameter
+            {
+                public override string Name => "thickness";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation thickness.";
+
+                public override string AddToAutocomplete => "thickness equals 0";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
+                    var thickness = Parser.TryParse(parameters[1], 0f);
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, comparison.Compare(annotation.thickness, thickness)))
+                            yield return annotation;
+                    }
+                }
+            }
+
+            public class AnnotationHiddenParameter : GetSelectableParameter
+            {
+                public override string Name => "hidden";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation hidden state.";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, annotation.hidden))
+                            yield return annotation;
                     }
                 }
             }
@@ -4316,7 +4603,7 @@ namespace BetterLegacy.Companion.Data
             }
 
             #endregion
-
+            
             #endregion
 
             #endregion
