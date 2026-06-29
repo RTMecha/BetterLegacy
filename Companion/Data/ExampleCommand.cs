@@ -946,6 +946,7 @@ namespace BetterLegacy.Companion.Data
             {
                 new AnnotationColorParameter(),
                 new AnnotationHexColorParameter(),
+                new AnnotationOpacityParameter(),
                 new AnnotationThicknessParameter(),
                 new AnnotationFixedCameraParameter(),
                 new AnnotationHiddenParameter(),
@@ -2163,6 +2164,19 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Annotation obj, string[] parameters) => obj.hexColor = parameters[0];
             }
 
+            public class AnnotationOpacityParameter : EditParameter<Annotation>
+            {
+                public override string Name => "opacity";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Opacity of the annotation.";
+
+                public override string AddToAutocomplete => "opacity 1";
+
+                public override void Apply(Annotation obj, string[] parameters) => obj.opacity = Parser.TryParse(parameters[0], 4f);
+            }
+
             public class AnnotationThicknessParameter : EditParameter<Annotation>
             {
                 public override string Name => "thickness";
@@ -2457,6 +2471,7 @@ namespace BetterLegacy.Companion.Data
 
                 new AnnotationColorComparisonParameter(),
                 new AnnotationHexColorEqualsParameter(),
+                new AnnotationOpacityComparisonParameter(),
                 new AnnotationThicknessComparisonParameter(),
                 new AnnotationHiddenParameter(),
 
@@ -3734,6 +3749,31 @@ namespace BetterLegacy.Companion.Data
                     foreach (var selectable in selectables)
                     {
                         if (selectable is Annotation annotation && NotCheck(not, annotation.hexColor == hexColor))
+                            yield return annotation;
+                    }
+                }
+            }
+
+            public class AnnotationOpacityComparisonParameter : GetSelectableParameter
+            {
+                public override string Name => "opacity";
+
+                public override int ParameterCount => 2;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation opacity.";
+
+                public override string AddToAutocomplete => "opacity equals 1";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var comparison = Parser.TryParse(parameters[0].Remove("_"), true, NumberComparison.Equals);
+                    var opacity = Parser.TryParse(parameters[1], 0f);
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, comparison.Compare(annotation.opacity, opacity)))
                             yield return annotation;
                     }
                 }
