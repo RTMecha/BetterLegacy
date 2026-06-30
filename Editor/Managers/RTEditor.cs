@@ -1532,6 +1532,7 @@ namespace BetterLegacy.Editor.Managers
             UpdateKey();
             UpdateCameraArea();
             UpdateTimeRange();
+            TickTimeline();
 
             if (editorInfo.time > 36000f)
                 AchievementManager.inst.UnlockAchievement("serious_dedication");
@@ -1711,31 +1712,6 @@ namespace BetterLegacy.Editor.Managers
             {
 
             }
-
-            if (GameManager.inst.timeline && timelinePreview)
-                timelinePreview.gameObject.SetActive(GameManager.inst.timeline.activeSelf);
-
-            if (ProjectArrhythmia.State.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
-            {
-                float num = RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time);
-                if (timelinePosition)
-                    timelinePosition.anchoredPosition = new Vector2(num, 0f);
-
-                timelinePreview.localPosition = GameManager.inst.timeline.transform.localPosition;
-                timelinePreview.localScale = GameManager.inst.timeline.transform.localScale;
-                timelinePreview.localRotation = GameManager.inst.timeline.transform.localRotation;
-
-                for (int i = 0; i < checkpointImages.Count; i++)
-                {
-                    if (RTGameManager.inst.checkpointImages.Count > i)
-                        checkpointImages[i].color = RTGameManager.inst.checkpointImages[i].color;
-                }
-
-                timelinePreviewPlayer.color = RTGameManager.inst.timelinePlayer.color;
-                timelinePreviewLeftCap.color = RTGameManager.inst.timelineLeftCap.color;
-                timelinePreviewRightCap.color = RTGameManager.inst.timelineRightCap.color;
-                timelinePreviewLine.color = RTGameManager.inst.timelineLine.color;
-            }
         }
 
         void UpdateKey()
@@ -1797,6 +1773,46 @@ namespace BetterLegacy.Editor.Managers
                 }
                 if (!EditorManager.inst.isEditing && EditorConfig.Instance.ExitPreviewOnEnd.Value)
                     ExitPreview();
+            }
+        }
+
+        void TickTimeline()
+        {
+            if (GameManager.inst.timeline && timelinePreview)
+                timelinePreview.gameObject.SetActive(GameManager.inst.timeline.activeSelf);
+
+            if (ProjectArrhythmia.State.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
+            {
+                var length = RTGameManager.inst.timelineLength > 0f ? RTGameManager.inst.timelineLength : AudioManager.inst.CurrentAudioSource.clip.length;
+                if (timelinePosition)
+                    timelinePosition.anchoredPosition = new Vector2(RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time, length), 0f);
+
+                timelinePreview.localPosition = GameManager.inst.timeline.transform.localPosition;
+                timelinePreview.localScale = GameManager.inst.timeline.transform.localScale;
+                timelinePreview.localRotation = GameManager.inst.timeline.transform.localRotation;
+
+                var startOffset = GameData.Current.data.level.LevelStartOffset;
+                var endOffset = GameData.Current.data.level.LevelEndOffset;
+
+                for (int i = 0; i < checkpointImages.Count; i++)
+                {
+                    var checkpointImage = checkpointImages[i];
+                    var checkpoint = GameData.Current.data.checkpoints[i + 1];
+
+                    var active = checkpoint.time > startOffset && checkpoint.time <= length - endOffset;
+                    if (checkpointImage.gameObject.activeSelf != active)
+                        checkpointImage.gameObject.SetActive(active);
+                    if (!active)
+                        continue;
+                    checkpointImage.rectTransform.anchoredPosition = new Vector2(RTBeatmap.Current.GetTimelineOffset(checkpoint.time, length), 0f);
+                    if (RTGameManager.inst.checkpointImages.Count > i)
+                        checkpointImage.color = RTGameManager.inst.checkpointImages[i].color;
+                }
+
+                timelinePreviewPlayer.color = RTGameManager.inst.timelinePlayer.color;
+                timelinePreviewLeftCap.color = RTGameManager.inst.timelineLeftCap.color;
+                timelinePreviewRightCap.color = RTGameManager.inst.timelineRightCap.color;
+                timelinePreviewLine.color = RTGameManager.inst.timelineLine.color;
             }
         }
 

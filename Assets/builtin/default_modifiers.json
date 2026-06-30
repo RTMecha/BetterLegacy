@@ -988,6 +988,21 @@
 
       {
         "type": 1,
+        "name": "showTitleCard",
+        "values": [ "", "", "" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // showTitleCard
+      {
+        "type": 1,
+        "name": "setTimelineLength",
+        "values": [ "-1", "0.5", "24" ],
+        "const": "False",
+        "compat": "level_control"
+      }, // setTimelineLength
+
+      {
+        "type": 1,
         "commands": [ "unlockAchievement" ],
         "value": "0",
         "const": "False",

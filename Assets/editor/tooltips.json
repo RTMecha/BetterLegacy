@@ -2670,7 +2670,27 @@
                 "lang": 0
               }
             ]
-          } // isEditing
+          }, // isEditing
+          {
+            "name": "Object Modifier - showTitleCard (Action)",
+            "tooltips": [
+              {
+                "desc": "showTitleCard (Action)",
+                "hint": "Displays the intro text.",
+                "lang": 0
+              }
+            ]
+          }, // showTitleCard
+          {
+            "name": "Object Modifier - setTimelineLength (Action)",
+            "tooltips": [
+              {
+                "desc": "setTimelineLength (Action)",
+                "hint": "Reveals more or less of the game timeline, good for surprises. If length is not greater than 0, the full song length is used instead.",
+                "lang": 0
+              }
+            ]
+          } // setTimelineLength
         ],
 
         // Component

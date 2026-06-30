@@ -936,6 +936,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.timelineScrollRectBar.value = 0f;
             GameManager.inst.gameState = GameManager.State.Loading;
             RTEventManager.inst.datamosh.Reset();
+            RTGameManager.inst.timelineLength = -1f;
 
             EditorManager.inst.ClearPopups();
             EditorDialog.CurrentDialog?.Close();

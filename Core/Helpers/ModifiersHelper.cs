@@ -861,6 +861,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.removeCurrentCollectionVariable),  ModifierFunctions.removeCurrentCollectionVariable, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.clearCurrentCollectionVariables),  ModifierFunctions.clearCurrentCollectionVariables, ModifierCompatibility.LevelControlCompatible),
 
+            new ModifierAction(nameof(ModifierFunctions.showTitleCard),  ModifierFunctions.showTitleCard, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setTimelineLength),  ModifierFunctions.setTimelineLength, ModifierCompatibility.LevelControlCompatible),
+
             #endregion
 
             #region Component
@@ -2224,7 +2227,7 @@ namespace BetterLegacy.Core.Helpers
         {
             "vnInk" => 0,
             "vnTimeline" => 1,
-            "playerBubble" => 2,
+            "playerDialogue" => 2,
             nameof(ModifierFunctions.playerMoveAll) => 3,
             nameof(ModifierFunctions.playerLockBoostAll) => 4,
             nameof(ModifierFunctions.playerLockXAll) => 5,
@@ -2234,6 +2237,12 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierFunctions.playerBoostAll) => 9,
             nameof(ModifierFunctions.setMusicTime) => 10,
             nameof(ModifierFunctions.setPitch) => 11,
+            nameof(ModifierFunctions.playDefaultSound) => 12,
+            "setRuntimeVariable" => 13,
+            nameof(ModifierFunctions.setTimelineLength) => 14,
+            nameof(ModifierFunctions.playerEnableDamageAll) => 15,
+            nameof(ModifierFunctions.showTitleCard) => 16,
+            "setPitchProximity" => 17, // this is not homing.
             _ => -1,
         };
 
@@ -2252,7 +2261,7 @@ namespace BetterLegacy.Core.Helpers
         {
             0 => "vnInk",
             1 => "vnTimeline",
-            2 => "playerBubble",
+            2 => "playerDialogue",
             3 => nameof(ModifierFunctions.playerMoveAll),
             4 => nameof(ModifierFunctions.playerLockBoostAll),
             5 => nameof(ModifierFunctions.playerLockXAll),
@@ -2262,6 +2271,12 @@ namespace BetterLegacy.Core.Helpers
             9 => nameof(ModifierFunctions.playerBoostAll),
             10 => nameof(ModifierFunctions.setMusicTime),
             11 => nameof(ModifierFunctions.setPitch),
+            12 => nameof(ModifierFunctions.playDefaultSound),
+            13 => "setRuntimeVariable",
+            14 => nameof(ModifierFunctions.setTimelineLength),
+            15 => nameof(ModifierFunctions.playerEnableDamageAll),
+            16 => nameof(ModifierFunctions.showTitleCard),
+            17 => "setPitchProximity", // this is not homing.
             _ => string.Empty,
         };
 
@@ -5038,6 +5053,42 @@ namespace BetterLegacy.Core.Helpers
             if (ProjectArrhythmia.State.InEditor && EditorLevelManager.inst)
                 levelCollection = EditorLevelManager.inst.CurrentLevelCollection;
             levelCollection?.saveData?.Variables?.Clear();
+        }
+
+        public static void showTitleCard(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifier.constant)
+                return;
+
+            RTGameManager.inst.ShowTitleCard(
+                title: modifier.GetValue(0),
+                artist: modifier.GetValue(1),
+                creator: modifier.GetValue(2));
+        }
+
+        public static void setTimelineLength(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var length = modifier.GetFloat(0, -1f, modifierLoop.variables);
+            var speed = modifier.GetFloat(1, 0.5f, modifierLoop.variables);
+            var easing = Parser.TryParse(modifier.GetValue(2, modifierLoop.variables), true, Easing.OutCubic);
+
+            if (speed == 0f || modifier.constant)
+            {
+                RTGameManager.inst.timelineLength = length;
+                return;
+            }
+
+            var animation = new RTAnimation("Timeline Length");
+            animation.animationHandlers = new List<AnimationHandlerBase>
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, RTGameManager.inst.timelineLength, Ease.Linear),
+                    new FloatKeyframe(speed, length, Ease.GetEaseFunction(easing)),
+                }, x => RTGameManager.inst.timelineLength = x, interpolateOnComplete: true),
+            };
+            animation.SetDefaultOnComplete();
+            AnimationManager.inst.Play(animation);
         }
 
         #endregion
@@ -10154,17 +10205,30 @@ namespace BetterLegacy.Core.Helpers
             if (modifierLoop.reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
+            var cache = modifier.GetResultOrDefault(() => new TextSequenceCache());
+
             var value = modifier.GetValue(9, modifierLoop.variables);
             var text = !string.IsNullOrEmpty(value) ? value : beatmapObject.text;
             text = ModifiersHelper.FormatStringVariables(text, modifierLoop.variables);
 
-            if (!modifier.setTimer)
+            if (cache.text != text)
             {
-                modifier.setTimer = true;
-                modifier.ResultTimer = AudioManager.inst.CurrentAudioSource.time;
+                cache.text = text;
+                cache.textWithoutFormatting = text;
+                RTString.RegexMatches(text, new Regex(@"<(.*?)>"), match =>
+                {
+                    cache.textWithoutFormatting = cache.textWithoutFormatting.Remove(match.Groups[0].ToString());
+                    cache.tagLocations.Add(new Vector2Int(match.Index, match.Length - 1));
+                });
             }
 
-            var offsetTime = modifier.ResultTimer;
+            if (!cache.setTimer)
+            {
+                cache.setTimer = true;
+                cache.startTime = AudioManager.inst.CurrentAudioSource.time;
+            }
+
+            var offsetTime = cache.startTime;
             if (!modifier.GetBool(11, false, modifierLoop.variables))
                 offsetTime = beatmapObject.StartTime;
 
@@ -10174,23 +10238,15 @@ namespace BetterLegacy.Core.Helpers
 
             var p = time / length;
 
-            var textWithoutFormatting = text;
-            var tagLocations = new List<Vector2Int>();
-            RTString.RegexMatches(text, new Regex(@"<(.*?)>"), match =>
-            {
-                textWithoutFormatting = textWithoutFormatting.Remove(match.Groups[0].ToString());
-                tagLocations.Add(new Vector2Int(match.Index, match.Length - 1));
-            });
+            var stringLength = (int)Mathf.Lerp(0, cache.textWithoutFormatting.Length, p);
+            textObject.textMeshPro.maxVisibleCharacters = stringLength;
 
-            var stringLength2 = (int)Mathf.Lerp(0, textWithoutFormatting.Length, p);
-            textObject.textMeshPro.maxVisibleCharacters = stringLength2;
-
-            if (glitch && (int)RTMath.Lerp(0, textWithoutFormatting.Length, p) <= textWithoutFormatting.Length)
+            if (glitch && (int)RTMath.Lerp(0, cache.textWithoutFormatting.Length, p) <= cache.textWithoutFormatting.Length)
             {
-                int insert = Mathf.Clamp(stringLength2 - 1, 0, text.Length);
-                for (int i = 0; i < tagLocations.Count; i++)
+                int insert = Mathf.Clamp(stringLength - 1, 0, text.Length);
+                for (int i = 0; i < cache.tagLocations.Count; i++)
                 {
-                    var tagLocation = tagLocations[i];
+                    var tagLocation = cache.tagLocations[i];
                     if (insert >= tagLocation.x)
                         insert += tagLocation.y + 1;
                 }
@@ -10203,9 +10259,9 @@ namespace BetterLegacy.Core.Helpers
             else
                 textObject.text = text;
 
-            if ((modifier.Result is not int result || result != stringLength2) && textWithoutFormatting[Mathf.Clamp(stringLength2 - 1, 0, textWithoutFormatting.Length - 1)] != ' ')
+            if (cache.current != stringLength && cache.textWithoutFormatting[Mathf.Clamp(stringLength - 1, 0, cache.textWithoutFormatting.Length - 1)] != ' ')
             {
-                modifier.Result = stringLength2;
+                cache.current = stringLength;
                 float pitch = modifier.GetFloat(6, 1f, modifierLoop.variables);
                 float volume = modifier.GetFloat(7, 1f, modifierLoop.variables);
                 float pitchVary = modifier.GetFloat(8, 0f, modifierLoop.variables);
@@ -10232,6 +10288,16 @@ namespace BetterLegacy.Core.Helpers
                 else
                     ModifiersHelper.GetSoundPath(beatmapObject.id, soundName, modifier.GetBool(5, false, modifierLoop.variables), pitch, volume, false, modifier.GetFloat(12, 0f, modifierLoop.variables));
             }
+        }
+
+        public class TextSequenceCache
+        {
+            public bool setTimer;
+            public float startTime;
+            public int current;
+            public string text = string.Empty;
+            public string textWithoutFormatting = string.Empty;
+            public List<Vector2Int> tagLocations = new List<Vector2Int>();
         }
 
         // modify shape

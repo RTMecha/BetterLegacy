@@ -285,6 +285,8 @@ namespace BetterLegacy.Core.Managers
             if (RTEventManager.inst)
                 RTEventManager.inst.datamosh.Reset();
 
+            RTGameManager.inst.timelineLength = -1f;
+
             RTBeatmap.Current.levelTimer.offset = 0f;
             RTBeatmap.Current.levelTimer.Reset();
             RTBeatmap.Current.boosts.Clear();

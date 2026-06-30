@@ -211,10 +211,44 @@ namespace BetterLegacy.Arcade.Managers
             }
         }
 
+        public void TickTimeline()
+        {
+            if (!AudioManager.inst.CurrentAudioSource.clip)
+                return;
+
+            if (DataManager.inst && GameData.Current && GameData.Current.data && GameData.Current.data.checkpoints != null && !GameData.Current.data.checkpoints.IsEmpty() && ProjectArrhythmia.State.Sequencing)
+            {
+                var length = timelineLength > 0f ? timelineLength : AudioManager.inst.CurrentAudioSource.clip.length;
+                if (!ProjectArrhythmia.State.Reversing)
+                    GameManager.inst.UpcomingCheckpointIndex = GameData.Current.data.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+
+                if (timelinePlayer)
+                    timelinePlayer.rectTransform.anchoredPosition = new Vector2(RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time, length), 0f);
+
+                var startOffset = GameData.Current.data.level.LevelStartOffset;
+                var endOffset = GameData.Current.data.level.LevelEndOffset;
+
+                for (int i = 0; i < checkpointImages.Count; i++)
+                {
+                    var checkpointImage = checkpointImages[i];
+                    var checkpoint = GameData.Current.data.checkpoints[i + 1];
+
+                    var active = checkpoint.time > startOffset && checkpoint.time <= length - endOffset;
+                    if (checkpointImage.gameObject.activeSelf != active)
+                        checkpointImage.gameObject.SetActive(active);
+                    if (active)
+                        checkpointImage.rectTransform.anchoredPosition = new Vector2(RTBeatmap.Current.GetTimelineOffset(checkpoint.time, length), 0f);
+                }
+            }
+            GameManager.inst.playerGUI.SetActive(ProjectArrhythmia.State.InEditorPreview);
+        }
+
         public bool ShowPauseSlider => ProjectArrhythmia.State.Paused && RTBeatmap.Current.Invincible && PauseInterface.Current && PauseInterface.Current.UIActive && !PauseInterface.Current.unpausing && !PauseInterface.Current.generating && CoreConfig.Instance.ShowPauseTimeSlider.Value;
         bool cachedShowPauseSlider;
         public UICanvas pauseSliderCanvas;
         public Slider pauseSlider;
+
+        public float timelineLength = -1f;
 
         #region Checkpoints
 
@@ -314,6 +348,25 @@ namespace BetterLegacy.Arcade.Managers
         public AnimationController levelAnimationController;
 
         static RTAnimation introAnimation;
+
+        public void ShowTitleCard(string title, string artist, string creator)
+        {
+            if (!GameManager.inst.introTitle)
+                return;
+
+            doIntroFadeInternal = false;
+            SetTitleCard(title, artist, creator);
+            PlayIntro();
+
+            // TODO: implement viewing in the editor
+        }
+
+        public void SetTitleCard(string title, string artist, string creator)
+        {
+            GameManager.inst.introTitle.text = title;
+            GameManager.inst.introArtist.text = artist;
+            // TODO: implement creator display
+        }
 
         public void PlayIntro()
         {

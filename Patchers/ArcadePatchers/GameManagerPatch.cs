@@ -98,22 +98,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool FixedUpdatePrefix()
         {
-            if (DataManager.inst && GameData.Current && GameData.Current.data && GameData.Current.data.checkpoints != null &&
-                !GameData.Current.data.checkpoints.IsEmpty() && ProjectArrhythmia.State.Sequencing)
-            {
-                if (!ProjectArrhythmia.State.Reversing)
-                    Instance.UpcomingCheckpointIndex = GameData.Current.data.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
-
-                if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip)
-                {
-                    float num = RTBeatmap.Current.GetTimelineOffset(AudioManager.inst.CurrentAudioSource.time);
-                    if (Instance.timeline.transform.Find("Base/position"))
-                        Instance.timeline.transform.Find("Base/position").AsRT().anchoredPosition = new Vector2(num, 0f);
-                    else
-                        Instance.UpdateTimeline();
-                }
-            }
-            Instance.playerGUI.SetActive(ProjectArrhythmia.State.InEditorPreview);
+            RTGameManager.inst.TickTimeline();
             return false;
         }
 

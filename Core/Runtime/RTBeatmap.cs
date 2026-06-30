@@ -183,7 +183,15 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         /// <param name="t">Time to calculate.</param>
         /// <returns>Returns the position of an element on the game timeline based on the time, the song length and the level start and end offsets.</returns>
-        public float GetTimelineOffset(float t) => (t - GameData.Current.data.level.LevelStartOffset) * 400f / (AudioManager.inst.CurrentAudioSource.clip.length - (GameData.Current.data.level.LevelEndOffset + GameData.Current.data.level.LevelStartOffset));
+        public float GetTimelineOffset(float t) => GetTimelineOffset(t, AudioManager.inst.CurrentAudioSource.clip.length);
+
+        /// <summary>
+        /// Gets the position of an element on the game timeline.
+        /// </summary>
+        /// <param name="t">Time to calculate.</param>
+        /// <param name="length">Length of the timeline.</param>
+        /// <returns>Returns the position of an element on the game timeline based on the time, the song length and the level start and end offsets.</returns>
+        public float GetTimelineOffset(float t, float length) => ((t - GameData.Current.data.level.LevelStartOffset) / (length - (GameData.Current.data.level.LevelEndOffset + GameData.Current.data.level.LevelStartOffset))) * 400f;
 
         #region End Level
 

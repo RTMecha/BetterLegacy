@@ -5007,6 +5007,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 //        break;
                 //    }
+                case nameof(ModifierFunctions.showTitleCard): {
+                        StringGenerator(modifier, reference, "Song Title", 0);
+                        StringGenerator(modifier, reference, "Artist Name", 1);
+                        StringGenerator(modifier, reference, "Creator Name", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.setTimelineLength): {
+                        SingleGenerator(modifier, reference, "Length", 0, -1f);
+                        SingleGenerator(modifier, reference, "Speed", 1, 0.5f);
+                        EaseGenerator(modifier, reference, 2);
+
+                        break;
+                    }
 
                 case nameof(ModifierFunctions.callModifierBlock): {
                         StringGenerator(modifier, reference, "Function Name", 0);
