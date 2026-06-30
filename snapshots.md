@@ -1,4 +1,12 @@
-﻿# snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
+﻿# snapshot-2026.?.? - (Story Playtest) [???]
+## Features
+### Core
+- Added showTitleCard modifier, ported from the AB trigger.
+- Added setTimelineLength modifier, ported from the AB trigger.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
 ## Features
 ### Core
 - Added an Operation value to eventOffset modifiers.
