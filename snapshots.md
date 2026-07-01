@@ -1,12 +1,17 @@
-﻿# snapshot-2026.?.? - (Story Playtest) [???]
+﻿# snapshot-2026.7.? - (Story Playtest) [???]
 ## Features
 ### Core
 - Added showTitleCard modifier, ported from the AB trigger.
 - Added setTimelineLength modifier, ported from the AB trigger.
 
 ### Companion
-- Added draw_box and draw_circle Example command parameters for markers.
+- Added draw_box, draw_shape and draw_line Example action parameters for markers.
 - Added some more selection parameters.
+
+### Editor
+- Holding shift when you begin drawing an annotation line now forces it into a straight line. Holding control will force it to the nearest "Annotations Line Rotation Interval" degree angle (see next line).
+- Added "Annotations Line Rotation Interval" setting to Config Manager > Editor > Markers.
+- A drawing area for the cursor now displays for annotations.
 
 ## Changes
 ### Core
