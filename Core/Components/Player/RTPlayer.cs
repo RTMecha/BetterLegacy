@@ -1955,7 +1955,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (CanRotate)
             {
-                var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
+                var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * Mathf.Rad2Deg, player.transform.forward);
                 var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
                 switch (rotateMode)
                 {
