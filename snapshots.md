@@ -3,10 +3,13 @@
 ### Core
 - Added showTitleCard modifier, ported from the AB trigger.
 - Added setTimelineLength modifier, ported from the AB trigger.
+- Added getRuntimeVariable and setRuntimeVariable. These get and set a global variable that exists in the current runtime (so when the runtime is refreshed / updated, the variable list will clear).
 
 ### Companion
 - Added draw_box, draw_shape and draw_line Example action parameters for markers.
 - Added some more selection parameters.
+- Added set_runtime_variable, remove_runtime_variable and clear_runtime_variables commands.
+- Added read_file commmand. This can read a text file in an Asset Pack and run each line as a command.
 
 ### Editor
 - Holding shift when you begin drawing an annotation line now forces it into a straight line. Holding control will force it to the nearest "Annotations Line Rotation Interval" degree angle (see next line).
@@ -16,6 +19,10 @@
 ## Changes
 ### Core
 - playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
+- Reworked the JSON related modifiers. The JSON 1 and JSON 2 values have been combined into a JSON Path, where you can specify a full path to a value. For example: "chapter/0/data" takes you to {"chapter":[{"data":var}]}.
+
+## Fixes
+- Fixed some issues with some Example commands.
 
 -------------------------------------------------------------------
 
