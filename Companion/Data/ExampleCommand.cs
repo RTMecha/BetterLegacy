@@ -133,9 +133,15 @@ namespace BetterLegacy.Companion.Data
             new CreateCommand(),
             new SelectCommand(),
 
+            new SetRuntimeVariable(),
+            new RemoveRuntimeVariable(),
+            new ClearRuntimeVariables(),
+
             #endregion
 
             #region Misc
+            
+            new ReadFileCommand(),
 
             new SaveCustomCommand(),
             new RemoveCustomCommand(),
@@ -226,16 +232,18 @@ namespace BetterLegacy.Companion.Data
             {
                 result = result.TrimStart('"');
                 index++;
-                while (index < split.Length)
-                {
-                    result += " " + split[index];
-                    if (split[index].EndsWith('"'))
-                        break;
-                    index++;
-                }
+                if (!result.EndsWith("\""))
+                    while (index < split.Length)
+                    {
+                        result += " " + split[index];
+                        if (split[index].EndsWith("\""))
+                            break;
+                        index++;
+                    }
                 result = result.TrimEnd('"');
             }
-            index++;
+            else
+                index++;
             return result;
         }
 
@@ -5735,9 +5743,89 @@ namespace BetterLegacy.Companion.Data
             #endregion
         }
 
+        /// <summary>
+        /// Sets a global runtime variable.
+        /// </summary>
+        public class SetRuntimeVariable : ExampleCommand
+        {
+            public override string Name => "set_runtime_variable";
+
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
+
+            public override string Pattern => "set_runtime_variable \"var_name\" \"10\"";
+
+            public override string Description => "Sets a global runtime variable.";
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                var index = 1;
+                var key = GetQuoteParameter(split, ref index);
+                var value = GetQuoteParameter(split, ref index);
+                if (!string.IsNullOrEmpty(key))
+                    RTLevel.Current.variables[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Removes a global runtime variable.
+        /// </summary>
+        public class RemoveRuntimeVariable : ExampleCommand
+        {
+            public override string Name => "remove_runtime_variable";
+
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
+
+            public override string Pattern => "remove_runtime_variable \"var_name\"";
+
+            public override string Description => "Removes a global runtime variable.";
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                var index = 1;
+                var key = GetQuoteParameter(split, ref index);
+                if (!string.IsNullOrEmpty(key))
+                    RTLevel.Current.variables.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Clears all global runtime variables.
+        /// </summary>
+        public class ClearRuntimeVariables : ExampleCommand
+        {
+            public override string Name => "clear_runtime_variables";
+
+            public override bool Usable => ProjectArrhythmia.State.InEditor;
+
+            public override string Pattern => "clear_runtime_variables";
+
+            public override string Description => "Clears all global runtime variables.";
+
+            public override void ConsumeInput(string input, string[] split) => RTLevel.Current.variables.Clear();
+        }
+
         #endregion
 
         #region Misc
+
+        /// <summary>
+        /// Reads an array of commands from a text file. Must be from an asset pack.
+        /// </summary>
+        public class ReadFileCommand : ExampleCommand
+        {
+            public override string Name => "read_file";
+
+            public override string Pattern => "read_file \"core/func/multi.txt\"";
+
+            public override string Description => "Reads an array of commands from a text file. Must be from an asset pack.";
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                int index = 1;
+                if (AssetPack.TryReadFromFile(GetQuoteParameter(split, ref index), out string file))
+                    Run(RTString.GetLines(file));
+            }
+        }
 
         /// <summary>
         /// Saves a custom command line.
