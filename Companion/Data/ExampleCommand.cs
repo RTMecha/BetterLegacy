@@ -51,7 +51,7 @@ namespace BetterLegacy.Companion.Data
         - select objects name "keyframer" select object_keyframes event_coord 0 0 -> log edit value 0 set 10 select objects name "keyframer" -> update keyframes
         - select markers select annotations color equals 0
         - select markers selected -> draw_box 0 0 10 10 0 0 - 1 4 false
-        - select markers selected -> draw_circle 32 0 0 10 10 0 0 - 1 4 false
+        - select markers selected -> draw_shape 32 0 0 10 10 0 0 - 1 4 false
         - create beatmap_object 24 start_time current_time add_editor_bin 0 1 pos_kf [time set 5 value 0 set evaluate (cos((index*15)/radToDeg)*50) value 1 set evaluate (sin((index*15)/radToDeg)*50) value 2 set 0 relative false] rot_kf [time set 0 value 0 set evaluate ((index*15)) relative false]
         - create prefab_object 8 "Mouth Controller" start_time current_time add_editor_bin 0 1 pos evaluate (cos((index*45)/radToDeg)*20) evaluate (sin((index*45)/radToDeg)*20) rot evaluate((index*45))
         - select objects selected edit beatmap_object parent [select objects name "TESTPARENT"]
@@ -2880,8 +2880,9 @@ namespace BetterLegacy.Companion.Data
                 new ScaleMarkerAnnotations(),
                 new RotateMarkerAnnotations(),
                 new ClearMarkerAnnotations(),
-                new DrawMarkerAnnotationBox(),
-                new DrawMarkerAnnotationCircle(),
+                new DrawBoxMarkerAnnotation(),
+                new DrawShapeMarkerAnnotation(),
+                new DrawLineMarkerAnnotation(),
 
                 #endregion
 
@@ -5236,7 +5237,7 @@ namespace BetterLegacy.Companion.Data
             /// <summary>
             /// Draws a box in the annotations of all selected markers.
             /// </summary>
-            public class DrawMarkerAnnotationBox : ActionParameter
+            public class DrawBoxMarkerAnnotation : ActionParameter
             {
                 public override string Name => "draw_box";
 
@@ -5258,11 +5259,6 @@ namespace BetterLegacy.Companion.Data
                     var thickness = Parser.TryParse(parameters[8], 1f);
                     var fixedCamera = Parser.TryParse(parameters[9], false);
 
-                    var topLeftCorner = new Vector2(pos.x - (sca.x / 2f), pos.y + (sca.y / 2f));
-                    var topRightCorner = new Vector2(pos.x + (sca.x / 2f), pos.y + (sca.y / 2f));
-                    var bottomRightCorner = new Vector2(pos.x + (sca.x / 2f), pos.y - (sca.y / 2f));
-                    var bottomLeftCorner = new Vector2(pos.x - (sca.x / 2f), pos.y - (sca.y / 2f));
-
                     foreach (var selectable in selectables)
                     {
                         if (selectable is not TimelineMarker timelineMarker || !timelineMarker.Marker)
@@ -5274,34 +5270,26 @@ namespace BetterLegacy.Companion.Data
                         annotation.opacity = opacity;
                         annotation.thickness = thickness;
                         annotation.fixedCamera = fixedCamera;
-                        for (int i = 0; i < (int)(sca.x * 2); i++)
-                            annotation.points.Add(RTMath.Lerp(topLeftCorner, topRightCorner, i / (sca.x * 2)));
-                        for (int i = 0; i < (int)(sca.y * 2); i++)
-                            annotation.points.Add(RTMath.Lerp(topRightCorner, bottomRightCorner, i / (sca.y * 2)));
-                        for (int i = 0; i < (int)(sca.x * 2); i++)
-                            annotation.points.Add(RTMath.Lerp(bottomRightCorner, bottomLeftCorner, i / (sca.x * 2)));
-                        for (int i = 0; i < (int)(sca.y * 2) + 1; i++)
-                            annotation.points.Add(RTMath.Lerp(bottomLeftCorner, topLeftCorner, i / (sca.y * 2)));
-                        annotation.points = annotation.points.Select(x => (Vector2)RTMath.Rotate(x, rot)).ToList();
+                        annotation.DrawBox(pos, sca, rot);
                         timelineMarker.Marker.annotations.Add(annotation);
                     }
                 }
             }
 
             /// <summary>
-            /// Draws a circle in the annotations of all selected markers.
+            /// Draws a polygon in the annotations of all selected markers.
             /// </summary>
-            public class DrawMarkerAnnotationCircle : ActionParameter
+            public class DrawShapeMarkerAnnotation : ActionParameter
             {
-                public override string Name => "draw_circle";
+                public override string Name => "draw_shape";
 
                 public override int ParameterCount => 11;
 
                 public override SelectableType RequiredSelectionType => SelectableType.Markers;
 
-                public override string Description => "Draws a circle in the annotations of all selected markers.";
+                public override string Description => "Draws a polygon in the annotations of all selected markers.";
 
-                public override string AddToAutocomplete => "draw_circle 32 0 0 10 10 0 0 - 1 4 false";
+                public override string AddToAutocomplete => "draw_shape 32 0 0 10 10 0 0 - 1 4 false";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -5326,14 +5314,49 @@ namespace BetterLegacy.Companion.Data
                         annotation.opacity = opacity;
                         annotation.thickness = thickness;
                         annotation.fixedCamera = fixedCamera;
-                        for (int i = 0; i < count + 1; i++)
-                        {
-                            var r = 360f * (i / (float)count);
-                            var x = Mathf.Sin(r / Mathf.Rad2Deg);
-                            var y = Mathf.Cos(r / Mathf.Rad2Deg);
-                            annotation.points.Add(new Vector2((x * sca.x) + pos.x, (y * sca.y) + pos.y));
-                        }
-                        annotation.points = annotation.points.Select(x => (Vector2)RTMath.Rotate(x, rot)).ToList();
+                        annotation.DrawShape(count, pos, sca, rot);
+                        timelineMarker.Marker.annotations.Add(annotation);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Draws a line in the annotations of all selected markers.
+            /// </summary>
+            public class DrawLineMarkerAnnotation : ActionParameter
+            {
+                public override string Name => "draw_line";
+
+                public override int ParameterCount => 9;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Draws a line in the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "draw_line 0 0 10 0 0 - 1 4 false";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var startPos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    var endPos = new Vector2(Parser.TryParse(parameters[2], 0f), Parser.TryParse(parameters[3], 0f));
+                    var col = Parser.TryParse(parameters[4], 0);
+                    var hexCol = parameters[5] == "-" ? string.Empty : parameters[5];
+                    var opacity = Parser.TryParse(parameters[6], 1f);
+                    var thickness = Parser.TryParse(parameters[7], 1f);
+                    var fixedCamera = Parser.TryParse(parameters[8], false);
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is not TimelineMarker timelineMarker || !timelineMarker.Marker)
+                            continue;
+
+                        var annotation = new Annotation();
+                        annotation.color = col;
+                        annotation.hexColor = hexCol;
+                        annotation.opacity = opacity;
+                        annotation.thickness = thickness;
+                        annotation.fixedCamera = fixedCamera;
+                        annotation.DrawLine(startPos, endPos);
                         timelineMarker.Marker.annotations.Add(annotation);
                     }
                 }

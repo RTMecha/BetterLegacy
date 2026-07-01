@@ -207,6 +207,27 @@ namespace BetterLegacy.Editor.Managers
         int selectedCount;
         Vector2 startMovePos;
         List<List<Vector2>> pointsCache = new List<List<Vector2>>();
+        bool drawRigid;
+
+        /// <summary>
+        /// If annotation drawing is allowed.
+        /// </summary>
+        public bool AllowAnnotation
+        {
+            get
+            {
+                if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent)
+                    return false;
+
+                if (!(drawingAnnotation || movingAnnotations) && EventSystem.current.IsPointerOverGameObject())
+                    return false;
+
+                // don't draw if Example is being dragged.
+                if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.Dragging)
+                    return false;
+                return true;
+            }
+        }
 
         #endregion
 
@@ -1345,14 +1366,7 @@ namespace BetterLegacy.Editor.Managers
         // directly based on AnnotationEditor code.
         void AnnotationTick()
         {
-            if (!ProjectArrhythmia.State.IsEditing || !Dialog || !Dialog.IsCurrent)
-                return;
-
-            if (!(drawingAnnotation || movingAnnotations) && EventSystem.current.IsPointerOverGameObject())
-                return;
-
-            // don't draw if Example is being dragged.
-            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.Dragging)
+            if (!AllowAnnotation)
                 return;
 
             var tool = Settings.tool;
@@ -1366,6 +1380,18 @@ namespace BetterLegacy.Editor.Managers
             // don't draw if the marker is active
             if (!IsInMarkerArea(CurrentMarker.Marker, AudioManager.inst.CurrentAudioSource.time))
                 return;
+
+            if (Input.mouseScrollDelta.y > 0f && RTEditor.MouseOverPreview)
+            {
+                RTEditor.inst.editorInfo.annotationSettings.thickness = RTMath.Clamp(RTEditor.inst.editorInfo.annotationSettings.thickness + (Input.GetKey(KeyCode.LeftShift) ? 2f : Input.GetKey(KeyCode.LeftAlt) ? 0.1f : 1f), 0.1f, 100f);
+                RenderAnnotationThickness();
+            }
+            
+            if (Input.mouseScrollDelta.y < 0f && RTEditor.MouseOverPreview)
+            {
+                RTEditor.inst.editorInfo.annotationSettings.thickness = RTMath.Clamp(RTEditor.inst.editorInfo.annotationSettings.thickness - (Input.GetKey(KeyCode.LeftShift) ? 2f : Input.GetKey(KeyCode.LeftAlt) ? 0.1f : 1f), 0.1f, 100f);
+                RenderAnnotationThickness();
+            }
 
             var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
 
@@ -1525,8 +1551,11 @@ namespace BetterLegacy.Editor.Managers
                 thickness = Settings.thickness,
                 fixedCamera = Settings.fixedCamera,
             };
-            currentStroke.points.Add(pos);
+            drawRigid = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            if (!drawRigid)
+                currentStroke.points.Add(pos);
             drawingAnnotation = true;
+            startMovePos = pos;
 
             if (Settings.mirrorDrawingHorizontal)
             {
@@ -1570,19 +1599,33 @@ namespace BetterLegacy.Editor.Managers
 
         void ContinueStroke(Vector2 pos)
         {
-            ContinueStroke(currentStroke, pos);
+            if (drawRigid && (Input.GetKey(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)))
+            {
+                var distance = RTMath.Distance(startMovePos, pos);
+                var angle = RTMath.Angle(startMovePos, pos);
+                pos = startMovePos + (Vector2)RTMath.Rotate(new Vector2(distance, 0f), RTMath.RoundToNearestNumber(angle, EditorConfig.Instance.AnnotationLineRotationInterval.Value));
+            }
+            ContinueStroke(currentStroke, startMovePos, pos);
             if (mirrorHorizontalStroke)
-                ContinueStroke(mirrorHorizontalStroke, new Vector2(-pos.x, pos.y));
+                ContinueStroke(mirrorHorizontalStroke, new Vector2(-startMovePos.x, startMovePos.y), new Vector2(-pos.x, pos.y));
             if (mirrorVerticalStroke)
-                ContinueStroke(mirrorVerticalStroke, new Vector2(pos.x, -pos.y));
+                ContinueStroke(mirrorVerticalStroke, new Vector2(startMovePos.x, -startMovePos.y), new Vector2(pos.x, -pos.y));
             if (mirrorDiagonalStroke)
-                ContinueStroke(mirrorDiagonalStroke, new Vector2(-pos.x, -pos.y));
+                ContinueStroke(mirrorDiagonalStroke, new Vector2(-startMovePos.x, -startMovePos.y), new Vector2(-pos.x, -pos.y));
         }
 
-        void ContinueStroke(Annotation annotation, Vector2 pos)
+        void ContinueStroke(Annotation annotation, Vector2 startPos, Vector2 pos)
         {
             if (!annotation)
                 return;
+
+            annotation.thickness = Settings.thickness;
+
+            if (drawRigid)
+            {
+                annotation.DrawLine(startPos, pos);
+                return;
+            }
 
             if (annotation.points.IsEmpty())
             {
