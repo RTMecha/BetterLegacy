@@ -1407,6 +1407,121 @@ namespace BetterLegacy.Core
         public static bool Contains(this JSONNode jn, int index, string key) => jn != null && jn.IsArray ? jn[index] != null : jn[key] != null;
 
         /// <summary>
+        /// Gets a JSON value from a specified path.
+        /// </summary>
+        /// <param name="jn">JSON Node.</param>
+        /// <param name="path">Path to get the JSON value from.<br/>
+        /// Example: chapter/0/data<br/>
+        /// The 0 acts as an index, meaning that part of the JSON structure should be an array.</param>
+        /// <returns>Returns the found JSON value.</returns>
+        public static JSONNode GetPath(this JSONNode jn, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return null;
+
+            var split = path.Split('/');
+            var currentNode = jn;
+            for (int i = 0; i < split.Length; i++)
+            {
+                var key = split[i];
+                if (currentNode == null)
+                    return null;
+
+                if (currentNode.IsArray && int.TryParse(key, out int index))
+                    currentNode = currentNode[index];
+                else
+                    currentNode = currentNode[key];
+            }
+            return currentNode;
+        }
+
+        /// <summary>
+        /// Sets a JSON value via a specified path.
+        /// </summary>
+        /// <param name="jn">JSON Node.</param>
+        /// <param name="path">Path to get the JSON value from.<br/>
+        /// Example: chapter/0/data<br/>
+        /// The 0 acts as an index, meaning that part of the JSON structure should be an array.</param>
+        /// <param name="obj">JSON value to set.</param>
+        public static void SetPath(this JSONNode jn, string path, JSONNode obj)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var split = path.Split('/');
+            var currentNode = jn;
+            for (int i = 0; i < split.Length; i++)
+            {
+                var key = split[i];
+                if (int.TryParse(key, out int index))
+                {
+                    var nextNode = currentNode[index];
+                    if (nextNode == null)
+                    {
+                        nextNode = i == split.Length - 1 ? obj : split.TryGetAt(i + 1, out string nextKey) && int.TryParse(nextKey, out int nextIndex) ? new JSONArray() : new JSONObject();
+                        currentNode[index] = nextNode;
+                    }
+                    else if (i == split.Length - 1)
+                        currentNode[index] = obj;
+                    currentNode = nextNode;
+                }
+                else
+                {
+                    var nextNode = currentNode[key];
+                    if (nextNode == null)
+                    {
+                        nextNode = i == split.Length - 1 ? obj : split.TryGetAt(i + 1, out string nextKey) && int.TryParse(nextKey, out int nextIndex) ? new JSONArray() : new JSONObject();
+                        currentNode[key] = nextNode;
+                    }
+                    else if (i == split.Length - 1)
+                        currentNode[key] = obj;
+                    currentNode = nextNode;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes a JSON value from a specified path.
+        /// </summary>
+        /// <param name="jn">JSON Node.</param>
+        /// <param name="path">Path to get the JSON value from.<br/>
+        /// Example: chapter/0/data<br/>
+        /// The 0 acts as an index, meaning that part of the JSON structure should be an array.</param>
+        /// <param name="removeArray">If array elements should be removed.</param>
+        public static void RemovePath(this JSONNode jn, string path, bool removeArray = true)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var split = path.Split('/');
+            JSONNode currentNode = jn;
+            for (int i = 0; i < split.Length; i++)
+            {
+                var key = split[i];
+
+                if (int.TryParse(key, out int index))
+                {
+                    if (i != split.Length - 1)
+                    {
+                        currentNode = currentNode[index];
+                        continue;
+                    }
+                    if (removeArray)
+                        currentNode.Remove(index);
+                }
+                else
+                {
+                    if (i != split.Length - 1)
+                    {
+                        currentNode = currentNode[key];
+                        continue;
+                    }
+                    currentNode.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>
         /// If the JSON is an array, gets the JSON node at the index, otherwise gets the JSON node with the key.
         /// </summary>
         /// <param name="index">Index to get if JSON is an array.</param>
