@@ -87,6 +87,19 @@
     [
       {
         "type": 1,
+        "name": "getRuntimeVariable",
+        "values": [ "RUNTIME_VAR", "RUNTIME_KEY" ],
+        "const": "True"
+      }, // getRuntimeVariable
+      {
+        "type": 1,
+        "name": "setRuntimeVariable",
+        "values": [ "RUNTIME_KEY", "Value" ],
+        "const": "True"
+      }, // setRuntimeVariable
+
+      {
+        "type": 1,
         "commands": [ "getToggle", "False", "False" ],
         "value": "TOGGLE_VAR",
         "const": "True"
@@ -2642,104 +2655,67 @@
     [
       {
         "type": 1,
-        "commands": [ "getJSONString", "save_file", "chapter", "data" ],
-        "value": "JSON_VAR",
-        "const": "True",
-        "compat": "level_control"
+        "name": "getJSONString",
+        "values": [ "JSON_VAR", "save_file", "chapter/0/data" ],
+        "const": "True"
       }, // getJSONString
       {
         "type": 1,
-        "commands": [ "getJSONFloat", "save_file", "chapter", "data" ],
-        "value": "JSON_VAR",
-        "const": "True",
-        "compat": "level_control"
+        "name": "getJSONFloat",
+        "values": [ "JSON_VAR", "save_file", "chapter/0/data" ],
+        "const": "True"
       }, // getJSONFloat
       {
         "type": 1,
-        "commands": [ "getJSON", "{\"value\":\"Returned value\"}", "value" ],
-        "value": "JSON_VAR",
-        "const": "True",
-        "compat": "level_control"
+        "name": "getJSON",
+        "values": [ "JSON_VAR", "save_file", "chapter/0/data" ],
+        "const": "True"
       }, // getJSON
 
       {
         "type": 1,
-        "commands": [ "saveFloat", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "saveJSON",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "False",
         "compat": "level_control"
-      }, // saveFloat
-      {
-        "type": 1,
-        "commands": [ "saveString", "save_file", "chapter", "data" ],
-        "value": "Text",
-        "const": "False",
-        "compat": "level_control"
-      }, // saveString
-      {
-        "type": 1,
-        "commands": [ "saveVariable", "save_file", "chapter", "data" ],
-        "value": "0",
-        "const": "False",
-        "compat": "level_control"
-      }, // saveVariable
-      {
-        "type": 1,
-        "commands": [ "saveText", "save_file", "chapter", "data" ],
-        "value": "0",
-        "const": "False",
-        "compat": "obj"
-      }, // saveText
-      {
-        "type": 1,
-        "commands": [ "loadVariable", "save_file", "chapter", "data" ],
-        "value": "0",
-        "const": "False",
-        "compat": "level_control"
-      }, // loadVariable
-      {
-        "type": 1,
-        "commands": [ "loadVariableOther", "save_file", "chapter", "data" ],
-        "value": "0",
-        "const": "False",
-        "compat": "level_control"
-      }, // loadVariableOther
+      }, // saveJSON
+
       {
         "type": 0,
-        "commands": [ "loadEquals", "save_file", "chapter", "data", "0" ],
-        "value": "0",
+        "name": "loadJSONEquals",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "True"
-      }, // loadEquals
+      }, // loadJSONEquals
       {
         "type": 0,
-        "commands": [ "loadLesserEquals", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "loadJSONLesserEquals",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "True"
-      }, // loadLesserEquals
+      }, // loadJSONLesserEquals
       {
         "type": 0,
-        "commands": [ "loadGreaterEquals", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "loadJSONGreaterEquals",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "True"
-      }, // loadGreaterEquals
+      }, // loadJSONGreaterEquals
       {
         "type": 0,
-        "commands": [ "loadLesser", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "loadJSONLesser",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "True"
-      }, // loadLesser
+      }, // loadJSONLesser
       {
         "type": 0,
-        "commands": [ "loadGreater", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "loadJSONGreater",
+        "values": [ "save_file", "chapter/0/data", "0" ],
         "const": "True"
-      }, // loadGreater
+      }, // loadJSONGreater
       {
         "type": 0,
-        "commands": [ "loadExists", "save_file", "chapter", "data" ],
-        "value": "0",
+        "name": "loadJSONExists",
+        "values": [ "save_file", "chapter/0/data" ],
         "const": "True"
-      } // loadExists
+      } // loadJSONExists
     ],
 
     // Events

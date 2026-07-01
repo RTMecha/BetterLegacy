@@ -986,6 +986,27 @@
         // Variable
         [
           {
+            "name": "Object Modifier - getRuntimeVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getRuntimeVariable (Action)",
+                "hint": "Gets a global runtime variable and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getRuntimeVariable
+          {
+            "name": "Object Modifier - setRuntimeVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "setRuntimeVariable (Action)",
+                "hint": "Sets a global runtime variable.",
+                "lang": 0
+              }
+            ]
+          }, // setRuntimeVariable
+
+          {
             "name": "Object Modifier - getToggle (Action)",
             "tooltips": [
               {
@@ -1145,36 +1166,6 @@
               }
             ]
           }, // getCurrentKey
-          {
-            "name": "Object Modifier - getJSONString (Action)",
-            "tooltips": [
-              {
-                "desc": "getJSONString (Action)",
-                "hint": "Gets a string value from a saved JSON file in the profiles folder and passes it to other modifiers.",
-                "lang": 0
-              }
-            ]
-          }, // getJSONString
-          {
-            "name": "Object Modifier - getJSONFloat (Action)",
-            "tooltips": [
-              {
-                "desc": "getJSONFloat (Action)",
-                "hint": "Gets a float value from a saved JSON file in the profiles folder and passes it to other modifiers.",
-                "lang": 0
-              }
-            ]
-          }, // getJSONFloat
-          {
-            "name": "Object Modifier - getJSON (Action)",
-            "tooltips": [
-              {
-                "desc": "getJSON (Action)",
-                "hint": "Gets a JSON value and passes it to other modifiers.",
-                "lang": 0
-              }
-            ]
-          }, // getJSON
           {
             "name": "Object Modifier - getSubString (Action)",
             "tooltips": [
@@ -4688,105 +4679,107 @@
         // JSON
         [
           {
-            "name": "Object Modifier - saveFloat (Action)",
+            "name": "Object Modifier - getJSONString (Action)",
             "tooltips": [
               {
-                "desc": "saveFloat (Action)",
-                "hint": "Saves a floating point number (like 0.4324) to a JSON file that can be read later.",
+                "desc": "getJSONString (Action)",
+                "hint": "Gets a string value from a saved JSON file in the profiles folder and passes it to other modifiers.",
                 "lang": 0
               }
             ]
-          }, // saveFloat
+          }, // getJSONString
           {
-            "name": "Object Modifier - saveString (Action)",
+            "name": "Object Modifier - getJSONFloat (Action)",
             "tooltips": [
               {
-                "desc": "saveString (Action)",
-                "hint": "Saves a string (like \"hi\") to a JSON file that can be read later.",
+                "desc": "getJSONFloat (Action)",
+                "hint": "Gets a float value from a saved JSON file in the profiles folder and passes it to other modifiers.",
                 "lang": 0
               }
             ]
-          }, // saveString
+          }, // getJSONFloat
           {
-            "name": "Object Modifier - saveText (Action)",
+            "name": "Object Modifier - getJSON (Action)",
             "tooltips": [
               {
-                "desc": "saveText (Action)",
-                "hint": "Saves the text of the text object to a JSON file that can be read later.",
+                "desc": "getJSON (Action)",
+                "hint": "Gets a JSON value and passes it to other modifiers.",
                 "lang": 0
               }
             ]
-          }, // saveText
+          }, // getJSON
+
           {
-            "name": "Object Modifier - saveVariable (Action)",
+            "name": "Object Modifier - saveJSON (Action)",
             "tooltips": [
               {
-                "desc": "saveVariable (Action)",
-                "hint": "Saves the variable of the object to a JSON file that can be read later.",
+                "desc": "saveJSON (Action)",
+                "hint": "Saves a value to a JSON file that can be read later.",
                 "lang": 0
               }
             ]
-          }, // saveVariable
+          }, // saveJSON
+
           {
-            "name": "Object Modifier - loadEquals (Trigger)",
+            "name": "Object Modifier - loadJSONEquals (Trigger)",
             "tooltips": [
               {
-                "desc": "loadEquals (Trigger)",
+                "desc": "loadJSONEquals (Trigger)",
                 "hint": "Trigger is active if a JSON value is equal to the modifier value. Supports text and numbers.",
                 "lang": 0
               }
             ]
-          }, // loadEquals
+          }, // loadJSONEquals
           {
-            "name": "Object Modifier - loadLesserEquals (Trigger)",
+            "name": "Object Modifier - loadJSONLesserEquals (Trigger)",
             "tooltips": [
               {
-                "desc": "loadLesserEquals (Trigger)",
+                "desc": "loadJSONLesserEquals (Trigger)",
                 "hint": "Trigger is active if a JSON value is equal to or lesser than the modifier value. Supports only numbers.",
                 "lang": 0
               }
             ]
-          }, // loadLesserEquals
+          }, // loadJSONLesserEquals
           {
-            "name": "Object Modifier - loadGreaterEquals (Trigger)",
+            "name": "Object Modifier - loadJSONGreaterEquals (Trigger)",
             "tooltips": [
               {
-                "desc": "loadGreaterEquals (Trigger)",
+                "desc": "loadJSONGreaterEquals (Trigger)",
                 "hint": "Trigger is active if a JSON value is equal to or greater than the modifier value. Supports only numbers.",
                 "lang": 0
               }
             ]
-          }, // loadGreaterEquals
+          }, // loadJSONGreaterEquals
           {
-            "name": "Object Modifier - loadLesser (Trigger)",
+            "name": "Object Modifier - loadJSONLesser (Trigger)",
             "tooltips": [
               {
-                "desc": "loadLesser (Trigger)",
+                "desc": "loadJSONLesser (Trigger)",
                 "hint": "Trigger is active if a JSON value is lesser than the modifier value. Supports only numbers.",
                 "lang": 0
               }
             ]
-          }, // loadLesser
+          }, // loadJSONLesser
           {
-            "name": "Object Modifier - loadGreater (Trigger)",
+            "name": "Object Modifier - loadJSONGreater (Trigger)",
             "tooltips": [
               {
-                "desc": "loadGreater (Trigger)",
+                "desc": "loadJSONGreater (Trigger)",
                 "hint": "Trigger is active if a JSON value is greater than the modifier value. Supports only numbers.",
                 "lang": 0
               }
             ]
-          }, // loadGreater
+          }, // loadJSONGreater
           {
-            "name": "Object Modifier - loadExists (Trigger)",
+            "name": "Object Modifier - loadJSONExists (Trigger)",
             "tooltips": [
               {
-                "desc": "loadExists (Trigger)",
+                "desc": "loadJSONExists (Trigger)",
                 "hint": "Trigger is active if a JSON value exists.",
                 "lang": 0
               }
             ]
-          } // loadExists
+          } // loadJSONExists
         ],
 
         // Events

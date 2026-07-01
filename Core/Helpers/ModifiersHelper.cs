@@ -516,6 +516,13 @@ namespace BetterLegacy.Core.Helpers
 
             #region JSON
 
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONEquals), ModifierFunctions.loadJSONEquals),
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONLesserEquals), ModifierFunctions.loadJSONLesserEquals),
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONGreaterEquals), ModifierFunctions.loadJSONGreaterEquals),
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONLesser), ModifierFunctions.loadJSONLesser),
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONGreater), ModifierFunctions.loadJSONGreater),
+            new ModifierTrigger(nameof(ModifierFunctions.loadJSONExists), ModifierFunctions.loadJSONExists),
+            
             new ModifierTrigger(nameof(ModifierFunctions.loadEquals), ModifierFunctions.loadEquals),
             new ModifierTrigger(nameof(ModifierFunctions.loadLesserEquals), ModifierFunctions.loadLesserEquals),
             new ModifierTrigger(nameof(ModifierFunctions.loadGreaterEquals), ModifierFunctions.loadGreaterEquals),
@@ -1045,90 +1052,90 @@ namespace BetterLegacy.Core.Helpers
 
             #region Variable
 
-            new ModifierAction(nameof(ModifierFunctions.getToggle),  ModifierFunctions.getToggle),
-            new ModifierAction(nameof(ModifierFunctions.getFloat),  ModifierFunctions.getFloat),
-            new ModifierAction(nameof(ModifierFunctions.getInt),  ModifierFunctions.getInt),
-            new ModifierAction(nameof(ModifierFunctions.getIncrementFloat),  ModifierFunctions.getIncrementFloat),
-            new ModifierAction(nameof(ModifierFunctions.getIncrementInt),  ModifierFunctions.getIncrementInt),
-            new ModifierAction(nameof(ModifierFunctions.getString),  ModifierFunctions.getString),
-            new ModifierAction(nameof(ModifierFunctions.getStringLower),  ModifierFunctions.getStringLower),
-            new ModifierAction(nameof(ModifierFunctions.getStringUpper),  ModifierFunctions.getStringUpper),
-            new ModifierAction(nameof(ModifierFunctions.getColor),  ModifierFunctions.getColor),
-            new ModifierAction(nameof(ModifierFunctions.getEnum),  ModifierFunctions.getEnum),
-            new ModifierAction(nameof(ModifierFunctions.getRandom),  ModifierFunctions.getRandom),
-            new ModifierAction(nameof(ModifierFunctions.getRandomVector2),  ModifierFunctions.getRandomVector2),
-            new ModifierAction(nameof(ModifierFunctions.getEasing),  ModifierFunctions.getEasing),
-            new ModifierAction(nameof(ModifierFunctions.getEasingName),  ModifierFunctions.getEasingName),
-            new ModifierAction(nameof(ModifierFunctions.getTag),  ModifierFunctions.getTag),
-            new ModifierAction(nameof(ModifierFunctions.getPitch),  ModifierFunctions.getPitch),
-            new ModifierAction(nameof(ModifierFunctions.getMusicTime),  ModifierFunctions.getMusicTime),
-            new ModifierAction(nameof(ModifierFunctions.getAxis),  ModifierFunctions.getAxis),
-            new ModifierAction(nameof(ModifierFunctions.getAxisMath),  ModifierFunctions.getAxisMath),
-            new ModifierAction(nameof(ModifierFunctions.getAnimateVariable),  ModifierFunctions.getAnimateVariable),
-            new ModifierAction(nameof(ModifierFunctions.getAnimateVariableMath),  ModifierFunctions.getAnimateVariableMath),
-            new ModifierAction(nameof(ModifierFunctions.getMath),  ModifierFunctions.getMath),
-            new ModifierAction(nameof(ModifierFunctions.getNearestPlayer),  ModifierFunctions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.getCollidingPlayers),  ModifierFunctions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.getPlayerHealth),  ModifierFunctions.getPlayerHealth),
-            new ModifierAction(nameof(ModifierFunctions.getPlayerLives),  ModifierFunctions.getPlayerLives),
-            new ModifierAction(nameof(ModifierFunctions.getPlayerPosX),  ModifierFunctions.getPlayerPosX),
-            new ModifierAction(nameof(ModifierFunctions.getPlayerPosY),  ModifierFunctions.getPlayerPosY),
-            new ModifierAction(nameof(ModifierFunctions.getPlayerRot),  ModifierFunctions.getPlayerRot),
-            new ModifierAction(nameof(ModifierFunctions.getEventValue),  ModifierFunctions.getEventValue),
-            new ModifierAction(nameof(ModifierFunctions.getSample),  ModifierFunctions.getSample),
-            new ModifierAction(nameof(ModifierFunctions.getText),  ModifierFunctions.getText, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.getTextOther),  ModifierFunctions.getTextOther, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.getCurrentKey),  ModifierFunctions.getCurrentKey),
-            new ModifierAction(nameof(ModifierFunctions.getColorSlotHexCode),  ModifierFunctions.getColorSlotHexCode),
-            new ModifierAction(nameof(ModifierFunctions.getFloatFromHexCode),  ModifierFunctions.getFloatFromHexCode),
-            new ModifierAction(nameof(ModifierFunctions.getHexCodeFromFloat),  ModifierFunctions.getHexCodeFromFloat),
-            new ModifierAction(nameof(ModifierFunctions.getModifiedColor),  ModifierFunctions.getModifiedColor),
-            new ModifierAction(nameof(ModifierFunctions.getMixedColors),  ModifierFunctions.getMixedColors),
-            new ModifierAction(nameof(ModifierFunctions.getLerpColor),  ModifierFunctions.getLerpColor),
-            new ModifierAction(nameof(ModifierFunctions.getAddColor),  ModifierFunctions.getAddColor),
-            new ModifierAction(nameof(ModifierFunctions.getVisualColor),  ModifierFunctions.getVisualColor),
-            new ModifierAction(nameof(ModifierFunctions.getVisualColorOther),  ModifierFunctions.getVisualColorOther),
-            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBA),  ModifierFunctions.getVisualColorRGBA),
-            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBAOther),  ModifierFunctions.getVisualColorRGBAOther),
-            new ModifierAction(nameof(ModifierFunctions.getVisualOpacity),  ModifierFunctions.getVisualOpacity),
-            new ModifierAction(nameof(ModifierFunctions.getJSONString),  ModifierFunctions.getJSONString),
-            new ModifierAction(nameof(ModifierFunctions.getJSONFloat),  ModifierFunctions.getJSONFloat),
-            new ModifierAction(nameof(ModifierFunctions.getJSON),  ModifierFunctions.getJSON),
-            new ModifierAction(nameof(ModifierFunctions.getSubString),  ModifierFunctions.getSubString),
-            new ModifierAction(nameof(ModifierFunctions.getSplitString),  ModifierFunctions.getSplitString),
-            new ModifierAction(nameof(ModifierFunctions.getSplitStringAt),  ModifierFunctions.getSplitStringAt),
-            new ModifierAction(nameof(ModifierFunctions.getSplitStringCount),  ModifierFunctions.getSplitStringCount),
-            new ModifierAction(nameof(ModifierFunctions.getStringLength),  ModifierFunctions.getStringLength),
-            new ModifierAction(nameof(ModifierFunctions.getParsedString),  ModifierFunctions.getParsedString),
-            new ModifierAction(nameof(ModifierFunctions.getRegex),  ModifierFunctions.getRegex),
-            new ModifierAction(nameof(ModifierFunctions.getFormatVariable),  ModifierFunctions.getFormatVariable),
-            new ModifierAction(nameof(ModifierFunctions.getComparison),  ModifierFunctions.getComparison),
-            new ModifierAction(nameof(ModifierFunctions.getComparisonMath),  ModifierFunctions.getComparisonMath),
-            new ModifierAction(nameof(ModifierFunctions.getQuickElement),  ModifierFunctions.getQuickElement),
-            new ModifierAction(nameof(ModifierFunctions.getEditorBin),  ModifierFunctions.getEditorBin),
-            new ModifierAction(nameof(ModifierFunctions.getEditorLayer),  ModifierFunctions.getEditorLayer),
-            new ModifierAction(nameof(ModifierFunctions.getObjectName),  ModifierFunctions.getObjectName),
-            new ModifierAction(nameof(ModifierFunctions.getKeyframeValue),  ModifierFunctions.getKeyframeValue),
-            new ModifierAction(nameof(ModifierFunctions.getSignaledVariables),  ModifierFunctions.getSignaledVariables),
-            new ModifierAction(nameof(ModifierFunctions.signalLocalVariables),  ModifierFunctions.signalLocalVariables),
-            new ModifierAction(nameof(ModifierFunctions.clearLocalVariables),  ModifierFunctions.clearLocalVariables),
-            new ModifierAction(nameof(ModifierFunctions.storeLocalVariables),  ModifierFunctions.storeLocalVariables),
+            new ModifierAction(nameof(ModifierFunctions.getRuntimeVariable), ModifierFunctions.getRuntimeVariable),
+            new ModifierAction(nameof(ModifierFunctions.setRuntimeVariable), ModifierFunctions.setRuntimeVariable, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierFunctions.getVariable),  ModifierFunctions.getVariable),
-            new ModifierAction(nameof(ModifierFunctions.getVariableOther),  ModifierFunctions.getVariableOther),
-            new ModifierAction(nameof(ModifierFunctions.addVariable),  ModifierFunctions.addVariable),
-            new ModifierAction(nameof(ModifierFunctions.addVariableOther),  ModifierFunctions.addVariableOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.subVariable),  ModifierFunctions.subVariable),
-            new ModifierAction(nameof(ModifierFunctions.subVariableOther),  ModifierFunctions.subVariableOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setVariable),  ModifierFunctions.setVariable),
-            new ModifierAction(nameof(ModifierFunctions.setVariableOther),  ModifierFunctions.setVariableOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setVariableRandom),  ModifierFunctions.setVariableRandom),
-            new ModifierAction(nameof(ModifierFunctions.setVariableRandomOther),  ModifierFunctions.setVariableRandomOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setVariableMath),  ModifierFunctions.setVariableMath, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setVariableMathOther),  ModifierFunctions.setVariableMathOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.animateVariableOther),  ModifierFunctions.animateVariableOther, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierFunctions.clampVariable),  ModifierFunctions.clampVariable),
-            new ModifierAction(nameof(ModifierFunctions.clampVariableOther),  ModifierFunctions.clampVariableOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getToggle), ModifierFunctions.getToggle),
+            new ModifierAction(nameof(ModifierFunctions.getFloat), ModifierFunctions.getFloat),
+            new ModifierAction(nameof(ModifierFunctions.getInt), ModifierFunctions.getInt),
+            new ModifierAction(nameof(ModifierFunctions.getIncrementFloat), ModifierFunctions.getIncrementFloat),
+            new ModifierAction(nameof(ModifierFunctions.getIncrementInt), ModifierFunctions.getIncrementInt),
+            new ModifierAction(nameof(ModifierFunctions.getString), ModifierFunctions.getString),
+            new ModifierAction(nameof(ModifierFunctions.getStringLower), ModifierFunctions.getStringLower),
+            new ModifierAction(nameof(ModifierFunctions.getStringUpper), ModifierFunctions.getStringUpper),
+            new ModifierAction(nameof(ModifierFunctions.getColor), ModifierFunctions.getColor),
+            new ModifierAction(nameof(ModifierFunctions.getEnum), ModifierFunctions.getEnum),
+            new ModifierAction(nameof(ModifierFunctions.getRandom), ModifierFunctions.getRandom),
+            new ModifierAction(nameof(ModifierFunctions.getRandomVector2), ModifierFunctions.getRandomVector2),
+            new ModifierAction(nameof(ModifierFunctions.getEasing), ModifierFunctions.getEasing),
+            new ModifierAction(nameof(ModifierFunctions.getEasingName), ModifierFunctions.getEasingName),
+            new ModifierAction(nameof(ModifierFunctions.getTag), ModifierFunctions.getTag),
+            new ModifierAction(nameof(ModifierFunctions.getPitch), ModifierFunctions.getPitch),
+            new ModifierAction(nameof(ModifierFunctions.getMusicTime), ModifierFunctions.getMusicTime),
+            new ModifierAction(nameof(ModifierFunctions.getAxis), ModifierFunctions.getAxis),
+            new ModifierAction(nameof(ModifierFunctions.getAxisMath), ModifierFunctions.getAxisMath),
+            new ModifierAction(nameof(ModifierFunctions.getAnimateVariable), ModifierFunctions.getAnimateVariable),
+            new ModifierAction(nameof(ModifierFunctions.getAnimateVariableMath), ModifierFunctions.getAnimateVariableMath),
+            new ModifierAction(nameof(ModifierFunctions.getMath), ModifierFunctions.getMath),
+            new ModifierAction(nameof(ModifierFunctions.getNearestPlayer), ModifierFunctions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getCollidingPlayers), ModifierFunctions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getPlayerHealth), ModifierFunctions.getPlayerHealth),
+            new ModifierAction(nameof(ModifierFunctions.getPlayerLives), ModifierFunctions.getPlayerLives),
+            new ModifierAction(nameof(ModifierFunctions.getPlayerPosX), ModifierFunctions.getPlayerPosX),
+            new ModifierAction(nameof(ModifierFunctions.getPlayerPosY), ModifierFunctions.getPlayerPosY),
+            new ModifierAction(nameof(ModifierFunctions.getPlayerRot), ModifierFunctions.getPlayerRot),
+            new ModifierAction(nameof(ModifierFunctions.getEventValue), ModifierFunctions.getEventValue),
+            new ModifierAction(nameof(ModifierFunctions.getSample), ModifierFunctions.getSample),
+            new ModifierAction(nameof(ModifierFunctions.getText), ModifierFunctions.getText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getTextOther), ModifierFunctions.getTextOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentKey), ModifierFunctions.getCurrentKey),
+            new ModifierAction(nameof(ModifierFunctions.getColorSlotHexCode), ModifierFunctions.getColorSlotHexCode),
+            new ModifierAction(nameof(ModifierFunctions.getFloatFromHexCode), ModifierFunctions.getFloatFromHexCode),
+            new ModifierAction(nameof(ModifierFunctions.getHexCodeFromFloat), ModifierFunctions.getHexCodeFromFloat),
+            new ModifierAction(nameof(ModifierFunctions.getModifiedColor), ModifierFunctions.getModifiedColor),
+            new ModifierAction(nameof(ModifierFunctions.getMixedColors), ModifierFunctions.getMixedColors),
+            new ModifierAction(nameof(ModifierFunctions.getLerpColor), ModifierFunctions.getLerpColor),
+            new ModifierAction(nameof(ModifierFunctions.getAddColor), ModifierFunctions.getAddColor),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColor), ModifierFunctions.getVisualColor),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorOther), ModifierFunctions.getVisualColorOther),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBA), ModifierFunctions.getVisualColorRGBA),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBAOther), ModifierFunctions.getVisualColorRGBAOther),
+            new ModifierAction(nameof(ModifierFunctions.getVisualOpacity), ModifierFunctions.getVisualOpacity),
+            new ModifierAction(nameof(ModifierFunctions.getSubString), ModifierFunctions.getSubString),
+            new ModifierAction(nameof(ModifierFunctions.getSplitString), ModifierFunctions.getSplitString),
+            new ModifierAction(nameof(ModifierFunctions.getSplitStringAt), ModifierFunctions.getSplitStringAt),
+            new ModifierAction(nameof(ModifierFunctions.getSplitStringCount), ModifierFunctions.getSplitStringCount),
+            new ModifierAction(nameof(ModifierFunctions.getStringLength), ModifierFunctions.getStringLength),
+            new ModifierAction(nameof(ModifierFunctions.getParsedString), ModifierFunctions.getParsedString),
+            new ModifierAction(nameof(ModifierFunctions.getRegex), ModifierFunctions.getRegex),
+            new ModifierAction(nameof(ModifierFunctions.getFormatVariable), ModifierFunctions.getFormatVariable),
+            new ModifierAction(nameof(ModifierFunctions.getComparison), ModifierFunctions.getComparison),
+            new ModifierAction(nameof(ModifierFunctions.getComparisonMath), ModifierFunctions.getComparisonMath),
+            new ModifierAction(nameof(ModifierFunctions.getQuickElement), ModifierFunctions.getQuickElement),
+            new ModifierAction(nameof(ModifierFunctions.getEditorBin), ModifierFunctions.getEditorBin),
+            new ModifierAction(nameof(ModifierFunctions.getEditorLayer), ModifierFunctions.getEditorLayer),
+            new ModifierAction(nameof(ModifierFunctions.getObjectName), ModifierFunctions.getObjectName),
+            new ModifierAction(nameof(ModifierFunctions.getKeyframeValue), ModifierFunctions.getKeyframeValue),
+            new ModifierAction(nameof(ModifierFunctions.getSignaledVariables), ModifierFunctions.getSignaledVariables),
+            new ModifierAction(nameof(ModifierFunctions.signalLocalVariables), ModifierFunctions.signalLocalVariables),
+            new ModifierAction(nameof(ModifierFunctions.clearLocalVariables), ModifierFunctions.clearLocalVariables),
+            new ModifierAction(nameof(ModifierFunctions.storeLocalVariables), ModifierFunctions.storeLocalVariables),
+
+            new ModifierAction(nameof(ModifierFunctions.getVariable), ModifierFunctions.getVariable),
+            new ModifierAction(nameof(ModifierFunctions.getVariableOther), ModifierFunctions.getVariableOther),
+            new ModifierAction(nameof(ModifierFunctions.addVariable), ModifierFunctions.addVariable),
+            new ModifierAction(nameof(ModifierFunctions.addVariableOther), ModifierFunctions.addVariableOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.subVariable), ModifierFunctions.subVariable),
+            new ModifierAction(nameof(ModifierFunctions.subVariableOther), ModifierFunctions.subVariableOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariable), ModifierFunctions.setVariable),
+            new ModifierAction(nameof(ModifierFunctions.setVariableOther), ModifierFunctions.setVariableOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariableRandom), ModifierFunctions.setVariableRandom),
+            new ModifierAction(nameof(ModifierFunctions.setVariableRandomOther), ModifierFunctions.setVariableRandomOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariableMath), ModifierFunctions.setVariableMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setVariableMathOther), ModifierFunctions.setVariableMathOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.animateVariableOther), ModifierFunctions.animateVariableOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierFunctions.clampVariable), ModifierFunctions.clampVariable),
+            new ModifierAction(nameof(ModifierFunctions.clampVariableOther), ModifierFunctions.clampVariableOther, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -1154,7 +1161,13 @@ namespace BetterLegacy.Core.Helpers
             #endregion
 
             #region JSON
+            
+            new ModifierAction(nameof(ModifierFunctions.getJSONString), ModifierFunctions.getJSONString),
+            new ModifierAction(nameof(ModifierFunctions.getJSONFloat), ModifierFunctions.getJSONFloat),
+            new ModifierAction(nameof(ModifierFunctions.getJSON), ModifierFunctions.getJSON),
 
+            new ModifierAction(nameof(ModifierFunctions.saveJSON),  ModifierFunctions.saveJSON, ModifierCompatibility.LevelControlCompatible),
+            
             new ModifierAction(nameof(ModifierFunctions.saveFloat),  ModifierFunctions.saveFloat, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.saveString),  ModifierFunctions.saveString, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.saveText),  ModifierFunctions.saveText, ModifierCompatibility.LevelControlCompatible),
@@ -2992,6 +3005,20 @@ namespace BetterLegacy.Core.Helpers
 
         #region Variable
 
+        public static void getRuntimeVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var key = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            if (RTLevel.Current.variables.TryGetValue(key, out string value))
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value;
+        }
+
+        public static void setRuntimeVariable(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var key = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+            if (!string.IsNullOrEmpty(key))
+                RTLevel.Current.variables[key] = modifier.GetValue(1, modifierLoop.variables);
+        }
+
         // local ariables
         public static void getToggle(Modifier modifier, ModifierLoop modifierLoop)
         {
@@ -3380,44 +3407,6 @@ namespace BetterLegacy.Core.Helpers
         public static void getHexCodeFromFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = RTColors.FloatToHex(modifier.GetFloat(1, 1f, modifierLoop.variables));
-        }
-
-        public static void getJSONString(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
-                return;
-
-            var jn = JSON.Parse(json);
-
-            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(03, modifierLoop.variables), modifierLoop.variables)]["string"];
-
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
-        }
-
-        public static void getJSONFloat(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
-                return;
-
-            var jn = JSON.Parse(json);
-
-            var fjn = jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables)]["float"];
-
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
-        }
-
-        public static void getJSON(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            try
-            {
-                var jn = JSON.Parse(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables));
-                var json1 = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
-                if (!string.IsNullOrEmpty(json1))
-                    jn = jn[json1];
-
-                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = jn;
-            }
-            catch { }
         }
 
         public static void getSubString(Modifier modifier, ModifierLoop modifierLoop)
@@ -8259,6 +8248,72 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region JSON
+
+        public static void getJSONString(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
+                return;
+
+            var jn = JSON.Parse(json);
+
+            var fjn = modifier.version == 1 ? jn.GetPath(modifier.GetValue(2, modifierLoop.variables)) : jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables)]["string"];
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
+        }
+
+        public static void getJSONFloat(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables)), out string json))
+                return;
+
+            var jn = JSON.Parse(json);
+
+            var fjn = modifier.version == 1 ? jn.GetPath(modifier.GetValue(2, modifierLoop.variables)) : jn[ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables)][ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables)]["float"];
+
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = fjn;
+        }
+
+        public static void getJSON(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var key = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables);
+            string json;
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(key), out json))
+                json = key;
+
+            try
+            {
+                var jn = JSON.Parse(json);
+                var json1 = ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables);
+                if (!string.IsNullOrEmpty(json1))
+                    jn = modifier.version == 1 ? jn.GetPath(json1) : jn[json1];
+
+                modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = jn;
+            }
+            catch { }
+        }
+
+        public static void saveJSON(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            var value = modifier.GetValue(2, modifierLoop.variables);
+
+            if (path.Contains("\\") || path.Contains("/") || path.Contains(".."))
+                return;
+
+            var profile = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
+            RTFile.CreateDirectory(profile);
+
+            var file = RTFile.CombinePaths(profile, $"{path}{FileFormat.SES.Dot()}");
+            var jn = JSON.Parse(RTFile.FileExists(file) ? RTFile.ReadFromFile(file) : "{}");
+
+            if (string.IsNullOrEmpty(value))
+                jn.RemovePath(jsonPath, false);
+            else
+                jn.SetPath(jsonPath, value);
+
+            RTFile.WriteToFile(file, jn.ToString(3));
+        }
 
         public static void saveFloat(Modifier modifier, ModifierLoop modifierLoop)
         {
@@ -15203,6 +15258,78 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region JSON
+
+        public static bool loadJSONEquals(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            {
+                var jn = JSON.Parse(json);
+                return jn.GetPath(modifier.GetValue(0, modifierLoop.variables)) == modifier.GetValue(1, modifierLoop.variables);
+            }
+
+            return false;
+        }
+
+        public static bool loadJSONLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            {
+                var jn = JSON.Parse(json);
+
+                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
+
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat <= modifier.GetFloat(0, 0f, modifierLoop.variables);
+            }
+
+            return false;
+        }
+
+        public static bool loadJSONGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            {
+                var jn = JSON.Parse(json);
+
+                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
+
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat >= modifier.GetFloat(0, 0f, modifierLoop.variables);
+            }
+
+            return false;
+        }
+
+        public static bool loadJSONLesser(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            {
+                var jn = JSON.Parse(json);
+
+                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
+
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat < modifier.GetFloat(0, 0f, modifierLoop.variables);
+            }
+
+            return false;
+        }
+
+        public static bool loadJSONGreater(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            {
+                var jn = JSON.Parse(json);
+
+                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
+
+                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat > modifier.GetFloat(0, 0f, modifierLoop.variables);
+            }
+
+            return false;
+        }
+
+        public static bool loadJSONExists(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            return RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(0, modifierLoop.variables)), out string json) && JSON.Parse(json).GetPath(modifier.GetValue(1, modifierLoop.variables)) != null;
+        }
 
         public static bool loadEquals(Modifier modifier, ModifierLoop modifierLoop)
         {

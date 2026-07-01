@@ -1945,6 +1945,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Variable
                     
+                case nameof(ModifierFunctions.getRuntimeVariable): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Runtime Key", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.setRuntimeVariable): {
+                        StringGenerator(modifier, reference, "Runtime Key", 0);
+                        StringGenerator(modifier, reference, "Runtime Val", 1);
+
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.getToggle): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         BoolGenerator(modifier, reference, "Value", 1, false);
@@ -2320,29 +2333,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierFunctions.getJSONString): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        StringGenerator(modifier, reference, "Path", 1);
-                        StringGenerator(modifier, reference, "JSON 1", 2);
-                        StringGenerator(modifier, reference, "JSON 2", 3);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getJSONFloat): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        StringGenerator(modifier, reference, "Path", 1);
-                        StringGenerator(modifier, reference, "JSON 1", 2);
-                        StringGenerator(modifier, reference, "JSON 2", 3);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.getJSON): {
-                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
-                        StringGenerator(modifier, reference, "JSON", 1);
-                        StringGenerator(modifier, reference, "JSON Value", 2);
-
-                        break;
-                    }
                 case nameof(ModifierFunctions.getSubString): {
                         StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
                         IntegerGenerator(modifier, reference, "Start Index", 1, 0);
@@ -2708,6 +2698,37 @@ namespace BetterLegacy.Editor.Data.Elements
                 #endregion
 
                 #region JSON
+                    
+                case nameof(ModifierFunctions.getJSONString): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON Path", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getJSONFloat): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON Path", 2);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getJSON): {
+                        StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON Path", 2);
+
+                        break;
+                    }
+                    
+                case nameof(ModifierFunctions.saveJSON): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+
+                        StringGenerator(modifier, reference, "Value", 2);
+
+                        break;
+                    }
 
                 case nameof(ModifierFunctions.saveFloat): {
                         StringGenerator(modifier, reference, "Path", 1);
@@ -5300,18 +5321,48 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Save / Load JSON
 
+                case nameof(ModifierFunctions.loadJSONEquals): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.loadJSONLesserEquals): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.loadJSONGreaterEquals): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.loadJSONLesser): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.loadJSONGreater): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        SingleGenerator(modifier, reference, "Value", 2);
+                        break;
+                    }
+                case nameof(ModifierFunctions.loadJSONExists): {
+                        StringGenerator(modifier, reference, "Path", 0);
+                        StringGenerator(modifier, reference, "JSON Path", 1);
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.loadEquals):
                 case nameof(ModifierFunctions.loadLesserEquals):
                 case nameof(ModifierFunctions.loadGreaterEquals):
                 case nameof(ModifierFunctions.loadLesser):
                 case nameof(ModifierFunctions.loadGreater):
                 case nameof(ModifierFunctions.loadExists): {
-                        if (name == "loadEquals" && modifier.values.Count < 5)
-                            modifier.values.Add("0");
-
-                        if (name == "loadEquals" && modifier.GetInt(4, 0) == 0 && !float.TryParse(modifier.GetValue(0), out float abcdef))
-                            modifier.SetValue(0, "0");
-
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
