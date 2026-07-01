@@ -60,6 +60,28 @@ namespace BetterLegacy.Editor.Components
 
             // Draw lines
             GL.Begin(mode);
+
+            var settings = RTEditor.inst.editorInfo?.annotationSettings;
+            if (settings && settings.tool != AnnotationTool.None && RTMarkerEditor.inst.AllowAnnotation && RTMarkerEditor.inst.CurrentMarker && RTMarkerEditor.inst.CurrentMarker.Time != 0f && RTMarkerEditor.inst.IsInMarkerArea(RTMarkerEditor.inst.CurrentMarker.Marker, AudioManager.inst.CurrentAudioSource.time))
+            {
+                var pos = RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
+
+                if (settings.fixedCamera)
+                {
+                    var camPos = RTLevel.Cameras.FG.transform.position;
+                    var rot = RTLevel.Cameras.FG.transform.eulerAngles.z;
+                    var zoom = RTLevel.Cameras.FG.orthographicSize / 20f;
+
+                    pos = RTMath.Rotate((pos - camPos) / zoom, -rot);
+                }
+
+                GL.Color(RTColors.InvertColor(RTLevel.Cameras.BG.backgroundColor));
+                var thickness = settings.thickness * 0.02f;
+                Quad(new Vector3(pos.x, pos.y + (thickness / 2f)), new Vector2(thickness, 0.1f));
+                Quad(new Vector3(pos.x, pos.y - (thickness / 2f)), new Vector2(thickness, 0.1f));
+                Quad(new Vector3(pos.x + (thickness / 2f), pos.y), new Vector2(0.1f, thickness));
+                Quad(new Vector3(pos.x - (thickness / 2f), pos.y), new Vector2(0.1f, thickness));
+            }
             if (RTMarkerEditor.inst.currentStroke)
                 RenderAnnotationStroke(null, RTMarkerEditor.inst.currentStroke);
             if (RTMarkerEditor.inst.mirrorHorizontalStroke)
@@ -107,6 +129,14 @@ namespace BetterLegacy.Editor.Components
                 GL.Color(color);
                 Quad(annotation.thickness, annotation.points[p], annotation.points[p + 1], annotation.fixedCamera);
             }
+        }
+
+        void Quad(Vector3 pos, Vector2 sca)
+        {
+            GL.Vertex(new Vector3(-(sca.x / 2f), sca.y / 2f) + pos);
+            GL.Vertex(new Vector3(-(sca.x / 2f), -(sca.y / 2f)) + pos);
+            GL.Vertex(new Vector3(sca.x / 2f, -(sca.y / 2f)) + pos);
+            GL.Vertex(new Vector3(sca.x / 2f, sca.y / 2f) + pos);
         }
 
         void Quad(float thickness, Vector2 pos1, Vector2 pos2, bool fixedCamera)
