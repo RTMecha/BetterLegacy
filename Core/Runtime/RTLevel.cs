@@ -90,6 +90,11 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public ModifierLoop loop;
 
+        /// <summary>
+        /// Global runtime variables.
+        /// </summary>
+        public Dictionary<string, string> variables = new Dictionary<string, string>();
+
         public static bool Loaded { get; private set; }
 
         /// <summary>
