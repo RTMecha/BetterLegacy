@@ -227,6 +227,7 @@ namespace BetterLegacy.Configs
         public Setting<float> AnnotationOtherLayerOpacity { get; set; }
         public Setting<bool> AnnotationsDisplayInPreviewMode { get; set; }
         public Setting<float> AnnotationSelectedFlashSpeed { get; set; }
+        public Setting<float> AnnotationLineRotationInterval { get; set; }
 
         #endregion
 
@@ -706,6 +707,7 @@ namespace BetterLegacy.Configs
             AnnotationOtherLayerOpacity = Bind(this, MARKERS, "Annotation Other Layer Opacity", 0.1f, "Opacity of all annotations on other editor layers.", maxValue: 1f);
             AnnotationsDisplayInPreviewMode = Bind(this, MARKERS, "Annotations Display In Preview Mode", false, "If annotations should display in the playtest mode.");
             AnnotationSelectedFlashSpeed = Bind(this, MARKERS, "Annotations Selected Flash Speed", 2f, "How fast the selected annotations should flash.");
+            AnnotationLineRotationInterval = Bind(this, MARKERS, "Annotations Line Rotation Interval", 5f, "The interval of an annotation stroke that is being drawn as a straight line.");
 
             #endregion
 
