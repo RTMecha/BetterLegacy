@@ -2378,7 +2378,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static AudioSource PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop, float panStereo = 0f)
         {
-            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop, panStereo);
+            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch, loop, panStereo);
             if (loop)
                 ModifiersManager.audioSources.TryAdd(id, audioSource);
             return audioSource;
@@ -3108,16 +3108,6 @@ namespace BetterLegacy.Core.Helpers
         public static void getTag(Modifier modifier, ModifierLoop modifierLoop)
         {
             modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = modifierLoop.reference is IModifyable modifyable && modifyable.Tags.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out string tag) ? tag : string.Empty;
-        }
-
-        public static void getPitch(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
-        }
-
-        public static void getMusicTime(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
         }
 
         public static void getAnimateVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -4228,6 +4218,16 @@ namespace BetterLegacy.Core.Helpers
 
         #region Audio
 
+        public static void getPitch(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
+        }
+
+        public static void getMusicTime(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
+        }
+
         public static void setPitch(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (RTLevel.Current.eventEngine)
@@ -4434,7 +4434,7 @@ namespace BetterLegacy.Core.Helpers
             audioSource.clip = clip;
             audioSource.playOnAwake = true;
             audioSource.loop = loop;
-            audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+            audioSource.pitch = pitch;
             audioSource.volume = vol * AudioManager.inst.sfxVol;
             audioSource.panStereo = panStereo;
             audioSource.Play();
