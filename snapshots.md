@@ -4,6 +4,10 @@
 - Added showTitleCard modifier, ported from the AB trigger.
 - Added setTimelineLength modifier, ported from the AB trigger.
 
+## Changes
+### Core
+- playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
+
 -------------------------------------------------------------------
 
 # snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
