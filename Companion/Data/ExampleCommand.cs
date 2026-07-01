@@ -50,6 +50,8 @@ namespace BetterLegacy.Companion.Data
         - select objects name "NAME" -> mirror horizontal
         - select objects name "keyframer" select object_keyframes event_coord 0 0 -> log edit value 0 set 10 select objects name "keyframer" -> update keyframes
         - select markers select annotations color equals 0
+        - select markers selected -> draw_box 0 0 10 10 0 0 - 1 4 false
+        - select markers selected -> draw_circle 32 0 0 10 10 0 0 - 1 4 false
         - create beatmap_object 24 start_time current_time add_editor_bin 0 1 pos_kf [time set 5 value 0 set evaluate (cos((index*15)/radToDeg)*50) value 1 set evaluate (sin((index*15)/radToDeg)*50) value 2 set 0 relative false] rot_kf [time set 0 value 0 set evaluate ((index*15)) relative false]
         - create prefab_object 8 "Mouth Controller" start_time current_time add_editor_bin 0 1 pos evaluate (cos((index*45)/radToDeg)*20) evaluate (sin((index*45)/radToDeg)*20) rot evaluate((index*45))
         - select objects selected edit beatmap_object parent [select objects name "TESTPARENT"]
@@ -843,12 +845,24 @@ namespace BetterLegacy.Companion.Data
 
             public override string Description => "Edits an objects' values. Only available in the editor.";
 
+            /// <summary>
+            /// Current index per selectable item.
+            /// </summary>
             public static int index;
 
+            /// <summary>
+            /// Current amount of selectables.
+            /// </summary>
             public static int count;
 
+            /// <summary>
+            /// The current category.
+            /// </summary>
             public static CategoryType CurrentCategory { get; set; }
 
+            /// <summary>
+            /// List of editor parameters for <see cref="BeatmapObject"/>.
+            /// </summary>
             public static List<EditParameter<BeatmapObject>> beatmapObjectParameters = new List<EditParameter<BeatmapObject>>
             {
                 new BeatmapObjectNameParameter(),
@@ -870,6 +884,9 @@ namespace BetterLegacy.Companion.Data
                 new BeatmapObjectColorKeyframeParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="BackgroundObject"/>.
+            /// </summary>
             public static List<EditParameter<BackgroundObject>> backgroundObjectParameters = new List<EditParameter<BackgroundObject>>
             {
                 new BackgroundObjectNameParameter(),
@@ -888,6 +905,9 @@ namespace BetterLegacy.Companion.Data
                 new ShapeParameter<BackgroundObject>(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="PrefabObject"/>.
+            /// </summary>
             public static List<EditParameter<PrefabObject>> prefabObjectParameters = new List<EditParameter<PrefabObject>>
             {
                 new ObjectStartTimeParameter<PrefabObject>(),
@@ -904,6 +924,9 @@ namespace BetterLegacy.Companion.Data
                 new PrefabObjectDepthParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="Marker"/>.
+            /// </summary>
             public static List<EditParameter<Marker>> markerParameters = new List<EditParameter<Marker>>
             {
                 new MarkerNameParameter(),
@@ -913,6 +936,9 @@ namespace BetterLegacy.Companion.Data
                 new MarkerColorParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="Checkpoint"/>.
+            /// </summary>
             public static List<EditParameter<Checkpoint>> checkpointParameters = new List<EditParameter<Checkpoint>>
             {
                 new CheckpointNameParameter(),
@@ -920,6 +946,9 @@ namespace BetterLegacy.Companion.Data
                 new CheckpointAddTimeParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="EventKeyframe"/>.
+            /// </summary>
             public static List<EditParameter<EventKeyframe>> eventKeyframeParameters = new List<EditParameter<EventKeyframe>>
             {
                 new EventKeframeTimeParameter(),
@@ -931,6 +960,9 @@ namespace BetterLegacy.Companion.Data
                 new EventKeyframeRelativeParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="Modifier"/>.
+            /// </summary>
             public static List<EditParameter<Modifier>> modifierParameters = new List<EditParameter<Modifier>>
             {
                 new ModifierValueParameter(),
@@ -942,6 +974,9 @@ namespace BetterLegacy.Companion.Data
                 new ModifierElseIfParameter(),
             };
 
+            /// <summary>
+            /// List of editor parameters for <see cref="Annotation"/>.
+            /// </summary>
             public static List<EditParameter<Annotation>> annotationParameters = new List<EditParameter<Annotation>>
             {
                 new AnnotationColorParameter(),
@@ -963,6 +998,7 @@ namespace BetterLegacy.Companion.Data
 
             public void ConsumeInput(string input, string[] parameters, SelectCommand.SelectableType selectableType, IEnumerable<ISelectable> selectables)
             {
+                (int, int) command = (0, 0);
                 switch (selectableType)
                 {
                     case SelectCommand.SelectableType.Objects: {
@@ -985,21 +1021,21 @@ namespace BetterLegacy.Companion.Data
                                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
                                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                             CurrentEdit.beatmapObject = beatmapObject;
-                                            Apply(input, 1, beatmapObject, parameters, beatmapObjectParameters);
+                                            command = Apply(1, beatmapObject, parameters, beatmapObjectParameters);
                                             RTLevel.Current?.UpdateObject(beatmapObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
                                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
                                             CurrentEdit.backgroundObject = backgroundObject;
-                                            Apply(input, 1, backgroundObject, parameters, backgroundObjectParameters);
+                                            command = Apply(1, backgroundObject, parameters, backgroundObjectParameters);
                                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                                             break;
                                         }
                                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                                             var prefabObject = timelineObject.GetData<PrefabObject>();
                                             CurrentEdit.prefabObject = prefabObject;
-                                            Apply(input, 1, prefabObject, parameters, prefabObjectParameters);
+                                            command = Apply(1, prefabObject, parameters, prefabObjectParameters);
                                             RTLevel.Current?.UpdatePrefab(prefabObject);
                                             break;
                                         }
@@ -1017,7 +1053,7 @@ namespace BetterLegacy.Companion.Data
                                 if (selectable is not TimelineKeyframe timelineKeyframe)
                                     continue;
                                 CurrentEdit.eventKeyframe = timelineKeyframe.eventKeyframe;
-                                Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
+                                command = Apply(0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
                                 index++;
                             }
@@ -1032,7 +1068,7 @@ namespace BetterLegacy.Companion.Data
                                     continue;
                                 var randomType = timelineKeyframe.eventKeyframe.RandomType;
                                 CurrentEdit.eventKeyframe = timelineKeyframe.eventKeyframe;
-                                Apply(input, 0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
+                                command = Apply(0, timelineKeyframe.eventKeyframe, parameters, eventKeyframeParameters);
                                 timelineKeyframe.Render();
 
                                 if (timelineKeyframe.Type == 3 && randomType != timelineKeyframe.eventKeyframe.RandomType)
@@ -1058,7 +1094,7 @@ namespace BetterLegacy.Companion.Data
                                 if (selectable is not TimelineMarker timelineMarker)
                                     continue;
                                 CurrentEdit.marker = timelineMarker.Marker;
-                                Apply(input, 0, timelineMarker.Marker, parameters, markerParameters);
+                                command = Apply(0, timelineMarker.Marker, parameters, markerParameters);
                                 timelineMarker.Render();
                                 index++;
                             }
@@ -1072,7 +1108,7 @@ namespace BetterLegacy.Companion.Data
                                 if (selectable is not TimelineCheckpoint timelineCheckpoint)
                                     continue;
                                 CurrentEdit.checkpoint = timelineCheckpoint.Checkpoint;
-                                Apply(input, 0, timelineCheckpoint.Checkpoint, parameters, checkpointParameters);
+                                command = Apply(0, timelineCheckpoint.Checkpoint, parameters, checkpointParameters);
                                 timelineCheckpoint.Render();
                                 index++;
                             }
@@ -1086,7 +1122,7 @@ namespace BetterLegacy.Companion.Data
                                 if (selectable is not ModifierCard modifierCard)
                                     continue;
                                 CurrentEdit.modifier = modifierCard.Modifier;
-                                Apply(input, 0, modifierCard.Modifier, parameters, modifierParameters);
+                                command = Apply(0, modifierCard.Modifier, parameters, modifierParameters);
                                 index++;
                             }
                             if (ModifiersEditorDialog.Current)
@@ -1101,28 +1137,67 @@ namespace BetterLegacy.Companion.Data
                                 if (selectable is not Annotation annotation)
                                     continue;
                                 CurrentEdit.annotation = annotation;
-                                Apply(input, 0, annotation, parameters, annotationParameters);
+                                command = Apply(0, annotation, parameters, annotationParameters);
                                 index++;
                             }
                             break;
                         }
                 }
+                SwitchMode(command.Item1, command.Item2, input, parameters, selectables);
                 CurrentEdit.Reset();
             }
 
-            public void Apply<T>(string input, int startIndex, T obj, string[] split, List<EditParameter<T>> parameters)
+            /// <summary>
+            /// Applies a set of parameters to an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object.</typeparam>
+            /// <param name="startIndex">Start index for the parameters array.</param>
+            /// <param name="obj">Object to edit.</param>
+            /// <param name="split">Array of parameters.</param>
+            /// <param name="parameters">List of edit parameters.</param>
+            /// <returns>Returns the command type and the parameter index the function returned on.</returns>
+            public (int, int) Apply<T>(int startIndex, T obj, string[] split, List<EditParameter<T>> parameters)
             {
                 for (int i = startIndex; i < split.Length; i++)
                 {
                     var s = split[i];
                     if (s == "select")
-                    {
-                        new SelectCommand().ConsumeInput(input, split.Range(i, split.Length - 1).ToArray());
-                        return;
-                    }
+                        return (1, i + 1);
+                    if (s == "->")
+                        return (2, i + 1);
 
                     if (parameters.TryFind(x => x.Name == s, out EditParameter<T> parameter))
                         parameter.Apply(obj, parameter.GetParameters(split, ref i));
+                }
+                return (0, 0);
+            }
+
+            /// <summary>
+            /// Switches to select or action mode.
+            /// </summary>
+            /// <param name="commandType">Command type to switch to.<br/>
+            /// 0 = none<br/>
+            /// 1 = select<br/>
+            /// 2 = action
+            /// </param>
+            /// <param name="index">Index of the parameter to start from.</param>
+            /// <param name="input">Input string.</param>
+            /// <param name="split">Parameters array.</param>
+            /// <param name="selectables">Collection of selectables.</param>
+            public void SwitchMode(int commandType, int index, string input, string[] split, IEnumerable<ISelectable> selectables = null)
+            {
+                switch (commandType)
+                {
+                    case 1: {
+                            var selectCommand = new SelectCommand();
+                            selectCommand.DoSelection(selectCommand.GetSelectablesFromInput(input, split.Range(index, split.Length - 1).ToArray(), false, selectables));
+                            break;
+                        }
+                    case 2: {
+                            var selectCommand = new SelectCommand();
+                            selectCommand.DoSelection(selectCommand.GetSelectablesFromInput(input, split.Range(index, split.Length - 1).ToArray(), true, selectables));
+                            break;
+                        }
                 }
             }
 
@@ -1154,8 +1229,17 @@ namespace BetterLegacy.Companion.Data
 
             #region Sub Classes
 
+            /// <summary>
+            /// The base edit parameter.
+            /// </summary>
+            /// <typeparam name="T">Type of the object the parameter can edit.</typeparam>
             public abstract class EditParameter<T> : ParameterBase
             {
+                /// <summary>
+                /// Applies the edit parameter to an object.
+                /// </summary>
+                /// <param name="obj">Object to apply to.</param>
+                /// <param name="parameters">Array of parameters.</param>
                 public abstract void Apply(T obj, string[] parameters);
 
                 public override string GetVariable(string name) => name switch
@@ -1174,28 +1258,95 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Categories of object types that can be edited.
+            /// </summary>
             public enum CategoryType
             {
+                /// <summary>
+                /// No object specified.
+                /// </summary>
                 Null,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Beatmap.BeatmapObject"/> values.
+                /// </summary>
                 BeatmapObject,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Beatmap.BackgroundObject"/> values.
+                /// </summary>
                 BackgroundObject,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Beatmap.PrefabObject"/> values.
+                /// </summary>
                 PrefabObject,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Beatmap.Marker"/> values.
+                /// </summary>
                 Marker,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Beatmap.Checkpoint"/> values.
+                /// </summary>
                 Checkpoint,
+                /// <summary>
+                /// Edits <see cref="Core.Data.Modifiers.Modifier"/> values.
+                /// </summary>
                 Modifier,
             }
 
+            /// <summary>
+            /// The current edit cache.
+            /// </summary>
             public static class CurrentEdit
             {
+                #region Values
+
+                /// <summary>
+                /// The current <see cref="BeatmapObject"/>.
+                /// </summary>
                 public static BeatmapObject beatmapObject;
+
+                /// <summary>
+                /// The current <see cref="BackgroundObject"/>.
+                /// </summary>
                 public static BackgroundObject backgroundObject;
+
+                /// <summary>
+                /// The current <see cref="PrefabObject"/>.
+                /// </summary>
                 public static PrefabObject prefabObject;
+
+                /// <summary>
+                /// The current <see cref="Marker"/>.
+                /// </summary>
                 public static Marker marker;
+
+                /// <summary>
+                /// The current <see cref="Checkpoint"/>.
+                /// </summary>
                 public static Checkpoint checkpoint;
+
+                /// <summary>
+                /// The current <see cref="Modifier"/>.
+                /// </summary>
                 public static Modifier modifier;
+
+                /// <summary>
+                /// The current <see cref="EventKeyframe"/>.
+                /// </summary>
                 public static EventKeyframe eventKeyframe;
+
+                /// <summary>
+                /// The current <see cref="Annotation"/>.
+                /// </summary>
                 public static Annotation annotation;
 
+                #endregion
+
+                #region Functions
+
+                /// <summary>
+                /// Resets the current edit cache.
+                /// </summary>
                 public static void Reset()
                 {
                     beatmapObject = null;
@@ -1207,10 +1358,16 @@ namespace BetterLegacy.Companion.Data
                     eventKeyframe = null;
                     annotation = null;
                 }
+
+                #endregion
             }
 
             #region General
 
+            /// <summary>
+            /// Edits the layer of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IEditable"/>.</typeparam>
             public class LayerParameter<T> : EditParameter<T> where T : IEditable
             {
                 public override string Name => "editor_layer";
@@ -1224,6 +1381,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Layer = Parser.TryParse(parameters[0], 0);
             }
 
+            /// <summary>
+            /// Edits the bin of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IEditable"/>.</typeparam>
             public class BinParameter<T> : EditParameter<T> where T : IEditable
             {
                 public override string Name => "editor_bin";
@@ -1237,6 +1398,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0);
             }
 
+            /// <summary>
+            /// Edits the bin of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IEditable"/>.</typeparam>
             public class AddBinParameter<T> : EditParameter<T> where T : IEditable
             {
                 public override string Name => "add_editor_bin";
@@ -1250,6 +1415,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.EditorData.Bin = Parser.TryParse(parameters[0], 0) + (Parser.TryParse(parameters[1], 0) * index);
             }
 
+            /// <summary>
+            /// Edits the start time of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="ILifetime"/>.</typeparam>
             public class ObjectStartTimeParameter<T> : EditParameter<T> where T : ILifetime
             {
                 public override string Name => "start_time";
@@ -1263,6 +1432,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.StartTime = Parser.TryParse(parameters[0], 0f);
             }
 
+            /// <summary>
+            /// Edits the start time of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="ILifetime"/>.</typeparam>
             public class ObjectAddStartTimeParameter<T> : EditParameter<T> where T : ILifetime
             {
                 public override string Name => "add_start_time";
@@ -1276,6 +1449,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.StartTime = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
 
+            /// <summary>
+            /// Edits the shape of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IShapeable"/>.</typeparam>
             public class ShapeParameter<T> : EditParameter<T> where T : IShapeable
             {
                 public override string Name => "shape";
@@ -1296,6 +1473,10 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the text of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IShapeable"/>.</typeparam>
             public class ShapeTextParameter<T> : EditParameter<T> where T : IShapeable
             {
                 public override string Name => "text";
@@ -1309,6 +1490,10 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(T obj, string[] parameters) => obj.Text = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the parent of an object.
+            /// </summary>
+            /// <typeparam name="T">Type of the object to edit. Must be an <see cref="IParentable"/>.</typeparam>
             public class ParentParameter<T> : EditParameter<T> where T : IParentable
             {
                 public override string Name => "parent";
@@ -1337,6 +1522,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Beatmap Object
 
+            /// <summary>
+            /// Edits the name of an object.
+            /// </summary>
             public class BeatmapObjectNameParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "name";
@@ -1350,6 +1538,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BeatmapObject obj, string[] parameters) => obj.name = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the autokill type of an object.
+            /// </summary>
             public class BeatmapObjectAutoKillTypeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "autokill_type";
@@ -1369,6 +1560,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the autokill offset of an object.
+            /// </summary>
             public class BeatmapObjectAutoKillOffsetParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "autokill_offset";
@@ -1382,6 +1576,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BeatmapObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the gradient type of an object.
+            /// </summary>
             public class BeatmapObjectGradientTypeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "gradient_type";
@@ -1404,6 +1601,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the render depth of an object.
+            /// </summary>
             public class BeatmapObjectRenderDepthParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "depth";
@@ -1417,6 +1617,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BeatmapObject obj, string[] parameters) => RTMath.Operation(ref obj.depth, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits a position keyframe of an object.
+            /// </summary>
             public class BeatmapObjectPositionKeyframeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "pos_kf";
@@ -1449,6 +1652,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits a scale keyframe of an object.
+            /// </summary>
             public class BeatmapObjectScaleKeyframeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "sca_kf";
@@ -1480,7 +1686,10 @@ namespace BetterLegacy.Companion.Data
                         obj.events[1].Add(eventKeyframe);
                 }
             }
-            
+
+            /// <summary>
+            /// Edits a rotation keyframe of an object.
+            /// </summary>
             public class BeatmapObjectRotationKeyframeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "rot_kf";
@@ -1513,6 +1722,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits a color keyframe of an object.
+            /// </summary>
             public class BeatmapObjectColorKeyframeParameter : EditParameter<BeatmapObject>
             {
                 public override string Name => "col_kf";
@@ -1550,6 +1762,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Background Object
 
+            /// <summary>
+            /// Edits the name of an object.
+            /// </summary>
             public class BackgroundObjectNameParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "name";
@@ -1563,6 +1778,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => obj.name = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the autokill type of an object.
+            /// </summary>
             public class BackgroundObjectAutoKillTypeParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "autokill_type";
@@ -1582,6 +1800,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the autokill offset of an object.
+            /// </summary>
             public class BackgroundObjectAutoKillOffsetParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "autokill_offset";
@@ -1595,6 +1816,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the position of an object.
+            /// </summary>
             public class BackgroundObjectPositionParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "pos";
@@ -1608,6 +1832,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.pos, new Vector2(Parser.TryParse(parameters[1], 0f), Parser.TryParse(parameters[2], 0f)), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the scale of an object.
+            /// </summary>
             public class BackgroundObjectScaleParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "sca";
@@ -1621,6 +1848,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.scale, new Vector2(Parser.TryParse(parameters[1], 0f), Parser.TryParse(parameters[2], 0f)), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the rotation of an object.
+            /// </summary>
             public class BackgroundObjectRotationParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "rot";
@@ -1634,6 +1864,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.rot, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the color of an object.
+            /// </summary>
             public class BackgroundObjectColorParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "color";
@@ -1647,6 +1880,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(BackgroundObject obj, string[] parameters) => RTMath.Operation(ref obj.color, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the fade color of an object.
+            /// </summary>
             public class BackgroundObjectFadeColorParameter : EditParameter<BackgroundObject>
             {
                 public override string Name => "fade_color";
@@ -1664,6 +1900,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Prefab Object
 
+            /// <summary>
+            /// Edits the autokill type of an object.
+            /// </summary>
             public class PrefabObjectAutoKillTypeParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "autokill_type";
@@ -1683,6 +1922,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the autokill offset of an object.
+            /// </summary>
             public class PrefabObjectAutoKillOffsetParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "autokill_offset";
@@ -1696,6 +1938,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(PrefabObject obj, string[] parameters) => RTMath.Operation(ref obj.autoKillOffset, Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the position of an object.
+            /// </summary>
             public class PrefabObjectPositionParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "pos";
@@ -1716,6 +1961,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the scale of an object.
+            /// </summary>
             public class PrefabObjectScaleParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "sca";
@@ -1736,6 +1984,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the rotation of an object.
+            /// </summary>
             public class PrefabObjectRotationParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "rot";
@@ -1749,6 +2000,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(PrefabObject obj, string[] parameters) => RTMath.Operation(ref obj.events[2].values[0], Parser.TryParse(parameters[1], 0f), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the depth of an object.
+            /// </summary>
             public class PrefabObjectDepthParameter : EditParameter<PrefabObject>
             {
                 public override string Name => "depth";
@@ -1766,6 +2020,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Event Keyframe
 
+            /// <summary>
+            /// Edits the time of a keyframe.
+            /// </summary>
             public class EventKeframeTimeParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "time";
@@ -1788,6 +2045,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the value of a keyframe.
+            /// </summary>
             public class EventKeyframeValueParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "value";
@@ -1807,6 +2067,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the random value of a keyframe.
+            /// </summary>
             public class EventKeyframeRandomValueParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "random_value";
@@ -1826,6 +2089,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the string value of a keyframe.
+            /// </summary>
             public class EventKeyframeStringValueParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "string_value";
@@ -1865,6 +2131,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the easing of a keyframe.
+            /// </summary>
             public class EventKeyframeEasingParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "easing";
@@ -1878,6 +2147,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(EventKeyframe obj, string[] parameters) => obj.curve = Parser.TryParse(parameters[0], true, Easing.Linear);
             }
 
+            /// <summary>
+            /// Edits the random type of a keyframe.
+            /// </summary>
             public class EventKeyframeRandomTypeParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "random_type";
@@ -1896,6 +2168,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the relative of a keyframe.
+            /// </summary>
             public class EventKeyframeRelativeParameter : EditParameter<EventKeyframe>
             {
                 public override string Name => "relative";
@@ -1913,6 +2188,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Marker
 
+            /// <summary>
+            /// Edits the name of a marker.
+            /// </summary>
             public class MarkerNameParameter : EditParameter<Marker>
             {
                 public override string Name => "name";
@@ -1926,6 +2204,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Marker obj, string[] parameters) => obj.name = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the time of a marker.
+            /// </summary>
             public class MarkerTimeParameter : EditParameter<Marker>
             {
                 public override string Name => "time";
@@ -1939,6 +2220,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Marker obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f);
             }
 
+            /// <summary>
+            /// Edits the time of a marker.
+            /// </summary>
             public class MarkerAddTimeParameter : EditParameter<Marker>
             {
                 public override string Name => "add_time";
@@ -1952,6 +2236,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Marker obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f) + (Parser.TryParse(parameters[1], 0f) * index);
             }
 
+            /// <summary>
+            /// Edits the description of a marker.
+            /// </summary>
             public class MarkerDescriptionParameter : EditParameter<Marker>
             {
                 public override string Name => "desc";
@@ -1965,6 +2252,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Marker obj, string[] parameters) => obj.desc = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the color of a marker.
+            /// </summary>
             public class MarkerColorParameter : EditParameter<Marker>
             {
                 public override string Name => "color";
@@ -1982,6 +2272,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Checkpoint
 
+            /// <summary>
+            /// Edits the name of a checkpoint.
+            /// </summary>
             public class CheckpointNameParameter : EditParameter<Checkpoint>
             {
                 public override string Name => "name";
@@ -1995,6 +2288,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Checkpoint obj, string[] parameters) => obj.name = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the time of a checkpoint.
+            /// </summary>
             public class CheckpointTimeParameter : EditParameter<Checkpoint>
             {
                 public override string Name => "time";
@@ -2008,6 +2304,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Checkpoint obj, string[] parameters) => obj.time = Parser.TryParse(parameters[0], 0f);
             }
 
+            /// <summary>
+            /// Edits the time of a checkpoint.
+            /// </summary>
             public class CheckpointAddTimeParameter : EditParameter<Checkpoint>
             {
                 public override string Name => "add_time";
@@ -2025,6 +2324,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Modifier
 
+            /// <summary>
+            /// Edits a value of a modifier.
+            /// </summary>
             public class ModifierValueParameter : EditParameter<Modifier>
             {
                 public override string Name => "value";
@@ -2038,6 +2340,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Modifier obj, string[] parameters) => obj.SetValue(Parser.TryParse(parameters[0], 0), parameters[1]);
             }
 
+            /// <summary>
+            /// Edits the constant state of a modifier.
+            /// </summary>
             public class ModifierConstantParameter : EditParameter<Modifier>
             {
                 public override string Name => "constant";
@@ -2051,6 +2356,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Modifier obj, string[] parameters) => obj.constant = Parser.TryParse(parameters[0], false);
             }
 
+            /// <summary>
+            /// Edits the run count of a modifier.
+            /// </summary>
             public class ModifierRunCountParameter : EditParameter<Modifier>
             {
                 public override string Name => "run_count";
@@ -2066,6 +2374,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Modifier obj, string[] parameters) => RTMath.Operation(ref obj.triggerCount, Parser.TryParse(parameters[1], 0), RTMath.GetOperation(parameters[0], MathOperation.Set));
             }
 
+            /// <summary>
+            /// Edits the prefab group only state of a modifier.
+            /// </summary>
             public class ModifierPrefabGroupOnlyParameter : EditParameter<Modifier>
             {
                 public override string Name => "prefab_group_only";
@@ -2083,6 +2394,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the group alive state of a modifier.
+            /// </summary>
             public class ModifierGroupAliveParameter : EditParameter<Modifier>
             {
                 public override string Name => "group_alive";
@@ -2100,6 +2414,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the not state of a modifier.
+            /// </summary>
             public class ModifierNotParameter : EditParameter<Modifier>
             {
                 public override string Name => "not";
@@ -2117,6 +2434,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Edits the else if state of a modifier.
+            /// </summary>
             public class ModifierElseIfParameter : EditParameter<Modifier>
             {
                 public override string Name => "else_if";
@@ -2138,6 +2458,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Annotation
 
+            /// <summary>
+            /// Edits the color of an annotation.
+            /// </summary>
             public class AnnotationColorParameter : EditParameter<Annotation>
             {
                 public override string Name => "color";
@@ -2150,7 +2473,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Apply(Annotation obj, string[] parameters) => obj.color = Parser.TryParse(parameters[0], 0);
             }
-            
+
+            /// <summary>
+            /// Edits the hex color of an annotation.
+            /// </summary>
             public class AnnotationHexColorParameter : EditParameter<Annotation>
             {
                 public override string Name => "hex_color";
@@ -2164,6 +2490,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Annotation obj, string[] parameters) => obj.hexColor = parameters[0];
             }
 
+            /// <summary>
+            /// Edits the opacity of an annotation.
+            /// </summary>
             public class AnnotationOpacityParameter : EditParameter<Annotation>
             {
                 public override string Name => "opacity";
@@ -2177,6 +2506,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Annotation obj, string[] parameters) => obj.opacity = Parser.TryParse(parameters[0], 4f);
             }
 
+            /// <summary>
+            /// Edits the thickness of an annotation.
+            /// </summary>
             public class AnnotationThicknessParameter : EditParameter<Annotation>
             {
                 public override string Name => "thickness";
@@ -2190,6 +2522,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Annotation obj, string[] parameters) => obj.thickness = Parser.TryParse(parameters[0], 4f);
             }
 
+            /// <summary>
+            /// Edits the fixed camera state of an annotation.
+            /// </summary>
             public class AnnotationFixedCameraParameter : EditParameter<Annotation>
             {
                 public override string Name => "fixed_camera";
@@ -2202,7 +2537,10 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Apply(Annotation obj, string[] parameters) => obj.fixedCamera = Parser.TryParse(parameters[0], true);
             }
-            
+
+            /// <summary>
+            /// Edits the hidden state of an annotation.
+            /// </summary>
             public class AnnotationHiddenParameter : EditParameter<Annotation>
             {
                 public override string Name => "hidden";
@@ -2216,6 +2554,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Apply(Annotation obj, string[] parameters) => obj.hidden = Parser.TryParse(parameters[0], true);
             }
 
+            /// <summary>
+            /// Moves an annotation.
+            /// </summary>
             public class AnnotationMoveParameter : EditParameter<Annotation>
             {
                 public override string Name => "move";
@@ -2234,6 +2575,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Scales an annotation.
+            /// </summary>
             public class AnnotationScaleParameter : EditParameter<Annotation>
             {
                 public override string Name => "scale";
@@ -2252,6 +2596,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Rotates an annotation.
+            /// </summary>
             public class AnnotationRotateParameter : EditParameter<Annotation>
             {
                 public override string Name => "rotate";
@@ -2300,6 +2647,8 @@ namespace BetterLegacy.Companion.Data
                 count = Parser.TryParse(split[2], 1);
                 if (count <= 0)
                     return;
+                (int, int) command = (0, 0);
+                List<ISelectable> selectables = new List<ISelectable>();
                 switch (CurrentCategory)
                 {
                     case CategoryType.BeatmapObject: {
@@ -2307,10 +2656,11 @@ namespace BetterLegacy.Companion.Data
                             {
                                 var beatmapObject = new BeatmapObject();
                                 beatmapObject.InitDefaultEvents();
-                                Apply(input, 3, beatmapObject, split, beatmapObjectParameters);
+                                command = Apply(3, beatmapObject, split, beatmapObjectParameters);
                                 GameData.Current.beatmapObjects.Add(beatmapObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                                 RTLevel.Current?.UpdateObject(beatmapObject);
+                                selectables.Add(beatmapObject.timelineObject);
                             }
                             break;
                         }
@@ -2318,9 +2668,10 @@ namespace BetterLegacy.Companion.Data
                             for (index = 0; index < count; index++)
                             {
                                 var backgroundObject = new BackgroundObject();
-                                Apply(input, 3, backgroundObject, split, backgroundObjectParameters);
+                                command = Apply(3, backgroundObject, split, backgroundObjectParameters);
                                 GameData.Current.backgroundObjects.Add(backgroundObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                                selectables.Add(backgroundObject.timelineObject);
                             }
                             RTLevel.Current?.UpdateBackgroundObjects();
                             break;
@@ -2335,35 +2686,44 @@ namespace BetterLegacy.Companion.Data
                                 var prefabObject = new PrefabObject();
                                 prefabObject.SetDefaultTransformOffsets();
                                 prefabObject.prefabID = prefab.id;
-                                Apply(input, splitIndex, prefabObject, split, prefabObjectParameters);
+                                command = Apply(splitIndex, prefabObject, split, prefabObjectParameters);
                                 GameData.Current.prefabObjects.Add(prefabObject);
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                                 RTLevel.Current?.UpdatePrefab(prefabObject);
+                                selectables.Add(prefabObject.timelineObject);
                             }
                             break;
                         }
                     case CategoryType.Marker: {
+                            var markers = new List<Marker>();
                             for (index = 0; index < count; index++)
                             {
                                 var marker = new Marker();
-                                Apply(input, 3, marker, split, markerParameters);
+                                command = Apply(3, marker, split, markerParameters);
                                 GameData.Current.data.markers.Add(marker);
+                                markers.Add(marker);
                             }
                             RTMarkerEditor.inst.CreateMarkers();
+                            selectables.AddRange(markers.Select(x => x.timelineMarker));
                             break;
                         }
                     case CategoryType.Checkpoint: {
+                            var checkpoints = new List<Checkpoint>();
                             for (index = 0; index < count; index++)
                             {
                                 var checkpoint = new Checkpoint();
-                                Apply(input, 3, checkpoint, split, checkpointParameters);
-                                if (checkpoint.time > 0f)
-                                    GameData.Current.data.checkpoints.Add(checkpoint);
+                                command = Apply(3, checkpoint, split, checkpointParameters);
+                                if (checkpoint.time <= 0f)
+                                    continue;
+                                GameData.Current.data.checkpoints.Add(checkpoint);
+                                checkpoints.Add(checkpoint);
                             }
                             RTCheckpointEditor.inst.UpdateCheckpointTimeline();
+                            selectables.AddRange(checkpoints.Select(x => x.timelineCheckpoint));
                             break;
                         }
                 }
+                SwitchMode(command.Item1, command.Item2, input, split, selectables);
             }
 
             #endregion
@@ -2474,6 +2834,7 @@ namespace BetterLegacy.Companion.Data
                 new AnnotationOpacityComparisonParameter(),
                 new AnnotationThicknessComparisonParameter(),
                 new AnnotationHiddenParameter(),
+                new AnnotationFixedCameraParameter(),
 
                 #endregion
             };
@@ -2489,7 +2850,6 @@ namespace BetterLegacy.Companion.Data
                 new NotifyCountParameter(),
                 new SetNameParameter(),
                 new ReplaceNameParameter(),
-                new UpdateParameter(),
 
                 #endregion
 
@@ -2500,6 +2860,11 @@ namespace BetterLegacy.Companion.Data
                 new SwapCollapseParameter(),
                 new SetHiddenParameter(),
                 new SwapHiddenParameter(),
+
+                new CopyTimelineObjectParameter(),
+                new DuplicateTimelineObjectParameter(),
+                new DeleteTimelineObjectParameter(),
+                new UpdateParameter(),
 
                 #endregion
 
@@ -2515,6 +2880,8 @@ namespace BetterLegacy.Companion.Data
                 new ScaleMarkerAnnotations(),
                 new RotateMarkerAnnotations(),
                 new ClearMarkerAnnotations(),
+                new DrawMarkerAnnotationBox(),
+                new DrawMarkerAnnotationCircle(),
 
                 #endregion
 
@@ -2562,18 +2929,26 @@ namespace BetterLegacy.Companion.Data
 
             #region Functions
 
-            public override void ConsumeInput(string input, string[] split)
+            public override void ConsumeInput(string input, string[] split) => DoSelection(GetSelectablesFromInput(input, split));
+
+            /// <summary>
+            /// Selects the objects and renders the editor.
+            /// </summary>
+            /// <param name="selectables">Collection of selectables.</param>
+            public void DoSelection(IEnumerable<ISelectable> selectables)
             {
-                var selectables = GetSelectablesFromInput(input, split);
                 if (selectables == null)
                     return;
 
+                // Clear the current selectables.
                 var s = GetSelectables(CurrentType);
                 if (s != null)
                     foreach (var selectable in s)
                         selectable.Selected = false;
+                // Select the new selectables.
                 foreach (var selectable in selectables)
                     selectable.Selected = true;
+                // Render the editor.
                 switch (CurrentType)
                 {
                     case SelectableType.Objects: {
@@ -2599,14 +2974,23 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
-            public IEnumerable<ISelectable> GetSelectablesFromInput(string input, string[] split)
+            /// <summary>
+            /// Gets a collection of selectables based on the input command. Allows for switching to edit mode with "edit" or action mode with "->".
+            /// </summary>
+            /// <param name="input">Input command.</param>
+            /// <param name="split">Array of parameters.</param>
+            /// <param name="actionMode">The default action mode.</param>
+            /// <param name="baseSelectables">Collection of default selectables.</param>
+            /// <returns>Returns a collection of selectables.</returns>
+            public IEnumerable<ISelectable> GetSelectablesFromInput(string input, string[] split, bool actionMode = false, IEnumerable<ISelectable> baseSelectables = null)
             {
                 CurrentType = Parser.TryParse(split[1].ToLower().Remove("_"), true, SelectableType.Null);
                 if (CurrentType != SelectableType.Null)
                     selectables = GetSelectables(CurrentType);
+                else
+                    selectables = baseSelectables;
                 if (selectables == null)
-                    return selectables;
-                var actionMode = false;
+                    return baseSelectables ?? selectables;
                 for (int i = 2; i < split.Length; i++)
                 {
                     var s = split[i];
@@ -2723,6 +3107,11 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Gets the default selectable collection.
+            /// </summary>
+            /// <param name="type">Type of the selectable to get.</param>
+            /// <returns>Returns the default selectable collection.</returns>
             public static IEnumerable<ISelectable> GetSelectables(SelectableType type) => type switch
             {
                 SelectableType.Objects => EditorTimeline.inst.timelineObjects,
@@ -2745,9 +3134,15 @@ namespace BetterLegacy.Companion.Data
                 SelectableType.NotePlanners => ProjectPlanner.inst.notes,
                 SelectableType.OSTPlanners => ProjectPlanner.inst.osts,
                 SelectableType.Modifiers => ModifiersEditorDialog.Current.modifierCards,
+                SelectableType.Annotations => RTMarkerEditor.inst.timelineMarkers.Where(x => x.Selected).Select(x => x.Marker.annotations).Select(x => x as ISelectable),
                 _ => null,
             };
 
+            /// <summary>
+            /// Gets objects inside of a prefab.
+            /// </summary>
+            /// <param name="selectables">Collection of selectables. Must be <see cref="PrefabPanel"/>.</param>
+            /// <returns>Returns a collection of selectables from within prefabs.</returns>
             public static IEnumerable<ISelectable> GetPrefabPackageObjects(IEnumerable<ISelectable> selectables)
             {
                 foreach (var selectable in selectables)
@@ -2764,6 +3159,11 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Gets modifiers.
+            /// </summary>
+            /// <param name="selectables">Collection of selectables. Must be <see cref="TimelineObject"/> and <see cref="IModifyable"/>.</param>
+            /// <returns>Returns a collection of modifiers.</returns>
             public static IEnumerable<ISelectable> GetModifiers(IEnumerable<ISelectable> selectables)
             {
                 foreach (var selectable in selectables)
@@ -2778,6 +3178,11 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Gets object keyframes.
+            /// </summary>
+            /// <param name="selectables">Collection of selectables. Must be <see cref="TimelineObject"/> and <see cref="BeatmapObject"/>.</param>
+            /// <returns>Returns a collection of object keyframes.</returns>
             public static IEnumerable<ISelectable> GetObjectKeyframes(IEnumerable<ISelectable> selectables)
             {
                 foreach (var selectable in selectables)
@@ -2801,6 +3206,11 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Gets annotations.
+            /// </summary>
+            /// <param name="selectables">Collection of selectables. Must be <see cref="TimelineMarker"/>.</param>
+            /// <returns>Returns a collection of annotations.</returns>
             public static IEnumerable<ISelectable> GetMarkerAnnotations(IEnumerable<ISelectable> selectables)
             {
                 foreach (var selectable in selectables)
@@ -2813,6 +3223,11 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Gets the name of a selectable object.
+            /// </summary>
+            /// <param name="selectable">Selectable object reference. Must have a name value.</param>
+            /// <returns>Returns the name of a selectable object.</returns>
             public static string GetName(ISelectable selectable)
             {
                 if (selectable is TimelineObject timelineObject)
@@ -2848,72 +3263,102 @@ namespace BetterLegacy.Companion.Data
                 return null;
             }
 
+            /// <summary>
+            /// Sets the name of a selectable object.
+            /// </summary>
+            /// <param name="selectable">Selectable object reference. Must have a name value.</param>
+            /// <param name="name">Name to set.</param>
             public static void SetName(ISelectable selectable, string name)
             {
                 if (selectable is TimelineObject timelineObject)
+                {
                     timelineObject.SetName(name);
+                    return;
+                }
                 if (selectable is TimelineMarker timelineMarker)
+                {
                     timelineMarker.Name = name;
+                    return;
+                }
                 if (selectable is TimelineCheckpoint timelineCheckpoint)
+                {
                     timelineCheckpoint.Name = name;
+                    return;
+                }
                 if (selectable is LevelPanel levelPanel && levelPanel.Item && levelPanel.Item.metadata)
                 {
                     levelPanel.Item.metadata.beatmap.name = name;
                     levelPanel.Render();
+                    return;
                 }
                 if (selectable is LevelCollectionPanel levelCollectionPanel && levelCollectionPanel.Item)
                 {
                     levelCollectionPanel.Item.name = name;
                     levelCollectionPanel.Render();
+                    return;
                 }
                 if (selectable is PrefabPanel prefabPanel && prefabPanel.Item && !prefabPanel.IsExternal)
                 {
                     prefabPanel.Item.name = name;
                     RTPrefabEditor.inst.ValidateDuplicateName(prefabPanel.Item);
                     prefabPanel.Render();
+                    return;
                 }
                 if (selectable is ThemePanel themePanel && themePanel.Item && themePanel.Source == ObjectSource.Internal)
                 {
                     themePanel.Item.name = name;
                     themePanel.Render();
+                    return;
                 }
                 if (selectable is PlayerModelPanel playerModelPanel && playerModelPanel.Item)
                 {
                     playerModelPanel.Item.basePart.name = name;
                     playerModelPanel.Render();
+                    return;
                 }
                 if (selectable is FolderPlanner folderPlanner)
                 {
                     folderPlanner.Name = name;
                     folderPlanner.Render();
+                    return;
                 }
                 if (selectable is DocumentPlanner documentPlanner)
                 {
                     documentPlanner.Name = name;
                     documentPlanner.Render();
+                    return;
                 }
                 if (selectable is CharacterPlanner characterPlanner)
                 {
                     characterPlanner.Name = name;
                     characterPlanner.Render();
+                    return;
                 }
                 if (selectable is TimelinePlanner timelinePlanner)
                 {
                     timelinePlanner.Name = name;
                     timelinePlanner.Render();
+                    return;
                 }
                 if (selectable is NotePlanner notePlanner)
                 {
                     notePlanner.Name = name;
                     notePlanner.Render();
+                    return;
                 }
                 if (selectable is OSTPlanner ostPlanner)
                 {
                     ostPlanner.Name = name;
                     ostPlanner.Render();
+                    return;
                 }
             }
 
+            /// <summary>
+            /// Gets the description of a selectable object.
+            /// </summary>
+            /// <param name="selectable">Selectable object reference. Must have a description value.</param>
+            /// <returns>Returns the description of a selectable object.</returns>
             public static string GetDescription(ISelectable selectable)
             {
                 if (selectable is TimelineMarker timelineMarker)
@@ -2941,51 +3386,159 @@ namespace BetterLegacy.Companion.Data
 
             #region Sub Classes
 
+            /// <summary>
+            /// Type of a selectable.
+            /// </summary>
             public enum SelectableType
             {
+                /// <summary>
+                /// Invalid type.
+                /// </summary>
                 Null,
+                /// <summary>
+                /// Represents <see cref="TimelineObject"/>.
+                /// </summary>
                 Objects,
+                /// <summary>
+                /// Represents <see cref="EventKeyframe"/> in the main timeline.
+                /// </summary>
                 Keyframes,
+                /// <summary>
+                /// Represents <see cref="EventKeyframe"/> in an object.
+                /// </summary>
                 ObjectKeyframes,
+                /// <summary>
+                /// Represents <see cref="Marker"/>.
+                /// </summary>
                 Markers,
+                /// <summary>
+                /// Represents <see cref="Checkpoint"/>.
+                /// </summary>
                 Checkpoints,
+                /// <summary>
+                /// Represents <see cref="Level"/>.
+                /// </summary>
                 Levels,
+                /// <summary>
+                /// Represents <see cref="LevelCollection"/>.
+                /// </summary>
                 LevelCollections,
+                /// <summary>
+                /// Represents an external <see cref="Prefab"/>.
+                /// </summary>
                 ExternalPrefabs,
+                /// <summary>
+                /// Represents an internal <see cref="Prefab"/>.
+                /// </summary>
                 InternalPrefabs,
+                /// <summary>
+                /// Represents an external <see cref="BeatmapTheme"/>.
+                /// </summary>
                 ExternalThemes,
+                /// <summary>
+                /// Represents an internal <see cref="BeatmapTheme"/>.
+                /// </summary>
                 InternalThemes,
+                /// <summary>
+                /// Represents <see cref="Core.Data.Player.PlayerModel"/>.
+                /// </summary>
                 PlayerModels,
+                /// <summary>
+                /// Represents <see cref="FolderPlanner"/>.
+                /// </summary>
                 FolderPlanners,
+                /// <summary>
+                /// Represents <see cref="DocumentPlanner"/>.
+                /// </summary>
                 DocumentPlanners,
+                /// <summary>
+                /// Represents <see cref="TODOPlanner"/>.
+                /// </summary>
                 TODOPlanners,
+                /// <summary>
+                /// Represents <see cref="CharacterPlanner"/>.
+                /// </summary>
                 CharacterPlanners,
+                /// <summary>
+                /// Represents <see cref="TimelinePlanner"/>.
+                /// </summary>
                 TimelinePlanners,
+                /// <summary>
+                /// Represents <see cref="SchedulePlanner"/>.
+                /// </summary>
                 SchedulePlanners,
+                /// <summary>
+                /// Represents <see cref="NotePlanner"/>.
+                /// </summary>
                 NotePlanners,
+                /// <summary>
+                /// Represents <see cref="OSTPlanner"/>.
+                /// </summary>
                 OSTPlanners,
+                /// <summary>
+                /// Represents <see cref="Modifier"/>.
+                /// </summary>
                 Modifiers,
+                /// <summary>
+                /// Represents <see cref="Annotation"/>.
+                /// </summary>
                 Annotations,
             }
 
+            /// <summary>
+            /// Represents a selectable filter.
+            /// </summary>
             public abstract class GetSelectableParameter : ParameterBase
             {
+                /// <summary>
+                /// Required selection type. If it's <see cref="SelectableType.Null"/> then the parameter can be used for any type.
+                /// </summary>
                 public virtual SelectableType RequiredSelectionType => SelectableType.Null;
 
+                /// <summary>
+                /// Filters the collection of selectables.
+                /// </summary>
+                /// <param name="selectables">Current collection of selectables.</param>
+                /// <param name="parameters">Array of parameters.</param>
+                /// <param name="not">If the filter should be a not gate.</param>
+                /// <returns>Returns the filtered collection of selectables.</returns>
                 public abstract IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not);
 
+                /// <summary>
+                /// Inverts a check if <paramref name="not"/> is true.
+                /// </summary>
+                /// <param name="not">If the check should be a not gate.</param>
+                /// <param name="value">Check.</param>
+                /// <returns>Returns <paramref name="value"/>.</returns>
                 public bool NotCheck(bool not, bool value) => not ? !value : value;
             }
 
+            /// <summary>
+            /// Represents a function that can be run on a collection of selectables.
+            /// </summary>
             public abstract class ActionParameter : ParameterBase
             {
+                /// <summary>
+                /// Required selection type. If it's <see cref="SelectableType.Null"/> then the parameter can be used for any type.
+                /// </summary>
                 public virtual SelectableType RequiredSelectionType => SelectableType.Null;
 
+                /// <summary>
+                /// Runs an action on a collection of selectables.
+                /// </summary>
+                /// <param name="selectables">Collection of selectables.</param>
+                /// <param name="parameters">Array of parameters.</param>
                 public abstract void Run(IEnumerable<ISelectable> selectables, string[] parameters);
             }
 
+            /// <summary>
+            /// Represents a way to order a collection of selectables.
+            /// </summary>
+            /// <typeparam name="TKey">Type of the selectable to order.</typeparam>
             public class OrderByParameter<TKey> : GetSelectableParameter
             {
+                #region Constructors
+
                 public OrderByParameter() { }
 
                 public OrderByParameter(string name, string description, Func<ISelectable, TKey> keySelector)
@@ -3003,27 +3556,40 @@ namespace BetterLegacy.Companion.Data
                     this.keySelector = keySelector;
                 }
 
+                #endregion
+
+                #region Values
+
                 public override string Name => name;
 
                 public override string Description => description;
 
                 public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
 
-                public string name;
+                string name;
 
-                public string description;
+                string description;
 
-                public string addToAutocomplete;
+                string addToAutocomplete;
 
-                public Func<ISelectable, TKey> keySelector;
+                Func<ISelectable, TKey> keySelector;
+
+                #endregion
+
+                #region Functions
 
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => Parser.TryParse(parameters[0], true) ? selectables.OrderBy(keySelector) : selectables.OrderByDescending(keySelector);
+
+                #endregion
             }
 
             #region Get
 
             #region General
 
+            /// <summary>
+            /// Gets the default collection of selectables.
+            /// </summary>
             public class DefaultSelectablesParameter : GetSelectableParameter
             {
                 public override string Name => "select";
@@ -3037,6 +3603,9 @@ namespace BetterLegacy.Companion.Data
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => SelectCommand.GetSelectables(Parser.TryParse(parameters[0].ToLower().Remove("_"), true, SelectableType.Null));
             }
 
+            /// <summary>
+            /// Compares the selected state of selectables.
+            /// </summary>
             public class SelectedParameter : GetSelectableParameter
             {
                 public override string Name => "selected";
@@ -3046,6 +3615,9 @@ namespace BetterLegacy.Companion.Data
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => NotCheck(not, x.Selected));
             }
             
+            /// <summary>
+            /// Compares the time of selectables.
+            /// </summary>
             public class TimeComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "time";
@@ -3075,6 +3647,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the index of selectables.
+            /// </summary>
             public class IndexComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "index";
@@ -3104,6 +3679,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the locked state of selectables.
+            /// </summary>
             public class LockedParameter : GetSelectableParameter
             {
                 public override string Name => "locked";
@@ -3122,6 +3700,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
             
+            /// <summary>
+            /// Compares the name of selectables.
+            /// </summary>
             public class NameEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "name";
@@ -3143,6 +3724,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the name of selectables.
+            /// </summary>
             public class NameContainsParameter : GetSelectableParameter
             {
                 public override string Name => "name_contains";
@@ -3165,6 +3749,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the name of selectables.
+            /// </summary>
             public class NameRegexParameter : GetSelectableParameter
             {
                 public override string Name => "name_regex";
@@ -3186,6 +3773,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the description of selectables.
+            /// </summary>
             public class DescriptionRegexParameter : GetSelectableParameter
             {
                 public override string Name => "desc_regex";
@@ -3207,6 +3797,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the tag of selectables.
+            /// </summary>
             public class ContainsTagParameter : GetSelectableParameter
             {
                 public override string Name => "tag";
@@ -3230,6 +3823,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Timeline Object
 
+            /// <summary>
+            /// Checks if selectables are on the current editor layer.
+            /// </summary>
             public class CurrentLayerParameter : GetSelectableParameter
             {
                 public override string Name => "current_layer";
@@ -3239,6 +3835,9 @@ namespace BetterLegacy.Companion.Data
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.IsCurrentLayer) || x is TimelineMarker timelineMarker && NotCheck(not, timelineMarker.IsCurrentLayer));
             }
 
+            /// <summary>
+            /// Checks if selectables are in the same group as the first selectable.
+            /// </summary>
             public class SamePrefabGroupParameter : GetSelectableParameter
             {
                 public override string Name => "same_prefab_group";
@@ -3259,6 +3858,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the editor group of selectables.
+            /// </summary>
             public class EditorGroupEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "editor_group";
@@ -3280,6 +3882,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the reference type of selectables.
+            /// </summary>
             public class ReferenceTypeEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "reference_type";
@@ -3299,6 +3904,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the layer of selectables.
+            /// </summary>
             public class LayerComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "layer";
@@ -3324,6 +3932,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the bin of selectables.
+            /// </summary>
             public class BinComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "bin";
@@ -3345,6 +3956,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the collapsed state of selectables.
+            /// </summary>
             public class CollapsedParameter : GetSelectableParameter
             {
                 public override string Name => "collapsed";
@@ -3354,6 +3968,9 @@ namespace BetterLegacy.Companion.Data
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.Collapse));
             }
 
+            /// <summary>
+            /// Compares the hidden state of selectables.
+            /// </summary>
             public class HiddenParameter : GetSelectableParameter
             {
                 public override string Name => "hidden";
@@ -3363,6 +3980,9 @@ namespace BetterLegacy.Companion.Data
                 public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not) => selectables.Where(x => x is TimelineObject timelineObject && NotCheck(not, timelineObject.Hidden));
             }
 
+            /// <summary>
+            /// Compares the object type of selectables.
+            /// </summary>
             public class ObjectTypeParameter : GetSelectableParameter
             {
                 public override string Name => "object_type";
@@ -3382,6 +4002,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the autokill type of selectables.
+            /// </summary>
             public class AutokillTypeParameter : GetSelectableParameter
             {
                 public override string Name => "autokill_type";
@@ -3405,6 +4028,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Timeline Keyframe
 
+            /// <summary>
+            /// Compares the event type of event keyframes.
+            /// </summary>
             public class EventTypeComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "event_type";
@@ -3439,6 +4065,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the event coordinates of event keyframes.
+            /// </summary>
             public class EventCoordParameter : GetSelectableParameter
             {
                 public override string Name => "event_coord";
@@ -3461,6 +4090,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares a value of event keyframes.
+            /// </summary>
             public class EventValueComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "event_value";
@@ -3484,6 +4116,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the easing of event keyframes.
+            /// </summary>
             public class EaseTypeEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "easing";
@@ -3509,6 +4144,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Timeline Marker
 
+            /// <summary>
+            /// Compares the color of markers.
+            /// </summary>
             public class ColorEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "color";
@@ -3531,6 +4169,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Checks if markers have annotations.
+            /// </summary>
             public class MarkerHasAnnotationsParameter : GetSelectableParameter
             {
                 public override string Name => "has_annotations";
@@ -3551,9 +4192,14 @@ namespace BetterLegacy.Companion.Data
 
             #region Timeline Checkpoint
 
+            /// <summary>
+            /// Compares the respawn of checkpoints.
+            /// </summary>
             public class CheckpointRespawnParameter : GetSelectableParameter
             {
                 public override string Name => "respawn";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Checkpoints;
 
                 public override string Description => "Checks a checkpoints respawn value.";
 
@@ -3566,10 +4212,15 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
-            
+
+            /// <summary>
+            /// Compares the heal of checkpoints.
+            /// </summary>
             public class CheckpointHealParameter : GetSelectableParameter
             {
                 public override string Name => "heal";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Checkpoints;
 
                 public override string Description => "Checks a checkpoints heal value.";
 
@@ -3582,10 +4233,15 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
-            
+
+            /// <summary>
+            /// Compares the set time of checkpoints.
+            /// </summary>
             public class CheckpointSetTimeParameter : GetSelectableParameter
             {
                 public override string Name => "set_time";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Checkpoints;
 
                 public override string Description => "Checks a checkpoints set time value.";
 
@@ -3598,10 +4254,15 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
-            
+
+            /// <summary>
+            /// Compares the reverse of checkpoints.
+            /// </summary>
             public class CheckpointReverseParameter : GetSelectableParameter
             {
                 public override string Name => "reverse";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Checkpoints;
 
                 public override string Description => "Checks a checkpoints reverse value.";
 
@@ -3614,10 +4275,15 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
-            
+
+            /// <summary>
+            /// Compares the auto triggerable of checkpoints.
+            /// </summary>
             public class CheckpointAutoTriggerableParameter : GetSelectableParameter
             {
                 public override string Name => "auto_triggerable";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Checkpoints;
 
                 public override string Description => "Checks a checkpoints auto triggerable value.";
 
@@ -3635,6 +4301,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Level
 
+            /// <summary>
+            /// Compares a value of level metadata.
+            /// </summary>
             public class MetaDataValueEquals : GetSelectableParameter
             {
                 public override string Name => "metadata";
@@ -3678,6 +4347,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Modifier
 
+            /// <summary>
+            /// Compares a value of modifiers.
+            /// </summary>
             public class ContainsModifierValue : GetSelectableParameter
             {
                 public override string Name => "contains_value";
@@ -3705,6 +4377,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Annotations
 
+            /// <summary>
+            /// Compares the color of annotations.
+            /// </summary>
             public class AnnotationColorComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "color";
@@ -3729,7 +4404,10 @@ namespace BetterLegacy.Companion.Data
                     }
                 }
             }
-            
+
+            /// <summary>
+            /// Compares the hex color of annotations.
+            /// </summary>
             public class AnnotationHexColorEqualsParameter : GetSelectableParameter
             {
                 public override string Name => "hex_color";
@@ -3754,6 +4432,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the opacity of annotations.
+            /// </summary>
             public class AnnotationOpacityComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "opacity";
@@ -3779,6 +4460,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the thickness of annotations.
+            /// </summary>
             public class AnnotationThicknessComparisonParameter : GetSelectableParameter
             {
                 public override string Name => "thickness";
@@ -3804,6 +4488,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the hidden state of annotations.
+            /// </summary>
             public class AnnotationHiddenParameter : GetSelectableParameter
             {
                 public override string Name => "hidden";
@@ -3822,6 +4509,27 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Compares the fixed camera state of annotations.
+            /// </summary>
+            public class AnnotationFixedCameraParameter : GetSelectableParameter
+            {
+                public override string Name => "fixed_camera";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Annotations;
+
+                public override string Description => "Compares the annotation fixed camera state.";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is Annotation annotation && NotCheck(not, annotation.fixedCamera))
+                            yield return annotation;
+                    }
+                }
+            }
+
             #endregion
 
             #endregion
@@ -3830,6 +4538,9 @@ namespace BetterLegacy.Companion.Data
 
             #region General
 
+            /// <summary>
+            /// Logs all selected objects to the console.
+            /// </summary>
             public class LogSelectedParameter : ActionParameter
             {
                 public override string Name => "log";
@@ -3851,6 +4562,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Notifies the amount of objects that are selected.
+            /// </summary>
             public class NotifyCountParameter : ActionParameter
             {
                 public override string Name => "notify_count";
@@ -3860,6 +4574,9 @@ namespace BetterLegacy.Companion.Data
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters) => EditorManager.inst.DisplayNotification($"Selected items: {selectables.Count()}", 2f, EditorManager.NotificationType.Success);
             }
 
+            /// <summary>
+            /// Sets the name of all selected objects.
+            /// </summary>
             public class SetNameParameter : ActionParameter
             {
                 public override string Name => "set_name";
@@ -3878,6 +4595,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Sets the name of all selected objects.
+            /// </summary>
             public class ReplaceNameParameter : ActionParameter
             {
                 public override string Name => "replace_name";
@@ -3897,56 +4617,13 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
-            public class UpdateParameter : ActionParameter
-            {
-                public override string Name => "update";
-
-                public override int ParameterCount => 1;
-
-                public override string Description => "Updates all selected objects with a specific context.";
-
-                public override string AddToAutocomplete => "update keyframes";
-
-                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
-                {
-                    var context = parameters[0];
-                    foreach (var selectable in selectables)
-                    {
-                        if (selectable is TimelineObject timelineObject)
-                            timelineObject.UpdateObject(context);
-                    }
-                }
-            }
-
-            // TODO: implement copy, paste, duplicate and delete actions
-            //public class CopyParameter : ActionParameter
-            //{
-            //    public override string Name => "copy";
-
-            //    public override string Description => "Copies the selected objects.";
-
-            //    public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
-            //    {
-            //        var first = selectables.FirstOrDefault();
-            //        if (first == null)
-            //            return;
-
-            //        if (first is TimelineObject)
-            //        {
-
-            //        }
-
-            //        foreach (var selectable in selectables)
-            //        {
-
-            //        }
-            //    }
-            //}
-
             #endregion
 
             #region Timeline Object
 
+            /// <summary>
+            /// Mirrors all selected objects in a specified direction.
+            /// </summary>
             public class MirrorObjectParameter : ActionParameter
             {
                 public override string Name => "mirror";
@@ -4016,6 +4693,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Sets the collapse state of all selected objects.
+            /// </summary>
             public class SetCollapseParameter : ActionParameter
             {
                 public override string Name => "collapse";
@@ -4035,6 +4715,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Swaps the collapse state of all selected objects.
+            /// </summary>
             public class SwapCollapseParameter : ActionParameter
             {
                 public override string Name => "swap_collapse";
@@ -4049,6 +4732,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Sets the hidden state of all selected objects.
+            /// </summary>
             public class SetHiddenParameter : ActionParameter
             {
                 public override string Name => "hidden";
@@ -4087,12 +4773,15 @@ namespace BetterLegacy.Companion.Data
                         }
                 }
             }
-            
+
+            /// <summary>
+            /// Swaps the hidden state of all selected objects.
+            /// </summary>
             public class SwapHiddenParameter : ActionParameter
             {
                 public override string Name => "swap_hidden";
 
-                public override string Description => "Sets the hidden state of all selected objects.";
+                public override string Description => "Swaps the hidden state of all selected objects.";
 
                 public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
                 {
@@ -4122,10 +4811,212 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Copies the selected objects.
+            /// </summary>
+            public class CopyTimelineObjectParameter : ActionParameter
+            {
+                public override string Name => "copy";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Copies the selected objects.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var selected = selectables.Where(x => x is TimelineObject).Select(x => x as TimelineObject);
+                    if (selected.IsEmpty())
+                        return;
+
+                    float start = 0f;
+                    if (EditorConfig.Instance.PasteOffset.Value)
+                        start = -AudioManager.inst.CurrentAudioSource.time + selected.Min(x => x.Time);
+
+                    var beatmapObjects = selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>());
+                    var prefabObjects = selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>());
+                    var backgroundObjects = selected.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>());
+
+                    var prefabIDs = new Dictionary<string, Prefab>();
+                    foreach (var prefabObject in prefabObjects)
+                    {
+                        if (string.IsNullOrEmpty(prefabObject.prefabID))
+                            continue;
+                        var prefab = prefabObject.GetPrefab();
+                        if (prefab)
+                            prefabIDs[prefabObject.prefabID] = prefab;
+                    }
+
+                    var copy = new Prefab("copied prefab", 0, start,
+                        beatmapObjects.ToList(),
+                        prefabObjects.ToList(),
+                        null,
+                        backgroundObjects.ToList(),
+                        !prefabIDs.IsEmpty() ? prefabIDs.Values.ToList() : null);
+
+                    copy.description = "Take me wherever you go!";
+                    ObjectEditor.inst.copy = copy;
+                    ObjEditor.inst.hasCopiedObject = true;
+
+                    if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
+                        RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
+                }
+            }
+
+            /// <summary>
+            /// Duplicates the selected objects.
+            /// </summary>
+            public class DuplicateTimelineObjectParameter : ActionParameter
+            {
+                public override string Name => "duplicate";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Duplicates the selected objects.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var selected = selectables.Where(x => x is TimelineObject).Select(x => x as TimelineObject);
+                    if (selected.IsEmpty())
+                        return;
+
+                    float start = 0f;
+                    if (EditorConfig.Instance.PasteOffset.Value)
+                        start = -AudioManager.inst.CurrentAudioSource.time + selected.Min(x => x.Time);
+
+                    var beatmapObjects = selected.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>());
+                    var prefabObjects = selected.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>());
+                    var backgroundObjects = selected.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>());
+
+                    var prefabIDs = new Dictionary<string, Prefab>();
+                    foreach (var prefabObject in prefabObjects)
+                    {
+                        if (string.IsNullOrEmpty(prefabObject.prefabID))
+                            continue;
+                        var prefab = prefabObject.GetPrefab();
+                        if (prefab)
+                            prefabIDs[prefabObject.prefabID] = prefab;
+                    }
+
+                    var copy = new Prefab("copied prefab", 0, start,
+                        beatmapObjects.ToList(),
+                        prefabObjects.ToList(),
+                        null,
+                        backgroundObjects.ToList(),
+                        !prefabIDs.IsEmpty() ? prefabIDs.Values.ToList() : null);
+
+                    copy.description = "Take me wherever you go!";
+                    ObjectEditor.inst.copy = copy;
+                    ObjEditor.inst.hasCopiedObject = true;
+
+                    if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.DirectoryExists(Application.persistentDataPath))
+                        RTFile.WriteToFile(RTFile.CombinePaths(Application.persistentDataPath, $"copied_objects{FileFormat.LSP.Dot()}"), copy.ToJSON().ToString());
+
+                    ObjectEditor.inst.PasteObject(0f, true, false);
+                }
+            }
+
+            /// <summary>
+            /// Deletes the selected objects.
+            /// </summary>
+            public class DeleteTimelineObjectParameter : ActionParameter
+            {
+                public override string Name => "delete";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Deletes the selected objects.";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var list = selectables.Where(x => x is TimelineObject).Select(x => x as TimelineObject);
+                    if (list.IsEmpty())
+                        return;
+
+                    Prefab prefab = null;
+                    float t = 0f;
+                    List<IDPair> children = null;
+
+                    EditorManager.inst.history.Add(new History.Command("Delete Objects",
+                        () =>
+                        {
+                            EditorDialog.CurrentDialog?.Close();
+
+                            prefab = new Prefab("deleted objects", 0, 0f,
+                               list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                               list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
+                               null,
+                               list.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
+
+                            t = list.Min(x => x.Time);
+
+                            children = new List<IDPair>();
+                            foreach (var parent in prefab.beatmapObjects)
+                            {
+                                for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+                                {
+                                    var beatmapObject = GameData.Current.beatmapObjects[i];
+                                    if (beatmapObject.parent == parent.id)
+                                        children.Add(new IDPair(parent.id, beatmapObject.id)); // old = parent new = id
+                                        }
+                            }
+
+                            EditorTimeline.inst.DeleteObjects();
+                        },
+                        () =>
+                        {
+                            EditorTimeline.inst.DeselectAllObjects();
+                            new PrefabExpander(prefab).Select().RetainID().Offset(t).Expand();
+
+                            if (children != null)
+                            {
+                                foreach (var pair in children)
+                                {
+                                    if (GameData.Current.beatmapObjects.TryFind(x => x.id == pair.newID, out BeatmapObject beatmapObject))
+                                    {
+                                        beatmapObject.Parent = pair.oldID;
+                                        RTLevel.Current.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                                    }
+                                }
+                            }
+
+                            list = EditorTimeline.inst.SelectedObjects;
+                        }), true);
+                }
+            }
+
+            /// <summary>
+            /// Updates all selected objects with a specific context.
+            /// </summary>
+            public class UpdateParameter : ActionParameter
+            {
+                public override string Name => "update";
+
+                public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
+
+                public override string Description => "Updates all selected objects with a specific context.";
+
+                public override string AddToAutocomplete => "update keyframes";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var context = parameters[0];
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is TimelineObject timelineObject)
+                            timelineObject.UpdateObject(context);
+                    }
+                }
+            }
+
             #endregion
 
             #region Timeline Marker
 
+            /// <summary>
+            /// Sets the color of all selected markers.
+            /// </summary>
             public class SetMarkerColorParameter : ActionParameter
             {
                 public override string Name => "set_color";
@@ -4149,6 +5040,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Sets the layer of all selected markers. If the layer already exists in a marker, then it is skipped.
+            /// </summary>
             public class SetMarkerLayerParameter : ActionParameter
             {
                 public override string Name => "set_layer";
@@ -4172,6 +5066,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Removes the layer of all selected markers.
+            /// </summary>
             public class RemoveMarkerLayerParameter : ActionParameter
             {
                 public override string Name => "remove_layer";
@@ -4195,6 +5092,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Clears the layers of all selected markers.
+            /// </summary>
             public class ClearMarkerLayersParameter : ActionParameter
             {
                 public override string Name => "clear_layers";
@@ -4213,6 +5113,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Moves the annotations of all selected markers.
+            /// </summary>
             public class MoveMarkerAnnotations : ActionParameter
             {
                 public override string Name => "move_annotations";
@@ -4243,6 +5146,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Scales the annotations of all selected markers.
+            /// </summary>
             public class ScaleMarkerAnnotations : ActionParameter
             {
                 public override string Name => "scale_annotations";
@@ -4273,6 +5179,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Rotates the annotations of all selected markers.
+            /// </summary>
             public class RotateMarkerAnnotations : ActionParameter
             {
                 public override string Name => "rotate_annotations";
@@ -4303,6 +5212,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Clears the annotations of all selected markers.
+            /// </summary>
             public class ClearMarkerAnnotations : ActionParameter
             {
                 public override string Name => "clear_annotations";
@@ -4321,10 +5233,119 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Draws a box in the annotations of all selected markers.
+            /// </summary>
+            public class DrawMarkerAnnotationBox : ActionParameter
+            {
+                public override string Name => "draw_box";
+
+                public override int ParameterCount => 10;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Draws a box in the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "draw_box 0 0 10 10 0 0 - 1 4 false";
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
+                    var sca = new Vector2(Parser.TryParse(parameters[2], 1f), Parser.TryParse(parameters[3], 1f));
+                    var rot = Parser.TryParse(parameters[4], 0f);
+                    var col = Parser.TryParse(parameters[5], 0);
+                    var hexCol = parameters[6] == "-" ? string.Empty : parameters[6];
+                    var opacity = Parser.TryParse(parameters[7], 1f);
+                    var thickness = Parser.TryParse(parameters[8], 1f);
+                    var fixedCamera = Parser.TryParse(parameters[9], false);
+
+                    var topLeftCorner = new Vector2(pos.x - (sca.x / 2f), pos.y + (sca.y / 2f));
+                    var topRightCorner = new Vector2(pos.x + (sca.x / 2f), pos.y + (sca.y / 2f));
+                    var bottomRightCorner = new Vector2(pos.x + (sca.x / 2f), pos.y - (sca.y / 2f));
+                    var bottomLeftCorner = new Vector2(pos.x - (sca.x / 2f), pos.y - (sca.y / 2f));
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is not TimelineMarker timelineMarker || !timelineMarker.Marker)
+                            continue;
+
+                        var annotation = new Annotation();
+                        annotation.color = col;
+                        annotation.hexColor = hexCol;
+                        annotation.opacity = opacity;
+                        annotation.thickness = thickness;
+                        annotation.fixedCamera = fixedCamera;
+                        for (int i = 0; i < (int)(sca.x * 2); i++)
+                            annotation.points.Add(RTMath.Lerp(topLeftCorner, topRightCorner, i / (sca.x * 2)));
+                        for (int i = 0; i < (int)(sca.y * 2); i++)
+                            annotation.points.Add(RTMath.Lerp(topRightCorner, bottomRightCorner, i / (sca.y * 2)));
+                        for (int i = 0; i < (int)(sca.x * 2); i++)
+                            annotation.points.Add(RTMath.Lerp(bottomRightCorner, bottomLeftCorner, i / (sca.x * 2)));
+                        for (int i = 0; i < (int)(sca.y * 2) + 1; i++)
+                            annotation.points.Add(RTMath.Lerp(bottomLeftCorner, topLeftCorner, i / (sca.y * 2)));
+                        annotation.points = annotation.points.Select(x => (Vector2)RTMath.Rotate(x, rot)).ToList();
+                        timelineMarker.Marker.annotations.Add(annotation);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Draws a circle in the annotations of all selected markers.
+            /// </summary>
+            public class DrawMarkerAnnotationCircle : ActionParameter
+            {
+                public override string Name => "draw_circle";
+
+                public override int ParameterCount => 11;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Markers;
+
+                public override string Description => "Draws a circle in the annotations of all selected markers.";
+
+                public override string AddToAutocomplete => "draw_circle 32 0 0 10 10 0 0 - 1 4 false";
+
+                public override void Run(IEnumerable<ISelectable> selectables, string[] parameters)
+                {
+                    var count = Parser.TryParse(parameters[0], 32);
+                    var pos = new Vector2(Parser.TryParse(parameters[1], 0f), Parser.TryParse(parameters[2], 0f));
+                    var sca = new Vector2(Parser.TryParse(parameters[3], 1f), Parser.TryParse(parameters[4], 1f));
+                    var rot = Parser.TryParse(parameters[5], 0f);
+                    var col = Parser.TryParse(parameters[6], 0);
+                    var hexCol = parameters[7] == "-" ? string.Empty : parameters[7];
+                    var opacity = Parser.TryParse(parameters[8], 1f);
+                    var thickness = Parser.TryParse(parameters[9], 1f);
+                    var fixedCamera = Parser.TryParse(parameters[10], false);
+
+                    foreach (var selectable in selectables)
+                    {
+                        if (selectable is not TimelineMarker timelineMarker || !timelineMarker.Marker)
+                            continue;
+
+                        var annotation = new Annotation();
+                        annotation.color = col;
+                        annotation.hexColor = hexCol;
+                        annotation.opacity = opacity;
+                        annotation.thickness = thickness;
+                        annotation.fixedCamera = fixedCamera;
+                        for (int i = 0; i < count + 1; i++)
+                        {
+                            var r = 360f * (i / (float)count);
+                            var x = Mathf.Sin(r / Mathf.Rad2Deg);
+                            var y = Mathf.Cos(r / Mathf.Rad2Deg);
+                            annotation.points.Add(new Vector2((x * sca.x) + pos.x, (y * sca.y) + pos.y));
+                        }
+                        annotation.points = annotation.points.Select(x => (Vector2)RTMath.Rotate(x, rot)).ToList();
+                        timelineMarker.Marker.annotations.Add(annotation);
+                    }
+                }
+            }
+
             #endregion
 
             #region Beatmap Object
 
+            /// <summary>
+            /// Opens the object search popup and displays all selected objects in the list.
+            /// </summary>
             public class ShowObjectListParameter : ActionParameter
             {
                 public override string Name => "show_object_list";
@@ -4345,9 +5366,14 @@ namespace BetterLegacy.Companion.Data
 
             #region Level
 
+            /// <summary>
+            /// Opens the first selected level.
+            /// </summary>
             public class OpenFirstParameter : ActionParameter
             {
                 public override string Name => "open_first";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Levels;
 
                 public override string Description => "Opens the first selected level.";
 
@@ -4364,9 +5390,14 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Opens the last selected level.
+            /// </summary>
             public class OpenLastParameter : ActionParameter
             {
                 public override string Name => "open_last";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Levels;
 
                 public override string Description => "Opens the last selected level.";
 
@@ -4383,11 +5414,16 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Combines all selected levels.
+            /// </summary>
             public class CombineLevelParameter : ActionParameter
             {
                 public override string Name => "combine";
 
                 public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Levels;
 
                 public override string Description => "Combines all selected levels.";
 
@@ -4399,11 +5435,16 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Creates a level collection based on all selected levels.
+            /// </summary>
             public class CreateLevelCollectionParameter : ActionParameter
             {
                 public override string Name => "create_level_collection";
 
                 public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Levels;
 
                 public override string Description => "Creates a level collection based on all selected levels.";
 
@@ -4427,6 +5468,9 @@ namespace BetterLegacy.Companion.Data
 
             #region Prefab
 
+            /// <summary>
+            /// Imports all selected prefabs into the level.
+            /// </summary>
             public class ImportPrefabParameter : ActionParameter
             {
                 public override string Name => "import";
@@ -4453,6 +5497,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Imports all selected prefabs into the level, but doesn't allow for duplicates.
+            /// </summary>
             public class ImportPrefabOnceParameter : ActionParameter
             {
                 public override string Name => "import_once";
@@ -4480,6 +5527,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Updates all associated prefabs.
+            /// </summary>
             public class ImportPrefabUpdateParameter : ActionParameter
             {
                 public override string Name => "import_update";
@@ -4504,6 +5554,9 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Creates a new prefab based on all selected objects.
+            /// </summary>
             public class CreatePrefabParameter : ActionParameter
             {
                 public override string Name => "create_prefab";
@@ -4603,11 +5656,16 @@ namespace BetterLegacy.Companion.Data
 
             #region Modifier
 
+            /// <summary>
+            /// Sets the prefab group only state of all modifiers in all selected objects.
+            /// </summary>
             public class SetPrefabGroupOnlyParameter : ActionParameter
             {
                 public override string Name => "prefab_group_only";
 
                 public override int ParameterCount => 1;
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
 
                 public override string Description => "Sets the prefab group only state of all modifiers in all selected objects.";
 
@@ -4624,9 +5682,14 @@ namespace BetterLegacy.Companion.Data
                 }
             }
 
+            /// <summary>
+            /// Swaps the prefab group only state of all modifiers in all selected objects.
+            /// </summary>
             public class SwapPrefabGroupOnlyParameter : ActionParameter
             {
                 public override string Name => "swap_prefab_group_only";
+
+                public override SelectableType RequiredSelectionType => SelectableType.Objects;
 
                 public override string Description => "Swaps the prefab group only state of all modifiers in all selected objects.";
 
@@ -4653,6 +5716,9 @@ namespace BetterLegacy.Companion.Data
 
         #region Misc
 
+        /// <summary>
+        /// Saves a custom command line.
+        /// </summary>
         public class SaveCustomCommand : ExampleCommand
         {
             public override string Name => "save_custom_command";
@@ -4679,6 +5745,9 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Removes a custom command from the commands list.
+        /// </summary>
         public class RemoveCustomCommand : ExampleCommand
         {
             public override string Name => "remove_custom_command";
@@ -4696,6 +5765,9 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Clears all custom commands from the commands list.
+        /// </summary>
         public class ClearCustomCommands : ExampleCommand
         {
             public override string Name => "clear_custom_commands";
@@ -4712,6 +5784,9 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Edits an existing custom command line.
+        /// </summary>
         public class EditCustomCommand : ExampleCommand
         {
             public override string Name => "edit_custom_command";
@@ -4743,8 +5818,13 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Represents a custom command line.
+        /// </summary>
         public class CustomCommand : ExampleCommand, IJSON
         {
+            #region Constructors
+
             public CustomCommand() { }
 
             public CustomCommand(string name, string description, string commandLine)
@@ -4754,6 +5834,8 @@ namespace BetterLegacy.Companion.Data
                 CommandLine = commandLine;
             }
 
+            #endregion
+
             #region Values
 
             public override string Name => name;
@@ -4762,10 +5844,19 @@ namespace BetterLegacy.Companion.Data
 
             public override string AddToAutocomplete => InputDataManager.inst.editorActions.MultiSelect.IsPressed ? CommandLine : base.AddToAutocomplete;
 
+            /// <summary>
+            /// Command to add to the input.
+            /// </summary>
             public string CommandLine { get; set; }
 
+            /// <summary>
+            /// Name of the parameter.
+            /// </summary>
             public string name;
 
+            /// <summary>
+            /// Description of the parameter.
+            /// </summary>
             public string description;
 
             public bool ShouldSerialize => !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(CommandLine);
@@ -5025,8 +6116,14 @@ namespace BetterLegacy.Companion.Data
             #endregion
         }
 
+        /// <summary>
+        /// Represents a variable.
+        /// </summary>
         public abstract class VariableParameter : ParameterBase
         {
+            /// <summary>
+            /// Dictionary of possible variables.
+            /// </summary>
             public Dictionary<string, string> variables = new Dictionary<string, string>();
 
             public override IEnumerable<(string, string)> GetVariables()
@@ -5037,9 +6134,17 @@ namespace BetterLegacy.Companion.Data
                     yield return variable;
             }
 
+            /// <summary>
+            /// Gets a variable from the array of parameters.
+            /// </summary>
+            /// <param name="parameters">Array of parameters.</param>
+            /// <returns>Returns a variable from the array of parameters.</returns>
             public abstract string Get(string[] parameters);
         }
 
+        /// <summary>
+        /// Evaluates a math function.
+        /// </summary>
         public class EvaluateParameter : VariableParameter
         {
             public override string Name => "evaluate";
@@ -5064,6 +6169,9 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Sets a list of possible values.
+        /// </summary>
         public class ValueListParameter : VariableParameter
         {
             public override string Name => "value_list";
@@ -5085,6 +6193,10 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
+        /// <summary>
+        /// Parameter that represents an enum value.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter.</typeparam>
         public class TypeEnumParameter<T> : ParameterBase where T : Enum
         {
             public TypeEnumParameter(T type, string description, string addToAutocomplete = null)
@@ -5100,11 +6212,18 @@ namespace BetterLegacy.Companion.Data
 
             public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
 
+            /// <summary>
+            /// Enum value.
+            /// </summary>
             public T type;
-            public string description;
-            public string addToAutocomplete;
+
+            string description;
+            string addToAutocomplete;
         }
 
+        /// <summary>
+        /// Represents a generic parameter to display.
+        /// </summary>
         public class GenericParameter : ParameterBase
         {
             public GenericParameter(string name, string description, string addToAutocomplete = null)
@@ -5120,11 +6239,11 @@ namespace BetterLegacy.Companion.Data
 
             public override string AddToAutocomplete => addToAutocomplete ?? base.AddToAutocomplete;
 
-            public string name;
+            string name;
 
-            public string description;
+            string description;
 
-            public string addToAutocomplete;
+            string addToAutocomplete;
         }
 
         #endregion
