@@ -4,6 +4,10 @@
 - Added showTitleCard modifier, ported from the AB trigger.
 - Added setTimelineLength modifier, ported from the AB trigger.
 
+### Companion
+- Added draw_box and draw_circle Example command parameters for markers.
+- Added some more selection parameters.
+
 ## Changes
 ### Core
 - playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
