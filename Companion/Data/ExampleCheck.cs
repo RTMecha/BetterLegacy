@@ -9,6 +9,8 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExampleCheck : Exists
     {
+        #region Constructors
+
         public ExampleCheck() { }
 
         public ExampleCheck(string key, Func<bool> check)
@@ -16,6 +18,10 @@ namespace BetterLegacy.Companion.Data
             this.key = key;
             this.check = check;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Key of the check.
@@ -26,6 +32,24 @@ namespace BetterLegacy.Companion.Data
         /// The check function.
         /// </summary>
         public Func<bool> check;
+
+        static ExampleCheck defaultCheck;
+        /// <summary>
+        /// The default check.
+        /// </summary>
+        public static ExampleCheck Default
+        {
+            get
+            {
+                if (!defaultCheck)
+                    defaultCheck = new ExampleCheck(string.Empty, () => false);
+                return defaultCheck;
+            }
+        }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Checks if the function is true.
@@ -44,18 +68,8 @@ namespace BetterLegacy.Companion.Data
             }
         }
 
-        static ExampleCheck defaultCheck;
-        /// <summary>
-        /// The default check.
-        /// </summary>
-        public static ExampleCheck Default
-        {
-            get
-            {
-                if (!defaultCheck)
-                    defaultCheck = new ExampleCheck(string.Empty, () => false);
-                return defaultCheck;
-            }
-        }
+        public override string ToString() => key;
+
+        #endregion
     }
 }

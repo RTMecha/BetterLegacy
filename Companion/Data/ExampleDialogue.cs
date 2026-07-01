@@ -14,27 +14,17 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExampleDialogue : Exists
     {
+        #region Constructors
+
         public ExampleDialogue() { }
 
-        public ExampleDialogue(GetDialogue get)
-        {
-            this.get = get;
-        }
+        public ExampleDialogue(GetDialogue get) => this.get = get;
 
-        public ExampleDialogue(GetDialogue get, Func<DialogueParameters, bool> canSay) : this(get)
-        {
-            this.canSay = canSay;
-        }
+        public ExampleDialogue(GetDialogue get, Func<DialogueParameters, bool> canSay) : this(get) => this.canSay = canSay;
 
-        public ExampleDialogue(int dialogueCount, GetDialogue get) : this(get)
-        {
-            this.dialogueCount = dialogueCount;
-        }
+        public ExampleDialogue(int dialogueCount, GetDialogue get) : this(get) => this.dialogueCount = dialogueCount;
 
-        public ExampleDialogue(int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(dialogueCount, get)
-        {
-            this.canSay = canSay;
-        }
+        public ExampleDialogue(int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(dialogueCount, get) => this.canSay = canSay;
 
         public ExampleDialogue(string key, GetDialogue get)
         {
@@ -42,11 +32,8 @@ namespace BetterLegacy.Companion.Data
             this.get = get;
         }
 
-        public ExampleDialogue(string key, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, get)
-        {
-            this.canSay = canSay;
-        }
-        
+        public ExampleDialogue(string key, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, get) => this.canSay = canSay;
+
         public ExampleDialogue(string key, int dialogueCount, GetDialogue get)
         {
             this.key = key;
@@ -54,10 +41,11 @@ namespace BetterLegacy.Companion.Data
             this.get = get;
         }
 
-        public ExampleDialogue(string key, int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, dialogueCount, get)
-        {
-            this.canSay = canSay;
-        }
+        public ExampleDialogue(string key, int dialogueCount, GetDialogue get, Func<DialogueParameters, bool> canSay) : this(key, dialogueCount, get) => this.canSay = canSay;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Registered key of the dialogue.
@@ -78,6 +66,10 @@ namespace BetterLegacy.Companion.Data
         /// How many dialogues the dialogue stores.
         /// </summary>
         public int dialogueCount = 1;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Checks if Example can say this line of dialogue.
@@ -119,6 +111,10 @@ namespace BetterLegacy.Companion.Data
             return dialogue;
         }
 
+        #endregion
+
+        #region Operators
+
         /// <summary>
         /// Delegate for generating a new dialogue.
         /// </summary>
@@ -128,5 +124,7 @@ namespace BetterLegacy.Companion.Data
         public delegate string GetDialogue(Example companion, DialogueParameters parameters);
 
         public static implicit operator ExampleDialogue(string text) => new ExampleDialogue((companion, parameters) => text);
+
+        #endregion
     }
 }

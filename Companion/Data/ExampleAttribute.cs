@@ -6,11 +6,13 @@ using BetterLegacy.Core.Data;
 namespace BetterLegacy.Companion.Data
 {
     /// <summary>
-    /// Represents an <see cref="ExampleModule"/> attribute.<br></br>
+    /// Represents an <see cref="Entity.ExampleModule"/> attribute.<br></br>
     /// This is for storing specific variables across modules.
     /// </summary>
     public class ExampleAttribute : Exists
     {
+        #region Constructors
+
         public ExampleAttribute(string id, double value, double min, double max)
         {
             this.id = id;
@@ -27,6 +29,10 @@ namespace BetterLegacy.Companion.Data
             this.integer = integer;
             Value = value;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Alphanumeric identification.
@@ -46,6 +52,10 @@ namespace BetterLegacy.Companion.Data
             get => RTMath.ClampZero(integer ? RTMath.Round(value) : value, min, max);
             set => this.value = RTMath.ClampZero(integer ? RTMath.Round(value) : value, min, max);
         }
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Parses an attribute.
@@ -77,6 +87,8 @@ namespace BetterLegacy.Companion.Data
         }
 
         public override string ToString() => $"{id} = {Value} ({value})";
+
+        #endregion
     }
 
 }

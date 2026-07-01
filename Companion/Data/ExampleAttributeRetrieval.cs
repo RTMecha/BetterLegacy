@@ -6,7 +6,7 @@
     public enum ExampleAttributeRetrieval
     {
         /// <summary>
-        /// Throws a <see cref="NullReferenceException"/>.
+        /// Throws a <see cref="System.NullReferenceException"/>.
         /// </summary>
         Throw,
         /// <summary>

@@ -9,11 +9,17 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExamplePose
     {
+        #region Constructors
+
         public ExamplePose(string key, GetAnimation get)
         {
             this.key = key;
             this.get = get;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Registered key of the pose.
@@ -25,6 +31,10 @@ namespace BetterLegacy.Companion.Data
         /// </summary>
         public GetAnimation get;
 
+        #endregion
+
+        #region Operators
+
         /// <summary>
         /// Delegate for generating a new animation.
         /// </summary>
@@ -32,5 +42,7 @@ namespace BetterLegacy.Companion.Data
         /// <param name="parameters">Passed parameters.</param>
         /// <returns>Returns a new animation.</returns>
         public delegate RTAnimation GetAnimation(ExampleModel model, PoseParameters parameters);
+
+        #endregion
     }
 }

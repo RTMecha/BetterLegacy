@@ -8,6 +8,8 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExampleDialogueGroup : Exists
     {
+        #region Constructors
+
         public ExampleDialogueGroup() { }
 
         public ExampleDialogueGroup(string key, ExampleDialogue[] dialogues)
@@ -15,6 +17,10 @@ namespace BetterLegacy.Companion.Data
             this.key = key;
             this.dialogues = dialogues;
         }
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Key of the group.
@@ -25,6 +31,10 @@ namespace BetterLegacy.Companion.Data
         /// Dialogues array.
         /// </summary>
         public ExampleDialogue[] dialogues;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Gets a random dialogue.
@@ -52,5 +62,7 @@ namespace BetterLegacy.Companion.Data
 
             return dialogues[num];
         }
+
+        #endregion
     }
 }

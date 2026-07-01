@@ -11,6 +11,8 @@ namespace BetterLegacy.Companion.Data
     /// </summary>
     public class ExampleAction : Exists
     {
+        #region Constructors
+
         public ExampleAction() { uniqueID = LSText.randomNumString(16); }
 
         public ExampleAction(string key, Action func) : this()
@@ -19,32 +21,24 @@ namespace BetterLegacy.Companion.Data
             this.func = func;
         }
         
-        public ExampleAction(string key, Func<bool> canDo, Action func) : this(key, func)
-        {
-            this.canDo = canDo;
-        }
+        public ExampleAction(string key, Func<bool> canDo, Action func) : this(key, func) => this.canDo = canDo;
 
-        public ExampleAction(string key, Func<bool> canDo, bool interruptible, Action func) : this(key, canDo, func)
-        {
-            this.interruptible = interruptible;
-        }
-        
-        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func) : this(key, canDo, interruptible, func)
-        {
-            this.interruptCheck = interruptCheck;
-        }
-        
-        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func, Action stopFunc) : this(key, canDo, interruptCheck, interruptible, func)
-        {
-            this.stopFunc = stopFunc;
-        }
-        
-        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func, Action stopFunc, bool setAsCurrent) : this(key, canDo, interruptCheck, interruptible, func, stopFunc)
-        {
-            this.setAsCurrent = setAsCurrent;
-        }
+        public ExampleAction(string key, Func<bool> canDo, bool interruptible, Action func) : this(key, canDo, func) => this.interruptible = interruptible;
 
-        public string uniqueID;
+        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func) : this(key, canDo, interruptible, func) => this.interruptCheck = interruptCheck;
+
+        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func, Action stopFunc) : this(key, canDo, interruptCheck, interruptible, func) => this.stopFunc = stopFunc;
+
+        public ExampleAction(string key, Func<bool> canDo, Func<bool> interruptCheck, bool interruptible, Action func, Action stopFunc, bool setAsCurrent) : this(key, canDo, interruptCheck, interruptible, func, stopFunc) => this.setAsCurrent = setAsCurrent;
+
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Unique identification.
+        /// </summary>
+        public readonly string uniqueID;
 
         /// <summary>
         /// Key of the action.
@@ -85,6 +79,10 @@ namespace BetterLegacy.Companion.Data
         /// If the action should be set as the current.
         /// </summary>
         public bool setAsCurrent = true;
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Checks if the action can run the function and runs it if it can.
@@ -127,5 +125,7 @@ namespace BetterLegacy.Companion.Data
             stopFunc?.Invoke();
             running = false;
         }
+
+        #endregion
     }
 }
