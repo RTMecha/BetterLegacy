@@ -1,8 +1,8 @@
-﻿# snapshot-2026.7.? - (Story Playtest) [???]
+﻿# snapshot-2026.7.1 - (Story Playtest) [???]
 ## Features
 ### Core
-- Added showTitleCard modifier, ported from the AB trigger.
-- Added setTimelineLength modifier, ported from the AB trigger.
+- Added showTitleCard modifier, ported from the vanilla trigger.
+- Added setTimelineLength modifier, ported from the vanilla trigger.
 - Added getRuntimeVariable and setRuntimeVariable. These get and set a global variable that exists in the current runtime (so when the runtime is refreshed / updated, the variable list will clear).
 
 ### Companion
@@ -15,6 +15,7 @@
 - Holding shift when you begin drawing an annotation line now forces it into a straight line. Holding control will force it to the nearest "Annotations Line Rotation Interval" degree angle (see next line).
 - Added "Annotations Line Rotation Interval" setting to Config Manager > Editor > Markers.
 - A drawing area for the cursor now displays for annotations.
+- The scrollwheel can now be used to change the thickness of annotations when drawing.
 
 ## Changes
 ### Core
