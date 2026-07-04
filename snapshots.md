@@ -1,4 +1,4 @@
-﻿# snapshot-2026.7.1 - (Story Playtest) [???]
+﻿# snapshot-2026.7.1 - (Story Playtest) [Jul 5, 2026]
 ## Features
 ### Core
 - Added showTitleCard modifier, ported from the vanilla trigger.
@@ -21,6 +21,9 @@
 ### Core
 - playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
 - Reworked the JSON related modifiers. The JSON 1 and JSON 2 values have been combined into a JSON Path, where you can specify a full path to a value. For example: "chapter/0/data" takes you to {"chapter":[{"data":var}]}.
+
+### Editor
+- Prefabs with no objects can no longer be imported into the level.
 
 ## Fixes
 - Fixed some issues with some Example commands.
