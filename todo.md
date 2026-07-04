@@ -1,11 +1,4 @@
 ﻿# TODO
-Current: Asset Packs
-- Editor popups.
-- Editor complexity.
-- Editor themes.
-- Event keyframe order?
-Next: Multiplayer Snapshots
-
 1.9.0 - Online Multiplayer Update  
 - Multiplayer with any level in Arcade (local, Steam, etc)
 - Multiplayer compatible with story mode (supports Asset Packs)
@@ -15,18 +8,17 @@ Next: Multiplayer Snapshots
 - Player models support multiplayer
 - Versus mode
 - Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
-1.10.0 - Story Mode Update  
-- Chapter 2+
-- Improved workflow and customizability
-1.11.0 - Editor Assistance Update  
+- Steam friends can join editor sessions.
+- Players get different perspectives of the host editor.
+- Currently editing objects aren't selectable by other users.
+1.10.0 - Editor Assistance Update  
 - Fully customizable layouts, editor complexity and themes via Asset Packs.
 - New Example expressions, dialogue, commands, notices and implemented tutorials.
 - Complete tooltip system (old tooltip system reserved for information rather than descriptions)
 - Complete documentation (maybe include selecting documentation in context menus)
-1.12.0 - Multiplayer Editor Update  
-- Steam friends can join editor sessions.
-- Players get different perspectives of the host editor.
-- Currently editing objects aren't selectable by other users.
+1.11.0 - Story Mode Update  
+- Chapter 2+
+- Improved workflow and customizability
 
 ## Features
 ### Core
@@ -38,14 +30,11 @@ Next: Multiplayer Snapshots
   - Objects can be set to render differently per client.
   - Includes "isOnline" ("Client" bool) trigger modifier.
   - MetaData toggle for if the level is compatible with online play. If it isn't and a host tries to load the level, they will not be able to.
-- 2D option for BG objects (VG parallax support?)
-- Level preview song.  
-  Update: 1.9.0
 - Versus Mode (Players can attack other players via boosting through them, shooting them, etc)  
   Update: 1.9.0  
 - Player shooting aiming  
   Update: 1.9.0  
-- Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.  
+- SCRAPPED!!! Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.  
   Update: 1.9.0  
   NEEDS IMPLEMENTATION  
   Toolkit mechanics:  
@@ -56,19 +45,21 @@ Next: Multiplayer Snapshots
   - Movement (controls the players velocity)
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
+- Player Variable (works like Level and Level Collection Variables where it saves per player.)  
+  Update: 1.9.0
 - Endless shuffle.  
   Update: 1.9.0  
   Notes:  
   - "Next Level" button always shows in endless shuffle mode. Clicking it takes the player to a random level.  
 - Arcade auto plays song config.
 - Global animation library.  
-  Update: 1.11.0  
+  Update: 1.10.0  
   Notes:  
   - Can turn an object into an animation and back.
   - Can be played onto an object using a modifier.
   - Modifiers can also use it to interpolate.
 - Homing targetting  
-  Update: 1.10.0  
+  Update: 1.9.0+  
   NEEDS IMPLEMENTATION  
   - Closest
   - Furthest
@@ -78,12 +69,8 @@ Next: Multiplayer Snapshots
   - Random
 - Metadata controller config that can be used via modifiers.  
   Update: 1.9.0+  
-- End level music via custom audio source.  
-  Update: 1.9.0  
 - Backup arcade and story savedata onto the server.  
   Update: 1.9.0  
-- Way to download all levels in Level Collection.  
-  Update: 1.9.0+  
 - Extra credits (artists, creators, songs)
 - Implement BeatmapVariable  
   Update: 1.10.0+  
@@ -95,12 +82,13 @@ Next: Multiplayer Snapshots
 - Chapter 1.  
   Update: 1.7.0  
 - Chapter 2.  
-  Update: 1.10.0  
+  Update: 1.11.0  
 
 ### Example
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)  
   Update: 1.10.0  
-- Example customization. (technically doable now, just would like it to be doable via JSON)
+- Example customization. (technically doable now, just would like it to be doable via JSON)  
+  Update: 1.10.0  
 
 ### Editor
 - Asset sharing on the online server. (Player models, etc)  
@@ -108,18 +96,15 @@ Next: Multiplayer Snapshots
 - Editor online backups / version control  
   Update: 1.9.0+  
 - Interface editor.  
-  Update: 1.9.0+  
+  Update: 1.10.0+  
 - Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
   Update: 1.12.0  
 - Sync value context menus  
-- Animation groups and animation ID
-  Update: 1.11.0  
-  Notes:  
-  - A group of selected objects that have a set animation ID can be turned into an animation group.
-  - The same group of selected objects can then have that animation applied to them.
-  - Be able to animate prefabs using internal level animations.
+- Prefab collections (a way to properly view prefabs and other things inside of a prefab. clicking a prefab panel with only prefabs and no objects will expand to view the prefabs inside)  
 
 ### Interfaces
+- Advanced Filter (Levels & Level Collections) interface  
+- Extra Level Credits interface  
 
 ### Modifiers
 - giftAsset (originally prizeObject) action modifier  
@@ -151,7 +136,6 @@ Next: Multiplayer Snapshots
   Update: 1.10.0+
 - Event Keyframe String Values  
   Notes:  
-  - Color keyframes can have a Hex Color type.
   - Used for themes.
   - Math parsing?
 - Active event keyframe value.
@@ -165,7 +149,7 @@ Next: Multiplayer Snapshots
 - Merge all effect managers into single EffectsManager.  
 - Summary and note as much as I can (or need to).  
   Notes:
-  - Doing good so far, but need to do more. Maybe I could focus on this for 1.9.0?
+  - Doing good so far, but need to do more. Maybe I could focus on this for 1.10.0?
 - Rework audio transition system.  
 - Update modifier caches.  
 
@@ -174,37 +158,23 @@ Next: Multiplayer Snapshots
 ### Editor
 - Multi language support.
 - Make Editor Documentation read from a json file.  
-  Update: 1.11.0  
+  Update: 1.10.0  
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
-  Update: 1.11.0  
+  Update: 1.10.0  
 - Undo / redo everything.  
-  Update: 1.11.0+  
-- Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?  
-  Update: 1.11.0+  
-- Editor Layer display settings  
-  Update: 1.11.0+  
-  Notes:  
-  - Can display different types of objects at different priorities.  
-  - Certain types of objects can be hidden. (Beatmap Object only, Prefab Object only, etc)  
+  Update: 1.10.0+  
 - Documentation & tooltips.  
-  Update: 1.11.0  
+  Update: 1.10.0  
 - Update the file browser UI to include more info / functions.  
-  Update: 1.11.0  
+  Update: 1.10.0  
 - Overhaul the custom UI config settings to be more extensive.  
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)  
-  Update: 1.11.0  
-- EditorFunction system
-  Notes:  
-  - Works a bit like modifiers, except it's a code block language for the editor itself. These can be found in a few different places, like the Multi Object Editor, etc.  
-  - Might scrap this.
-
+  Update: 1.10.0  
 
 ### Fixes
 
 
 ## Ideas
-- Sort Levels Menu?  
-- Level Credits menu?  
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.  
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.  
 - Freeplay sandbox mode (editor)?  
@@ -219,7 +189,6 @@ Next: Multiplayer Snapshots
 - Transition time for applyAnimation modifiers.  
 - Update the TextMeshPro sprite asset.  
 - Event Modifiers layer that interpolate through a sequence and pass the variables to the modifiers.  
-- Prefab collections.
 
 
 ## Demos
