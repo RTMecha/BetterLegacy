@@ -1594,6 +1594,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="target">Object to target.</param>
         public void AddPrefabObjectToLevel(Prefab prefab, FullTransform target = null)
         {
+            // prefabs with only prefabs and no objects should instead expand into a list view of the sub prefabs.
+            if (prefab.beatmapObjects.IsEmpty() && prefab.prefabObjects.IsEmpty() && prefab.backgroundObjects.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification($"Cannot import an empty prefab into the level!", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
             var prefabObject = new PrefabObject
             {
                 id = LSText.randomString(16),
