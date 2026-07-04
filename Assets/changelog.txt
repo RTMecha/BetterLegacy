@@ -1,30 +1,29 @@
-# snapshot-2026.6.6 - (Story Playtest) [Jun 27, 2026]
+# snapshot-2026.7.1 - (Story Playtest) [Jul 5, 2026]
 ## Features
 ### Core
-- Added an Operation value to eventOffset modifiers.
-- Added setPlayerMoveSpeed and setPlayerBoostSpeed modifiers. No idea why they weren't there already lol.
-- Added getVariable modifiers. This gets the main number variable and passes it to other modifiers.
-- Added setVariableMath modifiers. Works like setVariable modifiers but gives more control over the math and operation.
-- Added forceCollision modifiers. These force the collision detection on regardless of editing state and select object setting. Used for objectCollide modifiers.
+- Added showTitleCard modifier, ported from the vanilla trigger.
+- Added setTimelineLength modifier, ported from the vanilla trigger.
+- Added getRuntimeVariable and setRuntimeVariable. These get and set a global variable that exists in the current runtime (so when the runtime is refreshed / updated, the variable list will clear).
+
+### Companion
+- Added draw_box, draw_shape and draw_line Example action parameters for markers.
+- Added some more selection parameters.
+- Added set_runtime_variable, remove_runtime_variable and clear_runtime_variables commands.
+- Added read_file commmand. This can read a text file in an Asset Pack and run each line as a command.
 
 ### Editor
-- Added "Annotations Selected Flash Speed" setting to Config Manager > Editor > Markers.
+- Holding shift when you begin drawing an annotation line now forces it into a straight line. Holding control will force it to the nearest "Annotations Line Rotation Interval" degree angle (see next line).
+- Added "Annotations Line Rotation Interval" setting to Config Manager > Editor > Markers.
+- A drawing area for the cursor now displays for annotations.
+- The scrollwheel can now be used to change the thickness of annotations when drawing.
 
 ## Changes
 ### Core
-- Increased the BG camera far clip plane from 1000 to 100000.
-- Changed the default Master Volume setting to 5 instead of 8.
-
-### Companion
-- Added some command parameters to Example relating to markers and annotations.
-- Boolean selection commands now allows for a ! (not) with some command parameters being changed to match this. (e.g. select objects !name "P_Trick Arrow" selects all objects that don't have the name "P_Trick Arrow")
+- playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
+- Reworked the JSON related modifiers. The JSON 1 and JSON 2 values have been combined into a JSON Path, where you can specify a full path to a value. For example: "chapter/0/data" takes you to {"chapter":[{"data":var}]}.
 
 ### Editor
-- The keyframe selecting keybinds now check if the layer type is not the event layer to switch keyframe, otherwise it'll require the mouse to be over the object keyframe timeline.
+- Prefabs with no objects can no longer be imported into the level.
 
 ## Fixes
-- Converting color keyframes to use hex color no longer tries to convert if the keyframe already uses hex color.
-- The Prefab Global Offset value in the Prefab Editor now updates when the context menu is used on it.
-- Fixed the zoom value of the Capture Area not being saved and loaded.
-- Fixed some buttons on the event keyframe context menu not working.
-- Fixed more issues with story progression.
+- Fixed some issues with some Example commands.
