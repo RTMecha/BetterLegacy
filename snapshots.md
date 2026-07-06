@@ -1,4 +1,21 @@
-﻿# snapshot-2026.7.1 - (Story Playtest) [Jul 5, 2026]
+﻿# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
+## Features
+### Core
+- Added online lobbies. This allows you to play multiplayer online.  
+  DISCLAIMERS:
+  - This feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution.  
+  - Currently you can load regular arcade levels and levels in the editor, but there is not much syncing yet.  
+  - There's not much polish yet (as in no loading bars / indicators).
+Just in case, it's highly recommended you make a separate instance of Project Arrhythmia to test multiplayer.  
+Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
+
+## Changes
+### Core
+- Made setImageOther modifier consistent with setImage modifier behavior, allowing for texture changes and offset & scale changes.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.7.1 - (Story Playtest) [Jul 5, 2026]
 ## Features
 ### Core
 - Added showTitleCard modifier, ported from the vanilla trigger.
