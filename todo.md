@@ -11,6 +11,7 @@
 - Steam friends can join editor sessions.
 - Players get different perspectives of the host editor.
 - Currently editing objects aren't selectable by other users.
+- Off-screen player indicators.
 1.10.0 - Editor Assistance Update  
 - Fully customizable layouts, editor complexity and themes via Asset Packs.
 - New Example expressions, dialogue, commands, notices and implemented tutorials.
@@ -172,7 +173,9 @@
   Update: 1.10.0  
 
 ### Fixes
-
+- Fix controller shake not stopping after death.
+- Fix players not respawning on replay for client sides.
+- Look into mouse cursor not appearing for some people.
 
 ## Ideas
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.  
