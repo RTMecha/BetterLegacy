@@ -1,29 +1,14 @@
-# snapshot-2026.7.1 - (Story Playtest) [Jul 5, 2026]
+# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
 ## Features
 ### Core
-- Added showTitleCard modifier, ported from the vanilla trigger.
-- Added setTimelineLength modifier, ported from the vanilla trigger.
-- Added getRuntimeVariable and setRuntimeVariable. These get and set a global variable that exists in the current runtime (so when the runtime is refreshed / updated, the variable list will clear).
-
-### Companion
-- Added draw_box, draw_shape and draw_line Example action parameters for markers.
-- Added some more selection parameters.
-- Added set_runtime_variable, remove_runtime_variable and clear_runtime_variables commands.
-- Added read_file commmand. This can read a text file in an Asset Pack and run each line as a command.
-
-### Editor
-- Holding shift when you begin drawing an annotation line now forces it into a straight line. Holding control will force it to the nearest "Annotations Line Rotation Interval" degree angle (see next line).
-- Added "Annotations Line Rotation Interval" setting to Config Manager > Editor > Markers.
-- A drawing area for the cursor now displays for annotations.
-- The scrollwheel can now be used to change the thickness of annotations when drawing.
+- Added online lobbies. This allows you to play multiplayer online.  
+  DISCLAIMERS:
+  - This feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution.  
+  - Currently you can load regular arcade levels and levels in the editor, but there is not much syncing yet.  
+  - There's not much polish yet (as in no loading bars / indicators).
+Just in case, it's highly recommended you make a separate instance of Project Arrhythmia to test multiplayer.  
+Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
 
 ## Changes
 ### Core
-- playSound related modifiers (except audioSource) no longer automatically multiply by the current pitch. This behavior can be done by using a getPitch modifier and passing the variable to the Pitch value.
-- Reworked the JSON related modifiers. The JSON 1 and JSON 2 values have been combined into a JSON Path, where you can specify a full path to a value. For example: "chapter/0/data" takes you to {"chapter":[{"data":var}]}.
-
-### Editor
-- Prefabs with no objects can no longer be imported into the level.
-
-## Fixes
-- Fixed some issues with some Example commands.
+- Made setImageOther modifier consistent with setImage modifier behavior, allowing for texture changes and offset & scale changes.
