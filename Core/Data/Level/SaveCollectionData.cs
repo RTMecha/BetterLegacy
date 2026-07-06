@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
 {
-    public class SaveCollectionData : PAObject<SaveCollectionData>, IAchievementData
+    public class SaveCollectionData : PAObject<SaveCollectionData>, IPacket, IAchievementData
     {
+        #region Constructors
+
         public SaveCollectionData() { }
 
         public SaveCollectionData(LevelCollection levelCollection)
@@ -17,6 +20,8 @@ namespace BetterLegacy.Core.Data.Level
             ID = levelCollection.id;
             LevelCollectionName = levelCollection.name;
         }
+
+        #endregion
 
         #region Values
 
@@ -139,6 +144,37 @@ namespace BetterLegacy.Core.Data.Level
             }
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            ID = reader.ReadString();
+            LevelCollectionName = reader.ReadString();
+            Completed = reader.ReadBoolean();
+            PlayedTimes = reader.ReadInt32();
+            UnlockedAchievements = reader.ReadDictionary(reader.ReadString, reader.ReadBoolean);
+            Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
+            var hasLastPlayed = reader.ReadBoolean();
+            if (hasLastPlayed)
+                LastPlayed = new DateTime(reader.ReadInt64());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(ID);
+            writer.Write(LevelCollectionName);
+            writer.Write(Completed);
+            writer.Write(PlayedTimes);
+            writer.Write(UnlockedAchievements,
+                writeKey: writer.Write,
+                writeValue: writer.Write);
+            writer.Write(Variables,
+                writeKey: writer.Write,
+                writeValue: writer.Write);
+            var hasLastPlayed = LastPlayed.HasValue;
+            writer.Write(hasLastPlayed);
+            if (hasLastPlayed)
+                writer.Write(LastPlayed.Value.Ticks);
         }
 
         #region Updating

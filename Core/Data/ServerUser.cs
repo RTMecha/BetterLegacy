@@ -1,14 +1,22 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data
 {
     /// <summary>
     /// Represents a user on the Arcade server.
     /// </summary>
-    public class ServerUser : PAObject<ServerUser>
+    public class ServerUser : PAObject<ServerUser>, IPacket
     {
+        #region Constructors
+
         public ServerUser() { }
         public ServerUser(string id) => ID = id;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Identification of the user.
@@ -24,6 +32,10 @@ namespace BetterLegacy.Core.Data
         /// Display name of the user.
         /// </summary>
         public string DisplayName { get; set; }
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(ServerUser orig, bool newID = true)
         {
@@ -56,7 +68,27 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            ID = reader.ReadString();
+            SteamID = reader.ReadString();
+            DisplayName = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(ID);
+            writer.Write(SteamID);
+            writer.Write(DisplayName);
+        }
+
+        #endregion
+
+        #region Operators
+
         public static implicit operator string(ServerUser serverUser) => serverUser.ID;
         public static implicit operator ServerUser(string id) => new ServerUser(id);
+
+        #endregion
     }
 }

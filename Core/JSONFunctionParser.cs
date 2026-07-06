@@ -18,6 +18,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Menus.UI.Popups;
 using BetterLegacy.Story;
 
 namespace BetterLegacy.Core
@@ -155,6 +156,7 @@ namespace BetterLegacy.Core
             RegisterAction(Notify);
             RegisterAction(ExitGame);
             RegisterAction(Config);
+            RegisterAction(OpenLobbyPopup);
             RegisterAction(Profile);
             RegisterAction(OpenChangelog);
             RegisterAction(ForLoop);
@@ -1443,7 +1445,11 @@ namespace BetterLegacy.Core
 
         // Opens the Config Manager UI.
         // Function has no parameters.
-        public virtual void Config(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null) => ConfigManager.inst.Show();
+        public virtual void Config(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null) => ConfigPopup.Instance?.Open();
+
+        // Opens the Lobby Manager UI.
+        // Function has no parameters.
+        public virtual void OpenLobbyPopup(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null) => LobbyPopup.Instance?.Open();
 
         public virtual void Profile(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null) => ProfileInterface.Init();
 

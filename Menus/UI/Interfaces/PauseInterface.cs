@@ -8,11 +8,13 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -166,13 +168,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public ButtonElement[] buttonElements = new ButtonElement[]
         {
             new ButtonElement("Continue Button", "<b> [ CONTINUE ]", UnPause),
-            new ButtonElement("Restart Button", "<b> [ RESTART ]", () => UnPause(ArcadeHelper.RestartLevel)),
-            new ButtonElement("Editor Button", "<b> [ EDITOR ]", SceneHelper.LoadEditorWithProgress),
+            new ButtonElement(() => !ProjectArrhythmia.State.IsInLobby || ProjectArrhythmia.State.IsHosting, "Restart Button", "<b> [ RESTART ]", () => UnPause(ArcadeHelper.RestartLevel)),
+            new ButtonElement(() => !ProjectArrhythmia.State.IsInLobby || ProjectArrhythmia.State.IsHosting, "Editor Button", "<b> [ EDITOR ]", SceneHelper.LoadEditorWithProgress),
             new ButtonElement(() => ModCompatibility.UnityExplorerInstalled, "Explorer Button", "<b> [ SHOW EXPLORER ]", ModCompatibility.ShowExplorer),
-            new ButtonElement("Config Button", "<b> [ CONFIG ]", ConfigManager.inst.Show),
+            new ButtonElement("Config Button", "<b> [ CONFIG ]", () => ConfigPopup.Instance?.Open()),
+            new ButtonElement(() => LobbyPopup.Instance, "Lobby Button", "<b> [ LOBBY ]", () => LobbyPopup.Instance?.Open()),
             new ButtonElement(() => LevelManager.Hub, "Return Button", "<b> [ RETURN TO HUB ]", ArcadeHelper.ReturnToHub),
             new ButtonElement(() => ProjectArrhythmia.State.InStory, "Return Button", "<b> [ RETURN TO INTERFACE ]", SceneHelper.LoadInterfaceScene),
-            new ButtonElement("Arcade Button", ProjectArrhythmia.State.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]", ArcadeHelper.QuitToArcade),
+            new ButtonElement(() => !ProjectArrhythmia.State.IsInLobby || ProjectArrhythmia.State.IsHosting, "Arcade Button", ProjectArrhythmia.State.InStory ? "<b> [ QUIT TO MAIN MENU ]" : "<b> [ RETURN TO ARCADE ]", ArcadeHelper.QuitToArcade),
             new ButtonElement(true),
             new ButtonElement("Exit Button", "<b> [ QUIT GAME ]", LegacyPlugin.QuitGame),
         };
@@ -281,6 +284,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             CursorManager.inst.HideCursor();
             onCooldownEnd?.Invoke();
             RTBeatmap.Current?.Resume();
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.SyncLevelToClients();
         }
 
         #endregion
@@ -295,10 +300,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Initializes the pause menu.
         /// </summary>
-        public static void Pause()
+        public static void Pause() => Pause(true);
+
+        /// <summary>
+        /// Initializes the pause menu.
+        /// </summary>
+        public static void Pause(bool sendLobbySignal)
         {
             if (!ProjectArrhythmia.State.Playing)
                 return;
+
+            if (ProjectArrhythmia.State.IsInLobby && sendLobbySignal)
+                NetworkFunction.PauseGame();
 
             RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
@@ -308,16 +321,30 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Unpauses the game and starts the countdown sequence if it is enabled.
         /// </summary>
-        public static void UnPause() => UnPause(null);
+        public static void UnPause() => UnPause(true);
+
+        /// <summary>
+        /// Unpauses the game and starts the countdown sequence if it is enabled.
+        /// </summary>
+        public static void UnPause(bool sendLobbySignal) => UnPause(sendLobbySignal, null);
 
         /// <summary>
         /// Unpauses the game and starts the countdown sequence if it is enabled.
         /// </summary>
         /// <param name="onCooldownEnd">Action to run when the game is fully unpaused.</param>
-        public static void UnPause(Action onCooldownEnd)
+        public static void UnPause(Action onCooldownEnd) => UnPause(true, onCooldownEnd);
+
+        /// <summary>
+        /// Unpauses the game and starts the countdown sequence if it is enabled.
+        /// </summary>
+        /// <param name="onCooldownEnd">Action to run when the game is fully unpaused.</param>
+        public static void UnPause(bool sendLobbySignal, Action onCooldownEnd)
         {
             if (!ProjectArrhythmia.State.Paused || !Current)
                 return;
+
+            if (ProjectArrhythmia.State.IsInLobby && sendLobbySignal)
+                NetworkFunction.UnPauseGame();
 
             Current.unpausing = true;
             CoroutineHelper.StartCoroutine(CoreConfig.Instance.PlayPauseCountdown.Value ? Current.StartCountdown(onCooldownEnd) : Current.SkipCountdown(onCooldownEnd));

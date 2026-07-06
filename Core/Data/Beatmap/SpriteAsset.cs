@@ -2,6 +2,7 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -9,13 +10,19 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Stores sprite data that can be reused.
     /// </summary>
-    public class SpriteAsset : PAObject<SpriteAsset>
+    public class SpriteAsset : PAObject<SpriteAsset>, IPacket
     {
+        #region Constructors
+
         public SpriteAsset() : base() { }
 
         public SpriteAsset(string name) : this() => this.name = name;
 
         public SpriteAsset(string name, Sprite sprite) : this(name) => this.sprite = sprite;
+
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// Name of the sprite.
@@ -31,6 +38,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// How the texture should wrap.
         /// </summary>
         public TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(SpriteAsset orig, bool newID = true)
         {
@@ -63,6 +74,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            wrapMode = (TextureWrapMode)reader.ReadByte();
+            sprite = reader.ReadSprite();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write((byte)wrapMode);
+            writer.Write(sprite);
+        }
+
         /// <summary>
         /// Unloads the sprite.
         /// </summary>
@@ -85,5 +112,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public override string ToString() => name;
+
+        #endregion
     }
 }

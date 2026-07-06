@@ -4,13 +4,17 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents a custom polygon shape used for objects.
     /// </summary>
-    public class PolygonShape : PAObject<PolygonShape>
+    public class PolygonShape : PAObject<PolygonShape>, IPacket
     {
+        #region Constructors
+
         public PolygonShape() { }
 
         public PolygonShape(int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset = default, Vector2 thicknessScale = default)
@@ -22,6 +26,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.thicknessOffset = thicknessOffset;
             this.thicknessScale = thicknessScale;
         }
+
+        #endregion
 
         #region Values
 
@@ -114,7 +120,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Points that should render if <see cref="Type"/> is <see cref="PolygonType.Vector"/>.
         /// </summary>
-        public List<Vector2> Points { get; set; }
+        public List<Vector2> Points { get; set; } = new List<Vector2>();
 
         /// <summary>
         /// Type of the polygon.
@@ -251,6 +257,38 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (Type != PolygonType.Ring)
                 jn["t"] = (int)Type;
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            radius = reader.ReadSingle();
+            sides = reader.ReadInt32();
+            roundness = reader.ReadSingle();
+            thickness = reader.ReadSingle();
+            slices = reader.ReadInt32();
+            thicknessOffset = reader.ReadVector2();
+            thicknessScale = reader.ReadVector2();
+            thicknessRotation = reader.ReadSingle();
+            Angle = reader.ReadSingle();
+            Alternate = reader.ReadSingle();
+            Type = (PolygonType)reader.ReadByte();
+            Points = reader.ReadList(reader.ReadVector2);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(radius);
+            writer.Write(sides);
+            writer.Write(roundness);
+            writer.Write(thickness);
+            writer.Write(slices);
+            writer.Write(thicknessOffset);
+            writer.Write(thicknessScale);
+            writer.Write(thicknessRotation);
+            writer.Write(Angle);
+            writer.Write(Alternate);
+            writer.Write((byte)Type);
+            writer.Write(Points, writer.Write);
         }
 
         /// <summary>

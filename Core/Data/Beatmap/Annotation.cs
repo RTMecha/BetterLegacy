@@ -5,6 +5,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an annotation that displays in the editor. Useful for storyboarding and visual notes.
     /// </summary>
-    public class Annotation : PAObject<Annotation>, ISelectable
+    public class Annotation : PAObject<Annotation>, IPacket, ISelectable
     {
         #region Constructors
 
@@ -157,6 +158,32 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["h"] = hidden;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            color = reader.ReadInt32();
+            opacity = reader.ReadSingle();
+            hexColor = reader.ReadString();
+
+            thickness = reader.ReadSingle();
+            points = reader.ReadList(reader.ReadVector2);
+            fixedCamera = reader.ReadBoolean();
+            hidden = reader.ReadBoolean();
+            selected = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(color);
+            writer.Write(opacity);
+            writer.Write(hexColor);
+
+            writer.Write(thickness);
+            writer.Write(points, writer.Write);
+            writer.Write(fixedCamera);
+            writer.Write(hidden);
+            writer.Write(selected);
         }
 
         /// <summary>

@@ -2246,15 +2246,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 CreateAddSubButtons(
                                     timelineObject => timelineObject.isBeatmapObject,
                                     timelineObject => (int)timelineObject.GetData<BeatmapObject>().renderLayerType,
-                                    EnumHelper.GetNames<BeatmapObject.RenderLayerType>().Length,
+                                    EnumHelper.GetNames<RenderLayerType>().Length,
                                     (timelineObject, num) =>
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)num;
+                                        beatmapObject.renderLayerType = (RenderLayerType)num;
                                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                                     }));
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent).Complexity(Complexity.Normal), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(4f),
-                                ToButtonArray<BeatmapObject.RenderLayerType>(index => MultiObjectEditor.inst.SetRenderLayerType((BeatmapObject.RenderLayerType)index)));
+                                ToButtonArray<RenderLayerType>(index => MultiObjectEditor.inst.SetRenderLayerType((RenderLayerType)index)));
 
                             #endregion
 

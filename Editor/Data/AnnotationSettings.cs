@@ -2,13 +2,14 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents settings for drawing annotations.
     /// </summary>
-    public class AnnotationSettings : PAObject<AnnotationSettings>
+    public class AnnotationSettings : PAObject<AnnotationSettings>, IPacket
     {
         #region Values
 
@@ -103,6 +104,30 @@ namespace BetterLegacy.Editor.Data
                 jn["mirror"]["vertical"] = mirrorDrawingVertical;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            tool = (AnnotationTool)reader.ReadByte();
+            color = reader.ReadInt32();
+            hexColor = reader.ReadString();
+            opacity = reader.ReadSingle();
+            thickness = reader.ReadSingle();
+            fixedCamera = reader.ReadBoolean();
+            mirrorDrawingHorizontal = reader.ReadBoolean();
+            mirrorDrawingVertical = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write((byte)tool);
+            writer.Write(color);
+            writer.Write(hexColor);
+            writer.Write(opacity);
+            writer.Write(thickness);
+            writer.Write(fixedCamera);
+            writer.Write(mirrorDrawingHorizontal);
+            writer.Write(mirrorDrawingVertical);
         }
 
         #endregion

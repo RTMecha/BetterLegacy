@@ -4,13 +4,14 @@ using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents settings for the Capture Area.
     /// </summary>
-    public class CaptureSettings : PAObject<CaptureSettings>
+    public class CaptureSettings : PAObject<CaptureSettings>, IPacket
     {
         #region Constructors
 
@@ -82,6 +83,11 @@ namespace BetterLegacy.Editor.Data
         public bool captureAllLayers;
 
         /// <summary>
+        /// The render layer to be captured if <see cref="captureAllLayers"/> is false.
+        /// </summary>
+        public RenderLayerType renderLayerType;
+
+        /// <summary>
         /// If the precise editor display should show.
         /// </summary>
         public bool showEditor;
@@ -135,6 +141,7 @@ namespace BetterLegacy.Editor.Data
             hidePlayers = orig.hidePlayers;
             showEditor = orig.showEditor;
             captureAllLayers = orig.captureAllLayers;
+            renderLayerType = orig.renderLayerType;
 
             useCustomBGColor = orig.useCustomBGColor;
             customBGColor = orig.customBGColor;
@@ -158,6 +165,8 @@ namespace BetterLegacy.Editor.Data
                 hidePlayers = jn["hide_players"].AsBool;
             showEditor = jn["show_editor"].AsBool;
             captureAllLayers = jn["capture_all_layers"].AsBool;
+            if (jn["render_layer_type"] != null)
+                renderLayerType = (RenderLayerType)jn["render_layer_type"].AsInt;
 
             useCustomBGColor = jn["use_custom_bg_color"].AsBool;
             if (jn["custom_bg_color"] != null)
@@ -192,8 +201,50 @@ namespace BetterLegacy.Editor.Data
                 jn["lock_drag_mode"] = (int)lockDragMode;
             if (captureAllLayers)
                 jn["capture_all_layers"] = captureAllLayers;
+            if (renderLayerType != RenderLayerType.Foreground)
+                jn["render_layer_type"] = (int)renderLayerType;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            resolution = reader.ReadVector2Int();
+            move = reader.ReadBoolean();
+            pos = reader.ReadVector2();
+            zoom = reader.ReadSingle();
+            rot = reader.ReadSingle();
+            matchSize = reader.ReadBoolean();
+
+            hidePlayers = reader.ReadBoolean();
+            showEditor = reader.ReadBoolean();
+            captureAllLayers = reader.ReadBoolean();
+            renderLayerType = (RenderLayerType)reader.ReadByte();
+
+            useCustomBGColor = reader.ReadBoolean();
+            customBGColor = reader.ReadColor();
+
+            lockDragMode = (LockDragMode)reader.ReadByte();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(resolution);
+            writer.Write(move);
+            writer.Write(pos);
+            writer.Write(zoom);
+            writer.Write(rot);
+            writer.Write(matchSize);
+
+            writer.Write(hidePlayers);
+            writer.Write(showEditor);
+            writer.Write(captureAllLayers);
+            writer.Write((byte)renderLayerType);
+
+            writer.Write(useCustomBGColor);
+            writer.Write(customBGColor);
+
+            writer.Write((byte)lockDragMode);
         }
 
         /// <summary>

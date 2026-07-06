@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -12,8 +13,10 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Represents the saved data of a played level.
     /// </summary>
-    public class SaveData : PAObject<SaveData>, IAchievementData
+    public class SaveData : PAObject<SaveData>, IPacket, IAchievementData
     {
+        #region Constructors
+
         public SaveData() { }
 
         public SaveData(Level level)
@@ -21,6 +24,8 @@ namespace BetterLegacy.Core.Data.Level
             ID = level.id;
             LevelName = level.metadata?.beatmap?.name;
         }
+
+        #endregion
 
         #region Values
 
@@ -232,6 +237,55 @@ namespace BetterLegacy.Core.Data.Level
                 jn["lp"] = lastPlayed.ToString(LegacyPlugin.DATE_TIME_FORMAT);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            ID = reader.ReadString();
+            LevelName = reader.ReadString();
+            Completed = reader.ReadBoolean();
+            PlayedTimes = reader.ReadInt32();
+            TimeInLevel = reader.ReadSingle();
+            Percentage = reader.ReadSingle();
+            LevelLength = reader.ReadSingle();
+            Unlocked = reader.ReadBoolean();
+            Hits = reader.ReadInt32();
+            Deaths = reader.ReadInt32();
+            Boosts = reader.ReadInt32();
+            if (reader.ReadBoolean())
+                UnlockedAchievements = reader.ReadDictionary(reader.ReadString, reader.ReadBoolean);
+            Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
+            var hasLastPlayed = reader.ReadBoolean();
+            if (hasLastPlayed)
+                LastPlayed = new DateTime(reader.ReadInt64());
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(ID);
+            writer.Write(LevelName);
+            writer.Write(Completed);
+            writer.Write(PlayedTimes);
+            writer.Write(TimeInLevel);
+            writer.Write(Percentage);
+            writer.Write(LevelLength);
+            writer.Write(Unlocked);
+            writer.Write(Hits);
+            writer.Write(Deaths);
+            writer.Write(Boosts);
+            var hasAchievements = UnlockedAchievements != null;
+            writer.Write(hasAchievements);
+            if (hasAchievements)
+                writer.Write(UnlockedAchievements,
+                    writeKey: writer.Write,
+                    writeValue: writer.Write);
+            writer.Write(Variables,
+                writeKey: writer.Write,
+                writeValue: writer.Write);
+            var hasLastPlayed = LastPlayed.HasValue;
+            writer.Write(hasLastPlayed);
+            if (LastPlayed.HasValue)
+                writer.Write(LastPlayed.Value.Ticks);
         }
 
         #region Updating

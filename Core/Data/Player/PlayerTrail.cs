@@ -2,11 +2,17 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerTrail : PAObject<PlayerTrail>
+    public class PlayerTrail : PAObject<PlayerTrail>, IPacket
     {
+        #region Constructors
+
         public PlayerTrail() { }
+
+        #endregion
 
         #region Values
 
@@ -47,7 +53,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerTrail orig, bool newID = true)
         {
@@ -138,7 +144,44 @@ namespace BetterLegacy.Core.Data.Player
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            emitting = reader.ReadBoolean();
+            time = reader.ReadSingle();
+            positionOffset = reader.ReadVector2();
+
+            // start
+            startWidth = reader.ReadSingle();
+            startColor = reader.ReadInt32();
+            startCustomColor = reader.ReadString();
+            startOpacity = reader.ReadSingle();
+
+            // end
+            endWidth = reader.ReadSingle();
+            endColor = reader.ReadInt32();
+            endCustomColor = reader.ReadString();
+            endOpacity = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(emitting);
+            writer.Write(time);
+            writer.Write(positionOffset);
+
+            // start
+            writer.Write(startWidth);
+            writer.Write(startColor);
+            writer.Write(startCustomColor);
+            writer.Write(startOpacity);
+
+            // end
+            writer.Write(endWidth);
+            writer.Write(endColor);
+            writer.Write(endCustomColor);
+            writer.Write(endOpacity);
+        }
+
         #endregion
     }
-
 }

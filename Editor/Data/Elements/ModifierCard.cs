@@ -1071,7 +1071,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
                 case nameof(ModifierFunctions.setRenderType): {
-                        DropdownGenerator(modifier, reference, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        DropdownGenerator(modifier, reference, "Render Type", 0, CoreHelper.ToOptionData<RenderLayerType>());
                         break;
                     }
                 case nameof(ModifierFunctions.setRenderTypeOther): {
@@ -1079,7 +1079,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, reference, "Render Type", 1, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        DropdownGenerator(modifier, reference, "Render Type", 1, CoreHelper.ToOptionData<RenderLayerType>());
                         break;
                     }
                 case nameof(ModifierFunctions.setRendering): {

@@ -4,13 +4,16 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class Checkpoint : PAObject<Checkpoint>
-	{
-		public Checkpoint() => id = GetShortNumberID();
+    public class Checkpoint : PAObject<Checkpoint>, IPacket
+    {
+        #region Constructors
+
+        public Checkpoint() => id = GetShortNumberID();
 
         public Checkpoint(string name, float time, Vector2 pos) : this()
 		{
@@ -19,12 +22,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 			this.pos = pos;
 		}
 
+        #endregion
+
         #region Values
 
-		/// <summary>
-		/// Name of the checkpoint.
-		/// </summary>
-		public string name = DEFAULT_CHECKPOINT_NAME;
+        /// <summary>
+        /// Name of the checkpoint.
+        /// </summary>
+        public string name = DEFAULT_CHECKPOINT_NAME;
 
 		/// <summary>
 		/// Time to reverse to when all players are dead.
@@ -124,7 +129,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
 		#endregion
 
-		#region Methods
+		#region Functions
 
         public override void CopyData(Checkpoint orig, bool newID = true)
         {
@@ -212,16 +217,42 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
 		}
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            time = reader.ReadSingle();
+            pos = reader.ReadVector2();
+            spawnType = (SpawnPositionType)reader.ReadByte();
+            positions = reader.ReadList(reader.ReadVector2);
+            respawn = reader.ReadBoolean();
+            heal = reader.ReadBoolean();
+            setTime = reader.ReadBoolean();
+            reverse = reader.ReadBoolean();
+            autoTriggerable = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(time);
+            writer.Write(pos);
+            writer.Write((byte)spawnType);
+            writer.Write(positions, writer.Write);
+            writer.Write(respawn);
+            writer.Write(heal);
+            writer.Write(setTime);
+            writer.Write(reverse);
+            writer.Write(autoTriggerable);
+        }
+
         /// <summary>
         /// Gets the position at an index.
         /// </summary>
         /// <param name="index">Index of the position to get.</param>
         /// <returns>Returns a multi position at an index if the index is in the range of <see cref="positions"/>, otherwise returns <see cref="pos"/>.</returns>
         public Vector2 GetPosition(int index) => index == -1 ? pos : positions[index % positions.Count];
-
-		#endregion
-
-		#region Operators
 
 		public override bool Equals(object obj) => obj is Checkpoint paObj && id == paObj.id;
 

@@ -6,6 +6,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -13,7 +14,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents the data of a keyframe that can animate an object with any amount of values.
     /// </summary>
-    public class EventKeyframe : PAObject<EventKeyframe>
+    public class EventKeyframe : PAObject<EventKeyframe>, IPacket
     {
         #region Constructors
 
@@ -346,6 +347,53 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["l"] = locked;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            time = reader.ReadSingle();
+            values = reader.ReadSingleArray();
+            curve = (Easing)reader.ReadUInt16();
+            random = reader.ReadByte();
+            if (RandomType != RandomType.None)
+                randomValues = reader.ReadSingleArray();
+            if (IsHoming())
+            {
+                flee = reader.ReadBoolean();
+                homingPriority = (HomingPriority)reader.ReadByte();
+                if (homingPriority == HomingPriority.Index)
+                    playerIndex = reader.ReadInt32();
+            }
+            var hasStringValues = reader.ReadBoolean();
+            if (hasStringValues)
+                stringValues = reader.ReadStringArray();
+            relative = reader.ReadBoolean();
+            if (ProjectArrhythmia.State.InEditor)
+                locked = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(time);
+            writer.Write(values);
+            writer.Write((ushort)curve);
+            writer.Write((byte)random);
+            if (RandomType != RandomType.None)
+                writer.Write(randomValues);
+            if (IsHoming())
+            {
+                writer.Write(flee);
+                writer.Write((byte)homingPriority);
+                if (homingPriority == HomingPriority.Index)
+                    writer.Write(playerIndex);
+            }
+            var hasStringValues = stringValues != null;
+            writer.Write(hasStringValues);
+            if (hasStringValues)
+                writer.Write(stringValues);
+            writer.Write(relative);
+            if (ProjectArrhythmia.State.InEditor)
+                writer.Write(locked);
         }
 
         /// <summary>

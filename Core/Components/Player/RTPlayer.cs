@@ -21,6 +21,7 @@ using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -1495,6 +1496,13 @@ namespace BetterLegacy.Core.Components.Player
         {
             UpdateControls(); UpdateRotation();
 
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer && (!ProjectArrhythmia.State.InEditor || !EditorLevelManager.inst.loadingLevel))
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SET_PLAYER_POSITION, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id),
+                    new NetworkFunction.Vector2Parameter(rb.position),
+                    new NetworkFunction.FloatParameter(rb.transform.localEulerAngles.z));
+
             if (UpdateMode == TailUpdateMode.LateUpdate)
                 UpdateTailDistance();
 
@@ -1521,7 +1529,7 @@ namespace BetterLegacy.Core.Components.Player
         void ClampToCamera()
         {
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled) && ProjectArrhythmia.State.Playing)
+            if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled) && ProjectArrhythmia.State.Playing && Core && Core.IsLocalPlayer)
             {
                 if (Camera.main.orthographicSize <= 0f && includeNegativeZoom)
                     return;
@@ -1708,7 +1716,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateControls()
         {
-            if (!Core || !Model || !Alive)
+            if (!Core || !Model || !Alive || !Core.IsLocalPlayer)
             {
                 rb.velocity = Vector2.zero;
                 return;
@@ -2458,8 +2466,14 @@ namespace BetterLegacy.Core.Components.Player
         /// <returns>Returns true if the player was successfully healed.</returns>
         public bool Heal(int health, bool playSound = true)
         {
-            if (!Core || !Alive || health <= 0)
+            if (Core && Core.IsLocalPlayer && (!Core || !Alive || health <= 0))
                 return false;
+
+            if (Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HEAL,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id),
+                    new NetworkFunction.IntParameter(health));
 
             int prevHealth = Core.Health;
             Core.Health += health;
@@ -2480,8 +2494,14 @@ namespace BetterLegacy.Core.Components.Player
         /// <param name="damage">Amount of health to take away.</param>
         public void Hit(int damage)
         {
-            if (!CanTakeDamage || !Alive || damage <= 0)
+            if (Core && Core.IsLocalPlayer && (!CanTakeDamage || !Alive || damage <= 0))
                 return;
+
+            if (Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id),
+                    new NetworkFunction.IntParameter(damage));
 
             timeHit = Time.time;
 
@@ -2504,8 +2524,14 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void Hit()
         {
-            if (!CanTakeDamage || !Alive)
+            if (Core && Core.IsLocalPlayer && (!CanTakeDamage || !Alive))
                 return;
+
+            if (Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id),
+                    new NetworkFunction.IntParameter(0));
 
             timeHit = Time.time;
 
@@ -2537,8 +2563,13 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void Boost()
         {
-            if (!CanBoost || isBoosting)
+            if (Core && Core.IsLocalPlayer && (!CanBoost || isBoosting))
                 return;
+
+            if (Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id));
 
             startBoostTime = Time.time;
             InitBeforeBoost();
@@ -2578,6 +2609,10 @@ namespace BetterLegacy.Core.Components.Player
         {
             float num = Time.time - startBoostTime;
             StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
+            if (Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST_STOP,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id));
         }
 
         /// <summary>
@@ -2946,7 +2981,7 @@ namespace BetterLegacy.Core.Components.Player
             cachedCollider = other;
             isColliderTrigger = other.tag == Tags.PLAYER || other is Collider2D collider2D && collider2D.isTrigger || other is Collider collider && collider.isTrigger;
             triggerColliding = true;
-            if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
+            if (Core && Core.IsLocalPlayer && CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
 
             Core?.GetControl().CollideModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
@@ -2988,6 +3023,11 @@ namespace BetterLegacy.Core.Components.Player
 
         IEnumerator IKill()
         {
+            if (Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_KILL,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(Core.id));
+
             if (RTBeatmap.Current)
                 RTBeatmap.Current.playerDied = true;
             Core?.GetControl()?.DeathModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
@@ -3235,9 +3275,9 @@ namespace BetterLegacy.Core.Components.Player
             jumpBoostCount = control.jumpBoostCount;
             bounciness = control.bounciness;
 
-            stretch = currentModel.stretchPart.active;
-            stretchAmount = currentModel.stretchPart.amount;
-            stretchEasing = currentModel.stretchPart.easing;
+            stretch = currentModel.basePart.stretchActive;
+            stretchAmount = currentModel.basePart.stretchAmount;
+            stretchEasing = currentModel.basePart.stretchEasing;
 
             rotateMode = currentModel.basePart.rotateMode;
 

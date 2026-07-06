@@ -1030,6 +1030,16 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
+        /// <summary>
+        /// Compresses the current level folder into a .zip file.
+        /// </summary>
+        public void Zip()
+        {
+            var zipPath = RTFile.RemoveEndSlash(Path) + FileFormat.ZIP.Dot();
+            RTFile.DeleteFile(zipPath);
+            System.IO.Compression.ZipFile.CreateFromDirectory(Path, zipPath);
+        }
+
         void EndFolderCreation()
         {
             EditorLevelManager.inst.LoadLevels();

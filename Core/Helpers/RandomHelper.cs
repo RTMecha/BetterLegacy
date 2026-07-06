@@ -16,13 +16,18 @@ namespace BetterLegacy.Core.Helpers
         public static string CurrentSeed { get; set; }
 
         /// <summary>
+        /// The current lobby host seed.
+        /// </summary>
+        public static string HostSeed { get; set; }
+
+        /// <summary>
         /// Updates the seed to the current seed setting.
         /// </summary>
         public static void UpdateSeed()
         {
             try
             {
-                SetSeed(CoreConfig.Instance.Seed.Value);
+                SetSeed(ProjectArrhythmia.State.IsInLobby ? HostSeed : CoreConfig.Instance.Seed.Value);
             }
             catch (Exception ex)
             {

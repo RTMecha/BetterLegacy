@@ -5,6 +5,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Marker used for organizing the editor timeline.
     /// </summary>
-    public class Marker : PAObject<Marker>
+    public class Marker : PAObject<Marker>, IPacket
     {
         #region Constructors
 
@@ -159,6 +160,28 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["an"][i] = annotations[i].ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            desc = reader.ReadString();
+            color = reader.ReadInt32();
+            time = reader.ReadSingle();
+            duration = reader.ReadSingle();
+            layers = reader.ReadList(() => reader.ReadInt32());
+            Packet.ReadPacketList(annotations, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(desc);
+            writer.Write(color);
+            writer.Write(time);
+            writer.Write(duration);
+            writer.Write(layers, writer.Write);
+            Packet.WritePacketList(annotations, writer);
         }
 
         /// <summary>

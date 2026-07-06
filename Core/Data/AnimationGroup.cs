@@ -4,6 +4,7 @@ using System.Linq;
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data
@@ -11,7 +12,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Represents a collection of animations that can be applied to a set of objects.
     /// </summary>
-    public class AnimationGroup : PAObject<AnimationGroup>, IPrefabable
+    public class AnimationGroup : PAObject<AnimationGroup>, IPacket, IPrefabable
     {
         #region Constructors
 
@@ -131,6 +132,38 @@ namespace BetterLegacy.Core.Data
             this.WritePrefabJSON(jn);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Interface
+
+            this.ReadPrefabPacket(reader);
+
+            #endregion
+
+            name = reader.ReadString();
+            description = reader.ReadString();
+            Packet.ReadPacketList(animations, reader);
+            collapse = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Interface
+
+            this.WritePrefabPacket(writer);
+
+            #endregion
+
+            writer.Write(name);
+            writer.Write(description);
+            Packet.WritePacketList(animations, writer);
+            writer.Write(collapse);
         }
 
         public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => AnimLength + offset;

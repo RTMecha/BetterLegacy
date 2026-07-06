@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -12,7 +14,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents stored assets in a level.
     /// </summary>
-    public class Assets : PAObject<Assets>
+    public class Assets : PAObject<Assets>, IPacket
     {
         public Assets() { }
 
@@ -84,6 +86,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            Packet.ReadPacketList(sprites, reader);
+            Packet.ReadPacketList(sounds, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            Packet.WritePacketList(sprites, writer);
+            Packet.WritePacketList(sounds, writer);
+        }
+
         /// <summary>
         /// Checks if the assets are empty.
         /// </summary>
@@ -97,6 +111,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             sprites.Clear();
             sounds.Clear();
+        }
+
+        /// <summary>
+        /// Preloads sound assets with <see cref="SoundAsset.autoLoad"/> on.
+        /// </summary>
+        public IEnumerator LoadSounds()
+        {
+            for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
+            {
+                var soundAsset = GameData.Current.assets.sounds[i];
+                if (!soundAsset.audio && soundAsset.autoLoad)
+                    yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
+            }
         }
 
         /// <summary>

@@ -15,6 +15,7 @@ using LSFunctions;
 using ILMath;
 
 using SimpleJSON;
+using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Configs;
@@ -22,6 +23,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -29,6 +31,10 @@ using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
+
+using Color = UnityEngine.Color;
+using Image = UnityEngine.UI.Image;
+using Text = UnityEngine.UI.Text;
 
 namespace BetterLegacy.Core
 {
@@ -564,6 +570,17 @@ namespace BetterLegacy.Core
             if (player && player.RuntimePlayer)
                 return player.RuntimePlayer.transform.Find("Player");
             return null;
+        }
+
+        public static bool TryGetValue<T>(this T? Qobj, out T value) where T : struct
+        {
+            if (Qobj.HasValue)
+            {
+                value = Qobj.Value;
+                return true;
+            }
+            value = default;
+            return false;
         }
 
         #endregion
@@ -1396,6 +1413,36 @@ namespace BetterLegacy.Core
                     yield return item;
                 index++;
             }
+        }
+
+        // split functions from https://stackoverflow.com/questions/1841246/c-sharp-splitting-an-array
+
+        public static List<List<T>> Split<T>(this ICollection<T> self, int chunkSize)
+        {
+            var splitList = new List<List<T>>();
+            var chunkCount = (int)Math.Ceiling((double)self.Count / (double)chunkSize);
+
+            for (int c = 0; c < chunkCount; c++)
+            {
+                var skip = c * chunkSize;
+                var take = skip + chunkSize;
+                var chunk = new List<T>(chunkSize);
+
+                for (int e = skip; e < take && e < self.Count; e++)
+                    chunk.Add(self.ElementAt(e));
+                splitList.Add(chunk);
+            }
+
+            return splitList;
+        }
+
+        public static void Split<T>(T[] source, int index, out T[] first, out T[] last)
+        {
+            int len2 = source.Length - index;
+            first = new T[index];
+            last = new T[len2];
+            Array.Copy(source, 0, first, 0, index);
+            Array.Copy(source, index, last, 0, len2);
         }
 
         #endregion
@@ -3586,6 +3633,164 @@ namespace BetterLegacy.Core
 
         #endregion
 
+        #region Packet
+
+        /// <summary>
+        /// Reads <see cref="IShapeable"/> data from a packet.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadShapePacket(this IShapeable shapeable, NetworkReader reader)
+        {
+            shapeable.Shape = reader.ReadInt32();
+            shapeable.ShapeOption = reader.ReadInt32();
+            var hasPolygon = reader.ReadBoolean();
+            if (hasPolygon)
+                shapeable.Polygon = Packet.CreateFromPacket<PolygonShape>(reader);
+            shapeable.Text = reader.ReadString();
+            shapeable.AutoTextAlign = reader.ReadBoolean();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IShapeable"/> data to a packet.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteShapePacket(this IShapeable shapeable, NetworkWriter writer)
+        {
+            writer.Write(shapeable.Shape);
+            writer.Write(shapeable.ShapeOption);
+            bool hasPolygon = shapeable.Polygon;
+            writer.Write(hasPolygon);
+            if (hasPolygon)
+                shapeable.Polygon.WritePacket(writer);
+            writer.Write(shapeable.Text);
+            writer.Write(shapeable.AutoTextAlign);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IParentable"/> data from a packet.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadParentPacket(this IParentable parentable, NetworkReader reader)
+        {
+            parentable.Parent = reader.ReadString();
+            parentable.ParentDesync = reader.ReadBoolean();
+            parentable.ParentType = reader.ReadString();
+            parentable.ParentOffsets = reader.ReadSingleArray();
+            parentable.ParentAdditive = reader.ReadString();
+            parentable.ParentParallax = reader.ReadSingleArray();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IParentable"/> data to a packet.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteParentPacket(this IParentable parentable, NetworkWriter writer)
+        {
+            writer.Write(parentable.Parent);
+            writer.Write(parentable.ParentDesync);
+            writer.Write(parentable.ParentType);
+            writer.Write(parentable.ParentOffsets);
+            writer.Write(parentable.ParentAdditive);
+            writer.Write(parentable.ParentParallax);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IPrefabable"/> data from a packet.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadPrefabPacket(this IPrefabable prefabable, NetworkReader reader)
+        {
+            prefabable.PrefabID = reader.ReadString();
+            prefabable.PrefabInstanceID = reader.ReadString();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IPrefabable"/> data to a packet.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WritePrefabPacket(this IPrefabable prefabable, NetworkWriter writer)
+        {
+            writer.Write(prefabable.PrefabID);
+            writer.Write(prefabable.PrefabInstanceID);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IModifyable"/> data from a packet.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadModifiersPacket(this IModifyable modifyable, NetworkReader reader)
+        {
+            var hasTags = reader.ReadBoolean();
+            if (hasTags)
+                modifyable.Tags = reader.ReadList(() => reader.ReadString());
+            modifyable.IgnoreLifespan = reader.ReadBoolean();
+            modifyable.OrderModifiers = reader.ReadBoolean();
+            Packet.ReadPacketList(modifyable.Modifiers, reader);
+        }
+
+        /// <summary>
+        /// Writes <see cref="IModifyable"/> data to a packet.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteModifiersPacket(this IModifyable modifyable, NetworkWriter writer)
+        {
+            var hasTags = modifyable.Tags != null;
+            writer.Write(hasTags);
+            if (hasTags)
+                writer.Write(modifyable.Tags, tag => writer.Write(tag));
+            writer.Write(modifyable.IgnoreLifespan);
+            writer.Write(modifyable.OrderModifiers);
+            Packet.WritePacketList(modifyable.Modifiers, writer);
+        }
+
+        /// <summary>
+        /// Reads <see cref="IUploadable"/> data from a packet.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="reader">Packet data to read from.</param>
+        public static void ReadUploadablePacket(this IUploadable uploadable, NetworkReader reader)
+        {
+            uploadable.ServerID = reader.ReadString();
+            uploadable.UploaderName = reader.ReadString();
+            uploadable.UploaderID = reader.ReadString();
+            Packet.ReadPacketList(uploadable.Uploaders, reader);
+            uploadable.Visibility = (ServerVisibility)reader.ReadByte();
+            uploadable.Changelog = reader.ReadString();
+            uploadable.ArcadeTags = reader.ReadList(() => reader.ReadString());
+            uploadable.ObjectVersion = reader.ReadString();
+            uploadable.VersionNumber = reader.ReadInt32();
+            uploadable.DatePublished = reader.ReadString();
+        }
+
+        /// <summary>
+        /// Writes <see cref="IUploadable"/> data to a packet.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="writer">Packet data to write to.</param>
+        public static void WriteUploadablePacket(this IUploadable uploadable, NetworkWriter writer)
+        {
+            writer.Write(uploadable.ServerID);
+            writer.Write(uploadable.UploaderName);
+            writer.Write(uploadable.UploaderID);
+            Packet.WritePacketList(uploadable.Uploaders, writer);
+            writer.Write((byte)uploadable.Visibility);
+            writer.Write(uploadable.Changelog);
+            writer.Write(uploadable.ArcadeTags, tag => writer.Write(tag));
+            writer.Write(uploadable.ObjectVersion);
+            writer.Write(uploadable.VersionNumber);
+            writer.Write(uploadable.DatePublished);
+        }
+
+        #endregion
+
         #region Animation Controller
 
         /// <summary>
@@ -3909,6 +4114,8 @@ namespace BetterLegacy.Core
         }
 
         public static void Save(this Sprite sprite, string path) => SpriteHelper.SaveSprite(sprite, path);
+
+        public static string GetName(this Lobby lobby) => lobby.GetData("LobbyName");
 
         #endregion
     }

@@ -9,6 +9,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
@@ -18,7 +19,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Represents an animation excluded from an object.
     /// </summary>
-    public class PAAnimation : PAObject<PAAnimation>, IAnimatable, IPrefabable
+    public class PAAnimation : PAObject<PAAnimation>, IPacket, IAnimatable, IPrefabable
     {
         #region Constructors
 
@@ -351,6 +352,54 @@ namespace BetterLegacy.Core.Data
             this.WritePrefabJSON(jn);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            description = reader.ReadString();
+            StartTime = reader.ReadSingle();
+            if (markers == null)
+                markers = new List<Marker>();
+            Packet.ReadPacketList(markers, reader);
+            ReferenceID = reader.ReadString();
+
+            transition = reader.ReadBoolean();
+            animatePosition = reader.ReadBoolean();
+            Packet.ReadPacketList(positionKeyframes, reader);
+            animateScale = reader.ReadBoolean();
+            Packet.ReadPacketList(scaleKeyframes, reader);
+            animateRotation = reader.ReadBoolean();
+            Packet.ReadPacketList(rotationKeyframes, reader);
+            animateColor = reader.ReadBoolean();
+            Packet.ReadPacketList(colorKeyframes, reader);
+
+            if (ProjectArrhythmia.State.InEditor)
+                EditorData = Packet.CreateFromPacket<ObjectEditorData>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(description);
+            writer.Write(StartTime);
+            Packet.WritePacketList(markers, writer);
+            writer.Write(ReferenceID);
+
+            writer.Write(transition);
+            writer.Write(animatePosition);
+            Packet.WritePacketList(positionKeyframes, writer);
+            writer.Write(animateScale);
+            Packet.WritePacketList(scaleKeyframes, writer);
+            writer.Write(animateRotation);
+            Packet.WritePacketList(rotationKeyframes, writer);
+            writer.Write(animateColor);
+            Packet.WritePacketList(colorKeyframes, writer);
+
+            if (ProjectArrhythmia.State.InEditor)
+                EditorData.WritePacket(writer);
         }
 
         public float GetLength(bool markers = false)

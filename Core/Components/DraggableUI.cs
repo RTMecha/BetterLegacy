@@ -13,14 +13,29 @@ namespace BetterLegacy.Core.Components
     /// </summary>
     public class DraggableUI : MonoBehaviour, IEventSystemHandler, IPointerDownHandler, IPointerUpHandler
     {
+        /// <summary>
+        /// If the UI is being dragged.
+        /// </summary>
         public bool dragging;
         Vector3 startMousePos;
         Vector3 startPos;
 
+        /// <summary>
+        /// Original (gangster) position.
+        /// </summary>
         public Vector3 ogPos;
+        /// <summary>
+        /// Target to drag.
+        /// </summary>
         public Transform target;
+        /// <summary>
+        /// Value the scale of the UI is set to when dragging.
+        /// </summary>
         public float scale = 1.03f;
 
+        /// <summary>
+        /// If the UI can be dragged.
+        /// </summary>
         public bool CanDrag => mode switch
         {
             DragMode.NoDrag => false,
@@ -29,14 +44,42 @@ namespace BetterLegacy.Core.Components
             _ => false,
         };
 
+        /// <summary>
+        /// Function to run when dragging has begun.
+        /// </summary>
+        public Action<Vector2> onStartDrag;
+
+        /// <summary>
+        /// Function to run when the UI is being dragged.
+        /// </summary>
         public Action<Vector2> draggingAction;
 
+        /// <summary>
+        /// Function to run when dragging has ended.
+        /// </summary>
+        public Action<Vector2> onEndDrag;
+
+        /// <summary>
+        /// Mode of UI dragging.
+        /// </summary>
         public DragMode mode = DragMode.OptionalDrag;
 
+        /// <summary>
+        /// Dragging requirement.
+        /// </summary>
         public enum DragMode
         {
+            /// <summary>
+            /// Does not drag.
+            /// </summary>
             NoDrag,
+            /// <summary>
+            /// Drag is optional with the <see cref="EditorConfig.DragUI"/> setting.
+            /// </summary>
             OptionalDrag,
+            /// <summary>
+            /// Dragging is on regardless.
+            /// </summary>
             RequiredDrag,
         }
 
@@ -50,6 +93,7 @@ namespace BetterLegacy.Core.Components
             if (!CanDrag || eventData.button == PointerEventData.InputButton.Right)
                 return;
 
+            onEndDrag?.Invoke(target.position);
             SoundManager.inst.PlaySound(DefaultSounds.blip);
             target.localScale = new Vector3(1f, 1f, 1f);
             dragging = false;
@@ -62,6 +106,7 @@ namespace BetterLegacy.Core.Components
 
             if (eventData.button == PointerEventData.InputButton.Left)
             {
+                onStartDrag?.Invoke(target.position);
                 SoundManager.inst.PlaySound(DefaultSounds.Click);
                 target.localScale = new Vector3(scale, scale, 1f);
                 dragging = true;

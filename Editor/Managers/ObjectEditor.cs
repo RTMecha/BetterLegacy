@@ -171,7 +171,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                 beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
-                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
+                beatmapObject.renderLayerType = RenderLayerType.UI;
                 beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
                 beatmapObject.ParentType = "111";
                 beatmapObject.events[1][0].values[0] = 1000f;
@@ -2432,7 +2432,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RenderTypeDropdown.SetValueWithoutNotify((int)beatmapObject.renderLayerType);
             Dialog.RenderTypeDropdown.onValueChanged.NewListener(_val =>
             {
-                beatmapObject.renderLayerType = (BeatmapObject.RenderLayerType)_val;
+                beatmapObject.renderLayerType = (RenderLayerType)_val;
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
             });
 

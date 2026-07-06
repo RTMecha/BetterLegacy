@@ -13,6 +13,7 @@ using SimpleJSON;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -23,7 +24,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : PAObject<GameData>, IModifyable, IModifierReference, IBeatmap, IFile
+    public class GameData : PAObject<GameData>, IPacket, IModifyable, IModifierReference, IBeatmap, IFile
     {
         public GameData() { }
 
@@ -42,7 +43,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             x.modifiers.Count > 0 ||
             x.objectType == BeatmapObject.ObjectType.Solid ||
             x.desync ||
-            x.renderLayerType != BeatmapObject.RenderLayerType.Foreground ||
+            x.renderLayerType != RenderLayerType.Foreground ||
             x.detailMode != DetailMode.Normal ||
             x.colorBlendMode != ColorBlendMode.Normal ||
             x.parallaxSettings.Any(y => y != 1f) ||
@@ -1186,6 +1187,72 @@ namespace BetterLegacy.Core.Data.Beatmap
                         jn["events"][EventLibrary.jsonNames[i]][j] = events[i][j].ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadModifiersPacket(reader);
+
+            #endregion
+
+            #region Contents
+
+            assets = Packet.CreateFromPacket<Assets>(reader);
+            data = Packet.CreateFromPacket<BeatmapData>(reader);
+            Packet.ReadPacketList(modifierBlocks, reader);
+            Packet.ReadPacketList(prefabs, reader);
+            Packet.ReadPacketList(beatmapThemes, reader);
+            Packet.ReadPacketList(prefabObjects, reader);
+            Packet.ReadPacketList(beatmapObjects, reader);
+            Packet.ReadPacketList(backgroundLayers, reader);
+            Packet.ReadPacketList(backgroundObjects, reader);
+            Packet.ReadPacketList(animations, reader);
+            Packet.ReadPacketList(variables, reader);
+
+            mainBackgroundLayer = reader.ReadInt32();
+
+            events = new List<List<EventKeyframe>>();
+            var eventCount = reader.ReadInt32();
+            for (int i = 0; i < eventCount; i++)
+            {
+                events.Add(new List<EventKeyframe>());
+                Packet.ReadPacketList(events[i], reader);
+            }
+
+            #endregion
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteModifiersPacket(writer);
+
+            #endregion
+
+            #region Contents
+
+            assets.WritePacket(writer);
+            data.WritePacket(writer);
+            Packet.WritePacketList(modifierBlocks, writer);
+            Packet.WritePacketList(prefabs.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(beatmapThemes, writer);
+            Packet.WritePacketList(prefabObjects.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(beatmapObjects.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(backgroundLayers.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(backgroundObjects.FindAll(x => !x.FromPrefab), writer);
+            Packet.WritePacketList(animations, writer);
+            Packet.WritePacketList(variables, writer);
+
+            writer.Write(mainBackgroundLayer);
+
+            writer.Write(events.Count);
+            for (int i = 0; i < events.Count; i++)
+                Packet.WritePacketList(events[i], writer);
+
+            #endregion
         }
 
         FileFormat fileFormat;

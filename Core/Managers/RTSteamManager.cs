@@ -13,10 +13,12 @@ using SteamworksFacepunch.Ugc;
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -157,11 +159,14 @@ namespace BetterLegacy.Core.Managers
 
         #region Functions
 
-        public override void OnManagerStart()
+        public override void OnInit()
         {
             try
             {
-                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID);
+                SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
+                SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
+
+                SteamClient.Init(ProjectArrhythmia.STEAM_APP_ID, false);
                 steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
                 Log($"Init Steam User: {SteamClient.Name}");
                 Initialized = true;
@@ -175,6 +180,11 @@ namespace BetterLegacy.Core.Managers
                 {
                     LogError($"Had an error setting the default config: {ex}");
                 }
+
+                SteamNetworkingUtils.InitRelayNetworkAccess();
+                SteamNetworkingUtils.ConnectionTimeout = 5000;
+                SteamNetworkingUtils.Timeout = 6000;
+                SteamNetworkingUtils.SendBufferSize = 10485760; // max is still 524288 (500KB) for some reason
             }
             catch (Exception ex)
             {
@@ -191,8 +201,12 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnAppExit()
         {
-            if (Initialized)
-                SteamClient.Shutdown();
+            if (!Initialized)
+                return;
+
+            EndServer();
+            EndClient(false);
+            SteamClient.Shutdown();
         }
 
         /// <summary>
@@ -200,6 +214,80 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">ID to open.</param>
         public void OpenWorkshop(PublishedFileId publishedFileID) => Application.OpenURL($"steam://url/CommunityFilePage/{publishedFileID}");
+
+        #region Server
+
+        void OnGameLobbyJoinRequested(Lobby lobby, SteamId id)
+        {
+            ProjectArrhythmia.State.IsHosting = false;
+            ProjectArrhythmia.State.IsOnlineMultiplayer = true;
+            Log($"Joining friend's lobby owned by {id}\nLobby ID: [{lobby.Id}]");
+
+            lobby.Join();
+        }
+
+        void OnLobbyInvite(Friend friend, Lobby lobby)
+        {
+            Log($"Invite received from [{friend.Name}]");
+        }
+
+        public void StartClient(SteamId id)
+        {
+            Log($"Starting client. Connecting to [{id}]");
+            Transport.Instance = new Transport();
+            NetworkManager.inst.ConnectToServer(id.ToString());
+            ProjectArrhythmia.State.IsOnlineMultiplayer = true;
+        }
+
+        public void EndClient() => EndClient(true);
+
+        public void EndClient(bool loadMainMenu)
+        {
+            Log($"Ending client.");
+            if (loadMainMenu)
+                SceneHelper.LoadScene(SceneName.Main_Menu);
+            ProjectArrhythmia.State.IsOnlineMultiplayer = false;
+            ProjectArrhythmia.State.IsHosting = false;
+            ProjectArrhythmia.State.IsInLobby = false;
+
+            SteamLobbyManager.inst.LeaveLobby();
+            NetworkManager.inst.Disconnect();
+            try
+            {
+                LobbyPopup.Instance.Render();
+            }
+            catch
+            {
+
+            }
+        }
+
+        public void StartServer()
+        {
+            Log($"Starting server.");
+            NetworkManager.inst.StartServer();
+            ProjectArrhythmia.State.IsOnlineMultiplayer = true;
+        }
+
+        public void EndServer()
+        {
+            Log($"Ending server.");
+            ProjectArrhythmia.State.IsOnlineMultiplayer = false;
+            ProjectArrhythmia.State.IsHosting = false;
+
+            SteamLobbyManager.inst.LeaveLobby();
+            NetworkManager.inst.StopServer();
+            try
+            {
+                LobbyPopup.Instance.Render();
+            }
+            catch
+            {
+
+            }
+        }
+
+        #endregion
 
         #region Levels
 

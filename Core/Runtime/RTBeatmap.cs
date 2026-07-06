@@ -12,6 +12,7 @@ using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -24,7 +25,7 @@ namespace BetterLegacy.Core.Runtime
     /// Caches the current beatmap game states. (E.G. usually stuff that should only be assigned on level start, such as game speed, challenge mode, etc.)
     /// <br></br>Can also include other stuff that doesn't fit in <see cref="RTLevel"/>, such as hit data and general runtime stuff.
     /// </summary>
-    public class RTBeatmap : Exists
+    public class RTBeatmap : Exists, IPacket
     {
         /// <summary>
         /// The current runtime beatmap.
@@ -192,6 +193,49 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="length">Length of the timeline.</param>
         /// <returns>Returns the position of an element on the game timeline based on the time, the song length and the level start and end offsets.</returns>
         public float GetTimelineOffset(float t, float length) => ((t - GameData.Current.data.level.LevelStartOffset) / (length - (GameData.Current.data.level.LevelEndOffset + GameData.Current.data.level.LevelStartOffset))) * 400f;
+
+        #region Packet
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            challengeMode = reader.ReadInt32();
+            gameSpeed = reader.ReadInt32();
+            shouldResetEndFuncOnStart = reader.ReadBoolean();
+            endLevelFunc = (EndLevelFunction)reader.ReadByte();
+            endLevelData = reader.ReadString();
+            endLevelUpdateProgress = reader.ReadBoolean();
+            ActiveCheckpointIndex = reader.ReadInt32();
+            var hasActiveCheckpoint = reader.ReadBoolean();
+            if (hasActiveCheckpoint)
+                ActiveCheckpoint = Packet.CreateFromPacket<Checkpoint>(reader);
+            respawnImmediately = reader.ReadBoolean();
+            lives = reader.ReadInt32();
+            Packet.ReadPacketList(hits, reader);
+            Packet.ReadPacketList(deaths, reader);
+            Packet.ReadPacketList(boosts, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(challengeMode.Ordinal);
+            writer.Write(gameSpeed.Ordinal);
+            writer.Write(shouldResetEndFuncOnStart);
+            writer.Write((byte)endLevelFunc);
+            writer.Write(endLevelData);
+            writer.Write(endLevelUpdateProgress);
+            writer.Write(ActiveCheckpointIndex);
+            bool hasActiveCheckpoint = ActiveCheckpoint;
+            writer.Write(hasActiveCheckpoint);
+            if (hasActiveCheckpoint)
+                ActiveCheckpoint.WritePacket(writer);
+            writer.Write(respawnImmediately);
+            writer.Write(lives);
+            Packet.WritePacketList(hits, writer);
+            Packet.WritePacketList(deaths, writer);
+            Packet.WritePacketList(boosts, writer);
+        }
+
+        #endregion
 
         #region End Level
 

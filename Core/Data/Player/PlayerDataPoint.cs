@@ -2,13 +2,17 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Player
 {
     /// <summary>
     /// Represents a point where an event occurs on a Player.
     /// </summary>
-    public class PlayerDataPoint : PAObject<PlayerDataPoint>
+    public class PlayerDataPoint : PAObject<PlayerDataPoint>, IPacket
     {
+        #region Constructors
+
         public PlayerDataPoint() { }
 
         public PlayerDataPoint(Vector2 position, int checkpointIndex, float time)
@@ -21,6 +25,8 @@ namespace BetterLegacy.Core.Data.Player
         public PlayerDataPoint(Vector2 position) : this(position, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time) { }
 
         public PlayerDataPoint(Vector2 position, float time) : this(position, GameManager.inst.UpcomingCheckpointIndex, time) { }
+
+        #endregion
 
         #region Values
 
@@ -41,7 +47,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerDataPoint orig, bool newID = true)
         {
@@ -68,6 +74,20 @@ namespace BetterLegacy.Core.Data.Player
             jn["t"] = time;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            position = reader.ReadVector3();
+            checkpointIndex = reader.ReadInt32();
+            time = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(position);
+            writer.Write(checkpointIndex);
+            writer.Write(time);
         }
 
         #endregion

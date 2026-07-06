@@ -369,7 +369,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the render layer type for each selected object.
         /// </summary>
         /// <param name="renderLayerType">Render layer type to set.</param>
-        public void SetRenderLayerType(BeatmapObject.RenderLayerType renderLayerType) => ForEachBeatmapObject(beatmapObject =>
+        public void SetRenderLayerType(RenderLayerType renderLayerType) => ForEachBeatmapObject(beatmapObject =>
         {
             beatmapObject.renderLayerType = renderLayerType;
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);

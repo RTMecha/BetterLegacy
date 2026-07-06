@@ -394,6 +394,26 @@ namespace BetterLegacy.Core
             /// If the game is finished.
             /// </summary>
             public static bool Finished => GameManager.inst && GameManager.inst.gameState == GameManager.State.Finish;
+
+            /// <summary>
+            /// If the user is currently hosting.
+            /// </summary>
+            public static bool IsHosting { get; set; }
+
+            /// <summary>
+            /// If the user is in an online lobby.
+            /// </summary>
+            public static bool IsInLobby { get; set; }
+
+            /// <summary>
+            /// If the user is in an online multiplayer session.
+            /// </summary>
+            public static bool IsOnlineMultiplayer { get; set; }
+
+            /// <summary>
+            /// If the user is a client and not the host.
+            /// </summary>
+            public static bool IsClient => IsInLobby && !IsHosting;
         }
     }
 }

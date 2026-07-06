@@ -93,11 +93,11 @@ namespace BetterLegacy.Patchers
             {
                 var activeDevice = InputManager.ActiveDevice;
                 if (PlayerManager.DeviceNotConnected(activeDevice))
-                    PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, activeDevice));
+                    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, activeDevice));
             }
 
             if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
-                PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, null));
+                PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, null));
 
             return false;
         }

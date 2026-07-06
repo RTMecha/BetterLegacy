@@ -64,6 +64,11 @@ namespace BetterLegacy.Core.Helpers
 
         public static Sprite LoadSprite(byte[] bytes, TextureFormat textureFormat = TextureFormat.ARGB32, bool mipChain = false, TextureWrapMode textureWrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Point)
         {
+            return CreateSprite(LoadTexture(bytes, textureFormat, mipChain, textureWrapMode, filterMode));
+        }
+
+        public static Texture2D LoadTexture(byte[] bytes, TextureFormat textureFormat = TextureFormat.ARGB32, bool mipChain = false, TextureWrapMode textureWrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Point)
+        {
             var texture2d = new Texture2D(2, 2, textureFormat, mipChain);
             texture2d.LoadImage(bytes);
 
@@ -71,7 +76,7 @@ namespace BetterLegacy.Core.Helpers
             texture2d.filterMode = filterMode;
             texture2d.Apply();
 
-            return CreateSprite(texture2d);
+            return texture2d;
         }
 
         public static void SaveSprite(Sprite sprite, string path) => File.WriteAllBytes(path, RTFile.FileIsFormat(path, FileFormat.JPG) ? sprite.texture.EncodeToJPG() : sprite.texture.EncodeToPNG());

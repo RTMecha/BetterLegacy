@@ -29,6 +29,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -40,6 +41,7 @@ using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers.Settings;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -4000,8 +4002,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Editor Config", string.Empty, EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () =>
             {
-                ConfigManager.inst.SetTab(2);
-                ConfigManager.inst.Show();
+                ConfigPopup.Instance?.Open();
+                ConfigPopup.Instance?.SetTab(2);
             });
 
             var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", string.Empty, EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
@@ -4111,7 +4113,9 @@ namespace BetterLegacy.Editor.Managers
                     Example.Current.brain?.Notice(ExampleBrain.Notices.ALREADY_SPAWNED);
             });
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () => ConfigPopup.Instance?.Open());
+
+            EditorHelper.AddEditorDropdown("Show Lobbies Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () => LobbyPopup.Instance?.Open());
 
             EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
@@ -6674,8 +6678,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     EditorConfig.Instance.EditorComplexity.Value = (Complexity)index;
                     RefreshIntroDialog();
-                    if (ConfigManager.inst.Active)
-                        ConfigManager.inst.RefreshSettings();
+                    ConfigPopup.Instance?.RefreshSettings();
                 });
             }
             for (int i = 0; i < IntroDialog.ThemeToggles.Count; i++)
@@ -6687,16 +6690,14 @@ namespace BetterLegacy.Editor.Managers
                 {
                     EditorConfig.Instance.EditorTheme.Value = index;
                     RefreshIntroDialog();
-                    if (ConfigManager.inst.Active)
-                        ConfigManager.inst.RefreshSettings();
+                    ConfigPopup.Instance?.RefreshSettings();
                 });
             }
             IntroDialog.RoundedToggle.SetIsOnWithoutNotify(EditorConfig.Instance.RoundedUI.Value);
             IntroDialog.RoundedToggle.OnValueChanged.NewListener(_val =>
             {
                 EditorConfig.Instance.RoundedUI.Value = _val;
-                if (ConfigManager.inst.Active)
-                    ConfigManager.inst.RefreshSettings();
+                ConfigPopup.Instance?.RefreshSettings();
             });
         }
 
@@ -7028,7 +7029,12 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             foreach (var player in PlayerManager.Players)
+            {
+                if (!player.IsLocalPlayer)
+                    return;
                 player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
+                NetworkFunction.SetPlayerHealth(player.id, player.Health);
+            }
         }
 
         /// <summary>

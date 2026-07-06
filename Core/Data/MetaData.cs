@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data
@@ -13,8 +14,10 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// User readable information of the level.
     /// </summary>
-    public class MetaData : PAObject<MetaData>, IUploadable
+    public class MetaData : PAObject<MetaData>, IPacket, IUploadable
     {
+        #region Constructors
+
         public MetaData()
         {
             artist = new ArtistMetaData();
@@ -23,6 +26,8 @@ namespace BetterLegacy.Core.Data
             beatmap = new BeatmapMetaData();
             package = new PackageMetaData();
         }
+
+        #endregion
 
         #region Values
 
@@ -52,9 +57,9 @@ namespace BetterLegacy.Core.Data
         public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.link) ? null : AlephNetwork.GetURL(URLSource.Song, song.linkType, song.linkType == 2 ? artist.link + "," + song.link : song.link);
 
         public ArtistMetaData artist;
-        public List<ArtistMetaData> artists;
+        public List<ArtistMetaData> artists = new List<ArtistMetaData>();
         public CreatorMetaData creator;
-        public List<CreatorMetaData> creators;
+        public List<CreatorMetaData> creators = new List<CreatorMetaData>();
         public SongMetaData song;
         public BeatmapMetaData beatmap;
         public PackageMetaData package;
@@ -306,6 +311,68 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Interface
+
+            this.ReadUploadablePacket(reader);
+
+            #endregion
+
+            artist = Packet.CreateFromPacket<ArtistMetaData>(reader);
+            creator = Packet.CreateFromPacket<CreatorMetaData>(reader);
+            song = Packet.CreateFromPacket<SongMetaData>(reader);
+            beatmap = Packet.CreateFromPacket<BeatmapMetaData>(reader);
+            package = Packet.CreateFromPacket<PackageMetaData>(reader);
+
+            Packet.ReadPacketList(artists, reader);
+            Packet.ReadPacketList(creators, reader);
+            Packet.ReadPacketList(requiredAssetPacks, reader);
+
+            arcadeID = reader.ReadString();
+            prevID = reader.ReadString();
+            nextID = reader.ReadString();
+
+            isHubLevel = reader.ReadBoolean();
+            requireUnlock = reader.ReadBoolean();
+            unlockAfterCompletion = reader.ReadBoolean();
+            requireVersion = reader.ReadBoolean();
+            versionRange = (DataManager.VersionComparison)reader.ReadByte();
+            customSayings = reader.ReadDictionary(() => (Rank)reader.ReadByte(), reader.ReadStringArray);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Interface
+
+            this.WriteUploadablePacket(writer);
+
+            #endregion
+
+            artist.WritePacket(writer);
+            creator.WritePacket(writer);
+            song.WritePacket(writer);
+            beatmap.WritePacket(writer);
+            package.WritePacket(writer);
+
+            Packet.WritePacketList(artists, writer);
+            Packet.WritePacketList(creators, writer);
+            Packet.WritePacketList(requiredAssetPacks, writer);
+
+            writer.Write(arcadeID);
+            writer.Write(prevID);
+            writer.Write(nextID);
+
+            writer.Write(isHubLevel);
+            writer.Write(requireUnlock);
+            writer.Write(unlockAfterCompletion);
+            writer.Write(requireVersion);
+            writer.Write((byte)versionRange);
+            writer.Write(customSayings,
+                writeKey: key => writer.Write((byte)key.Ordinal),
+                writeValue: writer.Write);
+        }
+
         /// <summary>
         /// Saves the <see cref="MetaData"/> to a LS format file.
         /// </summary>
@@ -367,7 +434,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Artist section of <see cref="MetaData"/>.
     /// </summary>
-    public class ArtistMetaData : PAObject<ArtistMetaData>
+    public class ArtistMetaData : PAObject<ArtistMetaData>, IPacket
     {
         #region Constructors
 
@@ -448,6 +515,20 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(linkType);
+            writer.Write(link);
+        }
+
         public override string ToString() => name;
 
         #endregion
@@ -456,7 +537,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Creator section of <see cref="MetaData"/>.
     /// </summary>
-    public class CreatorMetaData : PAObject<CreatorMetaData>
+    public class CreatorMetaData : PAObject<CreatorMetaData>, IPacket
     {
         #region Constructors
 
@@ -545,6 +626,22 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            steamID = reader.ReadInt64();
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(steamID);
+            writer.Write(linkType);
+            writer.Write(link);
+        }
+
         public override string ToString() => name;
 
         #endregion
@@ -553,7 +650,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Song section of <see cref="MetaData"/>.
     /// </summary>
-    public class SongMetaData : PAObject<SongMetaData>
+    public class SongMetaData : PAObject<SongMetaData>, IPacket
     {
         #region Constructors
 
@@ -694,6 +791,36 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            title = reader.ReadString();
+            difficulty = reader.ReadInt32();
+            description = reader.ReadString();
+
+            linkType = reader.ReadInt32();
+            link = reader.ReadString();
+
+            bpm = reader.ReadSingle();
+            time = reader.ReadSingle();
+            previewStart = reader.ReadSingle();
+            previewLength = reader.ReadSingle();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(title);
+            writer.Write(difficulty);
+            writer.Write(description);
+
+            writer.Write(linkType);
+            writer.Write(link);
+
+            writer.Write(bpm);
+            writer.Write(time);
+            writer.Write(previewStart);
+            writer.Write(previewLength);
+        }
+
         public override string ToString() => title;
 
         #endregion
@@ -702,7 +829,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Beatmap section of <see cref="MetaData"/>.
     /// </summary>
-    public class BeatmapMetaData : PAObject<BeatmapMetaData>
+    public class BeatmapMetaData : PAObject<BeatmapMetaData>, IPacket
     {
         #region Constructors
 
@@ -889,6 +1016,42 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            workshopID = reader.ReadInt64();
+
+            dateCreated = reader.ReadString();
+            dateEdited = reader.ReadString();
+
+            gameVersion = reader.ReadString();
+            modVersion = reader.ReadString();
+
+            preferredPlayerCount = (PreferredPlayerCount)reader.ReadByte();
+            preferredControlType = (PreferredControlType)reader.ReadByte();
+
+            videoLinkType = reader.ReadInt32();
+            videoLink = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(workshopID);
+
+            writer.Write(dateCreated);
+            writer.Write(dateEdited);
+
+            writer.Write(gameVersion);
+            writer.Write(modVersion);
+
+            writer.Write((byte)preferredPlayerCount);
+            writer.Write((byte)preferredControlType);
+
+            writer.Write(videoLinkType);
+            writer.Write(videoLink);
+        }
+
         public bool PlayersCanjoin(int count) => preferredPlayerCount switch
         {
             PreferredPlayerCount.One => count == 1,
@@ -907,7 +1070,7 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Controls what files should be loaded.
     /// </summary>
-    public class PackageMetaData : PAObject<PackageMetaData>
+    public class PackageMetaData : PAObject<PackageMetaData>, IPacket
     {
         #region Constructors
 
@@ -1000,6 +1163,24 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            mainAudio = reader.ReadString();
+            mainPreviewAudio = reader.ReadString();
+            mainCover = reader.ReadString();
+            mainLevel = reader.ReadString();
+            Packet.ReadPacketList(files, reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(mainAudio);
+            writer.Write(mainPreviewAudio);
+            writer.Write(mainCover);
+            writer.Write(mainLevel);
+            Packet.WritePacketList(files, writer);
+        }
+
         public File GetAudio(string id) => files.Find(x => x.id == id && x.IsAudio);
 
         public File GetImage(string id) => files.Find(x => x.id == id && x.IsCover);
@@ -1013,7 +1194,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Represents a file that should be read.
         /// </summary>
-        public class File : PAObject<File>
+        public class File : PAObject<File>, IPacket
         {
             #region Constructors
 
@@ -1088,6 +1269,18 @@ namespace BetterLegacy.Core.Data
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                id = reader.ReadString();
+                fileName = reader.ReadString();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(id);
+                writer.Write(fileName);
+            }
+
             #endregion
         }
 
@@ -1097,9 +1290,13 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Indicates an asset pack that is required to play the level. Useful for fully custom functions.
     /// </summary>
-    public class RequiredAssetPackData : PAObject<RequiredAssetPackData>
+    public class RequiredAssetPackData : PAObject<RequiredAssetPackData>, IPacket
     {
+        #region Constructors
+
         public RequiredAssetPackData() { }
+
+        #endregion
 
         #region Values
 
@@ -1149,6 +1346,20 @@ namespace BetterLegacy.Core.Data
                 jn["server_id"] = serverID;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            packID = reader.ReadString();
+            packName = reader.ReadString();
+            serverID = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(packID);
+            writer.Write(packName);
+            writer.Write(serverID);
         }
 
         #endregion

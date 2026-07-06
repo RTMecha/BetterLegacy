@@ -4,6 +4,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -11,7 +12,7 @@ namespace BetterLegacy.Editor.Data
     /// <summary>
     /// Represents an editor layer that has been pinned by the user.
     /// </summary>
-    public class PinnedEditorLayer : PAObject<PinnedEditorLayer>
+    public class PinnedEditorLayer : PAObject<PinnedEditorLayer>, IPacket
     {
         #region Constructors
 
@@ -100,6 +101,28 @@ namespace BetterLegacy.Editor.Data
                 jn["col"] = RTColors.ColorToHexOptional(color);
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            layer = reader.ReadInt32();
+            layerType = (EditorTimeline.LayerType)reader.ReadByte();
+            name = reader.ReadString();
+            description = reader.ReadString();
+            overrideColor = reader.ReadBoolean();
+            color = reader.ReadColor();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(layer);
+            writer.Write((byte)layerType);
+            writer.Write(name);
+            writer.Write(description);
+            writer.Write(overrideColor);
+            writer.Write(color);
         }
 
         /// <summary>

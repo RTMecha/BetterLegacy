@@ -9,6 +9,7 @@ using InControl;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
@@ -289,7 +290,8 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < players.Count; i++)
             {
                 var player = players[i];
-                if (player && player.RuntimePlayer && player.RuntimePlayer.rb)
+                // only local players are counted for the Follow Player keyframe.
+                if (player && player.IsLocalPlayer && player.RuntimePlayer && player.RuntimePlayer.rb)
                 {
                     result += player.RuntimePlayer.rb.position;
                     count++;
@@ -321,7 +323,7 @@ namespace BetterLegacy.Core.Managers
         /// Creates the default player that uses a keyboard.
         /// </summary>
         /// <returns>Returns a <see cref="PAPlayer"/> with the default values.</returns>
-        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(true, 0, null);
+        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(0, null);
 
         public static PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => Players.Find(x => x.device == inputDevice);
 
@@ -348,8 +350,13 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a checkpoint.
         /// </summary>
         /// <param name="checkpoint">Checkpoint to spawn at.</param>
-        public static void SpawnPlayers(Checkpoint checkpoint)
+        public static void SpawnPlayers(Checkpoint checkpoint, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
         {
+            if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, checkpoint);
             AssignPlayerModels();
             var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
@@ -380,8 +387,13 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a position.
         /// </summary>
         /// <param name="pos">Position to spawn at.</param>
-        public static void SpawnPlayers(Vector2 pos)
+        public static void SpawnPlayers(Vector2 pos, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
         {
+            if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
             AssignPlayerModels();
 
             bool spawned = false;
@@ -539,7 +551,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Spawns all players at the start of the level. If <see cref="LevelData.spawnPlayers"/> is off, then don't spawn players.
         /// </summary>
-        public static void SpawnPlayersOnStart()
+        public static void SpawnPlayersOnStart(bool sendLobbySignal = true)
         {
             ValidatePlayers();
             DestroyPlayers();
@@ -551,14 +563,20 @@ namespace BetterLegacy.Core.Managers
             }
 
             if (GameData.Current && GameData.Current.data && (!GameData.Current.data.level || GameData.Current.data.level.spawnPlayers))
-                SpawnPlayers(GameData.Current.data.checkpoints[0]);
+                SpawnPlayers(GameData.Current.data.checkpoints[0], sendLobbySignal: sendLobbySignal);
         }
 
         /// <summary>
         /// Destroys all player related game objects.
         /// </summary>
-        public static void DestroyPlayers()
+        public static void DestroyPlayers(bool forceOnline = false, bool sendLobbySignal = true)
         {
+            if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.DESTROY_PLAYERS);
+
             foreach (var player in Players)
                 DestroyPlayer(player);
         }
@@ -591,14 +609,25 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Respawns all players at the default spawn position.
         /// </summary>
-        public static void RespawnPlayers() => RespawnPlayers(GetSpawnPosition());
+        public static void RespawnPlayers() => RespawnPlayers(false);
+
+        /// <summary>
+        /// Respawns all players at the default spawn position.
+        /// </summary>
+        public static void RespawnPlayers(bool forceOnline, bool sendLobbySignal = true) => RespawnPlayers(GetSpawnPosition(), forceOnline, sendLobbySignal);
 
         /// <summary>
         /// Respawns all players at a set spawn position.
         /// </summary>
-        public static void RespawnPlayers(Vector2 pos)
+        public static void RespawnPlayers(Vector2 pos, bool forceOnline, bool sendLobbySignal = true)
         {
-            DestroyPlayers();
+            if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.RESPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
+
+            DestroyPlayers(true);
             AssignPlayerModels();
             SpawnPlayers(pos);
         }

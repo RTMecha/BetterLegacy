@@ -5,6 +5,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Stores sound data that can be reused.
     /// </summary>
-    public class SoundAsset : PAObject<SoundAsset>
+    public class SoundAsset : PAObject<SoundAsset>, IPacket
     {
         #region Constructors
 
@@ -71,6 +72,20 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["al"] = autoLoad;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            autoLoad = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(autoLoad);
         }
 
         /// <summary>

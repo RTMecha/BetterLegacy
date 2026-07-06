@@ -9,13 +9,14 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class EditorInfo : PAObject<EditorInfo>, IFile
+    public class EditorInfo : PAObject<EditorInfo>, IPacket, IFile
     {
         #region Values
 
@@ -491,6 +492,114 @@ namespace BetterLegacy.Editor.Data
                 jn["misc"]["prefab_object_data"] = RTPrefabEditor.inst.copiedInstanceData.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            // default paths
+            prefabPath = reader.ReadString();
+            themePath = reader.ReadString();
+
+            // timeline
+            mainZoom = reader.ReadSingle();
+            mainPosition = reader.ReadSingle();
+
+            layer = reader.ReadInt32();
+            layerType = (EditorTimeline.LayerType)reader.ReadByte();
+
+            binCount = reader.ReadInt32();
+            binPosition = reader.ReadSingle();
+
+            Packet.ReadPacketList(pinnedEditorLayers, reader);
+            Packet.ReadPacketList(editorGroups, reader);
+
+            // editor
+            Progress = reader.ReadSingle();
+            // update time
+            reader.ReadSingle();
+            openAmount = reader.ReadInt32();
+
+            // freecam
+            freecamEnabled = reader.ReadBoolean();
+            freecamPosition = reader.ReadVector2();
+            freecamZoom = reader.ReadSingle();
+            freecamRotate = reader.ReadSingle();
+            freecamPerRotate = reader.ReadVector2();
+
+            // story
+            isStory = reader.ReadBoolean();
+            if (isStory)
+            {
+                storyChapter = reader.ReadInt32();
+                storyLevel = reader.ReadInt32();
+                cutscene = reader.ReadInt32();
+                cutsceneDestination = (Story.CutsceneDestination)reader.ReadByte();
+            }
+
+            captureSettings.ReadPacket(reader);
+            analyzedBPM = reader.ReadBoolean();
+            bpmSnapActive = reader.ReadBoolean();
+            bpm = reader.ReadSingle();
+            bpmOffset = reader.ReadSingle();
+            timeSignature = reader.ReadSingle();
+            time = reader.ReadSingle();
+            var hasCopiedInstanceData = reader.ReadBoolean();
+            if (hasCopiedInstanceData)
+                RTPrefabEditor.inst.copiedInstanceData = Packet.CreateFromPacket<PrefabObject>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            // default paths
+            writer.Write(prefabPath);
+            writer.Write(themePath);
+
+            // timeline
+            writer.Write(mainZoom);
+            writer.Write(mainPosition);
+
+            writer.Write(layer);
+            writer.Write((byte)layerType);
+
+            writer.Write(binCount);
+            writer.Write(binPosition);
+
+            Packet.WritePacketList(pinnedEditorLayers, writer);
+            Packet.WritePacketList(editorGroups, writer);
+
+            // editor
+            writer.Write(Progress);
+            writer.Write(timer.time);
+            writer.Write(openAmount);
+
+            // freecam
+            writer.Write(freecamEnabled);
+            writer.Write(freecamPosition);
+            writer.Write(freecamZoom);
+            writer.Write(freecamRotate);
+            writer.Write(freecamPerRotate);
+
+            // story
+            writer.Write(isStory);
+            if (isStory)
+            {
+                writer.Write(storyChapter);
+                writer.Write(storyLevel);
+                writer.Write(cutscene);
+                writer.Write((byte)cutsceneDestination);
+            }
+
+            captureSettings.WritePacket(writer);
+            writer.Write(analyzedBPM);
+            writer.Write(bpmSnapActive);
+            writer.Write(bpm);
+            writer.Write(bpmOffset);
+            writer.Write(timeSignature);
+            writer.Write(time);
+            bool hasCopiedInstanceData = RTPrefabEditor.inst.copiedInstanceData;
+            writer.Write(hasCopiedInstanceData);
+            if (hasCopiedInstanceData)
+                RTPrefabEditor.inst.copiedInstanceData.WritePacket(writer);
         }
 
         /// <summary>

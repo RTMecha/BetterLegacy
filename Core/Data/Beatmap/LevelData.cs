@@ -2,12 +2,14 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Controls level behavior.
     /// </summary>
-    public class LevelData : PAObject<LevelData>
+    public class LevelData : PAObject<LevelData>, IPacket
     {
         public LevelData() => modVersion = LegacyPlugin.ModVersion.ToString();
 
@@ -64,7 +66,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Default game mode.
         /// </summary>
-        public int gameMode = 0;
+        public GameMode gameMode = 0;
 
         /// <summary>
         /// Gravity drag.
@@ -289,7 +291,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 speedMultiplier = jn["speed_multiplier"].AsFloat;
 
             if (jn["gamemode"] != null)
-                gameMode = jn["gamemode"].AsInt;
+                gameMode = (GameMode)jn["gamemode"].AsInt;
 
             if (jn["jump_gravity"] != null)
                 jumpGravity = jn["jump_gravity"].AsFloat;
@@ -416,7 +418,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["speed_multiplier"] = speedMultiplier;
 
             if (gameMode != 0)
-                jn["gamemode"] = gameMode;
+                jn["gamemode"] = (int)gameMode;
 
             if (jumpGravity != 1f)
                 jn["jump_gravity"] = jumpGravity;
@@ -502,6 +504,138 @@ namespace BetterLegacy.Core.Data.Beatmap
             #endregion
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            #region Info
+
+            levelVersion = reader.ReadString();
+            modVersion = reader.ReadString();
+
+            #endregion
+
+            #region Behavior
+
+            hideIntro = reader.ReadBoolean();
+            forceReplayLevelOff = reader.ReadBoolean();
+            reverse = reader.ReadBoolean();
+
+            #endregion
+
+            #region Player Conditions
+
+            respawnImmediately = reader.ReadBoolean();
+            lockBoost = reader.ReadBoolean();
+            speedMultiplier = reader.ReadSingle();
+            gameMode = (GameMode)reader.ReadByte();
+            jumpGravity = reader.ReadSingle();
+            jumpIntensity = reader.ReadSingle();
+            maxJumpCount = reader.ReadInt32();
+            maxJumpBoostCount = reader.ReadInt32();
+            maxHealth = reader.ReadInt32();
+            multiplyPlayerSpeed = reader.ReadBoolean();
+            allowCustomPlayerModels = reader.ReadBoolean();
+            allowPlayerModelControls = reader.ReadBoolean();
+            spawnPlayers = reader.ReadBoolean();
+            allowJumping = reader.ReadBoolean();
+            allowReversedJumping = reader.ReadBoolean();
+            allowWallJumping = reader.ReadBoolean();
+            allowWallSticking = reader.ReadBoolean();
+
+            #endregion
+
+            #region Limit
+
+            limitPlayer = reader.ReadBoolean();
+            if (limitPlayer)
+            {
+                limitMoveSpeed = reader.ReadVector2();
+                limitBoostSpeed = reader.ReadVector2();
+                limitBoostCooldown = reader.ReadVector2();
+                limitBoostMinTime = reader.ReadVector2();
+                limitBoostMaxTime = reader.ReadVector2();
+                limitHitCooldown = reader.ReadVector2();
+            }
+
+            #endregion
+
+            #region Start / End Level
+
+            LevelStartOffset = reader.ReadSingle();
+            LevelEndOffset = reader.ReadSingle();
+            autoEndLevel = reader.ReadBoolean();
+            endLevelFunc = (EndLevelFunction)reader.ReadUInt16();
+            endLevelData = reader.ReadString();
+            endLevelUpdateProgress = reader.ReadBoolean();
+
+            #endregion
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            #region Info
+
+            writer.Write(levelVersion);
+            writer.Write(modVersion);
+
+            #endregion
+
+            #region Behavior
+
+            writer.Write(hideIntro);
+            writer.Write(forceReplayLevelOff);
+            writer.Write(reverse);
+
+            #endregion
+
+            #region Player Conditions
+
+            writer.Write(respawnImmediately);
+            writer.Write(lockBoost);
+            writer.Write(speedMultiplier);
+            writer.Write((byte)gameMode);
+            writer.Write(jumpGravity);
+            writer.Write(jumpIntensity);
+            writer.Write(maxJumpCount);
+            writer.Write(maxJumpBoostCount);
+            writer.Write(maxHealth);
+            writer.Write(multiplyPlayerSpeed);
+            writer.Write(allowCustomPlayerModels);
+            writer.Write(allowPlayerModelControls);
+            writer.Write(spawnPlayers);
+            writer.Write(allowJumping);
+            writer.Write(allowReversedJumping);
+            writer.Write(allowWallJumping);
+            writer.Write(allowWallSticking);
+
+            #endregion
+
+            #region Limit
+
+            writer.Write(limitPlayer);
+            if (limitPlayer)
+            {
+                writer.Write(limitMoveSpeed);
+                writer.Write(limitBoostSpeed);
+                writer.Write(limitBoostCooldown);
+                writer.Write(limitBoostMinTime);
+                writer.Write(limitBoostMaxTime);
+                writer.Write(limitHitCooldown);
+            }
+
+            #endregion
+
+            #region Start / End Level
+
+            writer.Write(LevelStartOffset);
+            writer.Write(LevelEndOffset);
+            writer.Write(autoEndLevel);
+            writer.Write((ushort)endLevelFunc);
+            writer.Write(endLevelData);
+            writer.Write(endLevelUpdateProgress);
+
+            #endregion
         }
 
         #endregion

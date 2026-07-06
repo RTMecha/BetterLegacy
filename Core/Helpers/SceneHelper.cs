@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
@@ -18,6 +20,11 @@ namespace BetterLegacy.Core.Helpers
     public static class SceneHelper
     {
         #region Values
+
+        /// <summary>
+        /// The current scene PA is in.
+        /// </summary>
+        public static SceneName Current => EnumHelper.Parse<SceneName>(CurrentScene.Replace(" ", "_"), true);
 
         /// <summary>
         /// The current scene PA is in.
@@ -217,6 +224,9 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="showLoading">If the progress screen should display.</param>
         public static IEnumerator ILoadScene(string level, bool showLoading = true)
         {
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level.Replace(" ", "_"), true, out SceneName sceneName))
+                NetworkFunction.SetClientScene(sceneName, showLoading, 0);
+
             PreviousScene = CurrentScene;
             CurrentScene = level;
 

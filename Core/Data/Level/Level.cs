@@ -22,6 +22,8 @@ namespace BetterLegacy.Core.Data.Level
     /// </summary>
     public class Level : Exists
     {
+        #region Constructors
+
         public Level() { }
 
         public Level(string path, bool loadIcon = true)
@@ -61,6 +63,8 @@ namespace BetterLegacy.Core.Data.Level
 
             UpdateDefaults();
         }
+
+        #endregion
 
         #region Values
 
@@ -493,6 +497,26 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         /// <returns>Returns <see cref="previewAudio"/> if it is not null, otherwise returns <see cref="music"/>.</returns>
         public AudioClip GetPreviewAudio() => previewAudio ? previewAudio : music;
+
+        /// <summary>
+        /// Compresses the current level folder into a .zip file.
+        /// </summary>
+        public void Zip()
+        {
+            var zipPath = RTFile.RemoveEndSlash(path) + FileFormat.ZIP.Dot();
+            RTFile.DeleteFile(zipPath);
+            System.IO.Compression.ZipFile.CreateFromDirectory(path, zipPath);
+        }
+
+        /// <summary>
+        /// Compresses the level and reads the bytes of the compressed zip file.
+        /// </summary>
+        /// <returns>Returns the bytes of the compressed zip file.</returns>
+        public byte[] ReadZipBytes()
+        {
+            Zip();
+            return File.ReadAllBytes(RTFile.RemoveEndSlash(path) + FileFormat.ZIP.Dot());
+        }
 
         /// <summary>
         /// Checks if all files required to load a level exist. Includes LS / VG formats.

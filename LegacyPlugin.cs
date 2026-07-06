@@ -24,6 +24,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus.UI.Popups;
 
 using Version = BetterLegacy.Core.Data.Version;
 
@@ -32,13 +33,18 @@ namespace BetterLegacy
     /// <summary>
     /// Core plugin class.
     /// </summary>
-    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.8.21")]
+    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.9.0")]
     [BepInProcess("Project Arrhythmia.exe")]
     public class LegacyPlugin : BaseUnityPlugin
     {
         public static LegacyPlugin inst;
         public static string className = "[<color=#0E36FD>Better</color> <color=#4FBDD1>Legacy</color>] " + PluginInfo.PLUGIN_VERSION + "\n";
         public static readonly Harmony harmony = new Harmony("BetterLegacy");
+
+        /// <summary>
+        /// Snapshot version of the mod. If left empty, it means the mod build is not a snapshot.
+        /// </summary>
+        public const string SNAPSHOT_VERSION = "snapshot-2026.7.2";
         public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
         public static List<BaseConfig> configs = new List<BaseConfig>();
@@ -172,9 +178,10 @@ namespace BetterLegacy
 
             try
             {
-                CoreHelper.Log("Init ConfigManager...");
-
-                ConfigManager.Init();
+                CoreHelper.Log("Init popups...");
+                PopupBase.InitPopupsCanvas();
+                PopupBase.RegisterPopup<ConfigPopup>();
+                PopupBase.RegisterPopup<LobbyPopup>();
             }
             catch (Exception ex)
             {
@@ -256,6 +263,7 @@ namespace BetterLegacy
             }
 
             MainTick?.OnTick();
+            PopupBase.TickPopups();
 
             if (CoreHelper.IsUsingInputField)
                 return;

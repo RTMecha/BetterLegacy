@@ -6,6 +6,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -13,8 +14,10 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// A <see cref="Prefab"/> group. Displays an icon and color for the Prefab references.
     /// </summary>
-    public class PrefabType : PAObject<PrefabType>
+    public class PrefabType : PAObject<PrefabType>, IPacket
     {
+        #region Constructors
+
         public PrefabType() => id = GetNumberID();
 
         public PrefabType(string name, Color color) : this()
@@ -23,29 +26,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.color = color;
         }
 
-        #region Values
-
-        /// <summary>
-        /// Name of the prefab type.
-        /// </summary>
-        public string name;
-
-        /// <summary>
-        /// Color to apply to prefabs using this type.
-        /// </summary>
-        public Color color;
-
-        /// <summary>
-        /// Icon to apply to prefabs using this type.
-        /// </summary>
-        public Sprite icon;
-
-        /// <summary>
-        /// Path to the prefab type's file.
-        /// </summary>
-        public string filePath;
-
         #endregion
+
+        #region Values
 
         #region Defaults
 
@@ -156,13 +139,29 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region Methods
+        /// <summary>
+        /// Name of the prefab type.
+        /// </summary>
+        public string name;
 
         /// <summary>
-        /// Assigns the color of the Prefab Type.
+        /// Color to apply to prefabs using this type.
         /// </summary>
-        /// <param name="hex">Hex color to assign.</param>
-        public void AssignColor(string hex) => color = hex.Length == 8 ? LSColors.HexToColorAlpha(hex) : hex.Length == 6 ? LSColors.HexToColor(hex) : LSColors.pink500;
+        public Color color;
+
+        /// <summary>
+        /// Icon to apply to prefabs using this type.
+        /// </summary>
+        public Sprite icon;
+
+        /// <summary>
+        /// Path to the prefab type's file.
+        /// </summary>
+        public string filePath;
+
+        #endregion
+
+        #region Functions
 
         public override void CopyData(PrefabType orig, bool newID = true)
         {
@@ -207,9 +206,27 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        #endregion
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            color = reader.ReadColor();
+            icon = reader.ReadSprite();
+        }
 
-        #region Operators
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(color);
+            writer.Write(icon);
+        }
+
+        /// <summary>
+        /// Assigns the color of the Prefab Type.
+        /// </summary>
+        /// <param name="hex">Hex color to assign.</param>
+        public void AssignColor(string hex) => color = hex.Length == 8 ? LSColors.HexToColorAlpha(hex) : hex.Length == 6 ? LSColors.HexToColor(hex) : LSColors.pink500;
 
         public override string ToString() => name;
 

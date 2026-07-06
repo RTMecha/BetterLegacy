@@ -7,13 +7,14 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents a group of timeline objects in the editor.
     /// </summary>
-    public class EditorGroup : PAObject<EditorGroup>
+    public class EditorGroup : PAObject<EditorGroup>, IPacket
     {
         #region Constructors
 
@@ -137,6 +138,28 @@ namespace BetterLegacy.Editor.Data
                 jn["piid"] = prefabInstanceID;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            collapsedType = (CollapsedType)reader.ReadByte();
+            Bin = reader.ReadInt32();
+            Layer = reader.ReadInt32();
+            useTags = reader.ReadBoolean();
+            prefabID = reader.ReadString();
+            prefabInstanceID = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write((byte)collapsedType);
+            writer.Write(Bin);
+            writer.Write(Layer);
+            writer.Write(useTags);
+            writer.Write(prefabID);
+            writer.Write(prefabInstanceID);
         }
 
         /// <summary>

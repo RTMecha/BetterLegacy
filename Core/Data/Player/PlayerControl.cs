@@ -1,15 +1,20 @@
 ﻿using SimpleJSON;
 
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Data.Player
 {
     /// <summary>
     /// Controls how a player behaves in a level.
     /// </summary>
-    public class PlayerControl : PAObject<PlayerControl>
+    public class PlayerControl : PAObject<PlayerControl>, IPacket
     {
+        #region Constructors
+
         public PlayerControl() : base() { }
+
+        #endregion
 
         #region Values
 
@@ -130,7 +135,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(PlayerControl orig, bool newID = true)
         {
@@ -278,6 +283,96 @@ namespace BetterLegacy.Core.Data.Player
                 jn["death_modifier_block"] = DeathModifierBlock.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+
+            #region Main
+
+            gameMode = reader.ReadByte();
+            health = reader.ReadInt32();
+            lives = reader.ReadInt32();
+            hitCooldown = reader.ReadSingle();
+            canBoost = reader.ReadBoolean();
+            collisionAccurate = reader.ReadBoolean();
+
+            #endregion
+
+            #region Move
+
+            moveSpeed = reader.ReadSingle();
+            boostSpeed = reader.ReadSingle();
+            boostCooldown = reader.ReadSingle();
+            minBoostTime = reader.ReadSingle();
+            maxBoostTime = reader.ReadSingle();
+            sprintSneakActive = reader.ReadBoolean();
+            sprintSpeed = reader.ReadSingle();
+            sneakSpeed = reader.ReadSingle();
+
+            #endregion
+
+            #region Jump
+
+            jumpGravity = reader.ReadSingle();
+            jumpIntensity = reader.ReadSingle();
+            bounciness = reader.ReadSingle();
+            jumpCount = reader.ReadInt32();
+            jumpBoostCount = reader.ReadInt32();
+            airBoostOnly = reader.ReadBoolean();
+
+            #endregion
+
+            TickModifierBlock.ReadPacket(reader);
+            BoostModifierBlock.ReadPacket(reader);
+            CollideModifierBlock.ReadPacket(reader);
+            DeathModifierBlock.ReadPacket(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+
+            #region Main
+
+            writer.Write((byte)gameMode);
+            writer.Write(health);
+            writer.Write(lives);
+            writer.Write(hitCooldown);
+            writer.Write(canBoost);
+            writer.Write(collisionAccurate);
+
+            #endregion
+
+            #region Move
+
+            writer.Write(moveSpeed);
+            writer.Write(boostSpeed);
+            writer.Write(boostCooldown);
+            writer.Write(minBoostTime);
+            writer.Write(maxBoostTime);
+            writer.Write(sprintSneakActive);
+            writer.Write(sprintSpeed);
+            writer.Write(sneakSpeed);
+
+            #endregion
+
+            #region Jump
+
+            writer.Write(jumpGravity);
+            writer.Write(jumpIntensity);
+            writer.Write(bounciness);
+            writer.Write(jumpCount);
+            writer.Write(jumpBoostCount);
+            writer.Write(airBoostOnly);
+
+            #endregion
+
+            TickModifierBlock.WritePacket(writer);
+            BoostModifierBlock.WritePacket(writer);
+            CollideModifierBlock.WritePacket(writer);
+            DeathModifierBlock.WritePacket(writer);
         }
 
         #endregion

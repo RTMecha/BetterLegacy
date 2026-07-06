@@ -1387,6 +1387,25 @@ namespace BetterLegacy
         Effects,
     }
 
+    /// <summary>
+    /// What layer an object renders on.
+    /// </summary>
+    public enum RenderLayerType
+    {
+        /// <summary>
+        /// Renders in the orthographic foreground.
+        /// </summary>
+        Foreground,
+        /// <summary>
+        /// Renders in the perspective background.
+        /// </summary>
+        Background,
+        /// <summary>
+        /// Renders as UI.
+        /// </summary>
+        UI,
+    }
+
     #endregion
 
     #region Arcade / Game

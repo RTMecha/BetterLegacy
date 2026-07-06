@@ -2,12 +2,13 @@
 
 using XInputDotNetPure;
 using InControl;
+using SteamworksFacepunch;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
-using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
@@ -18,11 +19,19 @@ namespace BetterLegacy.Core.Data.Player
     /// <summary>
     /// Represents a player in a Project Arrhythmia level.
     /// </summary>
-    public class PAPlayer : Exists, IModifierReference, ICustomActivatable
+    public class PAPlayer : Exists, IPacket, IModifierReference, ICustomActivatable
     {
-        public PAPlayer(bool active, int index, InputDevice device)
+        #region Constructors
+
+        public PAPlayer()
         {
-            this.active = active;
+            active = true;
+            IsLocalPlayer = false;
+        }
+
+        public PAPlayer(int index, InputDevice device)
+        {
+            active = true;
             this.index = index;
             this.device = device;
 
@@ -42,19 +51,20 @@ namespace BetterLegacy.Core.Data.Player
             InputManager.OnDeviceAttached += ControllerConnected;
             InputManager.OnDeviceDetached += ControllerDisconnected;
             SetupInput();
+            IsLocalPlayer = true;
+            ID = RTSteamManager.inst.steamUser.steamID;
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
-        public PAPlayer(bool active, int index)
+        public PAPlayer(int index, SteamId id)
         {
-            this.active = active;
+            active = true;
             this.index = index;
-            playerIndex = GetPlayerIndex(index);
-            device = InputDevice.Null;
-            deviceName = "keyboard";
-            deviceType = GetDeviceType(deviceName);
-            deviceModel = GetDeviceModel(deviceName);
+            ID = id;
+            IsLocalPlayer = false;
         }
+
+        #endregion
 
         #region Values
 
@@ -190,7 +200,17 @@ namespace BetterLegacy.Core.Data.Player
 
         public PlayerInput Input { get; set; }
 
-        // might not go with this?
+        /// <summary>
+        /// If the player is a local player.
+        /// </summary>
+        public bool IsLocalPlayer { get; set; }
+
+        /// <summary>
+        /// Steam ID of the player.
+        /// </summary>
+        public SteamId? ID { get; set; }
+
+        // might not go with this? (change this to player variables)
         public PlayerInventory inventory = new PlayerInventory();
 
         public RTLevelBase ParentRuntime { get; set; }
@@ -202,6 +222,36 @@ namespace BetterLegacy.Core.Data.Player
         #endregion
 
         #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            active = reader.ReadBoolean();
+            lives = reader.ReadInt32();
+            Health = reader.ReadInt32();
+            index = reader.ReadInt32();
+            var hasSteamID = reader.ReadBoolean();
+            if (hasSteamID)
+                ID = reader.ReadUInt64();
+            PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(active);
+            writer.Write(lives);
+            writer.Write(Health);
+            writer.Write(index);
+            if (ID.TryGetValue(out SteamId steamID))
+            {
+                writer.Write(true);
+                writer.Write(steamID);
+            }
+            else
+                writer.Write(false);
+            PlayerModel.WritePacket(writer);
+        }
 
         public void SetCustomActive(bool active)
         {
@@ -334,7 +384,14 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Resets the players' health to the current default.
         /// </summary>
-        public void ResetHealth() => Health = GetDefaultHealth();
+        public void ResetHealth()
+        {
+            Health = GetDefaultHealth();
+            if (IsLocalPlayer)
+                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_RESET_HEALTH,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(id));
+        }
 
         /// <summary>
         /// Gets the default health for this player.

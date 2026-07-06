@@ -87,7 +87,7 @@ namespace BetterLegacy.Core.Helpers
                 trigger.triggered = innerResult;
 
                 if (!trigger.running)
-                    trigger.runCount++;
+                    trigger.runCount = Mathf.FloorToInt(trigger.runCount + (1 * Time.deltaTime));
                 if (!trigger.constant)
                     trigger.active = true;
 
@@ -186,7 +186,7 @@ namespace BetterLegacy.Core.Helpers
                             return;
 
                         if (!act.running)
-                            act.runCount++;
+                            act.runCount = Mathf.FloorToInt(act.runCount + (1 * Time.deltaTime));
                         if (!act.constant)
                             act.active = true;
 
@@ -220,7 +220,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
 
                 if (!act.running)
-                    act.runCount++;
+                    act.runCount = Mathf.FloorToInt(act.runCount + (1 * Time.deltaTime));
                 if (!act.constant)
                     act.active = true;
 
@@ -332,7 +332,7 @@ namespace BetterLegacy.Core.Helpers
                         loop.state.result = false;
 
                     if (!modifier.running)
-                        modifier.runCount++;
+                        modifier.runCount = Mathf.FloorToInt(modifier.runCount + (1 * Time.deltaTime));
 
                     // Only occur once
                     if (!modifier.constant && loop.state.sequence + 1 >= loop.state.end)
@@ -385,7 +385,7 @@ namespace BetterLegacy.Core.Helpers
                 if (name != nameof(ModifierFunctions.resetLoop))
                 {
                     if (!modifier.running)
-                        modifier.runCount++;
+                        modifier.runCount = Mathf.FloorToInt(modifier.runCount + (1 * Time.deltaTime));
 
                     modifier.running = true;
                 }
@@ -5692,9 +5692,9 @@ namespace BetterLegacy.Core.Helpers
                     gradientType: gradientType,
                     renderType: solidObject.gameObject.layer switch
                     {
-                        RTLevel.FOREGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Foreground,
-                        RTLevel.BACKGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Background,
-                        RTLevel.UI_LAYER => (int)BeatmapObject.RenderLayerType.UI,
+                        RTLevel.FOREGROUND_LAYER => (int)RenderLayerType.Foreground,
+                        RTLevel.BACKGROUND_LAYER => (int)RenderLayerType.Background,
+                        RTLevel.UI_LAYER => (int)RenderLayerType.UI,
                         _ => 0,
                     },
                     doubleSided: doubleSided,
@@ -9958,22 +9958,40 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setImageOther(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant)
-                return;
-
             if (modifierLoop.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, modifierLoop.variables));
-
-            if (list.IsEmpty())
-                return;
-
+            var tag = modifier.GetValue(1, modifierLoop.variables);
             var value = modifier.GetValue(0, modifierLoop.variables);
             value = ModifiersHelper.FormatStringVariables(value, modifierLoop.variables);
 
             var textureOffset = new Vector2(modifier.GetFloat(2, 0f, modifierLoop.variables), modifier.GetFloat(3, 0f, modifierLoop.variables));
             var textureScale = new Vector2(modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
+
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var cache = new ImageGroupCache
+                {
+                    tag = tag,
+                    beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, tag),
+                };
+                return cache;
+            });
+            if (cache.tag != tag)
+            {
+                cache.tag = tag;
+                cache.beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, tag);
+            }
+            var list = cache.beatmapObjects;
+            if (list.IsEmpty())
+                return;
+
+            if (cache.value == value)
+            {
+                cache.SetImageOffsets(textureOffset, textureScale);
+                return;
+            }
+            cache.value = value;
 
             Sprite sprite = null;
             if (prefabable.FromPrefab && prefabable.GetPrefab() is Prefab prefab && prefab.assets.sprites.TryFind(x => x.name == value, out SpriteAsset spriteAsset))
@@ -9983,27 +10001,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (sprite)
             {
-                foreach (var bm in list)
-                {
-                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
-                    {
-                        if (imageObject.material)
-                        {
-                            imageObject.material.mainTextureOffset = textureOffset;
-                            imageObject.material.mainTextureScale = textureScale;
-                        }
-                        imageObject.SetSprite(sprite);
-                    }
-                    else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                    {
-                        if (solidObject.material)
-                        {
-                            solidObject.material.mainTextureOffset = textureOffset;
-                            solidObject.material.mainTextureScale = textureScale;
-                        }
-                        solidObject.material.SetTexture("_MainTex", sprite.texture);
-                    }
-                }
+                cache.SetImage(sprite.texture, textureOffset, textureScale);
                 return;
             }
 
@@ -10011,7 +10009,43 @@ namespace BetterLegacy.Core.Helpers
             var path = RTFile.FileExists(assetPath) ? assetPath : RTFile.CombinePaths(RTFile.BasePath, value);
             if (!RTFile.FileExists(path))
             {
-                foreach (var bm in list)
+                cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale);
+                return;
+            }
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path,
+                callback: texture2D => cache.SetImage(texture2D, textureOffset, textureScale),
+                onError: (string onError, long responseCode, string errorMsg) => cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale)));
+        }
+
+        public class ImageGroupCache
+        {
+            public string tag;
+            public List<BeatmapObject> beatmapObjects;
+            public string value;
+
+            public void SetImageOffsets(Vector2 textureOffset, Vector2 textureScale)
+            {
+                foreach (var bm in beatmapObjects)
+                {
+                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        if (imageObject.material)
+                        {
+                            imageObject.material.mainTextureOffset = textureOffset;
+                            imageObject.material.mainTextureScale = textureScale;
+                        }
+                    else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                        if (solidObject.material)
+                        {
+                            solidObject.material.mainTextureOffset = textureOffset;
+                            solidObject.material.mainTextureScale = textureScale;
+                        }
+                }
+            }
+
+            public void SetImage(Texture2D texture2D, Vector2 textureOffset, Vector2 textureScale)
+            {
+                foreach (var bm in beatmapObjects)
                 {
                     if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
                     {
@@ -10020,7 +10054,7 @@ namespace BetterLegacy.Core.Helpers
                             imageObject.material.mainTextureOffset = textureOffset;
                             imageObject.material.mainTextureScale = textureScale;
                         }
-                        imageObject.SetDefaultSprite();
+                        imageObject.SetTexture(texture2D);
                     }
                     else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
                     {
@@ -10029,61 +10063,10 @@ namespace BetterLegacy.Core.Helpers
                             solidObject.material.mainTextureOffset = textureOffset;
                             solidObject.material.mainTextureScale = textureScale;
                         }
-                        solidObject.material.SetTexture("_MainTex", LegacyPlugin.PALogoSprite.texture);
+                        solidObject.material.SetTexture("_MainTex", texture2D);
                     }
                 }
-                return;
             }
-
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path,
-                texture2D =>
-                {
-                    foreach (var bm in list)
-                    {
-                        if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
-                        {
-                            if (imageObject.material)
-                            {
-                                imageObject.material.mainTextureOffset = textureOffset;
-                                imageObject.material.mainTextureScale = textureScale;
-                            }
-                            imageObject.SetTexture(texture2D);
-                        }
-                        else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                        {
-                            if (solidObject.material)
-                            {
-                                solidObject.material.mainTextureOffset = textureOffset;
-                                solidObject.material.mainTextureScale = textureScale;
-                            }
-                            solidObject.renderer.material.SetTexture("_MainTex", texture2D);
-                        }
-                    }
-                },
-                onError: (string onError, long responseCode, string errorMsg) =>
-                {
-                    foreach (var bm in list)
-                    {
-                        if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
-                        {
-                            if (imageObject.material)
-                            {
-                                imageObject.material.mainTextureOffset = textureOffset;
-                                imageObject.material.mainTextureScale = textureScale;
-                            }
-                            imageObject.SetDefaultSprite();
-                        }
-                        else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                        {
-                            if (solidObject.material)
-                            {
-                                solidObject.material.mainTextureOffset = textureOffset;
-                                solidObject.material.mainTextureScale = textureScale;
-                            }
-                            solidObject.material.SetTexture("_MainTex", LegacyPlugin.PALogoSprite.texture);
-                        }
-                    }
-                }));
         }
 
         public static void setText(Modifier modifier, ModifierLoop modifierLoop)
@@ -15638,6 +15621,8 @@ namespace BetterLegacy.Core.Helpers
             return RTBeatmap.Current.IsPractice;
         }
 
+        public static bool isHosting(Modifier modifier, ModifierLoop modifierLoop) => ProjectArrhythmia.State.IsHosting;
+
         #endregion
 
         #region Random
@@ -17041,9 +17026,9 @@ namespace BetterLegacy.Core.Helpers
                 gradientType: gradientType,
                 renderType: solidObject.gameObject.layer switch
                 {
-                    RTLevel.FOREGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Foreground,
-                    RTLevel.BACKGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Background,
-                    RTLevel.UI_LAYER => (int)BeatmapObject.RenderLayerType.UI,
+                    RTLevel.FOREGROUND_LAYER => (int)RenderLayerType.Foreground,
+                    RTLevel.BACKGROUND_LAYER => (int)RenderLayerType.Background,
+                    RTLevel.UI_LAYER => (int)RenderLayerType.UI,
                     _ => 0,
                 },
                 doubleSided: doubleSided,

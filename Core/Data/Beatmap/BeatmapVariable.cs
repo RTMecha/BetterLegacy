@@ -1,11 +1,13 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
     /// Represents a global level variable used for modifiers or math evaluators.
     /// </summary>
-    public class BeatmapVariable : PAObject<BeatmapVariable>
+    public class BeatmapVariable : PAObject<BeatmapVariable>, IPacket
     {
         #region Values
 
@@ -66,6 +68,18 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["v"] = value;
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            value = reader.ReadString();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(value);
         }
 
         #endregion

@@ -15,6 +15,7 @@ using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
@@ -177,6 +178,11 @@ namespace BetterLegacy.Core.Helpers
         public static void RestartLevel()
         {
             if (ProjectArrhythmia.State.InEditor || !ProjectArrhythmia.State.InGame)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.RestartLevel();
+            if (ProjectArrhythmia.State.IsClient)
                 return;
 
             if (endedLevel)
