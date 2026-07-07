@@ -44,7 +44,7 @@ namespace BetterLegacy
         /// <summary>
         /// Snapshot version of the mod. If left empty, it means the mod build is not a snapshot.
         /// </summary>
-        public const string SNAPSHOT_VERSION = "snapshot-2026.7.2";
+        public const string SNAPSHOT_VERSION = "snapshot-2026.7.3";
         public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
         public static List<BaseConfig> configs = new List<BaseConfig>();
