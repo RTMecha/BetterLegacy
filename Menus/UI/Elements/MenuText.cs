@@ -15,6 +15,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
@@ -25,9 +26,9 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuText : MenuImage
     {
-        public const float TEXT_LENGTH_DIVISION = 126f;
+        #region Values
 
-        #region Public Fields
+        public const float TEXT_LENGTH_DIVISION = 126f;
 
         /// <summary>
         /// Dynamic changing speed.
@@ -204,10 +205,6 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public bool runAnimationsOnEnd;
 
-        #endregion
-
-        #region Private Fields
-
         /// <summary>
         /// Cached text interpolation sound when an external sound is loaded.
         /// </summary>
@@ -221,7 +218,192 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            #region Base
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            parentLayout = reader.ReadString();
+            parent = reader.ReadString();
+            siblingIndex = reader.ReadInt32();
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = reader.ReadBoolean();
+            fromLoop = false; // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = reader.ReadInt32();
+
+            #endregion
+
+            #region UI
+
+            textSpeeds = Packet.CreatePacketList<Speed>(reader);
+            text = reader.ReadString();
+            icon = reader.ReadSprite();
+            iconPath = reader.ReadString();
+            interpolateText = reader.ReadBoolean();
+            rect = Packet.CreateFromPacket<RectValues>(reader);
+            textRect = Packet.CreateFromPacket<RectValues>(reader);
+            iconRect = Packet.CreateFromPacket<RectValues>(reader);
+            rounded = reader.ReadInt32(); // roundness can be prevented by setting rounded to 0.
+            roundedSide = (SpriteHelper.RoundedSide)reader.ReadInt32(); // default side should be Whole.
+            mask = reader.ReadBoolean();
+            reactiveSetting = Packet.CreateFromPacket<ReactiveSetting>(reader);
+            alignment = (TextAlignmentOptions)reader.ReadInt32();
+            enableWordWrapping = reader.ReadBoolean();
+            overflowMode = (TextOverflowModes)reader.ReadInt32();
+            updateTextOnTick = reader.ReadBoolean();
+            runAnimationsOnEnd = reader.ReadBoolean();
+
+            #endregion
+
+            #region Color
+
+            hideBG = reader.ReadBoolean();
+            color = reader.ReadInt32();
+            opacity = reader.ReadSingle();
+            hue = reader.ReadSingle();
+            sat = reader.ReadSingle();
+            val = reader.ReadSingle();
+            textColor = reader.ReadInt32();
+            textHue = reader.ReadSingle();
+            textSat = reader.ReadSingle();
+            textVal = reader.ReadSingle();
+
+            overrideColor = reader.ReadColor();
+            overrideTextColor = reader.ReadColor();
+            useOverrideColor = reader.ReadBoolean();
+            useOverrideTextColor = reader.ReadBoolean();
+
+            #endregion
+
+            #region Anim
+
+            wait = reader.ReadBoolean();
+            length = reader.ReadSingle();
+            playSound = reader.ReadBoolean();
+            textSound = reader.ReadString();
+            textSoundVolume = reader.ReadSingle();
+            textSoundPitch = reader.ReadSingle();
+            textSoundPitchVary = reader.ReadSingle();
+            textSoundRepeat = reader.ReadInt32();
+            textSoundRanges = reader.ReadList(reader.ReadVector2Int);
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = reader.ReadBoolean();
+            selectable = reader.ReadBoolean();
+            funcJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            onScrollUpFuncJSON = reader.ReadJSON();
+            onScrollDownFuncJSON = reader.ReadJSON();
+            spawnFuncJSON = reader.ReadJSON(); // function to run when the element spawns.
+            onWaitEndFuncJSON = reader.ReadJSON();
+            tickFuncJSON = reader.ReadJSON();
+            //func = orig.func,
+            //onScrollUpFunc = orig.onScrollUpFunc,
+            //onScrollDownFunc = orig.onScrollDownFunc,
+            //spawnFunc = orig.spawnFunc,
+            //onWaitEndFunc = orig.onWaitEndFunc,
+            //tickFunc = orig.tickFunc,
+
+            #endregion
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            #region Base
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(parentLayout);
+            writer.Write(parent);
+            writer.Write(siblingIndex);
+
+            #endregion
+
+            #region Spawning
+
+            writer.Write(regenerate);
+            writer.Write(loop);
+
+            #endregion
+
+            #region UI
+
+            Packet.WritePacketList(textSpeeds, writer);
+            writer.Write(text);
+            writer.Write(icon);
+            writer.Write(iconPath);
+            writer.Write(interpolateText);
+            rect.WritePacket(writer);
+            textRect.WritePacket(writer);
+            iconRect.WritePacket(writer);
+            writer.Write(rounded);
+            writer.Write((int)roundedSide);
+            writer.Write(mask);
+            reactiveSetting.WritePacket(writer);
+            writer.Write((int)alignment);
+            writer.Write(enableWordWrapping);
+            writer.Write((int)overflowMode);
+            writer.Write(updateTextOnTick);
+            writer.Write(runAnimationsOnEnd);
+
+            #endregion
+
+            #region Color
+
+            writer.Write(hideBG);
+            writer.Write(color);
+            writer.Write(opacity);
+            writer.Write(hue);
+            writer.Write(sat);
+            writer.Write(val);
+            writer.Write(textColor);
+            writer.Write(textHue);
+            writer.Write(textSat);
+            writer.Write(textVal);
+
+            writer.Write(overrideColor);
+            writer.Write(overrideTextColor);
+            writer.Write(useOverrideColor);
+            writer.Write(useOverrideTextColor);
+
+            #endregion
+
+            #region Anim
+
+            writer.Write(wait);
+            writer.Write(length);
+            writer.Write(playSound);
+            writer.Write(textSound);
+            writer.Write(textSoundVolume);
+            writer.Write(textSoundPitch);
+            writer.Write(textSoundPitchVary);
+            writer.Write(textSoundRepeat);
+            writer.Write(textSoundRanges, writer.Write);
+
+            #endregion
+
+            #region Func
+
+            writer.Write(playBlipSound);
+            writer.Write(selectable);
+            writer.Write(funcJSON);
+            writer.Write(onScrollUpFuncJSON);
+            writer.Write(onScrollDownFuncJSON);
+            writer.Write(spawnFuncJSON);
+            writer.Write(onWaitEndFuncJSON);
+            writer.Write(tickFuncJSON);
+
+            #endregion
+        }
 
         /// <summary>
         /// Creates a new MenuText element with all the same values as <paramref name="orig"/>.
@@ -314,13 +496,13 @@ namespace BetterLegacy.Menus.UI.Elements
             onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
             spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
             onWaitEndFuncJSON = orig.onWaitEndFuncJSON,
-            tickFunc = orig.tickFunc,
+            tickFuncJSON = orig.tickFuncJSON,
             func = orig.func,
             onScrollUpFunc = orig.onScrollUpFunc,
             onScrollDownFunc = orig.onScrollDownFunc,
             spawnFunc = orig.spawnFunc,
             onWaitEndFunc = orig.onWaitEndFunc,
-            tickFuncJSON = orig.tickFuncJSON,
+            tickFunc = orig.tickFunc,
 
             #endregion
         };
@@ -629,18 +811,58 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #endregion
 
-        public class Speed
+        #region Sub Classes
+
+        /// <summary>
+        /// Handles changing text interpolation speed.
+        /// </summary>
+        public class Speed : IPacket
         {
+            #region Constructors
+
+            public Speed() { }
+
             public Speed(int position, float speed)
             {
                 this.position = position;
                 this.speed = speed;
             }
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Position of the speed in the text.
+            /// </summary>
             public int position;
+
+            /// <summary>
+            /// Speed to change to.
+            /// </summary>
             public float speed = 1f;
 
+            #endregion
+
+            #region Functions
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                position = reader.ReadInt32();
+                speed = reader.ReadSingle();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(position);
+                writer.Write(speed);
+            }
+
             public static Speed DeepCopy(Speed orig) => new Speed(orig.position, orig.speed);
+
+            #endregion
         }
+
+        #endregion
     }
 }

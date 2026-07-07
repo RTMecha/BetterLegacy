@@ -4,6 +4,8 @@ using System.IO;
 
 using UnityEngine;
 
+using SimpleJSON;
+
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Data.Network
@@ -135,6 +137,11 @@ namespace BetterLegacy.Core.Data.Network
             for (int i = 0; i < count; i++)
                 array[i] = ReadDouble();
             return array;
+        }
+        public JSONNode ReadJSON()
+        {
+            var value = ReadString();
+            return string.IsNullOrEmpty(value) ? null : JSON.Parse(value);
         }
         public List<T> ReadList<T>(Func<T> read)
         {

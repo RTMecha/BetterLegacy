@@ -15,6 +15,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
@@ -25,7 +26,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Base menu class to be used for interfaces. Includes a custom selection system and UI system.
     /// </summary>
-    public abstract class BaseInterface : Exists
+    public abstract class BaseInterface : Exists, IPacket
     {
         #region Constructors
 
@@ -177,6 +178,51 @@ namespace BetterLegacy.Menus.UI.Interfaces
         #endregion
 
         #region Functions
+
+        public virtual void ReadPacket(NetworkReader reader)
+        {
+            spriteAssets = reader.ReadDictionary(reader.ReadString, reader.ReadSprite);
+            musicName = reader.ReadString();
+            allowCustomMusic = reader.ReadBoolean();
+            name = reader.ReadString();
+            id = reader.ReadString();
+            regenerate = reader.ReadBoolean();
+            forceInterfaceSpeed = reader.ReadBoolean();
+            defaultSelection = reader.ReadVector2Int();
+            MenuLayoutBase.ReadPacketDictionary(layouts, reader);
+            MenuImage.ReadPacketList(elements, reader);
+            Packet.ReadPacketList(prefabs, reader);
+            filePath = reader.ReadString();
+            exitFuncJSON = reader.ReadJSON();
+            allowEffects = reader.ReadBoolean();
+            layer = reader.ReadInt32();
+            pauseGame = reader.ReadBoolean();
+
+            if (reader.ReadBoolean())
+                Theme = Packet.CreateFromPacket<BeatmapTheme>(reader);
+        }
+
+        public virtual void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(spriteAssets, writer.Write, writer.Write);
+            writer.Write(musicName);
+            writer.Write(allowCustomMusic);
+            writer.Write(name);
+            writer.Write(id);
+            writer.Write(regenerate);
+            writer.Write(forceInterfaceSpeed);
+            writer.Write(defaultSelection);
+            MenuLayoutBase.WritePacketDictionary(layouts, writer);
+            MenuImage.WritePacketList(elements, writer);
+            Packet.WritePacketList(prefabs, writer);
+            writer.Write(filePath);
+            writer.Write(exitFuncJSON);
+            writer.Write(allowEffects);
+            writer.Write(layer);
+            writer.Write(pauseGame);
+            writer.Write(Theme != null);
+            Theme?.WritePacket(writer);
+        }
 
         /// <summary>
         /// For cases where the UI only needs to be set active / inactive instead of destroyed.

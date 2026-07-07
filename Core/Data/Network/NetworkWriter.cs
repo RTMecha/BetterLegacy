@@ -5,6 +5,8 @@ using System.Text;
 
 using UnityEngine;
 
+using SimpleJSON;
+
 namespace BetterLegacy.Core.Data.Network
 {
     // class based on https://github.com/Aiden-ytarame/AttributeNetworkWrapper
@@ -159,6 +161,7 @@ namespace BetterLegacy.Core.Data.Network
             for (int i = 0; i < array.Length; i++)
                 Write(array[i]);
         }
+        public void Write(JSONNode jn) => Write(jn?.ToString());
         public void Write<T>(List<T> list, Action<T> write)
         {
             Write(list.Count);

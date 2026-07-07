@@ -1,4 +1,5 @@
 ﻿
+using BetterLegacy.Core.Data.Network;
 using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI.Layouts
@@ -52,6 +53,34 @@ namespace BetterLegacy.Menus.UI.Layouts
         /// Maximum scroll amount.
         /// </summary>
         public float maxScroll = 100f;
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            base.ReadPacket(reader);
+            childControlHeight = reader.ReadBoolean();
+            childControlWidth = reader.ReadBoolean();
+            childForceExpandHeight = reader.ReadBoolean();
+            childForceExpandWidth = reader.ReadBoolean();
+            childScaleHeight = reader.ReadBoolean();
+            childScaleWidth = reader.ReadBoolean();
+            spacing = reader.ReadSingle();
+            minScroll = reader.ReadSingle();
+            maxScroll = reader.ReadSingle();
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            base.WritePacket(writer);
+            writer.Write(childControlHeight);
+            writer.Write(childControlWidth);
+            writer.Write(childForceExpandHeight);
+            writer.Write(childForceExpandWidth);
+            writer.Write(childScaleHeight);
+            writer.Write(childScaleWidth);
+            writer.Write(spacing);
+            writer.Write(minScroll);
+            writer.Write(maxScroll);
+        }
 
         public override void Read(JSONNode jn)
         {

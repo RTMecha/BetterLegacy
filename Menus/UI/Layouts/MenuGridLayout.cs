@@ -5,6 +5,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Menus.UI.Layouts
 {
@@ -67,6 +68,34 @@ namespace BetterLegacy.Menus.UI.Layouts
         /// Maximum vertical scroll.
         /// </summary>
         public float maxVerticalScroll = 100f;
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            base.ReadPacket(reader);
+            cellSize = reader.ReadVector2();
+            spacing = reader.ReadVector2();
+            constraintCount = reader.ReadInt32();
+            constraint = (GridLayoutGroup.Constraint)reader.ReadByte();
+            startCorner = (GridLayoutGroup.Corner)reader.ReadByte();
+            minHorizontalScroll = reader.ReadSingle();
+            maxHorizontalScroll = reader.ReadSingle();
+            minVerticalScroll = reader.ReadSingle();
+            maxVerticalScroll = reader.ReadSingle();
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            base.WritePacket(writer);
+            writer.Write(cellSize);
+            writer.Write(spacing);
+            writer.Write(constraintCount);
+            writer.Write((byte)constraint);
+            writer.Write((byte)startCorner);
+            writer.Write(minHorizontalScroll);
+            writer.Write(maxHorizontalScroll);
+            writer.Write(minVerticalScroll);
+            writer.Write(maxVerticalScroll);
+        }
 
         public static MenuGridLayout Parse(JSONNode jn) => new MenuGridLayout
         {

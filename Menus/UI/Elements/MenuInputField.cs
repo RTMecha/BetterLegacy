@@ -8,6 +8,7 @@ using LSFunctions;
 
 using SimpleJSON;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Menus.UI.Elements
@@ -17,7 +18,7 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuInputField : MenuImage
     {
-        #region Public Fields
+        #region Values
 
         /// <summary>
         /// The input field component of the element.
@@ -143,7 +144,158 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            #region Base
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            parentLayout = reader.ReadString();
+            parent = reader.ReadString();
+            siblingIndex = reader.ReadInt32();
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = reader.ReadBoolean();
+            fromLoop = false; // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = reader.ReadInt32();
+
+            #endregion
+
+            #region UI
+
+            text = reader.ReadString();
+            icon = reader.ReadSprite();
+            iconPath = reader.ReadString();
+            rect = Packet.CreateFromPacket<RectValues>(reader);
+            rounded = reader.ReadInt32(); // roundness can be prevented by setting rounded to 0.
+            roundedSide = (SpriteHelper.RoundedSide)reader.ReadInt32(); // default side should be Whole.
+            mask = reader.ReadBoolean();
+            reactiveSetting = Packet.CreateFromPacket<ReactiveSetting>(reader);
+
+            #endregion
+
+            #region Color
+
+            color = reader.ReadInt32();
+            opacity = reader.ReadSingle();
+            hue = reader.ReadSingle();
+            sat = reader.ReadSingle();
+            val = reader.ReadSingle();
+            textColor = reader.ReadInt32();
+            textHue = reader.ReadSingle();
+            textSat = reader.ReadSingle();
+            textVal = reader.ReadSingle();
+
+            overrideColor = reader.ReadColor();
+            overrideTextColor = reader.ReadColor();
+            useOverrideColor = reader.ReadBoolean();
+            useOverrideTextColor = reader.ReadBoolean();
+
+            #endregion
+
+            #region Anim
+
+            wait = reader.ReadBoolean();
+            length = reader.ReadSingle();
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = reader.ReadBoolean();
+            selectable = reader.ReadBoolean();
+            funcJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            onScrollUpFuncJSON = reader.ReadJSON();
+            onScrollDownFuncJSON = reader.ReadJSON();
+            spawnFuncJSON = reader.ReadJSON(); // function to run when the element spawns.
+            onWaitEndFuncJSON = reader.ReadJSON();
+            tickFuncJSON = reader.ReadJSON();
+            //func = orig.func,
+            //onScrollUpFunc = orig.onScrollUpFunc,
+            //onScrollDownFunc = orig.onScrollDownFunc,
+            //spawnFunc = orig.spawnFunc,
+            //onWaitEndFunc = orig.onWaitEndFunc,
+            //tickFunc = orig.tickFunc,
+
+            #endregion
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            #region Base
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(parentLayout);
+            writer.Write(parent);
+            writer.Write(siblingIndex);
+
+            #endregion
+
+            #region Spawning
+
+            writer.Write(regenerate);
+            writer.Write(loop);
+
+            #endregion
+
+            #region UI
+
+            writer.Write(text);
+            writer.Write(icon);
+            writer.Write(iconPath);
+            rect.WritePacket(writer);
+            writer.Write(rounded);
+            writer.Write((int)roundedSide);
+            writer.Write(mask);
+            reactiveSetting.WritePacket(writer);
+
+            #endregion
+
+            #region Color
+
+            writer.Write(color);
+            writer.Write(opacity);
+            writer.Write(hue);
+            writer.Write(sat);
+            writer.Write(val);
+            writer.Write(textColor);
+            writer.Write(textHue);
+            writer.Write(textSat);
+            writer.Write(textVal);
+
+            writer.Write(overrideColor);
+            writer.Write(overrideTextColor);
+            writer.Write(useOverrideColor);
+            writer.Write(useOverrideTextColor);
+
+            #endregion
+
+            #region Anim
+
+            writer.Write(wait);
+            writer.Write(length);
+
+            #endregion
+
+            #region Func
+
+            writer.Write(playBlipSound);
+            writer.Write(selectable);
+            writer.Write(funcJSON);
+            writer.Write(onScrollUpFuncJSON);
+            writer.Write(onScrollDownFuncJSON);
+            writer.Write(spawnFuncJSON);
+            writer.Write(onWaitEndFuncJSON);
+            writer.Write(tickFuncJSON);
+
+            #endregion
+        }
 
         /// <summary>
         /// Creates a new MenuText element with all the same values as <paramref name="orig"/>.

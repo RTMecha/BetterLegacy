@@ -11,6 +11,7 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -20,9 +21,9 @@ namespace BetterLegacy.Menus.UI.Elements
     /// <summary>
     /// Base class used for handling image elements and other types in the interface. To be used either as a base for other elements or an image element on its own.
     /// </summary>
-    public class MenuImage : Exists
+    public class MenuImage : Exists, IPacket
     {
-        #region Public Fields
+        #region Values
 
         /// <summary>
         /// GameObject reference.
@@ -254,15 +255,218 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public Dictionary<string, JSONNode> cachedVariables;
 
-        #endregion
-
-        #region Private Fields
-
+        /// <summary>
+        /// List of animations running on the element.
+        /// </summary>
         public List<RTAnimation> animations = new List<RTAnimation>();
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public static void ReadPacketList(List<MenuImage> elements, NetworkReader reader)
+        {
+            var elementCount = reader.ReadInt32();
+            for (int i = 0; i < elementCount; i++)
+            {
+                var type = reader.ReadString();
+                switch (type)
+                {
+                    case "inputfield": {
+                            elements.Add(Packet.CreateFromPacket<MenuInputField>(reader));
+                            break;
+                        }
+                    case "button": {
+                            elements.Add(Packet.CreateFromPacket<MenuButton>(reader));
+                            break;
+                        }
+                    case "text": {
+                            elements.Add(Packet.CreateFromPacket<MenuText>(reader));
+                            break;
+                        }
+                    case "event": {
+                            elements.Add(Packet.CreateFromPacket<MenuEvent>(reader));
+                            break;
+                        }
+                    default: {
+                            elements.Add(Packet.CreateFromPacket<MenuImage>(reader));
+                            break;
+                        }
+                }
+            }
+        }
+
+        public static void WritePacketList(List<MenuImage> elements, NetworkWriter writer)
+        {
+            writer.Write(elements.Count);
+            for (int i = 0; i < elements.Count; i++)
+            {
+                var element = elements[i];
+                if (element is MenuInputField menuInputField)
+                {
+                    writer.Write("inputfield");
+                    menuInputField.WritePacket(writer);
+                    continue;
+                }
+                if (element is MenuButton menuButton)
+                {
+                    writer.Write("button");
+                    menuButton.WritePacket(writer);
+                    continue;
+                }
+                if (element is MenuText menuText)
+                {
+                    writer.Write("text");
+                    menuText.WritePacket(writer);
+                    continue;
+                }
+                if (element is MenuEvent menuEvent)
+                {
+                    writer.Write("event");
+                    menuEvent.WritePacket(writer);
+                    continue;
+                }
+                writer.Write("image");
+                element.WritePacket(writer);
+            }
+        }
+
+        public virtual void ReadPacket(NetworkReader reader)
+        {
+            #region Base
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            parentLayout = reader.ReadString();
+            parent = reader.ReadString();
+            siblingIndex = reader.ReadInt32();
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = reader.ReadBoolean();
+            fromLoop = false; // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = reader.ReadInt32();
+
+            #endregion
+
+            #region UI
+
+            icon = reader.ReadSprite();
+            iconPath = reader.ReadString();
+            rect = Packet.CreateFromPacket<RectValues>(reader);
+            rounded = reader.ReadInt32(); // roundness can be prevented by setting rounded to 0.
+            roundedSide = (SpriteHelper.RoundedSide)reader.ReadInt32(); // default side should be Whole.
+            mask = reader.ReadBoolean();
+            reactiveSetting = Packet.CreateFromPacket<ReactiveSetting>(reader);
+
+            #endregion
+
+            #region Color
+
+            color = reader.ReadInt32();
+            opacity = reader.ReadSingle();
+            hue = reader.ReadSingle();
+            sat = reader.ReadSingle();
+            val = reader.ReadSingle();
+
+            overrideColor = reader.ReadColor();
+            useOverrideColor = reader.ReadBoolean();
+
+            #endregion
+
+            #region Anim
+
+            wait = reader.ReadBoolean();
+            length = reader.ReadSingle();
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = reader.ReadBoolean();
+            selectable = reader.ReadBoolean();
+            funcJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            onScrollUpFuncJSON = reader.ReadJSON();
+            onScrollDownFuncJSON = reader.ReadJSON();
+            spawnFuncJSON = reader.ReadJSON(); // function to run when the element spawns.
+            onWaitEndFuncJSON = reader.ReadJSON();
+            tickFuncJSON = reader.ReadJSON();
+            //func = orig.func,
+            //onScrollUpFunc = orig.onScrollUpFunc,
+            //onScrollDownFunc = orig.onScrollDownFunc,
+            //spawnFunc = orig.spawnFunc,
+            //onWaitEndFunc = orig.onWaitEndFunc,
+            //tickFunc = orig.tickFunc,
+
+            #endregion
+        }
+
+        public virtual void WritePacket(NetworkWriter writer)
+        {
+            #region Base
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(parentLayout);
+            writer.Write(parent);
+            writer.Write(siblingIndex);
+
+            #endregion
+
+            #region Spawning
+
+            writer.Write(regenerate);
+            writer.Write(loop);
+
+            #endregion
+
+            #region UI
+
+            writer.Write(icon);
+            writer.Write(iconPath);
+            rect.WritePacket(writer);
+            writer.Write(rounded);
+            writer.Write((int)roundedSide);
+            writer.Write(mask);
+            reactiveSetting.WritePacket(writer);
+
+            #endregion
+
+            #region Color
+
+            writer.Write(color);
+            writer.Write(opacity);
+            writer.Write(hue);
+            writer.Write(sat);
+            writer.Write(val);
+
+            writer.Write(overrideColor);
+            writer.Write(useOverrideColor);
+
+            #endregion
+
+            #region Anim
+
+            writer.Write(wait);
+            writer.Write(length);
+
+            #endregion
+
+            #region Func
+
+            writer.Write(playBlipSound);
+            writer.Write(selectable);
+            writer.Write(funcJSON);
+            writer.Write(onScrollUpFuncJSON);
+            writer.Write(onScrollDownFuncJSON);
+            writer.Write(spawnFuncJSON);
+            writer.Write(onWaitEndFuncJSON);
+            writer.Write(tickFuncJSON);
+
+            #endregion
+        }
 
         /// <summary>
         /// Creates a new MenuImage element with all the same values as <paramref name="orig"/>.
@@ -293,6 +497,7 @@ namespace BetterLegacy.Menus.UI.Elements
             #region UI
 
             icon = orig.icon,
+            iconPath = orig.iconPath,
             rect = orig.rect,
             rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
             roundedSide = orig.roundedSide, // default side should be Whole.

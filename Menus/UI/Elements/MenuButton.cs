@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using LSFunctions;
+using TMPro;
 using SimpleJSON;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Menus.UI.Elements
@@ -18,7 +22,7 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuButton : MenuText
     {
-        #region Public Fields
+        #region Values
 
         /// <summary>
         /// True if the element is hovered, otherwise false.
@@ -137,16 +141,235 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public bool allowOriginalHoverMethods = false;
 
-        #endregion
-
-        #region Private Fields
-
         RTAnimation enterAnimation;
         RTAnimation exitAnimation;
 
         #endregion
 
-        #region Methods
+        #region Functions
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            #region Base
+
+            id = reader.ReadString();
+            name = reader.ReadString();
+            parentLayout = reader.ReadString();
+            parent = reader.ReadString();
+            siblingIndex = reader.ReadInt32();
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = reader.ReadBoolean();
+            fromLoop = false; // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = reader.ReadInt32();
+
+            #endregion
+
+            #region UI
+
+            selectionPosition = reader.ReadVector2Int();
+            autoAlignSelectionPosition = reader.ReadBoolean();
+            textSpeeds = Packet.CreatePacketList<Speed>(reader);
+            text = reader.ReadString();
+            icon = reader.ReadSprite();
+            iconPath = reader.ReadString();
+            interpolateText = reader.ReadBoolean();
+            rect = Packet.CreateFromPacket<RectValues>(reader);
+            textRect = Packet.CreateFromPacket<RectValues>(reader);
+            iconRect = Packet.CreateFromPacket<RectValues>(reader);
+            rounded = reader.ReadInt32(); // roundness can be prevented by setting rounded to 0.
+            roundedSide = (SpriteHelper.RoundedSide)reader.ReadInt32(); // default side should be Whole.
+            mask = reader.ReadBoolean();
+            reactiveSetting = Packet.CreateFromPacket<ReactiveSetting>(reader);
+            alignment = (TextAlignmentOptions)reader.ReadInt32();
+            enableWordWrapping = reader.ReadBoolean();
+            overflowMode = (TextOverflowModes)reader.ReadInt32();
+            updateTextOnTick = reader.ReadBoolean();
+            runAnimationsOnEnd = reader.ReadBoolean();
+
+            #endregion
+
+            #region Color
+
+            hideBG = reader.ReadBoolean();
+            color = reader.ReadInt32();
+            opacity = reader.ReadSingle();
+            hue = reader.ReadSingle();
+            sat = reader.ReadSingle();
+            val = reader.ReadSingle();
+            textColor = reader.ReadInt32();
+            textHue = reader.ReadSingle();
+            textSat = reader.ReadSingle();
+            textVal = reader.ReadSingle();
+
+            selectedColor = reader.ReadInt32();
+            selectedOpacity = reader.ReadSingle();
+            selectedHue = reader.ReadSingle();
+            selectedSat = reader.ReadSingle();
+            selectedVal = reader.ReadSingle();
+            selectedTextColor = reader.ReadInt32();
+            selectedTextHue = reader.ReadSingle();
+            selectedTextSat = reader.ReadSingle();
+            selectedTextVal = reader.ReadSingle();
+
+            overrideColor = reader.ReadColor();
+            overrideTextColor = reader.ReadColor();
+            overrideSelectedColor = reader.ReadColor();
+            overrideSelectedTextColor = reader.ReadColor();
+            useOverrideColor = reader.ReadBoolean();
+            useOverrideTextColor = reader.ReadBoolean();
+            useOverrideSelectedColor = reader.ReadBoolean();
+            useOverrideSelectedTextColor = reader.ReadBoolean();
+
+            #endregion
+
+            #region Anim
+
+            wait = reader.ReadBoolean();
+            length = reader.ReadSingle();
+            playSound = reader.ReadBoolean();
+            textSound = reader.ReadString();
+            textSoundVolume = reader.ReadSingle();
+            textSoundPitch = reader.ReadSingle();
+            textSoundPitchVary = reader.ReadSingle();
+            textSoundRepeat = reader.ReadInt32();
+            textSoundRanges = reader.ReadList(reader.ReadVector2Int);
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = reader.ReadBoolean();
+            selectable = reader.ReadBoolean();
+            allowOriginalHoverMethods = reader.ReadBoolean();
+            funcJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            enterFuncJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            exitFuncJSON = reader.ReadJSON(); // function to run when the element is clicked.
+            onScrollUpFuncJSON = reader.ReadJSON();
+            onScrollDownFuncJSON = reader.ReadJSON();
+            spawnFuncJSON = reader.ReadJSON(); // function to run when the element spawns.
+            onWaitEndFuncJSON = reader.ReadJSON();
+            tickFuncJSON = reader.ReadJSON();
+            //func = orig.func,
+            //onScrollUpFunc = orig.onScrollUpFunc,
+            //onScrollDownFunc = orig.onScrollDownFunc,
+            //spawnFunc = orig.spawnFunc,
+            //onWaitEndFunc = orig.onWaitEndFunc,
+            //tickFunc = orig.tickFunc,
+
+            #endregion
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            #region Base
+
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(parentLayout);
+            writer.Write(parent);
+            writer.Write(siblingIndex);
+
+            #endregion
+
+            #region Spawning
+
+            writer.Write(regenerate);
+            writer.Write(loop);
+
+            #endregion
+
+            #region UI
+
+            writer.Write(selectionPosition);
+            writer.Write(autoAlignSelectionPosition);
+            Packet.WritePacketList(textSpeeds, writer);
+            writer.Write(text);
+            writer.Write(icon);
+            writer.Write(iconPath);
+            writer.Write(interpolateText);
+            rect.WritePacket(writer);
+            textRect.WritePacket(writer);
+            iconRect.WritePacket(writer);
+            writer.Write(rounded);
+            writer.Write((int)roundedSide);
+            writer.Write(mask);
+            reactiveSetting.WritePacket(writer);
+            writer.Write((int)alignment);
+            writer.Write(enableWordWrapping);
+            writer.Write((int)overflowMode);
+            writer.Write(updateTextOnTick);
+            writer.Write(runAnimationsOnEnd);
+
+            #endregion
+
+            #region Color
+
+            writer.Write(hideBG);
+            writer.Write(color);
+            writer.Write(opacity);
+            writer.Write(hue);
+            writer.Write(sat);
+            writer.Write(val);
+            writer.Write(textColor);
+            writer.Write(textHue);
+            writer.Write(textSat);
+            writer.Write(textVal);
+
+            writer.Write(selectedColor);
+            writer.Write(selectedOpacity);
+            writer.Write(selectedHue);
+            writer.Write(selectedSat);
+            writer.Write(selectedVal);
+            writer.Write(selectedTextColor);
+            writer.Write(selectedTextHue);
+            writer.Write(selectedTextSat);
+            writer.Write(selectedTextVal);
+
+            writer.Write(overrideColor);
+            writer.Write(overrideTextColor);
+            writer.Write(overrideSelectedColor);
+            writer.Write(overrideSelectedTextColor);
+            writer.Write(useOverrideColor);
+            writer.Write(useOverrideTextColor);
+            writer.Write(useOverrideSelectedColor);
+            writer.Write(useOverrideSelectedTextColor);
+
+            #endregion
+
+            #region Anim
+
+            writer.Write(wait);
+            writer.Write(length);
+            writer.Write(playSound);
+            writer.Write(textSound);
+            writer.Write(textSoundVolume);
+            writer.Write(textSoundPitch);
+            writer.Write(textSoundPitchVary);
+            writer.Write(textSoundRepeat);
+            writer.Write(textSoundRanges, writer.Write);
+
+            #endregion
+
+            #region Func
+
+            writer.Write(playBlipSound);
+            writer.Write(selectable);
+            writer.Write(allowOriginalHoverMethods);
+            writer.Write(funcJSON);
+            writer.Write(enterFuncJSON);
+            writer.Write(exitFuncJSON);
+            writer.Write(onScrollUpFuncJSON);
+            writer.Write(onScrollDownFuncJSON);
+            writer.Write(spawnFuncJSON);
+            writer.Write(onWaitEndFuncJSON);
+            writer.Write(tickFuncJSON);
+
+            #endregion
+        }
 
         /// <summary>
         /// Creates a new MenuButton element with all the same values as <paramref name="orig"/>.

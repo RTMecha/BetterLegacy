@@ -2,13 +2,17 @@
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data
 {
     /// <summary>
     /// Helper struct for storing RectTransform values.
     /// </summary>
-    public struct RectValues
+    public struct RectValues : IPacket
     {
+        #region Constructors
+
         public RectValues(Vector2 anchoredPosition, Vector2 anchorMax, Vector2 anchorMin, Vector2 pivot, Vector2 sizeDelta, float rotation = 0f)
         {
             this.anchoredPosition = anchoredPosition;
@@ -31,7 +35,9 @@ namespace BetterLegacy.Core.Data
             this.scale = scale;
         }
 
-        #region Properties
+        #endregion
+
+        #region Values
 
         /// <summary>
         /// The default values when a <see cref="RectTransform"/> component is added to a <see cref="GameObject"/>.
@@ -150,10 +156,6 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public static Vector2 CenterPivot => new Vector2(0.5f, 0.5f);
 
-        #endregion
-
-        #region Fields
-
         public Vector2 anchoredPosition;
         public Vector2 anchorMax;
         public Vector2 anchorMin;
@@ -164,7 +166,7 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         #region Modify
 
@@ -394,6 +396,28 @@ namespace BetterLegacy.Core.Data
                 jn["sca"] = scale.ToJSON();
 
             return jn;
+        }
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            anchoredPosition = reader.ReadVector2();
+            anchorMax = reader.ReadVector2();
+            anchorMin = reader.ReadVector2();
+            pivot = reader.ReadVector2();
+            sizeDelta = reader.ReadVector2();
+            rotation = reader.ReadSingle();
+            scale = reader.ReadVector2();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(anchoredPosition);
+            writer.Write(anchorMax);
+            writer.Write(anchorMin);
+            writer.Write(pivot);
+            writer.Write(sizeDelta);
+            writer.Write(rotation);
+            writer.Write(scale);
         }
 
         /// <summary>
