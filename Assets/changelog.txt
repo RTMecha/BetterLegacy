@@ -12,3 +12,12 @@ Also, make sure you're always up to date on the latest version when playing onli
 ## Changes
 ### Core
 - Made setImageOther modifier consistent with setImage modifier behavior, allowing for texture changes and offset & scale changes.
+
+# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
+## Changes
+### Core
+- Changed level syncing send type to unreliable.
+
+## Fixes
+- Fixed singleplayer being broken.
+- Fixed issues that occur when Steam isn't open.
