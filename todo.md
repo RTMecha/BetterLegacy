@@ -175,7 +175,7 @@
 ### Fixes
 - Fix controller shake not stopping after death.
 - Fix players not respawning on replay for client sides.
-- Look into mouse cursor not appearing for some people.
+- Fix clients not updating the player positions of other clients.
 
 ## Ideas
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.  
