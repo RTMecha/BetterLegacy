@@ -4565,6 +4565,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             if (ProjectArrhythmia.State.IsEditing)
@@ -4601,6 +4605,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelID(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
                 return;
@@ -4645,6 +4653,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelInternal(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var path = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
             if (!ProjectArrhythmia.State.InEditor)
@@ -4681,6 +4693,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelPrevious(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor)
                 return;
 
@@ -4689,6 +4705,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelHub(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor)
                 return;
 
@@ -4697,6 +4717,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelInCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (!ProjectArrhythmia.State.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == id, out Level level))
                 LevelManager.Play(level);
@@ -4704,6 +4728,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadLevelCollection(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var id = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             if (ProjectArrhythmia.State.InEditor || !LevelManager.LevelCollections.TryFind(x => x.id == id, out LevelCollection levelCollection))
                 return;
@@ -4724,6 +4752,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void downloadLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var levelInfo = new LevelInfo(ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(1, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(2, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(3, modifierLoop.variables), modifierLoop.variables), ModifiersHelper.FormatStringVariables(modifier.GetValue(4, modifierLoop.variables), modifierLoop.variables));
 
             if (!ProjectArrhythmia.State.InEditor)
@@ -4773,6 +4805,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void endLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor)
             {
                 if (!EditorManager.inst.isEditing && EditorConfig.Instance.ExitPreviewOnEnd.Value)
@@ -14007,6 +14043,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadInterface(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.IsEditing) // don't want interfaces to load in editor
             {
                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
@@ -14048,6 +14088,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void pauseLevel(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor)
             {
                 EditorManager.inst.DisplayNotification("Cannot pause in the editor. This modifier only works in the Arcade.", 3f, EditorManager.NotificationType.Warning);
@@ -14059,6 +14103,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void quitToMenu(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
                 string str = RTFile.BasePath;
@@ -14079,6 +14127,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void quitToArcade(Modifier modifier, ModifierLoop modifierLoop)
         {
+            // only host can do this
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (ProjectArrhythmia.State.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
             {
                 string str = RTFile.BasePath;
