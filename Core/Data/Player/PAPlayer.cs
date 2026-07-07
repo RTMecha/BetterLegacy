@@ -52,7 +52,8 @@ namespace BetterLegacy.Core.Data.Player
             InputManager.OnDeviceDetached += ControllerDisconnected;
             SetupInput();
             IsLocalPlayer = true;
-            ID = RTSteamManager.inst.steamUser.steamID;
+            if (RTSteamManager.inst && RTSteamManager.inst.Initialized)
+                ID = RTSteamManager.inst.steamUser.steamID;
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -387,7 +388,7 @@ namespace BetterLegacy.Core.Data.Player
         public void ResetHealth()
         {
             Health = GetDefaultHealth();
-            if (IsLocalPlayer)
+            if (IsLocalPlayer && ProjectArrhythmia.State.IsInLobby)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_RESET_HEALTH,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(id));
