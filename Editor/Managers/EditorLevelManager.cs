@@ -1554,6 +1554,14 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SetAutosave()
         {
+            if (ProjectArrhythmia.State.IsClient)
+            {
+                EditorManager.inst.autosaves.Clear();
+                EditorManager.inst.CancelInvoke(nameof(AutosaveLevel));
+                CancelInvoke(nameof(AutosaveLevel));
+                return;
+            }
+
             var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
             RTFile.CreateDirectory(autosavesDirectory);
             var files = Directory.GetFiles(autosavesDirectory, $"autosave_{FileFormat.LSB.ToPattern()}", SearchOption.TopDirectoryOnly);
@@ -1571,6 +1579,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void AutosaveLevel()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1623,6 +1634,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SaveBackup()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1663,6 +1677,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to save the backup of.</param>
         public void SaveBackup(LevelPanel levelPanel)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.loading)
                 return;
 
@@ -1701,6 +1718,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="newLevelSettings">Settings to apply to the new level.</param>
         public void CreateNewLevel(Func<GameData> func, NewLevelSettings newLevelSettings)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var newAudioPath = newLevelSettings.audioPath;
             var newLevelName = newLevelSettings.levelName;
             var newSongArtist = newLevelSettings.songArtist;
@@ -1896,6 +1916,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to convert to VG.</param>
         public void ConvertLevel(LevelPanel levelPanel)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (levelPanel.isFolder)
                 return;
 
@@ -1978,6 +2001,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to zip.</param>
         public IEnumerator IZipLevel(LevelPanel levelPanel)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                yield break;
+
             bool failed;
             try
             {
@@ -2004,6 +2030,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="level">Level to remove.</param>
         public void RecycleLevel(LevelPanel levelPanel)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var folderPath = levelPanel.Path;
             var recyclingPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "recycling");
             RTFile.CreateDirectory(recyclingPath);
@@ -2024,6 +2053,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="selected">Editor levels to combine.</param>
         public void Combine(string savePath, IEnumerable<LevelPanel> selected, Action onCombined = null)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var combineList = new List<GameData>();
 
             foreach (var levelPanel in selected)
