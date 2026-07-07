@@ -3415,6 +3415,13 @@
         "const": "False",
         "compat": "obj"
       }, // legacyTail
+      //{
+      //  "type": 1,
+      //  "name": "inverseKinematics",
+      //  "values": [ "Object Group", "Object Group", "-1" ],
+      //  "const": "True",
+      //  "compat": "obj"
+      //}, // inverseKinematics
       {
         "type": 1,
         "commands": [ "gravity", "0", "-1", "1", "2" ],

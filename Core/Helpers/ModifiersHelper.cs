@@ -1312,6 +1312,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.runAnimation),  ModifierFunctions.runAnimation, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.legacyTail),  ModifierFunctions.legacyTail, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.inverseKinematics),  ModifierFunctions.inverseKinematics, ModifierCompatibility.BeatmapObjectCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.gravity),  ModifierFunctions.gravity),
             new ModifierAction(nameof(ModifierFunctions.gravityOther),  ModifierFunctions.gravityOther),
@@ -2312,6 +2313,7 @@ namespace BetterLegacy.Core.Helpers
             name == nameof(ModifierFunctions.signalModifier) ||
             name == nameof(ModifierFunctions.activateModifier) ||
             name == nameof(ModifierFunctions.legacyTail) ||
+            name == nameof(ModifierFunctions.inverseKinematics) ||
             name == nameof(ModifierFunctions.applyColorGroup) ||
             name.ToLower().Contains("signal") ||
             name.Contains("Other") ||
@@ -12260,6 +12262,105 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                 }
+            }
+        }
+
+        // TODO: make sure this is working before allowing people to use it
+        public static void inverseKinematics(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+
+            var targetTag = modifier.GetValue(0, modifierLoop.variables);
+            var baseTag = modifier.GetValue(1, modifierLoop.variables);
+            var parentCount = modifier.GetInt(2, 1, modifierLoop.variables);
+
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var cache = new InverseKinematicsCache();
+                cache.UpdateCache(modifier, beatmapObject, targetTag, baseTag);
+                cache.UpdateParents(beatmapObject, parentCount);
+                return cache;
+            });
+            if (cache.targetTag != targetTag || cache.baseTag != baseTag)
+            {
+                cache.UpdateCache(modifier, beatmapObject, targetTag, baseTag);
+                modifier.Result = cache;
+            }
+
+            if (!cache.baseObject || !cache.targetObject)
+                return;
+
+            if (!cache.ik)
+            {
+                cache.ik = new InverseKinematics();
+                cache.ik.bones = cache.parents.Select(x => new BeatmapObjectBone(x)).ToArray();
+            }
+
+            cache.ik.Set(cache.baseObject.GetFullPosition(), cache.targetObject.GetFullPosition());
+            cache.ik.UpdateIK();
+        }
+
+        public class BeatmapObjectBone : InverseKinematics.Bone
+        {
+            public BeatmapObjectBone(BeatmapObject beatmapObject)
+            {
+                this.beatmapObject = beatmapObject;
+                length = beatmapObject.boneLength;
+            }
+
+            public BeatmapObject beatmapObject;
+
+            public override void Apply()
+            {
+                beatmapObject.PositionOffset = position;
+                beatmapObject.RotationOffset = rotation.eulerAngles;
+            }
+        }
+
+        public class InverseKinematicsCache
+        {
+            public InverseKinematicsCache() { }
+
+            public InverseKinematics ik;
+
+            public List<BeatmapObject> parents;
+
+            public string baseTag;
+
+            public BeatmapObject baseObject;
+
+            public string targetTag;
+
+            public BeatmapObject targetObject;
+
+            public void UpdateCache(Modifier modifier, IPrefabable prefabable, string targetTag, string baseTag)
+            {
+                this.targetTag = targetTag;
+                this.baseTag = baseTag;
+                if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, targetTag, out BeatmapObject targetObject))
+                    this.targetObject = targetObject;
+                if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, baseTag, out BeatmapObject baseObject))
+                    this.baseObject = baseObject;
+            }
+
+            public void UpdateParents(BeatmapObject beatmapObject, int parentCount)
+            {
+                var self = beatmapObject;
+                var parents = new List<BeatmapObject>();
+                parents.Add(self);
+
+                for (int i = 0; i < (parentCount < 0 ? int.MaxValue : parentCount); i++)
+                {
+                    var parent = self.GetParent();
+                    if (!parent)
+                        break;
+
+                    parents.Add(parent);
+                    self = parent;
+                }
+
+                this.parents = parents;
             }
         }
 

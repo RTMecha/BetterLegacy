@@ -4323,6 +4323,15 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.inverseKinematics): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str1 = StringGenerator(modifier, reference, "Target Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str1.transform.Find("Input").GetComponent<InputField>());
+                        var str2 = StringGenerator(modifier, reference, "Base Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str2.transform.Find("Input").GetComponent<InputField>());
+                        IntegerGenerator(modifier, reference, "Parent Count", 2);
+                        break;
+                    }
 
                 case nameof(ModifierFunctions.applyAnimationFrom):
                 case nameof(ModifierFunctions.applyAnimationTo):

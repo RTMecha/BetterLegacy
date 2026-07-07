@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public const int DEFAULT_PARENT_CHAIN_CAPACITY = 30;
 
+        public float boneLength;
+
         public Sequence<Vector3> positionSequence;
         public Sequence<Vector2> scaleSequence;
         public Sequence<Vector3> rotationSequence;

@@ -238,6 +238,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                         parentParallaxScale = beatmapObject.parallaxSettings[1],
                         parentParallaxRotation = beatmapObject.parallaxSettings[2],
 
+                        boneLength = beatmapObject.boneLength,
+
                         gameObject = gameObject,
                         transform = gameObject.transform,
                         id = beatmapObject.id,
@@ -276,6 +278,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                         parentParallaxPosition = beatmapObject.parallaxSettings[0],
                         parentParallaxScale = beatmapObject.parallaxSettings[1],
                         parentParallaxRotation = beatmapObject.parallaxSettings[2],
+
+                        boneLength = beatmapObject.boneLength,
 
                         gameObject = gameObject,
                         transform = gameObject.transform,

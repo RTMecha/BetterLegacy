@@ -184,6 +184,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float ParentDesyncOffset { get; set; }
 
         /// <summary>
+        /// Length of the object as an IK bone.
+        /// </summary>
+        public float boneLength = 1f;
+
+        /// <summary>
         /// Temporary detatches the parent (similar to <see cref="desync"/>).
         /// </summary>
         public bool detatched;
@@ -705,6 +710,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.CopyParentData(orig);
             Parent = orig.parent;
+            boneLength = orig.boneLength;
 
             animID = orig.animID;
 
@@ -1284,6 +1290,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.ReadPrefabJSON(jn);
             this.ReadParentJSON(jn);
+            if (jn["bl"] != null)
+                boneLength = jn["bl"].AsFloat;
 
             if (jn["d"] != null)
                 Depth = jn["d"].AsFloat;
@@ -1531,6 +1539,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.WritePrefabJSON(jn);
             this.WriteParentJSON(jn);
+            if (boneLength != 1f)
+                jn["bl"] = boneLength;
 
             if (Depth != 15)
                 jn["d"] = Depth;
@@ -1629,6 +1639,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             fullTransform.ReadPacket(reader);
             fullTransformOffset.ReadPacket(reader);
             Depth = reader.ReadSingle();
+            boneLength = reader.ReadSingle();
 
             #endregion
 
@@ -1700,6 +1711,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             fullTransform.WritePacket(writer);
             fullTransformOffset.WritePacket(writer);
             writer.Write(Depth);
+            writer.Write(boneLength);
 
             #endregion
 
