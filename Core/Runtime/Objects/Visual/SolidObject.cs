@@ -599,7 +599,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             if (!particleSystemDataCache || !particleSystem)
                 return;
 
-            var isPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
             var pitch = AudioManager.inst.CurrentAudioSource.pitch;
             var main = particleSystem.main;
             var emission = particleSystem.emission;
@@ -629,16 +628,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 }
             }
             main.simulationSpeed = Mathf.Max(0f, pitch);
-            if (isPlaying)
-            {
-                if (!particleSystem.isPlaying || resync)
-                {
-                    particleSystem.Play(true);
-                    return;
-                }
-            }
-            else
-                particleSystem.Pause(true);
+            if (!particleSystem.isPlaying || resync)
+                particleSystem.Play(true);
         }
 
         public void StartParticles() => emittingParticles = true;
