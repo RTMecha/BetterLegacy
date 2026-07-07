@@ -8,9 +8,9 @@ using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -226,6 +226,8 @@ namespace BetterLegacy.Core.Helpers
         {
             if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level.Replace(" ", "_"), true, out SceneName sceneName))
                 NetworkFunction.SetClientScene(sceneName, showLoading, 0);
+
+            LobbyPopup.Instance?.Close();
 
             PreviousScene = CurrentScene;
             CurrentScene = level;
