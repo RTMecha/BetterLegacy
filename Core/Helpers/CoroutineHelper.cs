@@ -72,14 +72,14 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="seconds">Seconds to wait.</param>
         /// <returns>Returns <see cref="WaitForSeconds"/> to yield by.</returns>
-        public static WaitForSeconds Seconds(float seconds) => new WaitForSeconds(seconds);
+        public static WaitForSeconds Seconds(float seconds) => new WaitForSeconds(float.IsNaN(seconds) ? 0f : seconds);
 
         /// <summary>
         /// Waits for a set amount of real-time.
         /// </summary>
         /// <param name="seconds">Real-time seconds to wait.</param>
         /// <returns>Returns <see cref="WaitForSecondsRealtime"/> to yield by.</returns>
-        public static WaitForSecondsRealtime SecondsRealtime(float seconds) => new WaitForSecondsRealtime(seconds);
+        public static WaitForSecondsRealtime SecondsRealtime(float seconds) => new WaitForSecondsRealtime(float.IsNaN(seconds) ? 0f : seconds);
 
         /// <summary>
         /// Waits until the predicate is true.
