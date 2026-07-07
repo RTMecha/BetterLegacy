@@ -1,4 +1,15 @@
-﻿# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
+﻿# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
+## Changes
+### Core
+- Changed level syncing send type to unreliable.
+
+## Fixes
+- Fixed singleplayer being broken.
+- Fixed issues that occur when Steam isn't open.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
 ## Features
 ### Core
 - Added online lobbies. This allows you to play multiplayer online.  
