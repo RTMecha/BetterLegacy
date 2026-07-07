@@ -231,7 +231,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void RequestMusicTime() => NetworkManager.inst.RunFunction((int)Group.Game, REQUEST_MUSIC_TIME);
 
-        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction((int)Group.Game, SYNC_LEVEL,
+        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction((int)Group.Game, SYNC_LEVEL, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
                 new BoolParameter(ProjectArrhythmia.State.InEditor),
                 new FloatParameter(AudioManager.inst.CurrentAudioSource.time));
 
