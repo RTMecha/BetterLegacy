@@ -4,7 +4,18 @@
 - Multiplayer compatible with story mode (supports Asset Packs)
 - Joinable rooms / direct connect
 - Voice chat with optional proximity (maybe can be controlled via modifiers?)
-- Player toolkit system?
+- Syncing
+  - Sync interface
+  - Sync interface selection
+  - Sync arcade list (clicking a level will send a request for the host to open it)
+  - Sync viewed arcade level
+  - Sync end level interface
+  - Sync editor level list (clicking a level will send a request for the host to open it)
+  - Sync object creation
+  - Sync prefab expanding
+  - Sync keybind functions
+  - Sync saving (client trying to save will request the host to save)
+- Player variables
 - Player models support multiplayer
 - Versus mode
 - Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
@@ -153,6 +164,7 @@
   - Doing good so far, but need to do more. Maybe I could focus on this for 1.10.0?
 - Rework audio transition system.  
 - Update modifier caches.  
+- Allow Window event transition.
 
 ### Interfaces
 
