@@ -80,7 +80,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            if (ProjectArrhythmia.State.InEditorPreview && (!ConfigPopup.Instance || !ConfigPopup.Instance.Active) && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
+            if (ProjectArrhythmia.State.InEditorPreview && !PopupBase.AnyPopupActive && !InterfaceManager.inst.CurrentInterface && !CoreConfig.Instance.GameCursorCanShow.Value) // cursor should never be visible in the game / editor preview
             {
                 Cursor.visible = false;
                 return;
