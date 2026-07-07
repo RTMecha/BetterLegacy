@@ -2469,7 +2469,7 @@ namespace BetterLegacy.Core.Components.Player
             if (Core && Core.IsLocalPlayer && (!Core || !Alive || health <= 0))
                 return false;
 
-            if (Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core.IsLocalPlayer)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HEAL,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
@@ -2497,7 +2497,7 @@ namespace BetterLegacy.Core.Components.Player
             if (Core && Core.IsLocalPlayer && (!CanTakeDamage || !Alive || damage <= 0))
                 return;
 
-            if (Core && Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
@@ -2527,7 +2527,7 @@ namespace BetterLegacy.Core.Components.Player
             if (Core && Core.IsLocalPlayer && (!CanTakeDamage || !Alive))
                 return;
 
-            if (Core && Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
@@ -2566,7 +2566,7 @@ namespace BetterLegacy.Core.Components.Player
             if (Core && Core.IsLocalPlayer && (!CanBoost || isBoosting))
                 return;
 
-            if (Core && Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id));
@@ -2609,7 +2609,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             float num = Time.time - startBoostTime;
             StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
-            if (Core && Core.IsLocalPlayer)
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
                 NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST_STOP,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id));
