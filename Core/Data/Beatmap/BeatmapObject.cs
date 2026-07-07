@@ -189,6 +189,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float boneLength = 1f;
 
         /// <summary>
+        /// Offsets <see cref="boneLength"/>.
+        /// </summary>
+        public float boneLengthOffset;
+
+        /// <summary>
         /// Temporary detatches the parent (similar to <see cref="desync"/>).
         /// </summary>
         public bool detatched;
