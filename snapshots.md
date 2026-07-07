@@ -1,4 +1,18 @@
-﻿# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
+﻿# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul ?, 2026]
+## Changes
+### Core
+- Changed particle object to not be based on the song playing state.
+- The lobby popup now closes when the scene is changed.
+
+## Fixes
+- Fixed more issues with single player that occur when there is no lobby.
+- Fixed Multi Object Editor parent search not working.
+- Fixed the cursor not accounting for the lobby popup.
+- Fixed some modifiers working for clients when they shouldn't.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
 ## Changes
 ### Core
 - Changed level syncing send type to unreliable.
