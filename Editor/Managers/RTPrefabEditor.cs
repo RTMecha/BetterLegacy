@@ -3377,9 +3377,11 @@ namespace BetterLegacy.Editor.Managers
             return true;
         }
 
-        // RTPrefabEditor.inst.UploadPrefab(RTPrefabEditor.inst.CurrentPrefabPanel);
         public void UploadPrefab(PrefabPanel prefabPanel)
         {
+            if (ProjectArrhythmia.State.IsClient && !prefabPanel.IsExternal)
+                return;
+
             var prefab = prefabPanel.Item;
             if (!prefab)
                 return;
@@ -3417,6 +3419,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteServerPrefab(PrefabPanel prefabPanel)
         {
+            if (ProjectArrhythmia.State.IsClient && !prefabPanel.IsExternal)
+                return;
+
             var prefab = prefabPanel.Item;
             if (!prefab)
                 return;
@@ -3436,6 +3441,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void PullServerPrefab(PrefabPanel prefabPanel)
         {
+            if (ProjectArrhythmia.State.IsClient && !prefabPanel.IsExternal)
+                return;
+
             var prefab = prefabPanel.Item;
             if (!prefab)
                 return;

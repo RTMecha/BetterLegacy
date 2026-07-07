@@ -140,7 +140,7 @@ namespace BetterLegacy.Editor.Managers
             EditorServerManager.inst.RenderServerDialog(
                 url: AlephNetwork.LevelURL,
                 uploadable: metadata,
-                dialog: Dialog, 
+                dialog: Dialog,
                 upload: UploadLevel,
                 pull: PullLevel,
                 delete: DeleteLevel,
@@ -479,7 +479,7 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.PreferredPlayerCountDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredPlayerCount);
             Dialog.PreferredPlayerCountDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val);
-            
+
             Dialog.PreferredControlTypeDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredControlType);
             Dialog.PreferredControlTypeDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredControlType = (BeatmapMetaData.PreferredControlType)_val);
 
@@ -567,20 +567,29 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Verifies the current level is on the Arcade server.
         /// </summary>
-        public void VerifyLevelIsOnServer() => EditorServerManager.inst.Verify(
+        public void VerifyLevelIsOnServer()
+        {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
+            EditorServerManager.inst.Verify(
                 url: AlephNetwork.LevelURL,
                 uploadable: MetaData.Current,
                 saveFile: () =>
                 {
-                    var jn = MetaData.Current.ToJSON();
-                    RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
+                var jn = MetaData.Current.ToJSON();
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                 });
+        }
 
         /// <summary>
         /// Converts the current level to the VG format.
         /// </summary>
         public void ConvertLevel()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
 
             if (string.IsNullOrEmpty(exportPath))
@@ -641,53 +650,68 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Uploads the current level to the Arcade server.
         /// </summary>
-        public void UploadLevel() => EditorServerManager.inst.Upload(
-            url: $"{AlephNetwork.ArcadeServerURL}api/level",
-            fileName: EditorManager.inst.currentLoadedLevel,
-            uploadable: MetaData.Current,
-            transfer: tempDirectory =>
-            {
-                var directory = RTFile.BasePath;
-                var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
-                for (int i = 0; i < files.Length; i++)
-                {
-                    var file = files[i];
-                    if (!EditorServerManager.inst.VerifyFile(Path.GetFileName(file)))
-                        continue;
+        public void UploadLevel()
+        {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
 
-                    var copyTo = file.Replace(directory, tempDirectory);
-
-                    var dir = RTFile.GetDirectory(copyTo);
-
-                    RTFile.CreateDirectory(dir);
-                    RTFile.CopyFile(file, copyTo);
-                }
-            },
-            saveFile: () =>
-            {
-                var jn = MetaData.Current.ToJSON();
-                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-            },
-            onUpload: RenderDialog);
-
-        /// <summary>
-        /// Removes the current level from the Arcade server.
-        /// </summary>
-        public void DeleteLevel() => EditorServerManager.inst.Delete(
-                url: AlephNetwork.LevelURL,
+            EditorServerManager.inst.Upload(
+                url: $"{AlephNetwork.ArcadeServerURL}api/level",
+                fileName: EditorManager.inst.currentLoadedLevel,
                 uploadable: MetaData.Current,
+                transfer: tempDirectory =>
+                {
+                    var directory = RTFile.BasePath;
+                    var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        var file = files[i];
+                        if (!EditorServerManager.inst.VerifyFile(Path.GetFileName(file)))
+                            continue;
+
+                        var copyTo = file.Replace(directory, tempDirectory);
+
+                        var dir = RTFile.GetDirectory(copyTo);
+
+                        RTFile.CreateDirectory(dir);
+                        RTFile.CopyFile(file, copyTo);
+                    }
+                },
                 saveFile: () =>
                 {
                     var jn = MetaData.Current.ToJSON();
                     RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                 },
+                onUpload: RenderDialog);
+        }
+
+        /// <summary>
+        /// Removes the current level from the Arcade server.
+        /// </summary>
+        public void DeleteLevel()
+        {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
+            EditorServerManager.inst.Delete(
+                url: AlephNetwork.LevelURL,
+                uploadable: MetaData.Current,
+                saveFile: () =>
+                {
+                var jn = MetaData.Current.ToJSON();
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
+                },
                 onDelete: RenderDialog);
+        }
 
         /// <summary>
         /// Pulls the current level's file from the Arcade server.
         /// </summary>
         public void PullLevel()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.savingBeatmap)
             {
                 EditorManager.inst.DisplayNotification("Cannot pull level from the Arcade server because the level is saving!", 3f, EditorManager.NotificationType.Warning);

@@ -798,34 +798,148 @@ namespace BetterLegacy.Editor.Managers
             dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => uploadable.Visibility = (ServerVisibility)_val);
 
             CoreHelper.DestroyChildren(dialog.CollaboratorsContent);
-            for (int i = 0; i < uploadable.Uploaders.Count; i++)
+            if (string.IsNullOrEmpty(uploadable.UploaderID) || uploadable.UploaderID == LegacyPlugin.UserID)
             {
-                int index = i;
-                var tag = uploadable.Uploaders[i];
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(dialog.CollaboratorsContent, index.ToString());
-                gameObject.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.transform.AsRT().sizeDelta = new Vector2(682, 32f);
-                input.SetTextWithoutNotify(tag);
-                input.onValueChanged.NewListener(_val =>
+                for (int i = 0; i < uploadable.Uploaders.Count; i++)
                 {
-                    _val = RTString.ReplaceSpace(_val);
-                    var oldVal = uploadable.Uploaders[index];
-                    uploadable.Uploaders[index] = _val;
-
-                    EditorManager.inst.history.Add(new History.Command("Change Uploader", () =>
+                    int index = i;
+                    var tag = uploadable.Uploaders[i];
+                    var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(dialog.CollaboratorsContent, index.ToString());
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
+                    var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                    input.transform.AsRT().sizeDelta = new Vector2(682, 32f);
+                    input.SetTextWithoutNotify(tag);
+                    input.onValueChanged.NewListener(_val =>
                     {
+                        _val = RTString.ReplaceSpace(_val);
+                        var oldVal = uploadable.Uploaders[index];
                         uploadable.Uploaders[index] = _val;
-                        dialog.Open();
-                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                    }, () =>
+
+                        EditorManager.inst.history.Add(new History.Command("Change Uploader",
+                            () =>
+                            {
+                                uploadable.Uploaders[index] = _val;
+                                dialog.Open();
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            },
+                            () =>
+                            {
+                                uploadable.Uploaders[index] = oldVal;
+                                dialog.Open();
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            }));
+                    });
+                    EditorContextMenu.AddContextMenu(input.gameObject,
+                        new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
+                        {
+                            if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                                return;
+
+                            uploadable.Uploaders.Add(user);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+
+                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        uploadable.Uploaders = new List<ServerUser>();
+                                    uploadable.Uploaders.Add(user);
+                                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                                },
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        return;
+                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                                }));
+                        })),
+                        new ButtonElement("Add Empty", () =>
+                        {
+                            if (uploadable.Uploaders == null)
+                                uploadable.Uploaders = new List<ServerUser>();
+                            uploadable.Uploaders.Add(string.Empty);
+                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+
+                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        uploadable.Uploaders = new List<ServerUser>();
+                                    uploadable.Uploaders.Add(string.Empty);
+                                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                                },
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        return;
+                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                                }));
+                        }));
+
+                    var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                    deleteStorage.OnClick.NewListener(() =>
                     {
-                        uploadable.Uploaders[index] = oldVal;
-                        dialog.Open();
+                        var oldUploader = uploadable.Uploaders[index];
+                        uploadable.Uploaders.RemoveAt(index);
                         RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                    }));
-                });
-                EditorContextMenu.AddContextMenu(input.gameObject,
+
+                        EditorManager.inst.history.Add(new History.Command("Delete Uploader",
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    return;
+                                uploadable.Uploaders.RemoveAt(index);
+                                dialog.Open();
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            },
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    uploadable.Uploaders = new List<ServerUser>();
+                                uploadable.Uploaders.Insert(index, oldUploader);
+                                dialog.Open();
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            }));
+                    });
+
+                    EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+
+                    EditorThemeManager.ApplyInputField(input);
+
+                    EditorThemeManager.ApplyDeleteButton(deleteStorage);
+                }
+
+                var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.CollaboratorsContent);
+                add.Text = "Add Collaborator";
+                add.OnClick.ClearAll();
+
+                EditorContextMenu.AddContextMenu(add.gameObject,
+                    leftClick: () => OpenUserSearchPopup(user =>
+                    {
+                        if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                            return;
+
+                        uploadable.Uploaders.Add(user);
+                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+
+                        EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    uploadable.Uploaders = new List<ServerUser>();
+                                uploadable.Uploaders.Add(user);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            },
+                            () =>
+                            {
+                                if (uploadable.Uploaders == null)
+                                    return;
+                                uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
+                            }));
+                    }),
                     new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
                     {
                         if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
@@ -873,114 +987,7 @@ namespace BetterLegacy.Editor.Managers
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     }));
-
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.OnClick.NewListener(() =>
-                {
-                    var oldUploader = uploadable.Uploaders[index];
-                    uploadable.Uploaders.RemoveAt(index);
-                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-
-                    EditorManager.inst.history.Add(new History.Command("Delete Uploader", () =>
-                    {
-                        if (uploadable.Uploaders == null)
-                            return;
-                        uploadable.Uploaders.RemoveAt(index);
-                        dialog.Open();
-                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                    }, () =>
-                    {
-                        if (uploadable.Uploaders == null)
-                            uploadable.Uploaders = new List<ServerUser>();
-                        uploadable.Uploaders.Insert(index, oldUploader);
-                        dialog.Open();
-                        RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                    }));
-                });
-
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyDeleteButton(deleteStorage);
             }
-
-            var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.CollaboratorsContent);
-            add.Text = "Add Collaborator";
-            add.OnClick.ClearAll();
-
-            EditorContextMenu.AddContextMenu(add.gameObject,
-                leftClick: () => OpenUserSearchPopup(user =>
-                {
-                    if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
-                        return;
-
-                    uploadable.Uploaders.Add(user);
-                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-
-                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                uploadable.Uploaders = new List<ServerUser>();
-                            uploadable.Uploaders.Add(user);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        },
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                return;
-                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        }));
-                }),
-                new ButtonElement("Search User", () => OpenUserSearchPopup(user =>
-                {
-                    if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
-                        return;
-
-                    uploadable.Uploaders.Add(user);
-                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-
-                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                uploadable.Uploaders = new List<ServerUser>();
-                            uploadable.Uploaders.Add(user);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        },
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                return;
-                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        }));
-                })),
-                new ButtonElement("Add Empty", () =>
-                {
-                    if (uploadable.Uploaders == null)
-                        uploadable.Uploaders = new List<ServerUser>();
-                    uploadable.Uploaders.Add(string.Empty);
-                    RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-
-                    EditorManager.inst.history.Add(new History.Command("Add Collaborator",
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                uploadable.Uploaders = new List<ServerUser>();
-                            uploadable.Uploaders.Add(string.Empty);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        },
-                        () =>
-                        {
-                            if (uploadable.Uploaders == null)
-                                return;
-                            uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
-                            RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
-                        }));
-                }));
 
             bool hasID = !string.IsNullOrEmpty(uploadable.ServerID); // Only check for server id.
 

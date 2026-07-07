@@ -2833,6 +2833,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelCollection">Level collection to upload.</param>
         public void UploadLevelCollection(LevelCollection levelCollection)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (!levelCollection)
                 return;
 
@@ -2868,6 +2871,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelCollection">Level collection to remove.</param>
         public void DeleteLevelCollectionFromServer(LevelCollection levelCollection)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (!levelCollection)
                 return;
 
@@ -2884,6 +2890,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelCollection">Level collection to pull.</param>
         public void PullLevelCollection(LevelCollection levelCollection)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (EditorManager.inst.savingBeatmap)
             {
                 EditorManager.inst.DisplayNotification("Cannot pull level collection from the Arcade server because the level is saving!", 3f, EditorManager.NotificationType.Warning);
