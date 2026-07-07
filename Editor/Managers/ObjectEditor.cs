@@ -2857,10 +2857,18 @@ namespace BetterLegacy.Editor.Managers
                 var button = buttonPrefab.GetComponent<Button>();
                 button.onClick.NewListener(() =>
                 {
-                    foreach (var bm in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    if (onSelect != null)
                     {
-                        bm.Parent = string.Empty;
-                        RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
+                        onSelect.Invoke(null);
+                        return;
+                    }
+
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        if (!timelineObject.TryGetData(out IParentable parentable))
+                            continue;
+                        parentable.Parent = string.Empty;
+                        timelineObject.UpdateObject(ObjectContext.PARENT);
                     }
                 });
 

@@ -1329,7 +1329,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             new LabelsElement("Parent").Init(EditorElement.InitSettings.Default.Parent(parent));
                             new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(parent), HorizontalOrVerticalLayoutValues.Horizontal.ChildForceExpandWidth(false).Spacing(4f),
-                                new ButtonElement(ButtonElement.Type.Sprite, "Search List", ObjectEditor.inst.ShowObjectSearch)
+                                new ButtonElement(ButtonElement.Type.Sprite, "Search List",
+                                () => ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
+                                {
+                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                    {
+                                        if (!timelineObject.TryGetData(out IParentable parentable))
+                                            continue;
+                                        parentable.Parent = beatmapObject ? beatmapObject.id : string.Empty;
+                                        timelineObject.UpdateObject(ObjectContext.PARENT);
+                                    }
+                                }, true))
                                 {
                                     buttonThemeGroup = ThemeGroup.Function_2,
                                     sprite = EditorSprites.SearchSprite,
@@ -1353,7 +1363,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     MultiObjectEditor.inst.ForEachPrefabObject(prefabObject =>
                                     {
                                         prefabObject.Parent = string.Empty;
-                                        RTLevel.Current?.UpdatePrefab(prefabObject, ObjectContext.PARENT_CHAIN);
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, ObjectContext.PARENT);
                                     });
                                 }))
                                 {
