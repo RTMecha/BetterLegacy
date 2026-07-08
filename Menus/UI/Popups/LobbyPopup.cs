@@ -68,6 +68,8 @@ namespace BetterLegacy.Menus.UI.Popups
 
         public const int MAX_LOBBIES_PER_PAGE = 14;
 
+        static Sprite closeSprite;
+
         #endregion
 
         #region Functions
@@ -315,6 +317,9 @@ namespace BetterLegacy.Menus.UI.Popups
             if (!SteamLobbyManager.inst)
                 return;
 
+            if (!closeSprite)
+                closeSprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/close.png"));
+
             lobbyView.SetActive(ProjectArrhythmia.State.IsInLobby);
             if (ProjectArrhythmia.State.IsInLobby)
             {
@@ -343,6 +348,27 @@ namespace BetterLegacy.Menus.UI.Popups
 
                     EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                     EditorThemeManager.ApplyLightText(label);
+
+                    // handle kicking
+                    //if (ProjectArrhythmia.State.IsHosting)
+                    //{
+                    //    var kickObj = Creator.NewUIObject("kick", gameObject.transform);
+                    //    RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
+                    //    var kickObjImage = kickObj.AddComponent<Image>();
+                    //    var kickObjX = Creator.NewUIObject("x", kickObj.transform);
+                    //    var kickObjXImage = kickObjX.AddComponent<Image>();
+                    //    kickObjXImage.sprite = closeSprite;
+
+                    //    EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
+                    //    EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
+
+                    //    kickObj.AddComponent<Button>().onClick.AddListener(() =>
+                    //    {
+                    //        SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
+                    //            $"Name: {member.Name}\n" +
+                    //            $"Nickname: {member.Nickname}");
+                    //    });
+                    //}
                 }
                 return;
             }
@@ -414,6 +440,9 @@ namespace BetterLegacy.Menus.UI.Popups
 
         public override void Tick()
         {
+            if ((!ConfigPopup.Instance || !ConfigPopup.Instance.watchingKeybind) && Input.GetKeyDown(CoreConfig.Instance.OpenLobbyKey.Value))
+                Toggle();
+
             // update list every 1000 ticks
             if (!Active || CurrentTab != LobbyTab.List)
                 return;

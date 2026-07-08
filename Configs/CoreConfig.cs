@@ -152,6 +152,8 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ShowPauseTimeSlider { get; set; }
 
+        public Setting<KeyCode> OpenLobbyKey { get; set; }
+
         #endregion
 
         #region User
@@ -419,6 +421,7 @@ namespace BetterLegacy.Configs
             EvaluateCode = Bind(this, GAME, "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
             PlayPauseCountdown = Bind(this, GAME, "Play Pause Countdown", true, "If resuming the game starts a countdown. With this off, the game immediately unpauses.");
             ShowPauseTimeSlider = Bind(this, GAME, "Show Pause Time Slider", false, "If the pause menu should display a slider that can set the level time. Only displays in zen mode. (only recommended for animation levels)");
+            OpenLobbyKey = BindEnum(this, GAME, "Open Lobby Key", KeyCode.F8, "The key to press to open the Lobby Manager.");
 
             #endregion
 
