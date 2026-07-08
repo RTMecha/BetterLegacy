@@ -649,15 +649,33 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class SpacerElement : EditorElement<Image>
     {
+        #region Constructors
+
         public SpacerElement() { }
 
         public SpacerElement(Func<bool> shouldGenerate) : base(null, shouldGenerate) { }
+
+        public SpacerElement(Vector2 size) => this.size = size;
+
+        public SpacerElement(Vector2 size, Func<bool> shouldGenerate) : base(null, shouldGenerate) => this.size = size;
+
+        public SpacerElement(bool hasImage) => this.hasImage = hasImage;
+
+        public SpacerElement(bool hasImage, Func<bool> shouldGenerate) : base(null, shouldGenerate) => this.hasImage = hasImage;
+
+        public SpacerElement(Vector2 size, bool hasImage) : this(size) => this.hasImage = hasImage;
+
+        public SpacerElement(Vector2 size, bool hasImage, Func<bool> shouldGenerate) : this(size, shouldGenerate) => this.hasImage = hasImage;
+
+        #endregion
 
         #region Values
 
         public Vector2 size = new Vector2(0f, 4f);
 
         public ThemeGroup themeGroup = ThemeGroup.Background_3;
+
+        public bool hasImage = true;
 
         public override string DefaultName => "spacer element";
 
@@ -677,7 +695,7 @@ namespace BetterLegacy.Editor.Data
             GameObject = initSettings.prefab ?
                 initSettings.prefab.Duplicate(initSettings.parent, !string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", GetSiblingIndex(initSettings)) :
                 Creator.NewUIObject(!string.IsNullOrEmpty(initSettings.name) ? initSettings.name : "spacer element", initSettings.parent, GetSiblingIndex(initSettings));
-            Apply(initSettings.prefab ? GameObject.GetOrAddComponent<Image>() : GameObject.AddComponent<Image>(), initSettings);
+            Apply(!hasImage ? null : initSettings.prefab ? GameObject.GetOrAddComponent<Image>() : GameObject.AddComponent<Image>(), initSettings);
         }
 
         public override void Apply(Image component, InitSettings initSettings)
@@ -685,8 +703,9 @@ namespace BetterLegacy.Editor.Data
             if (initSettings.rectValues.HasValue)
                 initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
             else
-                component.rectTransform.sizeDelta = size;
-            if (initSettings.applyThemes)
+                GameObject.transform.AsRT().sizeDelta = size;
+
+            if (initSettings.applyThemes && component)
                 EditorThemeManager.ApplyGraphic(component, themeGroup);
         }
 
