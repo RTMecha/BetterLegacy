@@ -506,7 +506,18 @@ namespace BetterLegacy.Core.Managers
 
             #endregion
         }
-        
+
+        /// <summary>
+        /// Loads the game scene and plays a level for clients connected to the current lobby.
+        /// </summary>
+        /// <param name="reader">The current network reader.</param>
+        /// <param name="onLevelEnd">Function to run when the level ends.</param>
+        public static void PlayClient(NetworkReader reader, Action onLevelEnd)
+        {
+            OnLevelEnd = onLevelEnd;
+            CoroutineHelper.StartCoroutine(IPlayClient(reader));
+        }
+
         /// <summary>
         /// Loads the game scene and plays a level for clients connected to the current lobby.
         /// </summary>

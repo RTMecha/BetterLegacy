@@ -16,6 +16,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
@@ -26,7 +27,7 @@ namespace BetterLegacy.Editor.Data.Elements
     /// <summary>
     /// Object for storing level panel data.
     /// </summary>
-    public class LevelPanel : EditorPanel<Level>, ISelectable
+    public class LevelPanel : EditorPanel<Level>, IPacket, ISelectable
     {
         public LevelPanel() { }
 
@@ -160,6 +161,47 @@ namespace BetterLegacy.Editor.Data.Elements
         #endregion
 
         #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            var type = reader.ReadByte();
+            switch (type)
+            {
+                case 0: {
+                        Item = Packet.CreateFromPacket<Level>(reader);
+                        break;
+                    }
+                case 1: {
+                        Path = reader.ReadString();
+                        break;
+                    }
+                case 2: {
+                        Info = Packet.CreateFromPacket<LevelInfo>(reader);
+                        break;
+                    }
+            }
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            var type = isFolder ? 1 : !Item ? 2 : 0;
+            writer.Write((byte)type);
+            switch (type)
+            {
+                case 0: {
+                        Item.WritePacket(writer);
+                        break;
+                    }
+                case 1: {
+                        writer.Write(Path);
+                        break;
+                    }
+                case 2: {
+                        Info.WritePacket(writer);
+                        break;
+                    }
+            }
+        }
 
         public override void Init(string directory)
         {
@@ -447,6 +489,9 @@ namespace BetterLegacy.Editor.Data.Elements
                 var path = Path;
                 Button.onClick = eventData =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                     {
                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
@@ -588,6 +633,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
             Button.onClick = eventData =>
             {
+                if (ProjectArrhythmia.State.IsClient)
+                    return;
+
                 if (LevelTemplateEditor.inst.choosingLevelTemplate && Item)
                 {
                     LevelTemplateEditor.inst.CreateTemplate(Item.path);
@@ -922,7 +970,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!DeleteButton)
                 return;
 
-            var active = GetLevelInfo() || ShowDeleteInComplexity;
+            var active = !ProjectArrhythmia.State.IsClient && (GetLevelInfo() || ShowDeleteInComplexity);
 
             DeleteButton.gameObject.SetActive(active);
 
@@ -934,6 +982,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public void Delete(bool recycle = false)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var info = GetLevelInfo();
             if (info)
             {

@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Story;
 
 namespace BetterLegacy.Core.Data.Network
@@ -71,6 +71,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int SEND_CHUNK_DATA = 326243667;
 
+        public const int REQUEST_HOST = 10;
+
         #endregion
 
         #region Player
@@ -102,9 +104,24 @@ namespace BetterLegacy.Core.Data.Network
         #region Interface
 
         public const int PAUSE_GAME = 52375731;
-
         public const int UNPAUSE_GAME = 2542562;
-        
+
+        public const int INIT_ARCADE_INTERFACE = 4562345;
+
+        public const int CLEAR_ARCADE_LEVELS = 2513561;
+        public const int SEND_ARCADE_LEVEL = 53857832;
+        public const int SEND_ARCADE_LEVEL_COLLECTION = 75323456;
+        public const int SEND_STEAM_LEVEL = 236567643;
+
+        public const int SORT_ARCADE_LEVELS = 246346535;
+        public const int SORT_STEAM_LEVELS = 356243467;
+        public const int SORT_STEAM_WORKSHOP_LEVELS = 9855322;
+        public const int SORT_ONLINE_LEVELS = 34773463;
+        public const int SORT_ONLINE_LEVEL_COLLECTIONS = 4535323;
+
+        public const int INIT_PLAY_LEVEL_INTERFACE = 63262362;
+        public const int INIT_LOAD_LEVELS_INTERFACE = 26523676;
+
         #endregion
 
         #region Game
@@ -137,6 +154,16 @@ namespace BetterLegacy.Core.Data.Network
         public const int LOAD_CLIENT_EDITOR_LEVEL = 32583295;
 
         public const int RESTART_LEVEL = 4285788;
+
+        #endregion
+
+        #region Editor
+
+        public const int CLEAR_EDITOR_LEVELS = 7363268;
+
+        public const int SEND_EDITOR_LEVEL = 345324;
+
+        public const int REFRESH_EDITOR_LEVEL_LIST = 53262467;
 
         #endregion
 
@@ -186,11 +213,13 @@ namespace BetterLegacy.Core.Data.Network
         public static void SetClientLoaded() => NetworkManager.inst.RunFunction(SET_LOADED,
             new ULongParameter(RTSteamManager.inst.steamUser.steamID));
 
+        public static void RequestHost(string message) => NetworkManager.inst.RunFunction(REQUEST_HOST, new StringParameter(message));
+
         #endregion
 
         #region Player
 
-        public static void SetPlayerHealth(string id, int health) => NetworkManager.inst.RunFunction((int)Group.Player, SET_PLAYER_HEALTH,
+        public static void SetPlayerHealth(string id, int health) => NetworkManager.inst.RunFunction(Group.Player, SET_PLAYER_HEALTH,
                     new ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new StringParameter(id),
                     new IntParameter(health));
@@ -199,47 +228,90 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Interface
 
-        public static void PauseGame() => NetworkManager.inst.RunFunction((int)Group.Interface, PAUSE_GAME);
+        public static void PauseGame() => NetworkManager.inst.RunFunction(Group.Interface, PAUSE_GAME);
 
-        public static void UnPauseGame() => NetworkManager.inst.RunFunction((int)Group.Interface, UNPAUSE_GAME);
+        public static void UnPauseGame() => NetworkManager.inst.RunFunction(Group.Interface, UNPAUSE_GAME);
+
+        public static void InitArcadeInterface() => NetworkManager.inst.RunFunction(Group.Interface, INIT_ARCADE_INTERFACE, new PacketArray<ArcadeInterface.Tab>(ArcadeInterface.Tab.tabs));
+
+        public static void ClearArcadeLevels() => NetworkManager.inst.RunFunction(Group.Interface, CLEAR_ARCADE_LEVELS);
+
+        public static void SendArcadeLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Interface, SEND_ARCADE_LEVEL,
+            level,
+            new StringParameter(level.FolderName),
+            new IntParameter(LoadLevelsInterface.Current?.progress ?? 0));
+
+        public static void SendArcadeLevelCollection(Level.LevelCollection levelCollection) => NetworkManager.inst.RunFunction(Group.Interface, SEND_ARCADE_LEVEL_COLLECTION,
+            levelCollection,
+            new StringParameter(levelCollection.FolderName),
+            new IntParameter(LoadLevelsInterface.Current?.progress ?? 0));
+
+        public static void SendSteamLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Interface, SEND_STEAM_LEVEL,
+            level,
+            new StringParameter(level.FolderName),
+            new IntParameter(LoadLevelsInterface.Current?.progress ?? 0));
+
+        public static void SortArcadeLevels(LevelSort levelSort, bool ascend) => NetworkManager.inst.RunFunction(Group.Interface, SORT_ARCADE_LEVELS,
+            new IntParameter((int)levelSort),
+            new BoolParameter(ascend));
+        
+        public static void SortSteamLevels(LevelSort levelSort, bool ascend) => NetworkManager.inst.RunFunction(Group.Interface, SORT_STEAM_LEVELS,
+            new IntParameter((int)levelSort),
+            new BoolParameter(ascend));
+
+        public static void SortSteamWorkshopLevels(QuerySort querySort) => NetworkManager.inst.RunFunction(Group.Interface, SORT_STEAM_WORKSHOP_LEVELS,
+            new IntParameter((int)querySort));
+
+        public static void SortOnlineLevels(OnlineLevelSort onlineLevelSort, bool ascend) => NetworkManager.inst.RunFunction(Group.Interface, SORT_ONLINE_LEVELS,
+            new IntParameter((int)onlineLevelSort),
+            new BoolParameter(ascend));
+        
+        public static void SortOnlineLevelCollections(OnlineLevelCollectionSort onlineLevelCollectionSort, bool ascend) => NetworkManager.inst.RunFunction(Group.Interface, SORT_ONLINE_LEVEL_COLLECTIONS,
+            new IntParameter((int)onlineLevelCollectionSort),
+            new BoolParameter(ascend));
+
+        public static void InitPlayLevelInterface(Level.Level level) => NetworkManager.inst.RunFunction(Group.Interface, INIT_PLAY_LEVEL_INTERFACE, level);
+
+        public static void InitLoadLevelsInterface(int levelCount) => NetworkManager.inst.RunFunction(Group.Interface, INIT_LOAD_LEVELS_INTERFACE,
+            new IntParameter(levelCount));
 
         #endregion
 
         #region Game
 
-        public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
+        public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
 
-        public static void RequestGameData(ulong id, SceneName scene, string interfaceName) => NetworkManager.inst.RunFunction((int)Group.Game, REQUEST_GAME_DATA, new ULongParameter(id), new ByteParameter((byte)scene), new StringParameter(interfaceName));
+        public static void RequestGameData(ulong id, SceneName scene, string interfaceName) => NetworkManager.inst.RunFunction(Group.Game, REQUEST_GAME_DATA, new ULongParameter(id), new ByteParameter((byte)scene), new StringParameter(interfaceName));
 
-        public static void SetClientRuntime(RTBeatmap runtime, string id = null) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_RUNTIME, new StringParameter(id), runtime);
+        public static void SetClientRuntime(RTBeatmap runtime, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_RUNTIME, new StringParameter(id), runtime);
 
-        public static void SetClientSeed(string seed, string id = null) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_SEED, new StringParameter(id), new StringParameter(seed));
+        public static void SetClientSeed(string seed, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SEED, new StringParameter(id), new StringParameter(seed));
 
-        public static void SetClientMetaData(MetaData metaData, string id = null) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_META_DATA, new StringParameter(id), metaData);
+        public static void SetClientMetaData(MetaData metaData, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_META_DATA, new StringParameter(id), metaData);
 
-        public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_GAME_DATA, new StringParameter(id), gameData);
+        public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_GAME_DATA, new StringParameter(id), gameData);
 
-        public static void SetClientAudio(AudioClip audioClip) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_AUDIO, new AudioClipParameter(audioClip));
+        public static void SetClientAudio(AudioClip audioClip) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_AUDIO, new AudioClipParameter(audioClip));
 
-        public static void SetClientMusicTime(float time) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_MUSIC_TIME, new FloatParameter(time));
+        public static void SetClientMusicTime(float time) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_MUSIC_TIME, new FloatParameter(time));
 
-        public static void SetServerMusicTime(float time) => NetworkManager.inst.RunFunction((int)Group.Game, SET_SERVER_MUSIC_TIME, new FloatParameter(time));
+        public static void SetServerMusicTime(float time) => NetworkManager.inst.RunFunction(Group.Game, SET_SERVER_MUSIC_TIME, new FloatParameter(time));
 
-        public static void SetClientPitch(float pitch) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_PITCH, new FloatParameter(pitch));
+        public static void SetClientPitch(float pitch) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_PITCH, new FloatParameter(pitch));
 
-        public static void SetServerPitch(float pitch) => NetworkManager.inst.RunFunction((int)Group.Game, SET_SERVER_PITCH, new FloatParameter(pitch));
+        public static void SetServerPitch(float pitch) => NetworkManager.inst.RunFunction(Group.Game, SET_SERVER_PITCH, new FloatParameter(pitch));
 
-        public static void RequestMusicTime() => NetworkManager.inst.RunFunction((int)Group.Game, REQUEST_MUSIC_TIME);
+        public static void RequestMusicTime() => NetworkManager.inst.RunFunction(Group.Game, REQUEST_MUSIC_TIME);
 
-        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction((int)Group.Game, SYNC_LEVEL, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
+        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction(Group.Game, SYNC_LEVEL, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
                 new BoolParameter(ProjectArrhythmia.State.InEditor),
                 new FloatParameter(AudioManager.inst.CurrentAudioSource.time));
 
-        public static void SetServerPlayingState(bool state) => NetworkManager.inst.RunFunction((int)Group.Game, SET_SERVER_PLAYING_STATE, new BoolParameter(state));
+        public static void SetServerPlayingState(bool state) => NetworkManager.inst.RunFunction(Group.Game, SET_SERVER_PLAYING_STATE, new BoolParameter(state));
 
-        public static void SetClientPlayingState(bool state) => NetworkManager.inst.RunFunction((int)Group.Game, SET_CLIENT_PLAYING_STATE, new BoolParameter(state));
+        public static void SetClientPlayingState(bool state) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_PLAYING_STATE, new BoolParameter(state));
 
-        public static void LoadClientLevel(Level.Level level) => NetworkManager.inst.RunFunction((int)Group.Game, LOAD_CLIENT_LEVEL,
+        public static void LoadClientLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_LEVEL,
             new StringParameter(RandomHelper.CurrentSeed),
             RTBeatmap.Current,
             new BoolParameter(ProjectArrhythmia.State.InStory),
@@ -251,14 +323,25 @@ namespace BetterLegacy.Core.Data.Network
             level.saveData ??= new Level.SaveData(level)
             );
 
-        public static void LoadClientEditorLevel(Level.Level level) => NetworkManager.inst.RunFunction((int)Group.Game, LOAD_CLIENT_EDITOR_LEVEL,
+        public static void LoadClientEditorLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_EDITOR_LEVEL,
             new StringParameter(EditorManager.inst.currentLoadedLevel),
             new StringParameter(RandomHelper.CurrentSeed),
             new ByteArrayParameter(level.ReadZipBytes()),
             PlayersData.Current
             );
 
-        public static void RestartLevel() => NetworkManager.inst.RunFunction((int)Group.Game, RESTART_LEVEL);
+        public static void RestartLevel() => NetworkManager.inst.RunFunction(Group.Game, RESTART_LEVEL);
+
+        #endregion
+
+        #region Editor
+
+        public static void ClearEditorLevels() => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_EDITOR_LEVELS);
+
+        public static void SendEditorLevel(LevelPanel levelPanel) => NetworkManager.inst.RunFunction(Group.Editor, SEND_EDITOR_LEVEL, levelPanel);
+
+        public static void RefreshEditorLevelList(string searchTerm) => NetworkManager.inst.RunFunction(Group.Editor, REFRESH_EDITOR_LEVEL_LIST,
+            new StringParameter(searchTerm));
 
         #endregion
 
@@ -302,17 +385,21 @@ namespace BetterLegacy.Core.Data.Network
             /// </summary>
             Core,
             /// <summary>
-            /// Network functions that handles the players.
+            /// Network functions that handle the players.
             /// </summary>
             Player,
             /// <summary>
-            /// Network functions that handles the interfaces.
+            /// Network functions that handle the interfaces.
             /// </summary>
             Interface,
             /// <summary>
-            /// Network functions that handles the game.
+            /// Network functions that handle the game.
             /// </summary>
             Game,
+            /// <summary>
+            /// Network functions that handle the editor.
+            /// </summary>
+            Editor,
         }
 
         public abstract class Parameter : Exists, IPacket

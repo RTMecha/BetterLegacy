@@ -6,6 +6,7 @@ using SimpleJSON;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Story
@@ -13,7 +14,7 @@ namespace BetterLegacy.Story
     /// <summary>
     /// The main story data class.
     /// </summary>
-    public class StoryMode : PAObject<StoryMode>
+    public class StoryMode : PAObject<StoryMode>, IPacket
     {
         #region Values
 
@@ -91,6 +92,23 @@ namespace BetterLegacy.Story
             return jn;
         }
 
+        public void ReadPacket(NetworkReader reader)
+        {
+            entryInterfacePathNoParse = reader.ReadString();
+            entryInterfacePath = RTFile.ParsePaths(entryInterfacePathNoParse);
+
+            chapters = Packet.CreatePacketList<Chapter>(reader);
+            bonusChapters = Packet.CreatePacketList<Chapter>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(entryInterfacePathNoParse);
+
+            Packet.WritePacketList(chapters, writer);
+            Packet.WritePacketList(bonusChapters, writer);
+        }
+
         #endregion
 
         #region Sub Classes
@@ -98,7 +116,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Represents a chapter in the BetterLegacy story mode.
         /// </summary>
-        public class Chapter : PAObject<Chapter>
+        public class Chapter : PAObject<Chapter>, IPacket
         {
             #region Values
 
@@ -190,6 +208,29 @@ namespace BetterLegacy.Story
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                name = reader.ReadString();
+                interfacePathNoParse = reader.ReadString();
+                interfacePath = RTFile.ParsePaths(interfacePathNoParse);
+
+                onCompleteFunc = reader.ReadJSON();
+
+                levels = Packet.CreatePacketList<LevelSequence>(reader);
+                transition = Packet.CreateFromPacket<ChapterTransition>(reader);
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(name);
+                writer.Write(interfacePathNoParse);
+
+                writer.Write(onCompleteFunc);
+
+                Packet.WritePacketList(levels, writer);
+                transition.WritePacket(writer);
+            }
+
             /// <summary>
             /// Gets a story level at an index.
             /// </summary>
@@ -205,7 +246,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Represents a level with cutscenes in the BetterLegacy story mode.
         /// </summary>
-        public class LevelSequence : PAObject<LevelSequence>
+        public class LevelSequence : PAObject<LevelSequence>, IPacket
         {
             #region Values
 
@@ -358,6 +399,43 @@ namespace BetterLegacy.Story
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                id = reader.ReadString();
+                songTitle = reader.ReadString();
+                name = reader.ReadString();
+                filePath = Packet.CreateFromPacket<LevelPath>(reader);
+                bonus = reader.ReadBoolean();
+
+                preCutscenes = Packet.CreatePacketList<LevelPath>(reader);
+                postCutscenes = Packet.CreatePacketList<LevelPath>(reader);
+
+                returnInterfaceNoParse = reader.ReadString();
+                returnInterface = RTFile.ParsePaths(returnInterfaceNoParse);
+                returnReplayable = reader.ReadBoolean();
+                returnLevel = reader.ReadString();
+
+                onCompleteFunc = reader.ReadJSON();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(id);
+                writer.Write(songTitle);
+                writer.Write(name);
+                filePath.WritePacket(writer);
+                writer.Write(bonus);
+
+                Packet.WritePacketList(preCutscenes, writer);
+                Packet.WritePacketList(postCutscenes, writer);
+
+                writer.Write(returnInterfaceNoParse);
+                writer.Write(returnReplayable);
+                writer.Write(returnLevel);
+
+                writer.Write(onCompleteFunc);
+            }
+
             /// <summary>
             /// Gets the levels based on their destination in a level sequence.
             /// </summary>
@@ -387,7 +465,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Represents a path to a story level.
         /// </summary>
-        public class LevelPath : PAObject<LevelPath>
+        public class LevelPath : PAObject<LevelPath>, IPacket
         {
             #region Constructors
 
@@ -495,6 +573,26 @@ namespace BetterLegacy.Story
                 return jn;
             }
 
+            public void ReadPacket(NetworkReader reader)
+            {
+                filePathNoParse = reader.ReadString();
+                filePath = RTFile.ParsePaths(filePathNoParse);
+                editorFilePathNoParse = reader.ReadString();
+                editorFilePath = RTFile.ParsePaths(editorFilePathNoParse);
+                songName = reader.ReadString();
+                coverPath = reader.ReadString();
+                onCompleteFunc = reader.ReadJSON();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(filePathNoParse);
+                writer.Write(editorFilePathNoParse);
+                writer.Write(songName);
+                writer.Write(coverPath);
+                writer.Write(onCompleteFunc);
+            }
+
             public override string ToString() => System.IO.Path.GetFileName(filePath);
 
             #endregion
@@ -509,7 +607,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// Represents the transition from one chapter to the next.
         /// </summary>
-        public class ChapterTransition : PAObject<ChapterTransition>
+        public class ChapterTransition : PAObject<ChapterTransition>, IPacket
         {
             #region Values
 
@@ -554,6 +652,22 @@ namespace BetterLegacy.Story
                     jn["level"] = levelSequence.ToJSON();
 
                 return jn;
+            }
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                interfacePath = reader.ReadString();
+                if (!reader.ReadBoolean())
+                    return;
+                levelSequence = Packet.CreateFromPacket<LevelSequence>(reader);
+                levelSequence.isChapterTransition = true;
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(interfacePath);
+                writer.Write(levelSequence != null);
+                levelSequence?.WritePacket(writer);
             }
 
             public override string ToString() => levelSequence?.ToString();

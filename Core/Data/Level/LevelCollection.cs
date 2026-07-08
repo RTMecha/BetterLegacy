@@ -10,6 +10,7 @@ using SimpleJSON;
 using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
@@ -21,7 +22,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Stores multiple levels in a specific order. Good for stories.
     /// </summary>
-    public class LevelCollection : Exists, IUploadable
+    public class LevelCollection : Exists, IPacket, IUploadable
     {
         #region Constructors
 
@@ -282,6 +283,48 @@ namespace BetterLegacy.Core.Data.Level
         #endregion
 
         #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            name = reader.ReadString();
+            description = reader.ReadString();
+            creator = reader.ReadString();
+            difficulty = reader.ReadInt32();
+            icon = reader.ReadSprite();
+            banner = reader.ReadSprite();
+            entryLevelIndex = reader.ReadInt32();
+            levelInformation = Packet.CreatePacketList<LevelInfo>(reader);
+            if (reader.ReadBoolean())
+                saveData = Packet.CreateFromPacket<SaveCollectionData>(reader);
+            achievements = Packet.CreatePacketList<Achievement>(reader);
+            isFolder = reader.ReadBoolean();
+            allowZenProgression = reader.ReadBoolean();
+            editorPath = reader.ReadString();
+            interfacePath = reader.ReadString();
+            this.ReadUploadablePacket(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(name);
+            writer.Write(description);
+            writer.Write(creator);
+            writer.Write(difficulty);
+            writer.Write(icon, true);
+            writer.Write(banner, true);
+            writer.Write(entryLevelIndex);
+            Packet.WritePacketList(levelInformation, writer);
+            writer.Write(saveData != null);
+            saveData?.WritePacket(writer);
+            Packet.WritePacketList(achievements, writer);
+            writer.Write(isFolder);
+            writer.Write(allowZenProgression);
+            writer.Write(editorPath);
+            writer.Write(interfacePath);
+            this.WriteUploadablePacket(writer);
+        }
 
         /// <summary>
         /// Parses a level collection. Levels can be loaded either via path, arcade ID or workshop ID. Ensure this runs after Arcade and/or Steam levels have loaded.

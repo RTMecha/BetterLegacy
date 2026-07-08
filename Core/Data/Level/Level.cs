@@ -11,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
@@ -20,7 +21,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Stores data to be used for playing a level in the <see cref="SceneName.Game"/> scene.
     /// </summary>
-    public class Level : Exists
+    public class Level : Exists, IPacket
     {
         #region Constructors
 
@@ -68,6 +69,88 @@ namespace BetterLegacy.Core.Data.Level
 
         #region Values
 
+        #region Constants
+
+        /// <summary>
+        /// The cover file in Legacy.
+        /// </summary>
+        public const string LEVEL_JPG = "level.jpg";
+        /// <summary>
+        /// The cover file in Alpha.
+        /// </summary>
+        public const string COVER_JPG = "cover.jpg";
+
+        /// <summary>
+        /// The locked cover file.
+        /// </summary>
+        public const string LOCKED_JPG = "locked.jpg";
+
+        /// <summary>
+        /// The metadata file in Legacy.
+        /// </summary>
+        public const string METADATA_LSB = "metadata.lsb";
+        /// <summary>
+        /// The metadata file in Alpha.
+        /// </summary>
+        public const string METADATA_VGM = "metadata.vgm";
+
+        /// <summary>
+        /// The level file in Legacy.
+        /// </summary>
+        public const string LEVEL_LSB = "level.lsb";
+        /// <summary>
+        /// The level file in Alpha.
+        /// </summary>
+        public const string LEVEL_VGD = "level.vgd";
+
+        /// <summary>
+        /// The OGG audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_OGG = "audio.ogg";
+        /// <summary>
+        /// The WAV audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_WAV = "audio.wav";
+        /// <summary>
+        /// The MP3 audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_MP3 = "audio.mp3";
+
+        /// <summary>
+        /// The OGG audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_OGG = "level.ogg";
+        /// <summary>
+        /// The WAV audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_WAV = "level.wav";
+        /// <summary>
+        /// The MP3 audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_MP3 = "level.mp3";
+
+        /// <summary>
+        /// The Players file in BetterLegacy.
+        /// </summary>
+        public const string PLAYERS_LSB = "players.lsb";
+
+        /// <summary>
+        /// The files index file in BetterLegacy.
+        /// </summary>
+        public const string FILES_LSF = "files.lsf";
+
+        /// <summary>
+        /// The editor file.
+        /// </summary>
+        public const string EDITOR_LSE = "editor.lse";
+
+        /// <summary>
+        /// The achievements list file.
+        /// </summary>
+        public const string ACHIEVEMENTS_LSA = "achievements.lsa";
+
+        #endregion
+
         /// <summary>
         /// Unique Arcade / Steam Workshop ID.
         /// </summary>
@@ -98,6 +181,9 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public AudioClip music;
 
+        /// <summary>
+        /// Song the level plays while in the Play Level Interface.
+        /// </summary>
         public AudioClip previewAudio;
 
         /// <summary>
@@ -211,89 +297,41 @@ namespace BetterLegacy.Core.Data.Level
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// The cover file in Legacy.
-        /// </summary>
-        public const string LEVEL_JPG = "level.jpg";
-        /// <summary>
-        /// The cover file in Alpha.
-        /// </summary>
-        public const string COVER_JPG = "cover.jpg";
-
-        /// <summary>
-        /// The locked cover file.
-        /// </summary>
-        public const string LOCKED_JPG = "locked.jpg";
-
-        /// <summary>
-        /// The metadata file in Legacy.
-        /// </summary>
-        public const string METADATA_LSB = "metadata.lsb";
-        /// <summary>
-        /// The metadata file in Alpha.
-        /// </summary>
-        public const string METADATA_VGM = "metadata.vgm";
-
-        /// <summary>
-        /// The level file in Legacy.
-        /// </summary>
-        public const string LEVEL_LSB = "level.lsb";
-        /// <summary>
-        /// The level file in Alpha.
-        /// </summary>
-        public const string LEVEL_VGD = "level.vgd";
-
-        /// <summary>
-        /// The OGG audio file in Alpha.
-        /// </summary>
-        public const string AUDIO_OGG = "audio.ogg";
-        /// <summary>
-        /// The WAV audio file in Alpha.
-        /// </summary>
-        public const string AUDIO_WAV = "audio.wav";
-        /// <summary>
-        /// The MP3 audio file in Alpha.
-        /// </summary>
-        public const string AUDIO_MP3 = "audio.mp3";
-
-        /// <summary>
-        /// The OGG audio file in Legacy.
-        /// </summary>
-        public const string LEVEL_OGG = "level.ogg";
-        /// <summary>
-        /// The WAV audio file in Legacy.
-        /// </summary>
-        public const string LEVEL_WAV = "level.wav";
-        /// <summary>
-        /// The MP3 audio file in Legacy.
-        /// </summary>
-        public const string LEVEL_MP3 = "level.mp3";
-
-        /// <summary>
-        /// The Players file in BetterLegacy.
-        /// </summary>
-        public const string PLAYERS_LSB = "players.lsb";
-
-        /// <summary>
-        /// The files index file in BetterLegacy.
-        /// </summary>
-        public const string FILES_LSF = "files.lsf";
-
-        /// <summary>
-        /// The editor file.
-        /// </summary>
-        public const string EDITOR_LSE = "editor.lse";
-
-        /// <summary>
-        /// The achievements list file.
-        /// </summary>
-        public const string ACHIEVEMENTS_LSA = "achievements.lsa";
-
-        #endregion
-
         #region Functions
+
+        public virtual void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            currentFile = reader.ReadString();
+            icon = reader.ReadSprite();
+            lockedIcon = reader.ReadSprite();
+            metadata = Packet.CreateFromPacket<MetaData>(reader);
+            if (reader.ReadBoolean())
+                saveData = Packet.CreateFromPacket<SaveData>(reader);
+            achievements = Packet.CreatePacketList<Achievement>(reader);
+            fromCollection = reader.ReadBoolean();
+            isStory = reader.ReadBoolean();
+            if (reader.ReadBoolean())
+                collectionInfo = Packet.CreateFromPacket<LevelInfo>(reader);
+            isInterface = reader.ReadBoolean();
+        }
+
+        public virtual void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(currentFile);
+            writer.Write(icon, true);
+            writer.Write(lockedIcon, true);
+            metadata.WritePacket(writer);
+            writer.Write(saveData != null);
+            saveData?.WritePacket(writer);
+            Packet.WritePacketList(achievements, writer);
+            writer.Write(fromCollection);
+            writer.Write(isStory);
+            writer.Write(collectionInfo != null);
+            collectionInfo?.WritePacket(writer);
+            writer.Write(isInterface);
+        }
 
         /// <summary>
         /// Combines the file name with the levels' path.

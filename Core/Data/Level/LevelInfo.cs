@@ -307,8 +307,8 @@ namespace BetterLegacy.Core.Data.Level
             writer.Write(overwriteUnlockAfterCompletion);
             writer.Write(unlockAfterCompletion);
 
-            writer.Write(icon);
-            writer.Write(lockedIcon);
+            writer.Write(icon, true);
+            writer.Write(lockedIcon, true);
         }
 
         /// <summary>

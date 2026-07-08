@@ -105,12 +105,12 @@ namespace BetterLegacy.Core.Managers
         public void SyncPlayersToServer()
         {
             localPlayers = new List<PAPlayer>(PlayerManager.Players);
-            NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
         }
 
         public void SyncPlayersToClients()
         {
-            NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
         }
 
         #region Lobby

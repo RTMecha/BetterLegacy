@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+
+using UnityEngine;
 
 using XInputDotNetPure;
 using InControl;
@@ -211,6 +213,11 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public SteamId? ID { get; set; }
 
+        /// <summary>
+        /// Name to display for the player.
+        /// </summary>
+        public string DisplayName { get; set; } = CoreConfig.Instance.DisplayName.Value;
+
         // might not go with this? (change this to player variables)
         public PlayerInventory inventory = new PlayerInventory();
 
@@ -235,6 +242,7 @@ namespace BetterLegacy.Core.Data.Player
             if (hasSteamID)
                 ID = reader.ReadUInt64();
             PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
+            DisplayName = reader.ReadString();
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -252,6 +260,7 @@ namespace BetterLegacy.Core.Data.Player
             else
                 writer.Write(false);
             PlayerModel.WritePacket(writer);
+            writer.Write(DisplayName);
         }
 
         public void SetCustomActive(bool active)
@@ -389,7 +398,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             Health = GetDefaultHealth();
             if (IsLocalPlayer && ProjectArrhythmia.State.IsInLobby)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_RESET_HEALTH,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_RESET_HEALTH,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(id));
         }
@@ -407,7 +416,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             if (device == null)
             {
-                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && PlayerManager.IsSingleplayer ?
+                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && (PlayerManager.IsSingleplayer || PlayerManager.Players.Count(x => x.IsLocalPlayer) == 1) ?
                     PlayerInput.ControllerAndKeyboard :
                     PlayerInput.Keyboard;
                 return;

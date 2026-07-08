@@ -70,6 +70,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void ReturnToHub()
         {
+            if (ProjectArrhythmia.State.IsClient) // hub level loading is handled by the host.
+                return;
+
             if (!LevelManager.Hub)
                 return;
 
@@ -85,6 +88,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void FirstLevel()
         {
+            if (ProjectArrhythmia.State.IsClient) // first level is handled by the host
+                return;
+
             if (LevelManager.CurrentLevelCollection)
             {
                 var prevIndex = LevelManager.currentLevelIndex;
@@ -128,6 +134,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void NextLevel()
         {
+            if (ProjectArrhythmia.State.IsClient) // next level is handled by the host.
+                return;
+
             if (LevelManager.CurrentLevelCollection)
             {
                 var prevIndex = LevelManager.currentLevelIndex;
@@ -212,6 +221,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void QuitToArcade()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.StopMusic();
 
@@ -248,6 +260,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void QuitToMainMenu()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.StopMusic();
 

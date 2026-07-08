@@ -220,6 +220,20 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
+        /// Reads array data from packet data.
+        /// </summary>
+        /// <typeparam name="T">Type of the object in the list to read. Type must be <see cref="IPacket"/>.</typeparam>
+        /// <param name="array">Array to read to.</param>
+        /// <param name="reader">The current network reader.</param>
+        public static void ReadPacketArray<T>(ref T[] array, NetworkReader reader) where T : IPacket, new()
+        {
+            var count = reader.ReadInt32();
+            Array.Clear(array, 0, array.Length);
+            for (int i = 0; i < count; i++)
+                array[i] = CreateFromPacket<T>(reader);
+        }
+
+        /// <summary>
         /// Reads dictionary data from packet data.
         /// </summary>
         /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
@@ -253,6 +267,20 @@ namespace BetterLegacy.Core.Data.Network
         }
 
         /// <summary>
+        /// Creates an array from packet data.
+        /// </summary>
+        /// <typeparam name="T">Type of the object in the array to read. Type must be <see cref="IPacket"/>.</typeparam>
+        /// <param name="reader">The current network reader.</param>
+        /// <returns>Returns a new array based on the packet data.</returns>
+        public static T[] CreatePacketArray<T>(NetworkReader reader) where T : IPacket, new()
+        {
+            var array = new T[reader.ReadInt32()];
+            for (int i = 0; i < array.Length; i++)
+                array[i] = CreateFromPacket<T>(reader);
+            return array;
+        }
+
+        /// <summary>
         /// Creates a dictionary from packet data.
         /// </summary>
         /// <typeparam name="TKey">Type of the dictionary key.</typeparam>
@@ -278,6 +306,19 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(list.Count);
             for (int i = 0; i < list.Count; i++)
                 list[i].WritePacket(writer);
+        }
+
+        /// <summary>
+        /// Writes an array of <see cref="IPacket"/> objects.
+        /// </summary>
+        /// <typeparam name="T">Type of the object in the array to write. Type must be <see cref="IPacket"/>.</typeparam>
+        /// <param name="array">Array to write from.</param>
+        /// <param name="writer">The current network writer.</param>
+        public static void WritePacketArray<T>(T[] array, NetworkWriter writer) where T : IPacket
+        {
+            writer.Write(array.Length);
+            for (int i = 0; i < array.Length; i++)
+                array[i].WritePacket(writer);
         }
 
         /// <summary>
@@ -321,5 +362,28 @@ namespace BetterLegacy.Core.Data.Network
         public void ReadPacket(NetworkReader reader) => Packet.ReadPacketList(list, reader);
 
         public void WritePacket(NetworkWriter writer) => Packet.WritePacketList(list, writer);
+    }
+
+    /// <summary>
+    /// Represents an array of objects that can read from / write to a packet..
+    /// </summary>
+    /// <typeparam name="T">Type of the items in the array.</typeparam>
+    public class PacketArray<T> : IPacket where T : IPacket, new()
+    {
+        public PacketArray(T[] array) => this.array = array;
+
+        public T[] array;
+
+        public int Length => array.Length;
+
+        public T this[int index]
+        {
+            get => array[index];
+            set => array[index] = value;
+        }
+
+        public void ReadPacket(NetworkReader reader) => Packet.ReadPacketArray(ref array, reader);
+
+        public void WritePacket(NetworkWriter writer) => Packet.WritePacketArray(array, writer);
     }
 }

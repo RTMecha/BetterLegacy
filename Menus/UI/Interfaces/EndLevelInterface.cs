@@ -338,6 +338,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static void Close()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             ArcadeHelper.RestartLevel();
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.StopMusic();

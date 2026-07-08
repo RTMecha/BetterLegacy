@@ -9,15 +9,19 @@ using LSFunctions;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
+using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Managers
@@ -77,6 +81,16 @@ namespace BetterLegacy.Core.Managers
 
                 inst.dataChunkQueue.Remove(uniqueID);
                 inst.Split(dataQueue.chunks, dataQueue.group, dataQueue.id, dataQueue.side, dataQueue.count, uniqueID);
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_HOST, 1, reader =>
+            {
+                var message = reader.ReadString();
+                if (ProjectArrhythmia.State.InEditor)
+                {
+                    EditorManager.inst.DisplayNotification(message, message.Length / 10f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+                CoreHelper.Notify(message, RTColors.InvertColor(ProjectArrhythmia.State.InGame ? ThemeManager.inst.Current.backgroundColor : InterfaceManager.inst.CurrentTheme.backgroundColor));
             }),
         };
 
@@ -269,6 +283,77 @@ namespace BetterLegacy.Core.Managers
         {
             new NetworkFunction(NetworkFunction.PAUSE_GAME, reader => PauseInterface.Pause(false)),
             new NetworkFunction(NetworkFunction.UNPAUSE_GAME, reader => PauseInterface.UnPause(false)),
+
+            new NetworkFunction(Side.Client, NetworkFunction.INIT_ARCADE_INTERFACE, 1, reader =>
+            {
+                var count = reader.ReadInt32();
+                for (int i = 0; i < count; i++)
+                    ArcadeInterface.Tab.tabs[i].ReadPacket(reader);
+                ArcadeInterface.Init();
+            }),
+
+            new NetworkFunction(Side.Client, NetworkFunction.CLEAR_ARCADE_LEVELS, reader =>
+            {
+                LevelManager.Levels.Clear();
+                LevelManager.ArcadeQueue.Clear();
+                LevelManager.LevelCollections.Clear();
+                LevelManager.CurrentLevel = null;
+                LevelManager.CurrentLevelCollection = null;
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_ARCADE_LEVEL, 3, reader =>
+            {
+                var level = Packet.CreateFromPacket<Level>(reader);
+                var name = reader.ReadString();
+                var progress = reader.ReadInt32();
+                LevelManager.Levels.Add(level);
+                LoadLevelsInterface.Current?.UpdateInfo(level.icon, $"Loading {name}", progress);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_ARCADE_LEVEL_COLLECTION, 3, reader =>
+            {
+                var levelCollection = Packet.CreateFromPacket<LevelCollection>(reader);
+                var name = reader.ReadString();
+                var progress = reader.ReadInt32();
+                LevelManager.LevelCollections.Add(levelCollection);
+                LoadLevelsInterface.Current?.UpdateInfo(levelCollection.icon, $"Loading {name}", progress);
+            }),
+
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_STEAM_LEVEL, 3, reader =>
+            {
+                var level = Packet.CreateFromPacket<Level>(reader);
+                var name = reader.ReadString();
+                var progress = reader.ReadInt32();
+                RTSteamManager.inst.Levels.Add(level);
+                LoadLevelsInterface.Current?.UpdateInfo(level.icon, $"Loading {name}", progress);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SORT_ARCADE_LEVELS, 2, reader =>
+            {
+                LobbyInfo.LocalLevelSort = (LevelSort)reader.ReadInt32();
+                LobbyInfo.LocalLevelAscend = reader.ReadBoolean();
+                LevelManager.Sort(LobbyInfo.LocalLevelSort, LobbyInfo.LocalLevelAscend);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SORT_STEAM_LEVELS, 2, reader =>
+            {
+                LobbyInfo.SteamLevelSort = (LevelSort)reader.ReadInt32();
+                LobbyInfo.SteamLevelAscend = reader.ReadBoolean();
+                RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, LobbyInfo.SteamLevelSort, LobbyInfo.SteamLevelAscend);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SORT_STEAM_WORKSHOP_LEVELS, 1, reader =>
+            {
+                LobbyInfo.SteamWorkshopSort = (QuerySort)reader.ReadInt32();
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SORT_ONLINE_LEVELS, 2, reader =>
+            {
+                LobbyInfo.OnlineLevelSort = (OnlineLevelSort)reader.ReadInt32();
+                LobbyInfo.OnlineLevelAscend = reader.ReadBoolean();
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SORT_ONLINE_LEVEL_COLLECTIONS, 2, reader =>
+            {
+                LobbyInfo.OnlineLevelCollectionSort = (OnlineLevelCollectionSort)reader.ReadInt32();
+                LobbyInfo.OnlineLevelCollectionAscend = reader.ReadBoolean();
+            }),
+
+            new NetworkFunction(Side.Client, NetworkFunction.INIT_PLAY_LEVEL_INTERFACE, 1, reader => PlayLevelInterface.InitClient(Packet.CreateFromPacket<Level>(reader))),
+            new NetworkFunction(Side.Client, NetworkFunction.INIT_LOAD_LEVELS_INTERFACE, 1, reader => LoadLevelsInterface.InitClient(reader.ReadInt32())),
         };
 
         public List<NetworkFunction> gameFunctions = new List<NetworkFunction>
@@ -431,10 +516,43 @@ namespace BetterLegacy.Core.Managers
                     PauseInterface.UnPause();
             }),
 
-            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 9, LevelManager.PlayClient),
+            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 9, reader => LevelManager.PlayClient(reader, RTBeatmap.Current.EndOfLevel)),
             new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL, 4, reader => EditorLevelManager.inst?.LoadLevelClient(reader)),
 
             new NetworkFunction(Side.Client, NetworkFunction.RESTART_LEVEL, reader => ArcadeHelper.RestartLevel()),
+        };
+
+        public List<NetworkFunction> editorFunctions = new List<NetworkFunction>
+        {
+            new NetworkFunction(Side.Client, NetworkFunction.CLEAR_EDITOR_LEVELS, reader =>
+            {
+                EditorLevelManager.inst.LevelPanels.Clear();
+                EditorLevelManager.inst.OpenLevelPopup.ClearContent();
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_EDITOR_LEVEL, 1, reader =>
+            {
+                var levelPanel = Packet.CreateFromPacket<LevelPanel>(reader);
+                EditorLevelManager.inst.LevelPanels.Add(levelPanel);
+
+                if (levelPanel.isFolder)
+                {
+                    levelPanel.Init(levelPanel.Path);
+
+                    if (ProjectArrhythmia.State.IsHosting)
+                        NetworkFunction.SendEditorLevel(levelPanel);
+
+                    return;
+                }
+
+                if (!levelPanel.Item)
+                {
+                    levelPanel.Init(levelPanel.Info);
+                    return;
+                }
+
+                levelPanel.Init(levelPanel.Item);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.REFRESH_EDITOR_LEVEL_LIST, 1, reader => EditorLevelManager.inst.OpenLevelPopup.SearchField.text = reader.ReadString()),
         };
 
         Dictionary<string, NetworkWriterQueue> dataChunks = new Dictionary<string, NetworkWriterQueue>();
@@ -457,6 +575,8 @@ namespace BetterLegacy.Core.Managers
                 interfaceFunctions[i].group = NetworkFunction.Group.Interface;
             for (int i = 0; i < gameFunctions.Count; i++)
                 gameFunctions[i].group = NetworkFunction.Group.Game;
+            for (int i = 0; i < editorFunctions.Count; i++)
+                editorFunctions[i].group = NetworkFunction.Group.Editor;
             SetEvents();
         }
 
@@ -471,7 +591,7 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnManagerDestroyed() => RemoveEvents();
 
-        List<NetworkFunction> GetNetworkFunctions(int group) => (NetworkFunction.Group)group switch
+        List<NetworkFunction> GetNetworkFunctions(NetworkFunction.Group group) => (NetworkFunction.Group)group switch
         {
             NetworkFunction.Group.Player => playerFunctions,
             NetworkFunction.Group.Interface => interfaceFunctions,
@@ -485,7 +605,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">ID of the function.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
-        public void RunFunction(int id, params IPacket[] packets) => RunFunction((int)NetworkFunction.Group.Core, id, SendType.Reliable, packets);
+        public void RunFunction(int id, params IPacket[] packets) => RunFunction(NetworkFunction.Group.Core, id, SendType.Reliable, packets);
 
         /// <summary>
         /// Runs a function over the network.
@@ -493,7 +613,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="group">Group of the function.</param>
         /// <param name="id">ID of the function.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
-        public void RunFunction(int group, int id, params IPacket[] packets) => RunFunction(group, id, SendType.Reliable, packets);
+        public void RunFunction(NetworkFunction.Group group, int id, params IPacket[] packets) => RunFunction(group, id, SendType.Reliable, packets);
 
         /// <summary>
         /// Runs a function over the network.
@@ -501,7 +621,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="id">ID of the function.</param>
         /// <param name="sendType">How the packet data should be handled over the network.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
-        public void RunFunction(int group, int id, SendType sendType, params IPacket[] packets)
+        public void RunFunction(NetworkFunction.Group group, int id, SendType sendType, params IPacket[] packets)
         {
             if (GetNetworkFunctions(group).TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
                 RunFunction(function, sendType, packets);
@@ -718,7 +838,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
-            var group = reader.ReadInt32();
+            var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
@@ -796,7 +916,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
-            var group = reader.ReadInt32();
+            var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);

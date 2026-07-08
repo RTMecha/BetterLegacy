@@ -17,12 +17,9 @@ namespace BetterLegacy.Core.Data
     {
         #region Constructors
 
-        public Achievement()
-        {
-            id = GetNumberID();
-        }
+        public Achievement() => id = GetNumberID();
 
-        public Achievement(string name, string description) : base()
+        public Achievement(string name, string description) : this()
         {
             this.name = name;
             this.description = description;
@@ -206,8 +203,8 @@ namespace BetterLegacy.Core.Data
             writer.Write(name);
             writer.Write(description);
             writer.Write(difficulty);
-            writer.Write(icon);
-            writer.Write(lockedIcon);
+            writer.Write(icon, true);
+            writer.Write(lockedIcon, true);
             writer.Write(iconPath);
             writer.Write(lockedIconPath);
             writer.Write(hidden);

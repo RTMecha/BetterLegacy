@@ -8,6 +8,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -356,6 +357,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = true,
                 func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     if (onPlay != null)
                     {
                         InterfaceManager.inst.CloseMenus();
@@ -434,6 +438,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 };
                 queueButton.func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     if (LevelManager.ArcadeQueue.Has(x => x.id == CurrentLevel.id))
                     {
                         CoreHelper.Log($"Remove from Queue {CurrentLevel.id}");
@@ -507,6 +514,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     var speed = CoreConfig.Instance.GameSpeedSetting.Value - 1;
                     if (speed < 0)
                     {
@@ -542,6 +552,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     var speed = CoreConfig.Instance.GameSpeedSetting.Value + 1;
                     if (speed >= CoreConfig.Instance.GameSpeedSetting.Value.GetBoxedValues().Length)
                     {
@@ -599,6 +612,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     var challenge = CoreConfig.Instance.ChallengeModeSetting.Value - 1;
                     if (challenge < 0)
                     {
@@ -633,6 +649,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
+                    if (ProjectArrhythmia.State.IsClient)
+                        return;
+
                     var challenge = CoreConfig.Instance.ChallengeModeSetting.Value + 1;
                     if (challenge >= CoreConfig.Instance.ChallengeModeSetting.Value.GetBoxedValues().Length)
                     {
@@ -667,6 +686,9 @@ namespace BetterLegacy.Arcade.Interfaces
                     playBlipSound = true,
                     func = () =>
                     {
+                        if (ProjectArrhythmia.State.IsClient)
+                            return;
+
                         var currentLevel = CurrentLevel;
                         AchievementListInterface.Init(CurrentLevel, () => Init(currentLevel));
                     },
@@ -734,6 +756,16 @@ namespace BetterLegacy.Arcade.Interfaces
                 InternalInit(level, onPlay, onReturn);
         }
 
+        /// <summary>
+        /// Initializes <see cref="PlayLevelInterface"/> with a level for a client.
+        /// </summary>
+        /// <param name="level">Level to view.</param>
+        public static void InitClient(Level level)
+        {
+            CurrentLevel = level;
+            Current = new PlayLevelInterface();
+        }
+
         static void InternalInit(Level level, Action onPlay, Action onReturn)
         {
             var playMusic = AudioManager.inst.CurrentAudioSource.clip != level.GetPreviewAudio();
@@ -746,6 +778,9 @@ namespace BetterLegacy.Arcade.Interfaces
             if (playMusic)
                 AudioManager.inst.PlayMusic(level.metadata.song.title, level.GetPreviewAudio());
             AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitPlayLevelInterface(level);
         }
 
         /// <summary>
@@ -753,6 +788,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public void Close()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             var onReturn = this.onReturn;
             InterfaceManager.inst.CloseMenus();
 

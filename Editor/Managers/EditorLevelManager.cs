@@ -565,6 +565,12 @@ namespace BetterLegacy.Editor.Managers
             LevelPanels.Clear();
             OpenLevelPopup.ClearContent();
 
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.ClearEditorLevels();
+
+            if (ProjectArrhythmia.State.IsClient)
+                yield break;
+
             var list = new List<Coroutine>();
             var fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath);
 
@@ -679,6 +685,8 @@ namespace BetterLegacy.Editor.Managers
                             else
                                 levelPanel.SetDefaultIcon();
                             LevelPanels.Add(levelPanel);
+                            if (ProjectArrhythmia.State.IsHosting)
+                                NetworkFunction.SendEditorLevel(levelPanel);
                         }
                         else
                         {
@@ -690,6 +698,8 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(levelInfo.level);
 
                             LevelPanels.Add(levelPanel);
+                            if (ProjectArrhythmia.State.IsHosting)
+                                NetworkFunction.SendEditorLevel(levelPanel);
 
                             if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
                                 list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG));
@@ -729,6 +739,9 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(path);
                             LevelPanels.Add(levelPanel);
 
+                            if (ProjectArrhythmia.State.IsHosting)
+                                NetworkFunction.SendEditorLevel(levelPanel);
+
                             list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
 
                             continue;
@@ -745,6 +758,9 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.SetDefaultIcon();
                             LevelPanels.Add(levelPanel);
                         }
+
+                        if (ProjectArrhythmia.State.IsHosting)
+                            NetworkFunction.SendEditorLevel(levelPanel);
                     }
                     catch (Exception ex)
                     {
@@ -838,6 +854,9 @@ namespace BetterLegacy.Editor.Managers
                 if (content.Find("back"))
                     content.Find("back").SetAsFirstSibling();
             }
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.RefreshEditorLevelList(EditorManager.inst.openFileSearch);
 
             yield break;
         }
@@ -1438,7 +1457,10 @@ namespace BetterLegacy.Editor.Managers
         public void SaveLevel()
         {
             if (ProjectArrhythmia.State.IsClient)
+            {
+                NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to save!");
                 return;
+            }
 
             var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
             if (currentLevelCollection)

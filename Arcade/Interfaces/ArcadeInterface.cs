@@ -19,6 +19,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -96,6 +97,9 @@ namespace BetterLegacy.Arcade.Interfaces
                     text = $"<align=center><b>[ {tab.DisplayName.ToUpper()} ]",
                     func = () =>
                     {
+                        if (ProjectArrhythmia.State.IsClient)
+                            return;
+
                         CurrentTab = tab;
                         Init();
                     },
@@ -141,10 +145,11 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         });
 
                         int x = 0;
-                        if (!LevelManager.Levels.IsEmpty())
+                        if (!ProjectArrhythmia.State.IsClient && !LevelManager.Levels.IsEmpty())
                         {
                             elements.Add(new MenuButton
                             {
@@ -166,8 +171,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             });
                             x++;
                         }
-                        else
-                        {
+                        else if (!ProjectArrhythmia.State.IsClient)
                             elements.Add(new MenuButton
                             {
                                 id = "25428852",
@@ -185,13 +189,12 @@ namespace BetterLegacy.Arcade.Interfaces
                                 length = 0.1f,
                                 regenerate = false,
                             });
-                        }
 
                         var sortButton = new MenuButton
                         {
                             id = "25428852",
                             name = "Sort Button",
-                            text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.LocalLevelOrderby.Value} ]",
+                            text = $"<align=center><b>[ SORT: {(ProjectArrhythmia.State.IsClient ? LobbyInfo.LocalLevelSort : ArcadeConfig.Instance.LocalLevelOrderby.Value)} ]",
                             parentLayout = "local settings",
                             selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(400f, 64f),
@@ -206,6 +209,9 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         sortButton.func = () =>
                         {
+                            if (ProjectArrhythmia.State.IsClient)
+                                return;
+
                             var num = (int)ArcadeConfig.Instance.LocalLevelOrderby.Value;
                             num++;
                             if (num >= Enum.GetNames(typeof(LevelSort)).Length)
@@ -224,8 +230,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         var ascendButton = new MenuButton
                         {
                             id = "25428852",
-                            name = "Sort Button",
-                            text = $"<align=center><b><rotate={(ArcadeConfig.Instance.LocalLevelAscend.Value ? "90" : "-90")}>>",
+                            name = "Ascend Button",
+                            text = $"<align=center><b><rotate={((ProjectArrhythmia.State.IsClient ? LobbyInfo.LocalLevelAscend : ArcadeConfig.Instance.LocalLevelAscend.Value) ? "90" : "-90")}>>",
                             parentLayout = "local settings",
                             selectionPosition = new Vector2Int(x, 1),
                             rect = RectValues.Default.SizeDelta(64f, 64f),
@@ -240,6 +246,9 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         ascendButton.func = () =>
                         {
+                            if (ProjectArrhythmia.State.IsClient)
+                                return;
+
                             ArcadeConfig.Instance.LocalLevelAscend.Value = !ArcadeConfig.Instance.LocalLevelAscend.Value;
                             ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.LocalLevelAscend.Value ? "90" : "-90")}>>";
                             if (ascendButton.textUI)
@@ -267,11 +276,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         };
                         pageField.triggers = new EventTrigger.Entry[]
                         {
                             TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var pointerEventData = (PointerEventData)eventData;
 
                                 var inputField = pageField.inputField;
@@ -310,6 +323,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != 0 && pageField.inputField)
                                 {
                                     pageField.inputField.text = (CurrentTab.page - 1).ToString();
@@ -342,6 +358,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != LocalLevelPageCount)
                                 {
                                     pageField.inputField.text = (CurrentTab.page + 1).ToString();
@@ -402,6 +421,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         });
 
                         elements.Add(new MenuButton
@@ -435,6 +455,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 Tab.Online.CycleSubTab();
                                 Tab.Online.page = 0;
                                 Init();
@@ -453,7 +476,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         {
                             id = "25428852",
                             name = "Sort Button",
-                            text = $"<align=center><b>[ SORT: {(subTab == 0 ? ArcadeConfig.Instance.OnlineLevelOrderby.Value : ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value)} ]",
+                            text = $"<align=center><b>[ SORT: {(subTab == 0 ? (ProjectArrhythmia.State.IsClient ? LobbyInfo.OnlineLevelSort : ArcadeConfig.Instance.OnlineLevelOrderby.Value) : (ProjectArrhythmia.State.IsClient ? LobbyInfo.OnlineLevelCollectionSort : ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value))} ]",
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(2, 1),
                             rect = RectValues.Default.SizeDelta(400f, 64f),
@@ -468,6 +491,9 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         sortButton.func = () =>
                         {
+                            if (ProjectArrhythmia.State.IsClient)
+                                return;
+
                             switch (subTab)
                             {
                                 case 0: {
@@ -508,8 +534,8 @@ namespace BetterLegacy.Arcade.Interfaces
                         var ascendButton = new MenuButton
                         {
                             id = "25428852",
-                            name = "Sort Button",
-                            text = $"<align=center><b><rotate={((subTab == 0 ? ArcadeConfig.Instance.OnlineLevelAscend.Value : ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value) ? "90" : "-90")}>>",
+                            name = "Ascend Button",
+                            text = $"<align=center><b><rotate={((subTab == 0 ? (ProjectArrhythmia.State.IsClient ? LobbyInfo.OnlineLevelAscend : ArcadeConfig.Instance.OnlineLevelAscend.Value) : (ProjectArrhythmia.State.IsClient ? LobbyInfo.OnlineLevelCollectionAscend : ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value)) ? "90" : "-90")}>>",
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(3, 1),
                             rect = RectValues.Default.SizeDelta(64f, 64f),
@@ -524,6 +550,9 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         ascendButton.func = () =>
                         {
+                            if (ProjectArrhythmia.State.IsClient)
+                                return;
+
                             switch (subTab)
                             {
                                 case 0: {
@@ -566,11 +595,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         };
                         pageField.triggers = new EventTrigger.Entry[]
                         {
                             TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var pointerEventData = (PointerEventData)eventData;
 
                                 var inputField = pageField.inputField;
@@ -605,6 +638,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != 0)
                                     SetOnlineLevelsPage(CurrentTab.page - 1);
                                 else
@@ -679,6 +715,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         });
 
                         pageField = new MenuInputField
@@ -698,11 +735,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         };
                         pageField.triggers = new EventTrigger.Entry[]
                         {
                             TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var pointerEventData = (PointerEventData)eventData;
 
                                 var inputField = pageField.inputField;
@@ -740,6 +781,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != 0 && pageField.inputField)
                                 {
                                     pageField.inputField.text = (CurrentTab.page - 1).ToString();
@@ -771,6 +815,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != BrowserPageCount)
                                 {
                                     pageField.inputField.text = (CurrentTab.page + 1).ToString();
@@ -831,6 +878,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         });
 
                         elements.Add(new MenuButton
@@ -949,11 +997,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         };
                         pageField.triggers = new EventTrigger.Entry[]
                         {
                             TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var pointerEventData = (PointerEventData)eventData;
 
                                 var inputField = pageField.inputField;
@@ -991,6 +1043,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != 0 && pageField.inputField)
                                 {
                                     pageField.inputField.text = (CurrentTab.page - 1).ToString();
@@ -1022,6 +1077,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != QueuePageCount)
                                 {
                                     pageField.inputField.text = (CurrentTab.page + 1).ToString();
@@ -1105,6 +1163,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         });
 
                         int x = 0;
@@ -1118,7 +1177,11 @@ namespace BetterLegacy.Arcade.Interfaces
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(200f, 64f),
-                                func = RefreshOnlineSteamLevels().Start,
+                                func = () =>
+                                {
+                                    if (!ProjectArrhythmia.State.IsClient)
+                                        CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
+                                },
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -1134,7 +1197,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             {
                                 id = "25428852",
                                 name = "Sort Button",
-                                text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamWorkshopOrderby.Value} ]",
+                                text = $"<align=center><b>[ SORT: {(ProjectArrhythmia.State.IsClient ? LobbyInfo.SteamWorkshopSort : ArcadeConfig.Instance.SteamWorkshopOrderby.Value)} ]",
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(400f, 64f),
@@ -1149,6 +1212,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             };
                             sortButton.func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var num = (int)ArcadeConfig.Instance.SteamWorkshopOrderby.Value;
                                 num++;
                                 if (num >= Enum.GetNames(typeof(QuerySort)).Length)
@@ -1165,7 +1231,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         }
                         else
                         {
-                            if (!RTSteamManager.inst.Levels.IsEmpty())
+                            if (!ProjectArrhythmia.State.IsClient && !RTSteamManager.inst.Levels.IsEmpty())
                             {
                                 elements.Add(new MenuButton
                                 {
@@ -1187,8 +1253,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 });
                                 x++;
                             }
-                            else
-                            {
+                            else if (!ProjectArrhythmia.State.IsClient)
                                 elements.Add(new MenuButton
                                 {
                                     id = "25428852",
@@ -1206,13 +1271,12 @@ namespace BetterLegacy.Arcade.Interfaces
                                     length = 0.1f,
                                     regenerate = false,
                                 });
-                            }
 
                             var sortButton = new MenuButton
                             {
                                 id = "25428852",
                                 name = "Sort Button",
-                                text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.SteamLevelOrderby.Value} ]",
+                                text = $"<align=center><b>[ SORT: {(ProjectArrhythmia.State.IsClient ? LobbyInfo.SteamLevelSort : ArcadeConfig.Instance.SteamLevelOrderby.Value)} ]",
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(400f, 64f),
@@ -1227,6 +1291,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             };
                             sortButton.func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var num = (int)ArcadeConfig.Instance.SteamLevelOrderby.Value;
                                 num++;
                                 if (num >= Enum.GetNames(typeof(LevelSort)).Length)
@@ -1245,8 +1312,8 @@ namespace BetterLegacy.Arcade.Interfaces
                             var ascendButton = new MenuButton
                             {
                                 id = "25428852",
-                                name = "Sort Button",
-                                text = $"<align=center><b><rotate={(ArcadeConfig.Instance.SteamLevelAscend.Value ? "90" : "-90")}>>",
+                                name = "Ascend Button",
+                                text = $"<align=center><b><rotate={((ProjectArrhythmia.State.IsClient ? LobbyInfo.SteamLevelAscend : ArcadeConfig.Instance.SteamLevelAscend.Value) ? "90" : "-90")}>>",
                                 parentLayout = "steam settings",
                                 selectionPosition = new Vector2Int(x, 1),
                                 rect = RectValues.Default.SizeDelta(64f, 64f),
@@ -1261,6 +1328,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             };
                             ascendButton.func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 ArcadeConfig.Instance.SteamLevelAscend.Value = !ArcadeConfig.Instance.SteamLevelAscend.Value;
                                 ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.SteamLevelAscend.Value ? "90" : "-90")}>>";
                                 if (ascendButton.textUI)
@@ -1282,6 +1352,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             textAnchor = TextAnchor.MiddleCenter,
                             valueChangedFunc = _val =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (Tab.Steam.subTab == 1)
                                     SetOnlineSteamLevelsPage(Parser.TryParse(_val, CurrentTab.page));
                                 else
@@ -1295,11 +1368,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             length = 0.1f,
                             wait = false,
                             regenerate = false,
+                            selectable = !ProjectArrhythmia.State.IsClient,
                         };
                         pageField.triggers = new EventTrigger.Entry[]
                         {
                             TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 var pointerEventData = (PointerEventData)eventData;
 
                                 var inputField = pageField.inputField;
@@ -1338,6 +1415,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (CurrentTab.page != 0 && pageField.inputField)
                                 {
                                     pageField.inputField.text = (CurrentTab.page - 1).ToString();
@@ -1370,6 +1450,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 if (Tab.Steam.subTab == 1 || CurrentTab.page != SubscribedSteamLevelPageCount)
                                 {
                                     pageField.inputField.text = (CurrentTab.page + 1).ToString();
@@ -1400,6 +1483,9 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
+                                if (ProjectArrhythmia.State.IsClient)
+                                    return;
+
                                 Tab.Steam.CycleSubTab();
                                 Tab.Steam.page = 0;
                                 Init();
@@ -1651,6 +1737,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public void Exit()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             SceneHelper.LoadScene(SceneName.Main_Menu, false);
         }
@@ -1673,6 +1762,13 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public static void Init()
         {
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                NetworkFunction.SortSteamWorkshopLevels(ArcadeConfig.Instance.SteamWorkshopOrderby.Value);
+                NetworkFunction.SortOnlineLevels(ArcadeConfig.Instance.OnlineLevelOrderby.Value, ArcadeConfig.Instance.OnlineLevelAscend.Value);
+                NetworkFunction.SortOnlineLevelCollections(ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value, ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value);
+                NetworkFunction.InitArcadeInterface();
+            }
             InterfaceManager.inst.CloseMenus();
             LevelManager.CurrentLevel = null;
             LevelManager.CurrentLevelCollection = null;
@@ -1689,6 +1785,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchLocalLevels(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Local.searchTerm = search;
             Tab.Local.page = 0;
             if (pageField && pageField.inputField)
@@ -1703,6 +1802,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetLocalLevelsPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Local.page = Mathf.Clamp(page, 0, LocalLevelPageCount);
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Local.page.ToString());
@@ -2114,6 +2216,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (regenerateUI)
                 StartGeneration();
+
+            if (regenerateUI && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         #endregion
@@ -2126,6 +2231,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchOnlineLevels(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Online.searchTerm = search;
             Tab.Online.page = 0;
             if (pageField && pageField.inputField)
@@ -2141,6 +2249,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetOnlineLevelsPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Online.page = page;
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Online.page.ToString());
@@ -2290,6 +2401,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             loadingOnlineLevels = false;
             StartGeneration();
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         #endregion
@@ -2302,6 +2416,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchBrowser(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Browser.searchTerm = search;
             Tab.Browser.page = 0;
             if (pageField && pageField.inputField)
@@ -2316,6 +2433,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetBrowserPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Browser.page = Mathf.Clamp(page, 0, BrowserPageCount);
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Browser.page.ToString());
@@ -2538,6 +2658,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (regenerateUI)
                 StartGeneration();
+
+            if (regenerateUI && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         #endregion
@@ -2550,6 +2673,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchQueuedLevels(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Queue.searchTerm = search;
             Tab.Queue.page = 0;
             if (pageField && pageField.inputField)
@@ -2564,6 +2690,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetQueuedLevelsPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Queue.page = Mathf.Clamp(page, 0, QueuePageCount);
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Queue.page.ToString());
@@ -2754,6 +2883,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (regenerateUI)
                 StartGeneration();
+
+            if (regenerateUI && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         /// <summary>
@@ -2761,6 +2893,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public void StartQueue()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             LevelManager.Play(LevelManager.ArcadeQueue[0], RTBeatmap.Current.EndOfLevel);
         }
@@ -2771,6 +2906,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="play">If the queue should begin.</param>
         public void ShuffleQueue(bool play)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             if (LevelManager.Levels.IsEmpty())
             {
                 CoreHelper.LogError($"No levels to shuffle!");
@@ -2828,6 +2966,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchSubscribedSteamLevels(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Steam.searchTerm = search;
             Tab.Steam.page = 0;
             if (pageField && pageField.inputField)
@@ -2842,6 +2983,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetSubscribedSteamLevelsPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Steam.page = Mathf.Clamp(page, 0, SubscribedSteamLevelPageCount);
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Steam.page.ToString());
@@ -3017,6 +3161,9 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (regenerateUI)
                 StartGeneration();
+
+            if (regenerateUI && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         /// <summary>
@@ -3025,6 +3172,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="search">Search term.</param>
         public void SearchOnlineSteamLevels(string search)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Steam.searchTerm = search;
             Tab.Steam.page = 0;
         }
@@ -3035,6 +3185,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="page">Page to set.</param>
         public void SetOnlineSteamLevelsPage(int page)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             Tab.Steam.page = Mathf.Clamp(page, 0, int.MaxValue);
             if (pageField && pageField.inputField)
                 pageField.inputField.SetTextWithoutNotify(Tab.Steam.page.ToString());
@@ -3111,6 +3264,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 }
             }).IsCompleted);
             StartGeneration();
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.InitArcadeInterface();
         }
 
         #endregion
@@ -3122,7 +3278,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <summary>
         /// Represents a tab for the arcade interface.
         /// </summary>
-        public class Tab : Exists
+        public class Tab : Exists, IPacket
         {
             #region Constructors
 
@@ -3209,6 +3365,20 @@ namespace BetterLegacy.Arcade.Interfaces
             #endregion
 
             #region Functions
+
+            public void ReadPacket(NetworkReader reader)
+            {
+                searchTerm = reader.ReadString();
+                page = reader.ReadInt32();
+                subTab = reader.ReadInt32();
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                writer.Write(searchTerm);
+                writer.Write(page);
+                writer.Write(subTab);
+            }
 
             /// <summary>
             /// Cycles the sub tab.

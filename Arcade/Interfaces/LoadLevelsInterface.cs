@@ -14,6 +14,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -125,6 +126,8 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public bool cancelled;
 
+        public int progress;
+
         #endregion
 
         #region Functions
@@ -153,6 +156,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="onLoadingEnd">Function to run when loading has ended.</param>
         public static void Init(string levelsDirectory, Action onLoadingEnd)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
@@ -171,6 +177,9 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="levelsDirectory">Directory to load from.</param>
         public static void InitLocal(string levelsDirectory)
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
@@ -183,11 +192,23 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public static void InitSteam()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             InterfaceManager.inst.CloseMenus();
             Current = new LoadLevelsInterface();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
             CoroutineHelper.StartCoroutine(Current.GetLevelList(string.Empty, false, true, ArcadeHelper.OnLoadingEnd().Start));
+        }
+
+        public static void InitClient(int levelCount)
+        {
+            InterfaceManager.inst.CloseMenus();
+            Current = new LoadLevelsInterface();
+            InterfaceManager.inst.CurrentInterface = Current;
+            Current.StartGeneration();
+            Current.totalLevelCount = levelCount;
         }
 
         /// <summary>
@@ -222,6 +243,11 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 totalLevelCount = directories.Length;
 
+                if (ProjectArrhythmia.State.IsHosting)
+                {
+                    NetworkFunction.InitLoadLevelsInterface(totalLevelCount);
+                    NetworkFunction.ClearArcadeLevels();
+                }
                 LevelManager.Levels.Clear();
                 LevelManager.ArcadeQueue.Clear();
                 LevelManager.LevelCollections.Clear();
@@ -304,6 +330,9 @@ namespace BetterLegacy.Arcade.Interfaces
                         UpdateInfo(level.icon, $"Loading {name}", i);
 
                         LevelManager.Levels.Add(level);
+
+                        if (ProjectArrhythmia.State.IsHosting)
+                            NetworkFunction.SendArcadeLevel(level);
                     }
                     catch (Exception ex)
                     {
@@ -318,10 +347,18 @@ namespace BetterLegacy.Arcade.Interfaces
 
             if (loadSteam)
             {
+                bool set = false;
                 yield return CoroutineHelper.StartCoroutine(RTSteamManager.inst.GetSubscribedItems((Level level, int i) =>
                 {
                     totalLevelCount = (int)RTSteamManager.inst.LevelCount;
+                    if (!set && ProjectArrhythmia.State.IsHosting)
+                    {
+                        set = true;
+                        NetworkFunction.InitLoadLevelsInterface(totalLevelCount);
+                    }
                     UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
+                    if (ProjectArrhythmia.State.IsHosting)
+                        NetworkFunction.SendSteamLevel(level);
                 }));
 
                 if (!currentlyLoading)
@@ -337,10 +374,18 @@ namespace BetterLegacy.Arcade.Interfaces
 
             RTSteamManager.inst.Levels = LevelManager.SortLevels(RTSteamManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
 
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                NetworkFunction.SortArcadeLevels(ArcadeConfig.Instance.LocalLevelOrderby.Value, ArcadeConfig.Instance.LocalLevelAscend.Value);
+                NetworkFunction.SortSteamLevels(ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
+            }
+
             if (loadLocal)
             {
                 int collectionIndex = 0;
                 totalLevelCount = levelCollections.Count;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.InitLoadLevelsInterface(totalLevelCount);
                 while (!levelCollections.IsEmpty())
                 {
                     var path = levelCollections.Dequeue();
@@ -365,6 +410,8 @@ namespace BetterLegacy.Arcade.Interfaces
                     LevelManager.LevelCollections.Add(levelCollection);
                     UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
                     collectionIndex++;
+                    if (ProjectArrhythmia.State.IsHosting)
+                        NetworkFunction.SendArcadeLevelCollection(levelCollection);
                 }
             }
 
@@ -388,6 +435,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// <param name="logError">If the status should be logged as an error.</param>
         public void UpdateInfo(Sprite sprite, string status, int num, bool logError = false)
         {
+            progress = num;
             float e = num / (float)totalLevelCount;
 
             if (progressBar && progressBar.image)

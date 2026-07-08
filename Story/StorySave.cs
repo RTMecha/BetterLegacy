@@ -6,6 +6,7 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -15,11 +16,15 @@ namespace BetterLegacy.Story
     /// <summary>
     /// Represents a story save slot.
     /// </summary>
-    public class StorySave : Exists
+    public class StorySave : Exists, IPacket
     {
+        #region Constructors
+
         public StorySave() { }
 
         public StorySave(int slot) => Slot = slot;
+
+        #endregion
 
         #region Data
 
@@ -64,6 +69,22 @@ namespace BetterLegacy.Story
         /// All level saves in the current story save slot.
         /// </summary>
         public List<SaveData> Saves { get; set; } = new List<SaveData>();
+
+        #endregion
+
+        #region Packet
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            storySavesJSON = reader.ReadJSON();
+            Saves = Packet.CreatePacketList<SaveData>(reader);
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(storySavesJSON);
+            Packet.WritePacketList(Saves, writer);
+        }
 
         #endregion
 
@@ -128,6 +149,9 @@ namespace BetterLegacy.Story
         /// </summary>
         public void Save()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             try
             {
                 RTFile.WriteToFile(StorySavesPath, storySavesJSON.ToString());
@@ -235,6 +259,9 @@ namespace BetterLegacy.Story
         /// </summary>
         public void Load()
         {
+            if (ProjectArrhythmia.State.IsClient)
+                return;
+
             storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
 
             Saves.Clear();

@@ -356,7 +356,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, checkpoint);
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, checkpoint);
             AssignPlayerModels();
             var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
@@ -393,7 +393,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
             AssignPlayerModels();
 
             bool spawned = false;
@@ -575,7 +575,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.DESTROY_PLAYERS);
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.DESTROY_PLAYERS);
 
             foreach (var player in Players)
                 DestroyPlayer(player);
@@ -625,7 +625,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.RESPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.RESPAWN_PLAYERS_POS, new NetworkFunction.Vector2Parameter(pos));
 
             DestroyPlayers(true);
             AssignPlayerModels();

@@ -271,10 +271,13 @@ namespace BetterLegacy.Core.Runtime
                 if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData)
                     LevelManager.CurrentLevel.saveData.Percentage = 100f;
 
-                if (endLevelUpdateProgress)
-                    LevelManager.UpdateCurrentLevelProgress();
-                else
-                    LevelManager.SaveProgress();
+                if (!ProjectArrhythmia.State.IsClient)
+                {
+                    if (endLevelUpdateProgress)
+                        LevelManager.UpdateCurrentLevelProgress();
+                    else
+                        LevelManager.SaveProgress();
+                }
 
                 switch (endLevelFunc)
                 {
@@ -285,11 +288,14 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.QuitToArcade: {
-                            ArcadeHelper.QuitToArcade();
+                            if (!ProjectArrhythmia.State.IsClient)
+                                ArcadeHelper.QuitToArcade();
 
                             break;
                         }
                     case EndLevelFunction.ReturnToHub: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             if (LevelManager.Hub)
                                 LevelManager.Play(LevelManager.Hub);
                             else if (!EndLevelInterface.Current)
@@ -300,6 +306,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.ReturnToPrevious: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             if (LevelManager.PreviousLevel)
                                 LevelManager.Play(LevelManager.PreviousLevel);
                             else if (!EndLevelInterface.Current)
@@ -310,6 +318,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.ContinueCollection: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             var metadata = LevelManager.CurrentLevel.metadata;
                             var nextLevel = LevelManager.NextLevelInCollection;
                             if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
@@ -331,6 +341,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.LoadLevel: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             if (string.IsNullOrEmpty(endLevelData))
                                 break;
 
@@ -342,6 +354,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.LoadLevelInCollection: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             if (string.IsNullOrEmpty(endLevelData) || !LevelManager.CurrentLevelCollection)
                                 break;
 
@@ -353,6 +367,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.ParseInterface: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             if (ProjectArrhythmia.State.IsEditing) // don't want interfaces to load in editor
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
@@ -387,6 +403,8 @@ namespace BetterLegacy.Core.Runtime
                             break;
                         }
                     case EndLevelFunction.Restart: {
+                            if (ProjectArrhythmia.State.IsClient)
+                                break;
                             GameManager.inst.gameState = GameManager.State.Playing;
                             ArcadeHelper.RestartLevel();
                             AudioManager.inst.CurrentAudioSource.Play();

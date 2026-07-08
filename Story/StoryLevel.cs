@@ -10,6 +10,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Story
@@ -19,7 +20,11 @@ namespace BetterLegacy.Story
     /// </summary>
     public class StoryLevel : Level
     {
+        #region Constructors
+
         public StoryLevel() : base() => isStory = true;
+
+        #endregion
 
         #region Values
 
@@ -51,6 +56,20 @@ namespace BetterLegacy.Story
         #endregion
 
         #region Functions
+
+        public override void ReadPacket(NetworkReader reader)
+        {
+            name = reader.ReadString();
+            json = reader.ReadString();
+            jsonPlayers = reader.ReadString();
+        }
+
+        public override void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(name);
+            writer.Write(json);
+            writer.Write(jsonPlayers);
+        }
 
         /// <summary>
         /// Loads a story level from an <see cref="AssetBundle"/>.

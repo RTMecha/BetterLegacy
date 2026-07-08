@@ -1183,6 +1183,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuInputField.inputField.GetPlaceholderText().fontSize = menuInputField.placeholderFontSize;
             menuInputField.inputField.onValueChanged.AddListener(menuInputField.Write);
             menuInputField.inputField.onEndEdit.AddListener(menuInputField.Finish);
+            menuInputField.inputField.interactable = menuInputField.selectable;
 
             if (menuInputField.triggers != null)
                 TriggerHelper.AddEventTriggers(menuInputField.gameObject, menuInputField.triggers);
