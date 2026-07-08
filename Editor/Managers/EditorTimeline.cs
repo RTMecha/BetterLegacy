@@ -2038,7 +2038,7 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns an editor layers' color.</returns>
         public static Color GetLayerColor(int layer, LayerType layerType = LayerType.Objects)
         {
-            if (RTEditor.inst.editorInfo.pinnedEditorLayers.TryFind(x => x.overrideColor && x.layer == layer && x.layerType == layerType, out PinnedEditorLayer pinnedEditorLayer))
+            if (RTEditor.inst.editorInfo.pinnedEditorLayers.TryFind(x => x.overrideColor && x.IsLayer(layer, layerType), out PinnedEditorLayer pinnedEditorLayer))
                 return pinnedEditorLayer.color;
 
             return layer >= 0 && layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[layer] : Color.white;
@@ -2056,7 +2056,8 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.RenderEditorLayer(
                 editorLayerUI: this,
                 getLayer: () => layer,
-                setLayer: _val => SetLayer(_val));
+                setLayer: _val => SetLayer(_val),
+                layerType: layerType);
 
             RTEditor.inst.eventLayerToggle.SetIsOnWithoutNotify(layerType == LayerType.Events);
             RTEditor.inst.eventLayerToggle.onValueChanged.NewListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));

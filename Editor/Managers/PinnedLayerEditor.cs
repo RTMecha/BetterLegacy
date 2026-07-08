@@ -254,8 +254,8 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentPinnedEditorLayer)
                 return;
 
-            Dialog.LayerField.inputField.SetTextWithoutNotify(EditorTimeline.GetLayerString(CurrentPinnedEditorLayer.layer));
-            Dialog.LayerField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.LayerField.SetTextWithoutNotify(EditorTimeline.GetLayerString(CurrentPinnedEditorLayer.layer));
+            Dialog.LayerField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -267,7 +267,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
                 }
             });
-            Dialog.LayerField.inputField.onEndEdit.NewListener(_val =>
+            Dialog.LayerField.OnEndEdit.NewListener(_val =>
             {
                 if (RTMath.TryParse(_val, CurrentPinnedEditorLayer.layer, out float num))
                 {
@@ -288,10 +288,61 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.LayerField, min: 1, max: int.MaxValue);
             TriggerHelper.AddEventTriggers(Dialog.LayerField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.LayerField.inputField, min: 1, max: int.MaxValue));
 
+            Dialog.LayerRangeField.SetTextWithoutNotify(CurrentPinnedEditorLayer.layerRange.ToString());
+            Dialog.LayerRangeField.OnValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int num))
+                {
+                    CurrentPinnedEditorLayer.layerRange = RTMath.Clamp(num, 1, int.MaxValue);
+
+                    if (Popup.IsOpen)
+                        RenderPopup();
+
+                    EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
+                }
+            });
+            Dialog.LayerRangeField.OnEndEdit.NewListener(_val =>
+            {
+                if (RTMath.TryParse(_val, CurrentPinnedEditorLayer.layerRange, out float num))
+                {
+                    CurrentPinnedEditorLayer.layerRange = RTMath.Clamp((int)num, 0, int.MaxValue);
+
+                    if (Popup.IsOpen)
+                        RenderPopup();
+
+                    EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
+                }
+            });
+            Dialog.LayerRangeField.middleButton.onClick.NewListener(() =>
+            {
+                var distance = EditorTimeline.inst.Layer - CurrentPinnedEditorLayer.layer + 1;
+                if (distance < 1)
+                    return;
+                CurrentPinnedEditorLayer.layerRange = distance;
+                RenderDialog();
+
+                if (Popup.IsOpen)
+                    RenderPopup();
+
+                EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
+            });
+            TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.LayerRangeField, min: 1, max: int.MaxValue);
+            TriggerHelper.AddEventTriggers(Dialog.LayerRangeField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.LayerRangeField.inputField, min: 1, max: int.MaxValue));
+
             Dialog.LayerTypeDropdown.SetValueWithoutNotify((int)CurrentPinnedEditorLayer.layerType);
             Dialog.LayerTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 CurrentPinnedEditorLayer.layerType = (EditorTimeline.LayerType)_val;
+
+                if (Popup.IsOpen)
+                    RenderPopup();
+                EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
+            });
+
+            Dialog.AllLayerTypesToggle.SetIsOnWithoutNotify(CurrentPinnedEditorLayer.allLayerTypes);
+            Dialog.AllLayerTypesToggle.OnValueChanged.NewListener(_val =>
+            {
+                CurrentPinnedEditorLayer.allLayerTypes = _val;
 
                 if (Popup.IsOpen)
                     RenderPopup();
@@ -323,8 +374,8 @@ namespace BetterLegacy.Editor.Managers
                     RenderPopup();
                 EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
             });
-            Dialog.ColorOverrideToggle.toggle.SetIsOnWithoutNotify(CurrentPinnedEditorLayer.overrideColor);
-            Dialog.ColorOverrideToggle.toggle.onValueChanged.NewListener(_val =>
+            Dialog.ColorOverrideToggle.SetIsOnWithoutNotify(CurrentPinnedEditorLayer.overrideColor);
+            Dialog.ColorOverrideToggle.OnValueChanged.NewListener(_val =>
             {
                 CurrentPinnedEditorLayer.overrideColor = _val;
 

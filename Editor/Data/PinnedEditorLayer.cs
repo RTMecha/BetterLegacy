@@ -34,9 +34,19 @@ namespace BetterLegacy.Editor.Data
         public int layer;
 
         /// <summary>
+        /// The editor layer range.
+        /// </summary>
+        public int layerRange = 1;
+
+        /// <summary>
         /// The editor layer type.
         /// </summary>
         public EditorTimeline.LayerType layerType;
+
+        /// <summary>
+        /// If <see cref="layerType"/> should be ignored.
+        /// </summary>
+        public bool allLayerTypes;
 
         /// <summary>
         /// Name of the pinned editor layer.
@@ -66,7 +76,9 @@ namespace BetterLegacy.Editor.Data
         {
             id = newID ? GetNumberID() : orig.id;
             layer = orig.layer;
+            layerRange = orig.layerRange;
             layerType = orig.layerType;
+            allLayerTypes = orig.allLayerTypes;
             name = orig.name;
             description = orig.description;
             overrideColor = orig.overrideColor;
@@ -75,8 +87,13 @@ namespace BetterLegacy.Editor.Data
 
         public override void ReadJSON(JSONNode jn)
         {
+            if (jn["id"] != null)
+                id = jn["id"];
             layer = jn["layer"].AsInt;
+            if (jn["layer_range"] != null)
+                layerRange = jn["layer_range"].AsInt;
             layerType = (EditorTimeline.LayerType)jn["layer_type"].AsInt;
+            allLayerTypes = jn["all_layer_types"].AsBool;
 
             name = jn["name"] ?? string.Empty;
             description = jn["desc"] ?? string.Empty;
@@ -89,9 +106,14 @@ namespace BetterLegacy.Editor.Data
         {
             var jn = Parser.NewJSONObject();
 
+            jn["id"] = id ?? GetStringID();
             jn["layer"] = layer;
+            if (layerRange != 1)
+                jn["layer_range"] = layerRange;
             if (layerType != EditorTimeline.LayerType.Objects)
                 jn["layer_type"] = (int)layerType;
+            if (allLayerTypes)
+                jn["all_layer_types"] = allLayerTypes;
 
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
@@ -107,7 +129,9 @@ namespace BetterLegacy.Editor.Data
         {
             id = reader.ReadString();
             layer = reader.ReadInt32();
+            layerRange = reader.ReadInt32();
             layerType = (EditorTimeline.LayerType)reader.ReadByte();
+            allLayerTypes = reader.ReadBoolean();
             name = reader.ReadString();
             description = reader.ReadString();
             overrideColor = reader.ReadBoolean();
@@ -118,7 +142,9 @@ namespace BetterLegacy.Editor.Data
         {
             writer.Write(id);
             writer.Write(layer);
+            writer.Write(layerRange);
             writer.Write((byte)layerType);
+            writer.Write(allLayerTypes);
             writer.Write(name);
             writer.Write(description);
             writer.Write(overrideColor);
@@ -131,7 +157,7 @@ namespace BetterLegacy.Editor.Data
         /// <param name="layer">Editor layer.</param>
         /// <param name="layerType">Editor layer type.</param>
         /// <returns>Returns true if the layer is the same, otherwise returns false.</returns>
-        public bool IsLayer(int layer, EditorTimeline.LayerType layerType) => this.layer == layer && this.layerType == layerType;
+        public bool IsLayer(int layer, EditorTimeline.LayerType layerType) => layer >= this.layer && layer < this.layer + layerRange && (allLayerTypes || this.layerType == layerType);
 
         #endregion
     }

@@ -14,9 +14,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public PinnedLayerEditorDialog() : base() { }
 
+        public RectTransform Content { get; set; }
+
         public InputFieldStorage LayerField { get; set; }
+        
+        public InputFieldStorage LayerRangeField { get; set; }
 
         public Dropdown LayerTypeDropdown { get; set; }
+
+        public ToggleButtonStorage AllLayerTypesToggle { get; set; }
 
         public InputField NameField { get; set; }
 
@@ -47,73 +53,61 @@ namespace BetterLegacy.Editor.Data.Dialogs
             editorDialogStorage.title.text = "- Pinned Layer Editor -";
             editorDialogStorage.title.color = new Color(0.2f, 0.2f, 0.2f, 1f);
 
-            var editorDialogSpacer = editorDialog.transform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
+            EditorThemeManager.ApplyGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            editorDialog.transform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 24f);
+            CoreHelper.Delete(GameObject.transform.Find("spacer"));
+            CoreHelper.Delete(GameObject.transform.Find("Text"));
 
-            var labelTypeBase = Creator.NewUIObject("Type Label", editorDialog.transform);
+            var main = Creator.NewUIObject("Main", editorDialog.transform);
+            main.transform.AsRT().sizeDelta = new Vector2(765f, 696f);
 
-            labelTypeBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-
-            var labelType = editorDialog.transform.GetChild(2);
-            labelType.SetParent(null);
-            labelType.localPosition = Vector3.zero;
-            labelType.localScale = Vector3.one;
-            labelType.AsRT().sizeDelta = new Vector2(725f, 32f);
-            var labelTypeText = labelType.GetComponent<Text>();
-            labelTypeText.text = "Name";
-            labelTypeText.alignment = TextAnchor.UpperLeft;
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(main.transform, "Scroll View");
+            RectValues.Default.SizeDelta(745f, 696f).AssignToRectTransform(scrollView.transform.AsRT());
+            Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
             #region Layer
 
-            var labelLayerBase = Creator.NewUIObject("Layer Label", editorDialog.transform);
-            labelLayerBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            new LabelsElement("Layer").Init(EditorElement.InitSettings.Default.Parent(Content));
 
-            var labelLayer = labelType.gameObject.Duplicate(labelLayerBase.transform);
-            labelLayer.transform.localPosition = Vector3.zero;
-            labelLayer.transform.localScale = Vector3.one;
-            labelLayer.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
-            var labelLayerText = labelLayer.GetComponent<Text>();
-            labelLayerText.text = "Layer";
-
-            var layerBase1 = Creator.NewUIObject("Layer", editorDialog.transform);
-            layerBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-
-            var layer = EditorPrefabHolder.Instance.NumberInputField.Duplicate(layerBase1.transform);
+            var layer = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "Layer");
             RectValues.Default.AnchoredPosition(162.5f, 16f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(layer.transform.AsRT());
             LayerField = layer.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(LayerField.leftGreaterButton);
             CoreHelper.Delete(LayerField.rightGreaterButton);
+            EditorThemeManager.ApplyInputField(LayerField);
 
-            var layerTypeBase1 = Creator.NewUIObject("Layer Type", editorDialog.transform);
-            layerTypeBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            new LabelsElement("Layer Range").Init(EditorElement.InitSettings.Default.Parent(Content));
 
-            var layerType = EditorPrefabHolder.Instance.Dropdown.Duplicate(layerTypeBase1.transform);
+            var layerRange = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "Layer Range");
+            RectValues.Default.AnchoredPosition(162.5f, 16f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(layerRange.transform.AsRT());
+            LayerRangeField = layerRange.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(LayerRangeField.leftGreaterButton);
+            CoreHelper.Delete(LayerRangeField.rightGreaterButton);
+            EditorThemeManager.ApplyInputField(LayerRangeField);
+
+            new LabelsElement("Layer Type").Init(EditorElement.InitSettings.Default.Parent(Content));
+
+            var layerType = EditorPrefabHolder.Instance.Dropdown.Duplicate(Content, "Layer Type");
             RectValues.Default.AnchoredPosition(112.5f, 16f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(198f, 32f).AssignToRectTransform(layerType.transform.AsRT());
             LayerTypeDropdown = layerType.GetComponent<Dropdown>();
             LayerTypeDropdown.options = CoreHelper.ToOptionData<EditorTimeline.LayerType>();
+            EditorThemeManager.ApplyDropdown(LayerTypeDropdown);
 
-            RTEditor.GenerateSpacer("spacer", editorDialog.transform, new Vector2(765f, 4f));
+            var allLayerTypes = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "layer type toggle");
+            RectValues.Default.AnchoredPosition(162.5f, 16f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(allLayerTypes.transform.AsRT());
+            AllLayerTypesToggle = allLayerTypes.GetComponent<ToggleButtonStorage>();
+            AllLayerTypesToggle.label.text = "All Layer Types";
+            EditorThemeManager.ApplyToggle(AllLayerTypesToggle);
+
+            new SpacerElement(false).Init(EditorElement.InitSettings.Default.Parent(Content));
 
             #endregion
 
             #region Name
 
-            var labelNameBase = Creator.NewUIObject("Name Label", editorDialog.transform);
-            labelNameBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            new LabelsElement("Name").Init(EditorElement.InitSettings.Default.Parent(Content));
 
-            var labelName = labelType.gameObject.Duplicate(labelNameBase.transform);
-            labelName.transform.localPosition = Vector3.zero;
-            labelName.transform.localScale = Vector3.one;
-            labelName.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
-            var labelNameText = labelName.GetComponent<Text>();
-            labelNameText.text = "Name";
-
-            var nameTextBase1 = Creator.NewUIObject("Name", editorDialog.transform);
-            nameTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-
-            var name = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(nameTextBase1.transform);
+            var name = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
             name.transform.localScale = Vector3.one;
             RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(name.transform.AsRT());
 
@@ -121,28 +115,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             NameField.lineType = InputField.LineType.MultiLineNewline;
             NameField.GetPlaceholderText().text = "Set name...";
             NameField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            EditorThemeManager.ApplyInputField(NameField);
 
-            RTEditor.GenerateSpacer("spacer", editorDialog.transform, new Vector2(765f, 4f));
+            new SpacerElement(false).Init(EditorElement.InitSettings.Default.Parent(Content));
 
             #endregion
 
             #region Description
 
-            var labelDescriptionBase = Creator.NewUIObject("Description Label", editorDialog.transform);
-            labelDescriptionBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            new LabelsElement("Description").Init(EditorElement.InitSettings.Default.Parent(Content));
 
-            var labelDescription = labelType.gameObject.Duplicate(labelDescriptionBase.transform);
-            labelDescription.transform.localPosition = Vector3.zero;
-            labelDescription.transform.localScale = Vector3.one;
-            labelDescription.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
-            var labelDescriptionText = labelDescription.GetComponent<Text>();
-            labelDescriptionText.text = "Description";
-            labelDescriptionText.alignment = TextAnchor.UpperLeft;
-
-            var descriptionTextBase1 = Creator.NewUIObject("Description", editorDialog.transform);
-            descriptionTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 200f);
-
-            var description = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(descriptionTextBase1.transform);
+            var description = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
             description.transform.localScale = Vector3.one;
             RectValues.Default.SizeDelta(740f, 200f).AssignToRectTransform(description.transform.AsRT());
 
@@ -150,35 +133,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
             DescriptionField.lineType = InputField.LineType.MultiLineNewline;
             DescriptionField.GetPlaceholderText().text = "Set description...";
             DescriptionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            EditorThemeManager.ApplyInputField(DescriptionField);
 
-            RTEditor.GenerateSpacer("spacer", editorDialog.transform, new Vector2(765f, 32f));
+            new SpacerElement(new Vector2(0f, 32f), false).Init(EditorElement.InitSettings.Default.Parent(Content));
 
             #endregion
 
             #region Color
 
-            var labelColorBase = Creator.NewUIObject("Color Label", editorDialog.transform);
-            labelColorBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            new LabelsElement("Color").Init(EditorElement.InitSettings.Default.Parent(Content));
 
-            var labelColor = labelType.gameObject.Duplicate(labelColorBase.transform);
-            labelColor.transform.localPosition = Vector3.zero;
-            labelColor.transform.localScale = Vector3.one;
-            labelColor.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
-            var labelColorText = labelColor.GetComponent<Text>();
-            labelColorText.text = "Color";
-
-            var colorOverrideBase1 = Creator.NewUIObject("Color", editorDialog.transform);
-            colorOverrideBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-
-            var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(colorOverrideBase1.transform, "toggle");
+            var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Content, "color toggle");
             RectValues.Default.AnchoredPosition(162.5f, 16f).AnchorMax(0f, 0f).AnchorMin(0f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(toggle.transform.AsRT());
             ColorOverrideToggle = toggle.GetComponent<ToggleButtonStorage>();
             ColorOverrideToggle.label.text = "Override";
+            EditorThemeManager.ApplyToggle(ColorOverrideToggle);
 
-            var colorTextBase1 = Creator.NewUIObject("Color", editorDialog.transform);
-            colorTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-
-            var color = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(colorTextBase1.transform);
+            var color = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content, "color");
             color.transform.localScale = Vector3.one;
             RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(color.transform.AsRT());
 
@@ -186,25 +157,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             ColorField.lineType = InputField.LineType.MultiLineNewline;
             ColorField.GetPlaceholderText().text = "Set color...";
             ColorField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
-
-            RTEditor.GenerateSpacer("spacer", editorDialog.transform, new Vector2(765f, 4f));
-
-            #endregion
-
-            #region Editor Themes
-
-            EditorThemeManager.ApplyGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            EditorThemeManager.ApplyLightText(labelLayerText);
-            EditorThemeManager.ApplyInputField(LayerField);
-            EditorThemeManager.ApplyDropdown(LayerTypeDropdown);
-            EditorThemeManager.ApplyLightText(labelNameText);
-            EditorThemeManager.ApplyInputField(NameField);
-            EditorThemeManager.ApplyLightText(labelDescriptionText);
-            EditorThemeManager.ApplyInputField(DescriptionField);
-            EditorThemeManager.ApplyLightText(labelColorText);
             EditorThemeManager.ApplyInputField(ColorField);
-            EditorThemeManager.ApplyToggle(ColorOverrideToggle.toggle, graphic: ColorOverrideToggle.label);
+
+            new SpacerElement(false).Init(EditorElement.InitSettings.Default.Parent(Content));
 
             #endregion
 
