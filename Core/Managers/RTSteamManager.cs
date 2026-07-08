@@ -40,6 +40,17 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public const string NOT_INIT_MESSAGE = "Steam was not initialized. Open Steam if it isn't already, otherwise if it is then please replace the steam_api64.dll in Project Arrhythmia_Data/Plugins with the newer version provided.";
 
+        /// <summary>
+        /// Max send rate.
+        /// </summary>
+        public const int SEND_RATE_MAX = 524288; // 500KB
+        // 524288
+
+        /// <summary>
+        /// Buffer size.
+        /// </summary>
+        public const int SEND_BUFFER_SIZE = 10485760; // 10MB
+
         #region Levels
 
         /// <summary>
@@ -184,7 +195,8 @@ namespace BetterLegacy.Core.Managers
                 SteamNetworkingUtils.InitRelayNetworkAccess();
                 SteamNetworkingUtils.ConnectionTimeout = 5000;
                 SteamNetworkingUtils.Timeout = 6000;
-                SteamNetworkingUtils.SendBufferSize = 10485760; // max is still 524288 (500KB) for some reason
+                SteamNetworkingUtils.SendRateMax = SEND_RATE_MAX;
+                SteamNetworkingUtils.SendBufferSize = SEND_BUFFER_SIZE;
             }
             catch (Exception ex)
             {
