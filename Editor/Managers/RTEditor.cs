@@ -4115,7 +4115,7 @@ namespace BetterLegacy.Editor.Managers
             
             EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () => ConfigPopup.Instance?.Open());
 
-            EditorHelper.AddEditorDropdown("Show Lobbies Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () => LobbyPopup.Instance?.Open());
+            EditorHelper.AddEditorDropdown("Show Lobby Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () => LobbyPopup.Instance?.Open());
 
             EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
@@ -5092,10 +5092,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="editorLayerUI">Editor Layer dialog.</param>
         /// <param name="getLayer">Gets the editor layer.</param>
         /// <param name="setLayer">Sets the editor layer.</param>
-        public void RenderEditorLayer(IEditorLayerUI editorLayerUI, Func<int> getLayer, Action<int> setLayer)
+        public void RenderEditorLayer(IEditorLayerUI editorLayerUI, Func<int> getLayer, Action<int> setLayer, EditorTimeline.LayerType layerType = EditorTimeline.LayerType.Objects)
         {
             var layer = getLayer?.Invoke() ?? 0;
-            editorLayerUI.EditorLayerField.image.color = EditorTimeline.GetLayerColor(layer);
+            editorLayerUI.EditorLayerField.image.color = EditorTimeline.GetLayerColor(layer, layerType);
             editorLayerUI.EditorLayerField.SetTextWithoutNotify((layer + 1).ToString());
             editorLayerUI.EditorLayerField.onValueChanged.NewListener(_val =>
             {
@@ -7033,7 +7033,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!player.IsLocalPlayer)
                     return;
                 player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
-                NetworkFunction.SetPlayerHealth(player.id, player.Health);
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.SetPlayerHealth(player.id, player.Health);
             }
         }
 
