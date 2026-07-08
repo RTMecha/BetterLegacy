@@ -21,6 +21,7 @@
 - Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
 - Steam friends can join editor sessions.
 - Players get different perspectives of the host editor.
+- Specific players can be restricted to certain editor layers by the host using pinned editor layers.
 - Currently editing objects aren't selectable by other users.
 - Off-screen player indicators.
 1.10.0 - Editor Assistance Update  
