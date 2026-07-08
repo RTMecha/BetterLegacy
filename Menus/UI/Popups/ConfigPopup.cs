@@ -152,6 +152,7 @@ namespace BetterLegacy.Menus.UI.Popups
             }
 
             var pageObject = numberFieldStorage.Duplicate(pagePanel.transform, "Page");
+            pageObject.SetActive(true);
             RectValues.BottomLeftAnchored.AnchoredPosition(580f, 32f).Pivot(0.5f, 0.5f).SizeDelta(0f, 32f).AssignToRectTransform(pageObject.transform.AsRT());
 
             pageFieldStorage = pageObject.GetComponent<InputFieldStorage>();
