@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using System.Runtime.CompilerServices;
-
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Configs;
 
 namespace BetterLegacy.Core.Helpers
 {
