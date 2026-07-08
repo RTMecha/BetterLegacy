@@ -57,7 +57,8 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// If multiplayer nametags should display when there are more than one player on-screen.
         /// </summary>
-        public static bool ShowNameTags { get; set; }
+        public bool ShowNameTags => PlayerManager.Players.Count > 1 && Core &&
+            (ProjectArrhythmia.State.IsInLobby ? PlayerConfig.Instance.PlayerNameTagsInLobby.Value : PlayerConfig.Instance.PlayerNameTags.Value);
 
         /// <summary>
         /// Custom player data reference.
@@ -631,7 +632,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 try
                 {
-                    return !Core ? string.Empty : "<#" + LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
+                    return !Core ? string.Empty : $"<#{LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4)))}>{Core.DisplayName}{(playerIndex != 0 ? " " + playerIndex : string.Empty)} " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
                 }
                 catch (Exception)
                 {
@@ -1454,13 +1455,11 @@ namespace BetterLegacy.Core.Components.Player
             UpdateCustomTheme(); UpdateBoostTheme(); UpdateSpeeds(); UpdateTrailLengths(); UpdateTheme();
             if (canvas)
             {
-                bool act = PlayerManager.Players.Count > 1 && Core && ShowNameTags;
+                bool act = ShowNameTags;
                 canvas.SetActive(act);
-
                 if (act && nametagText)
                 {
                     var index = PlayersData.Current.GetMaxIndex(playerIndex, 4);
-
                     nametagText.text = NametagText;
                     nametagBase.material.color = RTColors.FadeColor(ThemeManager.inst.Current.GetPlayerColor(index), 0.3f);
                     nametagBase.transform.localScale = new Vector3(initialHealthCount * 2.25f, 1.5f, 1f);
@@ -1497,7 +1496,7 @@ namespace BetterLegacy.Core.Components.Player
             UpdateControls(); UpdateRotation();
 
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer && (!ProjectArrhythmia.State.InEditor || !EditorLevelManager.inst.loadingLevel))
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.SET_PLAYER_POSITION, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SET_PLAYER_POSITION, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
                     new NetworkFunction.Vector2Parameter(rb.position),
@@ -2470,7 +2469,7 @@ namespace BetterLegacy.Core.Components.Player
                 return false;
 
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HEAL,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_HEAL,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
                     new NetworkFunction.IntParameter(health));
@@ -2498,7 +2497,7 @@ namespace BetterLegacy.Core.Components.Player
                 return;
 
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
                     new NetworkFunction.IntParameter(damage));
@@ -2528,7 +2527,7 @@ namespace BetterLegacy.Core.Components.Player
                 return;
 
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_HIT,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id),
                     new NetworkFunction.IntParameter(0));
@@ -2567,7 +2566,7 @@ namespace BetterLegacy.Core.Components.Player
                 return;
 
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id));
 
@@ -2610,7 +2609,7 @@ namespace BetterLegacy.Core.Components.Player
             float num = Time.time - startBoostTime;
             StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST_STOP,
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_BOOST_STOP,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id));
         }
@@ -3023,8 +3022,8 @@ namespace BetterLegacy.Core.Components.Player
 
         IEnumerator IKill()
         {
-            if (Core && Core.IsLocalPlayer)
-                NetworkManager.inst.RunFunction((int)NetworkFunction.Group.Player, NetworkFunction.PLAYER_KILL,
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.PLAYER_KILL,
                     new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new NetworkFunction.StringParameter(Core.id));
 
@@ -3801,7 +3800,7 @@ namespace BetterLegacy.Core.Components.Player
             d.player = this;
             d.positionOffset = 0.9f;
 
-            canvas.SetActive(PlayerManager.Players.Count > 1 && Core && ShowNameTags);
+            canvas.SetActive(ShowNameTags);
         }
 
         public void UpdateGUI()

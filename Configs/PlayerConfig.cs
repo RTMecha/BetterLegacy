@@ -57,6 +57,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> PlayerNameTags { get; set; }
 
+        /// <summary>
+        /// If nametags should display while in a lobby.
+        /// </summary>
+        public Setting<bool> PlayerNameTagsInLobby { get; set; }
+
         #endregion
 
         #region Loading
@@ -143,6 +148,7 @@ namespace BetterLegacy.Configs
             AllowPlayersToTakeBulletDamage = Bind(this, GENERAL, "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
 
             PlayerNameTags = Bind(this, GENERAL, "Multiplayer NameTags", true, "If enabled and there's more than one person playing, nametags will show which player is which.");
+            PlayerNameTagsInLobby = Bind(this, GENERAL, "Online Multiplayer NameTags", true, "If nametags should display while in a lobby.");
 
             #endregion
 
@@ -196,7 +202,6 @@ namespace BetterLegacy.Configs
         void SetConfigs()
         {
             RTPlayer.UpdateMode = TailUpdateMode.Value;
-            RTPlayer.ShowNameTags = PlayerNameTags.Value;
             RTPlayer.AssetsGlobal = AssetsGlobal.Value;
             RTPlayer.PlayBoostSound = PlaySoundB.Value;
             RTPlayer.PlayBoostRecoverSound = PlaySoundR.Value;
