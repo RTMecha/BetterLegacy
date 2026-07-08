@@ -284,6 +284,14 @@
         {
           "0": {
             "id": "3",
+            "name": "Lobby Button",
+            "text": "<b> [ LOBBY ]",
+            "func": "OpenLobbyPopup"
+          }
+        },
+        {
+          "0": {
+            "id": "4",
             "name": "Config Button",
             "text": "<b> [ CONFIG ]",
             "func": "Config"
@@ -291,7 +299,7 @@
         },
         {
           "0": {
-            "id": "4",
+            "id": "5",
             "name": "Credits Button",
             "text": "<b> [ CREDITS ]",
             "func": {
@@ -305,7 +313,7 @@
         },
         {
           "0": {
-            "id": "5",
+            "id": "6",
             "name": "Extras Button",
             "text": "<b> [ EXTRAS ]",
             "func": {
@@ -321,7 +329,7 @@
     },
     {
       "type": "Image",
-      "id": "6",
+      "id": "7",
       "name": "Spacer",
       "parent_layout": "buttons",
       "rect": {
@@ -338,7 +346,7 @@
         "matoran": "<b> [ <font=Matoran Language 1>PASS</font> ]"
       },
       "parent_layout": "buttons",
-      "select": [ "0", "6" ],
+      "select": [ "0", "7" ],
       "rect": {
         "size": [ "200", "64" ]
       },

@@ -286,14 +286,6 @@
         {
           "0": {
             "id": "7",
-            "name": "Lobby Button",
-            "text": "<b> [ LOBBY ]",
-            "func": "OpenLobbyPopup"
-          }
-        },
-        {
-          "0": {
-            "id": "8",
             "name": "Changelog Button",
             "text": "<b> [ CHANGELOG ]",
             "func": "OpenChangelog"
@@ -301,7 +293,7 @@
         },
         {
           "0": {
-            "id": "9",
+            "id": "8",
             "name": "Tests Button",
             "text": "<b> [ TESTS ]",
             "func": {
@@ -315,7 +307,7 @@
         },
         {
           "0": {
-            "id": "10",
+            "id": "9",
             "name": "Reload Button",
             "text": "<b> [ RELOAD ]",
             "func": "Reload"
