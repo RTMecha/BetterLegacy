@@ -1,14 +1,28 @@
-﻿# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul ?, 2026]
+﻿# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul 9, 2026]
+## Features
+### Core
+- Added "Open Lobby Key" setting to Config Manager > Core > Game. Pressing the set key will open the Lobby Manager.
+- Added "Online Multiplayer NameTags" setting to Config Manager > Core > Game.
+- Added playerIsLocal trigger modifiers. These are used to detect if a specific player is a local one rather than from another client.
+
+### Editor
+- Added a layer range to Pinned Editor Layers.
+
 ## Changes
 ### Core
 - Changed particle object to not be based on the song playing state.
-- The lobby popup now closes when the scene is changed.
+- The Lobby Manager now closes when the scene is changed.
+- Tweaked player keyboard & controller binding.
+
+### Interfaces
+- Moved the [ LOBBY ] button from the Extras Menu to the Main Menu for quick access.
 
 ## Fixes
 - Fixed more issues with single player that occur when there is no lobby.
 - Fixed Multi Object Editor parent search not working.
-- Fixed the cursor not accounting for the lobby popup.
+- Fixed the cursor not accounting for the Lobby Manager.
 - Fixed some modifiers working for clients when they shouldn't.
+- Fixed the page field on the Config Manager not appearing.
 
 -------------------------------------------------------------------
 
