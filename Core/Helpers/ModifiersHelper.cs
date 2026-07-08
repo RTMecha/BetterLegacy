@@ -488,6 +488,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostGreaterEquals), ModifierFunctions.playerBoostGreaterEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostLesser), ModifierFunctions.playerBoostLesser),
             new ModifierTrigger(nameof(ModifierFunctions.playerBoostGreater), ModifierFunctions.playerBoostGreater),
+            new ModifierTrigger(nameof(ModifierFunctions.playerIsLocal), ModifierFunctions.playerIsLocal),
+            new ModifierTrigger(nameof(ModifierFunctions.playerIsLocalIndex), ModifierFunctions.playerIsLocalIndex),
 
             #endregion
             
@@ -3952,10 +3954,10 @@ namespace BetterLegacy.Core.Helpers
                 int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
-                    beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable + (num * Time.deltaTime)) : num;
+                    beatmapObject.IntVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.IntVariable + (num * Time.deltaTime)) : beatmapObject.IntVariable + num;
             }
             else
-                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable + (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifier.GetInt(0, 0, modifierLoop.variables);
+                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable + (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifierLoop.reference.IntVariable + modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         public static void addVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -3970,7 +3972,7 @@ namespace BetterLegacy.Core.Helpers
             int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable + (num * Time.deltaTime)) : num;
+                beatmapObject.IntVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.IntVariable + (num * Time.deltaTime)) : beatmapObject.IntVariable + num;
         }
 
         public static void subVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -3987,10 +3989,10 @@ namespace BetterLegacy.Core.Helpers
                 int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
                 foreach (var beatmapObject in list)
-                    beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable - (num * Time.deltaTime)) : num;
+                    beatmapObject.IntVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.IntVariable - (num * Time.deltaTime)) : beatmapObject.IntVariable - num;
             }
             else
-                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable - (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifier.GetInt(0, 0, modifierLoop.variables);
+                modifierLoop.reference.IntVariable = modifier.constant ? Mathf.FloorToInt(modifierLoop.reference.IntVariable - (modifier.GetInt(0, 0, modifierLoop.variables) * Time.deltaTime)) : modifierLoop.reference.IntVariable - modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
         public static void subVariableOther(Modifier modifier, ModifierLoop modifierLoop)
@@ -4005,7 +4007,7 @@ namespace BetterLegacy.Core.Helpers
             int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.integerVariable - (num * Time.deltaTime)) : num;
+                beatmapObject.IntVariable = modifier.constant ? Mathf.FloorToInt(beatmapObject.IntVariable - (num * Time.deltaTime)) : beatmapObject.IntVariable - num;
         }
 
         public static void setVariable(Modifier modifier, ModifierLoop modifierLoop)
@@ -4040,7 +4042,7 @@ namespace BetterLegacy.Core.Helpers
             int num = modifier.GetInt(0, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable = num;
+                beatmapObject.IntVariable = num;
         }
 
         public static void setVariableRandom(Modifier modifier, ModifierLoop modifierLoop)
@@ -4081,7 +4083,7 @@ namespace BetterLegacy.Core.Helpers
             int max = modifier.GetInt(2, 0, modifierLoop.variables);
 
             foreach (var beatmapObject in list)
-                beatmapObject.integerVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
+                beatmapObject.IntVariable = UnityRandom.Range(min, max < 0 ? max - 1 : max + 1);
         }
 
         public static void setVariableMath(Modifier modifier, ModifierLoop modifierLoop)
@@ -15216,6 +15218,27 @@ namespace BetterLegacy.Core.Helpers
             return RTBeatmap.Current.boosts.Count > modifier.GetInt(0, 0, modifierLoop.variables);
         }
 
+        public static bool playerIsLocal(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
+                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+                return player && player.IsLocalPlayer;
+            }
+
+            return false;
+        }
+
+        public static bool playerIsLocalIndex(Modifier modifier, ModifierLoop modifierLoop)
+        {
+            var index = modifier.GetInt(0, 0, modifierLoop.variables);
+            return PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player && player.IsLocalPlayer;
+        }
+
         #endregion
 
         #region Collide
@@ -16602,7 +16625,7 @@ namespace BetterLegacy.Core.Helpers
             var start = modifier.GetInt(0, 0, modifierLoop.variables);
             var end = modifier.GetInt(1, 10, modifierLoop.variables);
             var num = modifier.GetResultOrDefault(() => start - 1);
-            num += modifier.GetInt(2, 1, modifierLoop.variables);
+            num = Mathf.FloorToInt(num + (modifier.GetInt(2, 1, modifierLoop.variables) * Time.deltaTime));
             modifier.Result = num;
             return num >= end;
         }

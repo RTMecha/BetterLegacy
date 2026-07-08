@@ -3385,6 +3385,26 @@
               }
             ]
           }, // onPlayerJumped
+          {
+            "name": "Object Modifier - playerIsLocal (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerIsLocal (Trigger)",
+                "hint": "Trigger is active if the nearest player to the object is a local player.",
+                "lang": 0
+              }
+            ]
+          }, // playerIsLocal
+          {
+            "name": "Object Modifier - playerIsLocalIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "playerIsLocalIndex (Trigger)",
+                "hint": "Trigger is active if the player at an index is a local player.",
+                "lang": 0
+              }
+            ]
+          }, // playerIsLocalIndex
 
           {
             "name": "Object Modifier - forLoopPlayer (Action)",

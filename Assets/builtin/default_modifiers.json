@@ -1712,6 +1712,18 @@
         "values": [],
         "const": "True"
       }, // onPlayerJumped
+      {
+        "type": 0,
+        "name": "playerIsLocal",
+        "values": [ ],
+        "const": "True"
+      }, // playerIsLocal
+      {
+        "type": 0,
+        "name": "playerIsLocalIndex",
+        "values": [ "0" ],
+        "const": "True"
+      }, // playerIsLocalIndex
 
       {
         "type": 1,

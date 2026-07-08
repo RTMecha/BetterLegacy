@@ -5166,6 +5166,15 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
+                #region Player
+
+                case nameof(ModifierFunctions.playerIsLocalIndex): {
+                        IntegerGenerator(modifier, reference, "Index", 0);
+                        break;
+                    }
+
+                #endregion
+
                 #region Float
 
                 case nameof(ModifierFunctions.pitchEquals):
