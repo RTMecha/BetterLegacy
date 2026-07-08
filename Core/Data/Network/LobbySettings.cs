@@ -13,7 +13,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public const string MAIN_FILE_NAME = "lobby_settings.lss";
         public const int MIN_PLAYER_COUNT = 2;
-        public const int MAX_PLAYER_COUNT = 16;
+        public const int MAX_PLAYER_COUNT = 16; // maybe think about increasing the cap
 
         public FileFormat FileFormat => FileFormat.LSS;
 
@@ -59,6 +59,41 @@ namespace BetterLegacy.Core.Data.Network
         /// </summary>
         public bool CanImportPrefabs { get; set; }
 
+        /// <summary>
+        /// If users can import their own themes into the current level when the host is in the editor.
+        /// </summary>
+        public bool CanImportThemes { get; set; }
+
+        /// <summary>
+        /// If users can create and edit objects (including all timeline object types).
+        /// </summary>
+        public bool CanEditObjects { get; set; } = true;
+
+        /// <summary>
+        /// If users can create and edit markers.
+        /// </summary>
+        public bool CanEditMarkers { get; set; } = true;
+
+        /// <summary>
+        /// If users can draw annotations.
+        /// </summary>
+        public bool CanDrawAnnotations { get; set; } = true;
+
+        /// <summary>
+        /// If users can create and edit event keyframes.
+        /// </summary>
+        public bool CanEditEvents { get; set; } = true;
+
+        /// <summary>
+        /// If users can create and edit pinned editor layers.
+        /// </summary>
+        public bool CanEditPinnedEditorLayers { get; set; }
+
+        /// <summary>
+        /// If users can edit the levels' metadata.
+        /// </summary>
+        public bool CanEditMetaData { get; set; }
+
         #endregion
 
         #endregion
@@ -100,6 +135,12 @@ namespace BetterLegacy.Core.Data.Network
             Channel = orig.Channel;
             CanEdit = orig.CanEdit;
             CanImportPrefabs = orig.CanImportPrefabs;
+            CanImportThemes = orig.CanImportThemes;
+            CanEditObjects = orig.CanEditObjects;
+            CanEditMarkers = orig.CanEditMarkers;
+            CanDrawAnnotations = orig.CanDrawAnnotations;
+            CanEditEvents = orig.CanEditEvents;
+            CanEditMetaData = orig.CanEditMetaData;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -111,6 +152,12 @@ namespace BetterLegacy.Core.Data.Network
             Channel = jn["channel"];
             CanEdit = jn["can_edit"].AsBool;
             CanImportPrefabs = jn["can_import_prefabs"].AsBool;
+            CanImportThemes = jn["can_import_themes"].AsBool;
+            CanEditObjects = jn["can_edit_objects"].AsBool;
+            CanEditMarkers = jn["can_edit_markers"].AsBool;
+            CanDrawAnnotations = jn["can_draw_annotations"].AsBool;
+            CanEditEvents = jn["can_edit_events"].AsBool;
+            CanEditMetaData = jn["can_edit_metadata"].AsBool;
         }
 
         public override JSONNode ToJSON()
@@ -124,6 +171,12 @@ namespace BetterLegacy.Core.Data.Network
             jn["channel"] = Channel ?? string.Empty;
             jn["can_edit"] = CanEdit;
             jn["can_import_prefabs"] = CanImportPrefabs;
+            jn["can_import_themes"] = CanImportThemes;
+            jn["can_edit_objects"] = CanEditObjects;
+            jn["can_edit_markers"] = CanEditMarkers;
+            jn["can_draw_annotations"] = CanDrawAnnotations;
+            jn["can_edit_events"] = CanEditEvents;
+            jn["can_edit_metadata"] = CanEditMetaData;
 
             return jn;
         }
@@ -137,6 +190,12 @@ namespace BetterLegacy.Core.Data.Network
             Channel = reader.ReadString();
             CanEdit = reader.ReadBoolean();
             CanImportPrefabs = reader.ReadBoolean();
+            CanImportThemes = reader.ReadBoolean();
+            CanEditObjects = reader.ReadBoolean();
+            CanEditMarkers = reader.ReadBoolean();
+            CanDrawAnnotations = reader.ReadBoolean();
+            CanEditEvents = reader.ReadBoolean();
+            CanEditMetaData = reader.ReadBoolean();
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -148,6 +207,12 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(Channel);
             writer.Write(CanEdit);
             writer.Write(CanImportPrefabs);
+            writer.Write(CanImportThemes);
+            writer.Write(CanEditObjects);
+            writer.Write(CanEditMarkers);
+            writer.Write(CanDrawAnnotations);
+            writer.Write(CanEditEvents);
+            writer.Write(CanEditMetaData);
         }
 
         #endregion
