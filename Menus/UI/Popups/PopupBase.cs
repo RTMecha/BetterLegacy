@@ -254,6 +254,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
             draggable = gameObject.GetOrAddComponent<DraggableUI>();
             draggable.target = gameObject.transform;
+            draggable.mode = DraggableUI.DragMode.RequiredDrag;
             draggable.onStartDrag = pos => MoveToFront();
         }
 
