@@ -69,7 +69,11 @@ namespace BetterLegacy.Core.Managers
         void OnEnable() => OnActiveChanged(true);
         void OnDisable() => OnActiveChanged(false);
 
-        void Update() => OnTick();
+        void Update()
+        {
+            OnTick();
+            TickCount++;
+        }
 
         void OnDestroy()
         {
@@ -96,6 +100,11 @@ namespace BetterLegacy.Core.Managers
         /// Debug name of the manager.
         /// </summary>
         public string ClassName => managerSettings?.ClassName;
+
+        /// <summary>
+        /// Amount of ticks that have occured since manager started.
+        /// </summary>
+        public long TickCount { get; private set; }
 
         #endregion
 
