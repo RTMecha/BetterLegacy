@@ -2,6 +2,9 @@
 
 using UnityEngine;
 
+using SteamworksFacepunch;
+using SteamworksFacepunch.Data;
+
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
@@ -303,7 +306,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void RequestMusicTime() => NetworkManager.inst.RunFunction(Group.Game, REQUEST_MUSIC_TIME);
 
-        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction(Group.Game, SYNC_LEVEL, sendType: SteamworksFacepunch.Data.SendType.Unreliable,
+        public static void SyncLevelToClients() => NetworkManager.inst.RunFunction(Group.Game, SYNC_LEVEL, sendType: SendType.Unreliable,
                 new BoolParameter(ProjectArrhythmia.State.InEditor),
                 new FloatParameter(AudioManager.inst.CurrentAudioSource.time));
 
@@ -311,7 +314,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void SetClientPlayingState(bool state) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_PLAYING_STATE, new BoolParameter(state));
 
-        public static void LoadClientLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_LEVEL,
+        public static void LoadClientLevel(Level.Level level, SteamId? steamId = null) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_LEVEL, steamId,
             new StringParameter(RandomHelper.CurrentSeed),
             RTBeatmap.Current,
             new BoolParameter(ProjectArrhythmia.State.InStory),
@@ -323,7 +326,7 @@ namespace BetterLegacy.Core.Data.Network
             level.saveData ??= new Level.SaveData(level)
             );
 
-        public static void LoadClientEditorLevel(Level.Level level) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_EDITOR_LEVEL,
+        public static void LoadClientEditorLevel(Level.Level level, SteamId? steamId = null) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_EDITOR_LEVEL, steamId,
             new StringParameter(EditorManager.inst.currentLoadedLevel),
             new StringParameter(RandomHelper.CurrentSeed),
             new ByteArrayParameter(level.ReadZipBytes()),

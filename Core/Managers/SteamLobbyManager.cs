@@ -11,6 +11,7 @@ using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
+using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Popups;
 
@@ -53,8 +54,6 @@ namespace BetterLegacy.Core.Managers
 
         public bool AllLoaded => sceneLoaded && songLoaded && gameDataLoaded;
 
-        long tick;
-
         /* logic notes
         - when a client joins the lobby, all current players from that client get sent to the server.
         - and GameData gets sent from the server to all clients
@@ -84,9 +83,8 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnTick()
         {
-            if (GameData.Current && ProjectArrhythmia.State.InGame && ProjectArrhythmia.State.IsHosting && tick % 100 == 0)
+            if (GameData.Current && ProjectArrhythmia.State.InGame && ProjectArrhythmia.State.IsHosting && TickCount % 100 == 0)
                 NetworkFunction.SyncLevelToClients();
-            tick++;
         }
 
         public void SaveLobbySettings() => LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
@@ -400,7 +398,12 @@ namespace BetterLegacy.Core.Managers
             }
 
             if (ProjectArrhythmia.State.IsHosting)
-                NetworkFunction.SetClientGameData(GameData.Current, friend.Id.ToString());
+            {
+                if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
+                    NetworkFunction.LoadClientEditorLevel(EditorLevelManager.inst.CurrentLevel, friend.Id);
+                else if (ProjectArrhythmia.State.InGame)
+                    NetworkFunction.LoadClientLevel(LevelManager.CurrentLevel, friend.Id);
+            }
         }
 
         void OnLobbyEntered(Lobby lobby)

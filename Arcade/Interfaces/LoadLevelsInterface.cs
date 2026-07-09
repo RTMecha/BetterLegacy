@@ -331,7 +331,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         LevelManager.Levels.Add(level);
 
-                        if (ProjectArrhythmia.State.IsHosting)
+                        if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewLevels)
                             NetworkFunction.SendArcadeLevel(level);
                     }
                     catch (Exception ex)
@@ -357,7 +357,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         NetworkFunction.InitLoadLevelsInterface(totalLevelCount);
                     }
                     UpdateInfo(level.icon, $"Steam: Loading {Path.GetFileName(RTFile.RemoveEndSlash(level.path))}", i);
-                    if (ProjectArrhythmia.State.IsHosting)
+                    if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewLevels)
                         NetworkFunction.SendSteamLevel(level);
                 }));
 
@@ -384,7 +384,7 @@ namespace BetterLegacy.Arcade.Interfaces
             {
                 int collectionIndex = 0;
                 totalLevelCount = levelCollections.Count;
-                if (ProjectArrhythmia.State.IsHosting)
+                if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewLevels)
                     NetworkFunction.InitLoadLevelsInterface(totalLevelCount);
                 while (!levelCollections.IsEmpty())
                 {

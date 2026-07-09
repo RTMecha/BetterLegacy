@@ -47,12 +47,26 @@ namespace BetterLegacy.Core.Data.Network
         /// </summary>
         public string Channel { get; set; } = string.Empty;
 
+        #region Game
+
+        /// <summary>
+        /// If users can view levels and request them to be opened.
+        /// </summary>
+        public bool CanViewLevels { get; set; } = true;
+
+        #endregion
+
         #region Editor
 
         /// <summary>
         /// If users can edit the current level when the host is in the editor.
         /// </summary>
         public bool CanEdit { get; set; } = true;
+
+        /// <summary>
+        /// If users can view editor levels and request them to be opened.
+        /// </summary>
+        public bool CanViewEditorLevels { get; set; } = true;
 
         /// <summary>
         /// If users can import their own prefabs into the current level when the host is in the editor.
@@ -133,7 +147,9 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = orig.Visibility;
             State = orig.State;
             Channel = orig.Channel;
+            CanViewLevels = orig.CanViewLevels;
             CanEdit = orig.CanEdit;
+            CanViewEditorLevels = orig.CanViewEditorLevels;
             CanImportPrefabs = orig.CanImportPrefabs;
             CanImportThemes = orig.CanImportThemes;
             CanEditObjects = orig.CanEditObjects;
@@ -150,7 +166,9 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = Parser.TryParse(jn["visibility"], true, LobbyVisibility.Public);
             State = Parser.TryParse(jn["state"], true, LobbyState.Joinable);
             Channel = jn["channel"];
+            CanViewLevels = jn["can_view_levels"].AsBool;
             CanEdit = jn["can_edit"].AsBool;
+            CanViewEditorLevels = jn["can_view_editor_levels"].AsBool;
             CanImportPrefabs = jn["can_import_prefabs"].AsBool;
             CanImportThemes = jn["can_import_themes"].AsBool;
             CanEditObjects = jn["can_edit_objects"].AsBool;
@@ -169,7 +187,9 @@ namespace BetterLegacy.Core.Data.Network
             jn["visibility"] = Visibility.ToString();
             jn["state"] = State.ToString();
             jn["channel"] = Channel ?? string.Empty;
+            jn["can_view_levels"] = CanViewLevels;
             jn["can_edit"] = CanEdit;
+            jn["can_view_editor_levels"] = CanViewEditorLevels;
             jn["can_import_prefabs"] = CanImportPrefabs;
             jn["can_import_themes"] = CanImportThemes;
             jn["can_edit_objects"] = CanEditObjects;
@@ -188,7 +208,9 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = (LobbyVisibility)reader.ReadByte();
             State = (LobbyState)reader.ReadByte();
             Channel = reader.ReadString();
+            CanViewLevels = reader.ReadBoolean();
             CanEdit = reader.ReadBoolean();
+            CanViewEditorLevels = reader.ReadBoolean();
             CanImportPrefabs = reader.ReadBoolean();
             CanImportThemes = reader.ReadBoolean();
             CanEditObjects = reader.ReadBoolean();
@@ -205,7 +227,9 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write((byte)Visibility);
             writer.Write((byte)State);
             writer.Write(Channel);
+            writer.Write(CanViewLevels);
             writer.Write(CanEdit);
+            writer.Write(CanViewEditorLevels);
             writer.Write(CanImportPrefabs);
             writer.Write(CanImportThemes);
             writer.Write(CanEditObjects);

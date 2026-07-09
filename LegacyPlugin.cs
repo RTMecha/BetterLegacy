@@ -70,6 +70,8 @@ namespace BetterLegacy
 
         public static Core.Threading.TickRunner MainTick { get; set; }
 
+        public const float FIXED_DELTA_TIME = 0.02f;
+
         void Awake()
         {
             inst = this;
@@ -244,17 +246,28 @@ namespace BetterLegacy
 
         void Update()
         {
-            Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
+            // If the game should continue playing in the background while you don't have the app focused.
+            // If you're in a lobby it'll be enabled regardless of the setting to prevent desync and packets backing up.
+            Application.runInBackground = ProjectArrhythmia.State.IsInLobby || CoreConfig.Instance.RunInBackground.Value;
 
             DebugInfo.TickAll();
 
-            if (CoreConfig.Instance.PhysicsUpdateMatchFramerate.Value)
-                Time.fixedDeltaTime = Time.deltaTime;
+            // this has to be done so collision trigger modifiers don't flicker
+            if (ProjectArrhythmia.State.IsInLobby || CoreConfig.Instance.PhysicsUpdateMatchFramerate.Value)
+            {
+                var fps = CoreConfig.Instance.FPSLimit.Value;
+                if (fps != -1) // limit FPS if FPS is not set to unlimited.
+                    fps = RTMath.Clamp(fps, 15, int.MaxValue);
+                else
+                    fps = 300;
+                Time.fixedDeltaTime = !ProjectArrhythmia.State.IsInLobby && CoreConfig.Instance.PhysicsUpdateMatchDeltaTime.Value ? Time.deltaTime : 1f / fps;
+            }
             else
-                Time.fixedDeltaTime = 0.02f; // default
+                Time.fixedDeltaTime = FIXED_DELTA_TIME; // default
 
             try
             {
+                // Cache IsUsingInputField so GetComponent isn't called every time we need to check if the user is using an input field.
                 CoreHelper.IsUsingInputField = LSHelpers.IsUsingInputField();
             }
             catch

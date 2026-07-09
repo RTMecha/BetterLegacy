@@ -80,7 +80,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 inst.dataChunkQueue.Remove(uniqueID);
-                inst.Split(dataQueue.chunks, dataQueue.group, dataQueue.id, dataQueue.side, dataQueue.count, uniqueID);
+                inst.Split(dataQueue.chunks, dataQueue.group, dataQueue.id, dataQueue.side, dataQueue.count, uniqueID, dataQueue.steamId);
             }),
             new NetworkFunction(Side.Server, NetworkFunction.REQUEST_HOST, 1, reader =>
             {
@@ -517,7 +517,16 @@ namespace BetterLegacy.Core.Managers
             }),
 
             new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 9, reader => LevelManager.PlayClient(reader, RTBeatmap.Current.EndOfLevel)),
-            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL, 4, reader => EditorLevelManager.inst?.LoadLevelClient(reader)),
+            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL, 4, reader =>
+            {
+                if (!ProjectArrhythmia.State.InEditor)
+                {
+                    SceneHelper.LoadScene(SceneName.Editor, scene => EditorLevelManager.inst.LoadLevelClient(reader));
+                    return;
+                }
+
+                EditorLevelManager.inst?.LoadLevelClient(reader);
+            }),
 
             new NetworkFunction(Side.Client, NetworkFunction.RESTART_LEVEL, reader => ArcadeHelper.RestartLevel()),
         };
@@ -591,6 +600,8 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnManagerDestroyed() => RemoveEvents();
 
+        #region Network Functions
+
         List<NetworkFunction> GetNetworkFunctions(NetworkFunction.Group group) => (NetworkFunction.Group)group switch
         {
             NetworkFunction.Group.Player => playerFunctions,
@@ -610,10 +621,27 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Runs a function over the network.
         /// </summary>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="steamId">The specific client to send to.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(int id, SteamId? steamId, params IPacket[] packets) => RunFunction(NetworkFunction.Group.Core, id, SendType.Reliable, steamId, packets);
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
         /// <param name="group">Group of the function.</param>
         /// <param name="id">ID of the function.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(NetworkFunction.Group group, int id, params IPacket[] packets) => RunFunction(group, id, SendType.Reliable, packets);
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="group">Group of the function.</param>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="steamId">The specific client to send to.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(NetworkFunction.Group group, int id, SteamId? steamId, params IPacket[] packets) => RunFunction(group, id, SendType.Reliable, steamId, packets);
 
         /// <summary>
         /// Runs a function over the network.
@@ -630,6 +658,19 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Runs a function over the network.
         /// </summary>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="sendType">How the packet data should be handled over the network.</param>
+        /// <param name="steamId">The specific client to send to.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(NetworkFunction.Group group, int id, SendType sendType, SteamId? steamId, params IPacket[] packets)
+        {
+            if (GetNetworkFunctions(group).TryFind(x => x.id == id && x.parameterCount == packets.Length, out NetworkFunction function))
+                RunFunction(function, sendType, steamId, packets);
+        }
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
         /// <param name="function">Function to run.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(NetworkFunction function, params IPacket[] packets) => RunFunction(function, SendType.Reliable, packets);
@@ -638,9 +679,26 @@ namespace BetterLegacy.Core.Managers
         /// Runs a function over the network.
         /// </summary>
         /// <param name="function">Function to run.</param>
+        /// <param name="steamId">The specific client to send to.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(NetworkFunction function, SteamId? steamId, params IPacket[] packets) => RunFunction(function, SendType.Reliable, steamId, packets);
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="function">Function to run.</param>
         /// <param name="sendType">How the packet data should be handled over the network.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
-        public void RunFunction(NetworkFunction function, SendType sendType, params IPacket[] packets)
+        public void RunFunction(NetworkFunction function, SendType sendType, params IPacket[] packets) => RunFunction(function, sendType, null, packets);
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="function">Function to run.</param>
+        /// <param name="sendType">How the packet data should be handled over the network.</param>
+        /// <param name="steamId">The specific client to send to.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(NetworkFunction function, SendType sendType, SteamId? steamId, params IPacket[] packets)
         {
             writingPackets = true;
             var uniqueID = LSText.randomNumString(16);
@@ -654,7 +712,7 @@ namespace BetterLegacy.Core.Managers
             if (length > SPLIT_DATA_COUNT)
             {
                 CoreHelper.Log($"Splitting function [{function.id} {uniqueID}] and sending it to [{function.side}] with send type [{sendType}]\nPacket size: {length}");
-                Split(packetWriter.GetBuffer(), function, length, uniqueID);
+                Split(packetWriter.GetBuffer(), function, length, uniqueID, steamId);
                 return;
             }
             using var writer = new NetworkWriter();
@@ -666,18 +724,18 @@ namespace BetterLegacy.Core.Managers
                 packets[i].WritePacket(writer);
 
             writingPackets = false;
-            Send(function.side, writer.GetData(), sendType);
+            Send(function.side, writer.GetData(), sendType, steamId);
         }
 
-        void Split(byte[] data, NetworkFunction function, long position, string uniqueID)
+        void Split(byte[] data, NetworkFunction function, long position, string uniqueID, SteamId? steamId)
         {
             data = SevenZip.SevenZipCompressor.CompressBytes(data);
             //data = CoreHelper.Compress(data);
             var chunks = data.Split(SPLIT_DATA_COUNT);
-            Split(chunks, (int)function.group, function.id, function.side, position, uniqueID);
+            Split(chunks, (int)function.group, function.id, function.side, position, uniqueID, steamId);
         }
 
-        void Split(List<List<byte>> chunks, int group, int id, NetworkFunction.Side side, long position, string uniqueID)
+        void Split(List<List<byte>> chunks, int group, int id, NetworkFunction.Side side, long position, string uniqueID, SteamId? steamId)
         {
             long size = 0;
             while (!chunks.IsEmpty())
@@ -695,22 +753,25 @@ namespace BetterLegacy.Core.Managers
                 writer.Write(data.Length);
                 writer.Write(data);
                 chunks.RemoveAt(0);
-                Send(side, writer.GetData(), SendType.Reliable | SendType.NoNagle);
+                Send(side, writer.GetData(), SendType.Reliable | SendType.NoNagle, steamId);
 
                 if (size > MAX_BUFFER_SIZE)
                 {
-                    dataChunkQueue[uniqueID] = new DataQueue(chunks, side, group, id, uniqueID, position);
+                    dataChunkQueue[uniqueID] = new DataQueue(chunks, side, group, id, uniqueID, position, steamId);
                     break;
                 }
             }
         }
 
-        void Send(NetworkFunction.Side side, ArraySegment<byte> data, SendType sendType)
+        void Send(NetworkFunction.Side side, ArraySegment<byte> data, SendType sendType, SteamId? steamId = null)
         {
             switch (side)
             {
                 case NetworkFunction.Side.Client: {
-                        SendToAllClients(data, sendType);
+                        if (steamId.TryGetValue(out SteamId value))
+                            SendToClient(value, data, sendType);
+                        else
+                            SendToAllClients(data, sendType);
                         break;
                     }
                 case NetworkFunction.Side.Server: {
@@ -730,6 +791,8 @@ namespace BetterLegacy.Core.Managers
                     }
             }
         }
+
+        #endregion
 
         void SetEvents()
         {
@@ -886,6 +949,18 @@ namespace BetterLegacy.Core.Managers
 
         public void OnServerStarted() => CoreHelper.Log($"Server started!");
 
+        public void SendToClient(SteamId id, ArraySegment<byte> data, SendType sendType)
+        {
+            if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(id, out int netID))
+                SendToClient(netID, data, sendType);
+        }
+
+        public void SendToClient(int id, ArraySegment<byte> data, SendType sendType)
+        {
+            if (clientConnections.TryGetValue(id, out var connection))
+                SendToClient(connection, data, sendType);
+        }
+
         public void SendToClient(ClientNetworkConnection connection, ArraySegment<byte> data, SendType sendType)
         {
             if (Transport.Instance == null || !Transport.Instance.IsActive)
@@ -1031,7 +1106,7 @@ namespace BetterLegacy.Core.Managers
         {
             #region Constructors
 
-            public DataQueue(List<List<byte>> chunks, NetworkFunction.Side side, int group, int id, string uniqueID, long count)
+            public DataQueue(List<List<byte>> chunks, NetworkFunction.Side side, int group, int id, string uniqueID, long count, SteamId? steamId)
             {
                 this.chunks = chunks;
                 this.side = side;
@@ -1039,6 +1114,7 @@ namespace BetterLegacy.Core.Managers
                 this.id = id;
                 this.uniqueID = uniqueID;
                 this.count = count;
+                this.steamId = steamId;
             }
 
             #endregion
@@ -1074,6 +1150,11 @@ namespace BetterLegacy.Core.Managers
             /// Total data length.
             /// </summary>
             public long count;
+
+            /// <summary>
+            /// Steam ID to send to.
+            /// </summary>
+            public SteamId? steamId;
 
             #endregion
 

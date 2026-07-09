@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -490,7 +491,10 @@ namespace BetterLegacy.Editor.Data.Elements
                 Button.onClick = eventData =>
                 {
                     if (ProjectArrhythmia.State.IsClient)
+                    {
+                        NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the folder [{System.IO.Path.GetFileName(path)}]!");
                         return;
+                    }
 
                     if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                     {
@@ -634,7 +638,10 @@ namespace BetterLegacy.Editor.Data.Elements
             Button.onClick = eventData =>
             {
                 if (ProjectArrhythmia.State.IsClient)
+                {
+                    NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the level [{System.IO.Path.GetFileName(Path)}]!");
                     return;
+                }
 
                 if (LevelTemplateEditor.inst.choosingLevelTemplate && Item)
                 {

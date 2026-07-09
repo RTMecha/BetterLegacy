@@ -698,7 +698,7 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(levelInfo.level);
 
                             LevelPanels.Add(levelPanel);
-                            if (ProjectArrhythmia.State.IsHosting)
+                            if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
                                 NetworkFunction.SendEditorLevel(levelPanel);
 
                             if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
@@ -739,7 +739,7 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(path);
                             LevelPanels.Add(levelPanel);
 
-                            if (ProjectArrhythmia.State.IsHosting)
+                            if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
                                 NetworkFunction.SendEditorLevel(levelPanel);
 
                             list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
@@ -759,7 +759,7 @@ namespace BetterLegacy.Editor.Managers
                             LevelPanels.Add(levelPanel);
                         }
 
-                        if (ProjectArrhythmia.State.IsHosting)
+                        if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
                             NetworkFunction.SendEditorLevel(levelPanel);
                     }
                     catch (Exception ex)
