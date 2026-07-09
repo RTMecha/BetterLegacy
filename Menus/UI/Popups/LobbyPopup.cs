@@ -145,6 +145,8 @@ namespace BetterLegacy.Menus.UI.Popups
                     case LobbyTab.Create: {
                             RectValues.Default.SizeDelta(0f, 0f).AssignToRectTransform(tabObject.transform.AsRT());
 
+                            #region Name
+
                             var nameLabel = GenerateText(tabObject.transform, "Lobby Name", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
                             EditorThemeManager.ApplyLightText(nameLabel);
 
@@ -171,6 +173,10 @@ namespace BetterLegacy.Menus.UI.Popups
                             nameField.GetPlaceholderText().text = "Set name...";
                             EditorThemeManager.ApplyInputField(nameField, ThemeGroup.Search_Field_1);
 
+                            #endregion
+
+                            #region Player Count
+
                             var playerCountLabel = GenerateText(tabObject.transform, "Player Count", RectValues.Default.AnchoredPosition(-200f, 200f).SizeDelta(300f, 32f));
                             EditorThemeManager.ApplyLightText(playerCountLabel);
 
@@ -190,6 +196,8 @@ namespace BetterLegacy.Menus.UI.Popups
                             TriggerHelper.AddEventTriggers(playerCountField.gameObject, TriggerHelper.ScrollDeltaInt(playerCountField.inputField, min: LobbySettings.MIN_PLAYER_COUNT, max: LobbySettings.MAX_PLAYER_COUNT));
 
                             EditorThemeManager.ApplyInputField(playerCountField);
+
+                            #endregion
 
                             #region Visibility
 
