@@ -56,12 +56,12 @@ namespace BetterLegacy.Core.Runtime
             if (ProjectArrhythmia.State.Paused)
                 pausedTimer.Update();
 
-            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && ProjectArrhythmia.State.Paused && !LevelManager.LevelEnded && PauseInterface.Current && !PauseInterface.Current.generating)
+            if (!ProjectArrhythmia.Input.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && ProjectArrhythmia.State.Paused && !LevelManager.LevelEnded && PauseInterface.Current && !PauseInterface.Current.generating)
                 PauseInterface.UnPause();
 
             if (ProjectArrhythmia.State.Playing)
             {
-                if (!CoreHelper.IsUsingInputField && !ProjectArrhythmia.State.InEditor)
+                if (!ProjectArrhythmia.Input.IsUsingInputField && !ProjectArrhythmia.State.InEditor)
                 {
                     bool shouldPause = false;
                     foreach (var player in PlayerManager.Players)

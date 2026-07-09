@@ -29,16 +29,6 @@ namespace BetterLegacy.Core.Helpers
         #region Properties
 
         /// <summary>
-        /// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
-        /// </summary>
-        public static float ScreenScale => Screen.width / 1920f;
-
-        /// <summary>
-        /// Inverses the Screen Scale.
-        /// </summary>
-        public static float ScreenScaleInverse => 1f / ScreenScale;
-
-        /// <summary>
         /// The currently open level.
         /// </summary>
         public static Level CurrentLevel => ProjectArrhythmia.State.InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
@@ -71,26 +61,9 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static BeatmapTheme CurrentBeatmapTheme => ProjectArrhythmia.State.InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
 
-        /// <summary>
-        /// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
-        /// </summary>
-        public static Vector2 CurrentResolution => CoreConfig.Instance.Resolution.Value.Resolution;
-
-        /// <summary>
-        /// Gets a resolution from the resolution list.
-        /// </summary>
-        /// <param name="resolution">The resolution index.</param>
-        /// <returns>Returns a Vector2Int representing a resolution.</returns>
-        public static Vector2 GetResolution(int resolution) => CustomEnumHelper.GetValue<ResolutionType>(resolution).Resolution;
-
         #endregion
 
         #region Unity
-
-        /// <summary>
-        /// If the user is interacting with an InputField.
-        /// </summary>
-        public static bool IsUsingInputField { get; set; }
 
         /// <summary>
         /// Tries to find a <see cref="GameObject"/>.
@@ -529,83 +502,6 @@ namespace BetterLegacy.Core.Helpers
         public static void LogStopwatch(System.Diagnostics.Stopwatch sw, string message = "") => Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
 
         #endregion
-
-        #endregion
-
-        #region Controls
-
-        /// <summary>
-        /// Gets the current pressed key.
-        /// </summary>
-        /// <returns>Returns the current pressed down key. If there is none, returns <see cref="KeyCode.None"/>.</returns>
-        public static KeyCode GetKeyCodeDown()
-        {
-            var keyCodes = Enum.GetValues(typeof(KeyCode));
-            for (int i = 0; i < keyCodes.Length; i++)
-            {
-                var name = Enum.GetName(typeof(KeyCode), i);
-                if (!string.IsNullOrEmpty(name) && name.ToLower() != "none" && Input.GetKeyDown((KeyCode)i))
-                    return (KeyCode)i;
-            }
-
-            return KeyCode.None;
-        }
-
-        /// <summary>
-        /// Assigns both Keyboard and Controller to actions.
-        /// </summary>
-        /// <returns>MyGameActions with both Keyboard and Controller inputs.</returns>
-        public static MyGameActions CreateWithBothBindings()
-        {
-            var myGameActions = new MyGameActions();
-
-            // Controller
-            myGameActions.Up.AddDefaultBinding(InputControlType.DPadUp);
-            myGameActions.Up.AddDefaultBinding(InputControlType.LeftStickUp);
-            myGameActions.Down.AddDefaultBinding(InputControlType.DPadDown);
-            myGameActions.Down.AddDefaultBinding(InputControlType.LeftStickDown);
-            myGameActions.Left.AddDefaultBinding(InputControlType.DPadLeft);
-            myGameActions.Left.AddDefaultBinding(InputControlType.LeftStickLeft);
-            myGameActions.Right.AddDefaultBinding(InputControlType.DPadRight);
-            myGameActions.Right.AddDefaultBinding(InputControlType.LeftStickRight);
-            myGameActions.Boost.AddDefaultBinding(InputControlType.RightTrigger);
-            myGameActions.Boost.AddDefaultBinding(InputControlType.RightBumper);
-            myGameActions.Boost.AddDefaultBinding(InputControlType.Action1);
-            myGameActions.Boost.AddDefaultBinding(InputControlType.Action3);
-            myGameActions.Join.AddDefaultBinding(InputControlType.Action1);
-            myGameActions.Join.AddDefaultBinding(InputControlType.Action2);
-            myGameActions.Join.AddDefaultBinding(InputControlType.Action3);
-            myGameActions.Join.AddDefaultBinding(InputControlType.Action4);
-            myGameActions.Pause.AddDefaultBinding(InputControlType.Command);
-            myGameActions.Escape.AddDefaultBinding(InputControlType.Action2);
-            myGameActions.Escape.AddDefaultBinding(InputControlType.Action4);
-
-            // Keyboard
-            myGameActions.Up.AddDefaultBinding(new Key[] { Key.UpArrow });
-            myGameActions.Up.AddDefaultBinding(new Key[] { Key.W });
-            myGameActions.Down.AddDefaultBinding(new Key[] { Key.DownArrow });
-            myGameActions.Down.AddDefaultBinding(new Key[] { Key.S });
-            myGameActions.Left.AddDefaultBinding(new Key[] { Key.LeftArrow });
-            myGameActions.Left.AddDefaultBinding(new Key[] { Key.A });
-            myGameActions.Right.AddDefaultBinding(new Key[] { Key.RightArrow });
-            myGameActions.Right.AddDefaultBinding(new Key[] { Key.D });
-            myGameActions.Boost.AddDefaultBinding(new Key[] { Key.Space });
-            myGameActions.Boost.AddDefaultBinding(new Key[] { Key.Return });
-            myGameActions.Boost.AddDefaultBinding(new Key[] { Key.Z });
-            myGameActions.Boost.AddDefaultBinding(new Key[] { Key.X });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.Space });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.A });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.S });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.D });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.W });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.LeftArrow });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.RightArrow });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.DownArrow });
-            myGameActions.Join.AddDefaultBinding(new Key[] { Key.UpArrow });
-            myGameActions.Pause.AddDefaultBinding(new Key[] { Key.Escape });
-            myGameActions.Escape.AddDefaultBinding(new Key[] { Key.Escape });
-            return myGameActions;
-        }
 
         #endregion
 

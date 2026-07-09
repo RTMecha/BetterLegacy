@@ -92,6 +92,15 @@ namespace BetterLegacy
 
             try
             {
+                ProjectArrhythmia.Input.keyCodes = EnumHelper.GetValues<KeyCode>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to set cache. {ex}");
+            } // Set cache
+
+            try
+            {
                 CoreHelper.Log("Loading configs...");
 
                 RTFile.CreateDirectory(RTFile.ApplicationDirectory + "profile");
@@ -268,7 +277,7 @@ namespace BetterLegacy
             try
             {
                 // Cache IsUsingInputField so GetComponent isn't called every time we need to check if the user is using an input field.
-                CoreHelper.IsUsingInputField = LSHelpers.IsUsingInputField();
+                ProjectArrhythmia.Input.IsUsingInputField = LSHelpers.IsUsingInputField();
             }
             catch
             {
@@ -278,7 +287,7 @@ namespace BetterLegacy
             MainTick?.OnTick();
             PopupBase.TickPopups();
 
-            if (CoreHelper.IsUsingInputField)
+            if (ProjectArrhythmia.Input.IsUsingInputField)
                 return;
 
             if (ProjectArrhythmia.State.InEditor && Input.GetKeyDown(EditorConfig.Instance.EditorCamToggle.Value))

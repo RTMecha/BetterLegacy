@@ -3,6 +3,7 @@
 using HarmonyLib;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
@@ -18,7 +19,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (CoreHelper.IsUsingInputField)
+            if (ProjectArrhythmia.Input.IsUsingInputField)
                 return false;
 
             if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value))

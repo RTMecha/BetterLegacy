@@ -2332,7 +2332,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 if (editorCamera.ResetOffsets.WasPressed)
                     RTEditor.inst.editorInfo.ResetFreecamToCurrent();
 
-                if (CoreHelper.IsUsingInputField || !EditorConfig.Instance.EditorCamUseKeys.Value)
+                if (ProjectArrhythmia.Input.IsUsingInputField || !EditorConfig.Instance.EditorCamUseKeys.Value)
                     return;
 
                 float multiply = 1f;

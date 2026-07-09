@@ -3384,7 +3384,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getCurrentKey(Modifier modifier, ModifierLoop modifierLoop)
         {
-            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = CoreHelper.GetKeyCodeDown().ToString();
+            modifierLoop.variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ProjectArrhythmia.Input.GetKeyCodeDown().ToString();
         }
 
         public static void getColorSlotHexCode(Modifier modifier, ModifierLoop modifierLoop)

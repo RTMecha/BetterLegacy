@@ -3,6 +3,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data;
@@ -141,7 +142,7 @@ namespace BetterLegacy.Editor.Components
                 }
                 else
                 {
-                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
+                    startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                     startPos = note.Size;
                     startSca = note.Scale;
                 }
@@ -164,7 +165,7 @@ namespace BetterLegacy.Editor.Components
             if (!dragging)
                 return;
 
-            var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * (part == DragPart.Base ? 1f : CoreHelper.ScreenScaleInverse);
+            var vector = part == DragPart.Base ? (Vector2)Input.mousePosition : ProjectArrhythmia.Input.MousePositionScaled;
 
             switch (part)
             {

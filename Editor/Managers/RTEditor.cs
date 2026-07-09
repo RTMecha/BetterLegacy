@@ -1586,7 +1586,7 @@ namespace BetterLegacy.Editor.Managers
             mousePicker?.SetActive(pickerActive);
 
             if (mousePicker && mousePickerRT && pickerActive)
-                mousePickerRT.anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+                mousePickerRT.anchoredPosition = ProjectArrhythmia.Input.MousePositionScaled;
         }
 
         void UpdateTooltip()
@@ -1611,7 +1611,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (tooltipActive)
             {
-                float num = CoreHelper.ScreenScaleInverse;
+                float num = ProjectArrhythmia.Window.ScreenScaleInverse;
                 float x = mouseTooltipRT.sizeDelta.x;
                 float y = mouseTooltipRT.sizeDelta.y;
                 var tooltipOffset = Vector3.zero;
@@ -1721,7 +1721,7 @@ namespace BetterLegacy.Editor.Managers
             if (!selectingKey)
                 return;
 
-            var key = CoreHelper.GetKeyCodeDown();
+            var key = ProjectArrhythmia.Input.GetKeyCodeDown();
 
             if (key == KeyCode.None)
                 return;

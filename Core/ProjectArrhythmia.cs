@@ -8,6 +8,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 
+using UnityInput = UnityEngine.Input;
 using Version = BetterLegacy.Core.Data.Version;
 
 namespace BetterLegacy.Core
@@ -135,6 +136,16 @@ namespace BetterLegacy.Core
             /// If the window is currently borderless.
             /// </summary>
             public static bool borderless;
+
+            /// <summary>
+            /// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
+            /// </summary>
+            public static float ScreenScale => Screen.width / 1920f;
+
+            /// <summary>
+            /// Inverses the Screen Scale.
+            /// </summary>
+            public static float ScreenScaleInverse => 1f / ScreenScale;
 
             #endregion
 
@@ -277,6 +288,50 @@ namespace BetterLegacy.Core
 
                 Application.targetFrameRate = fps;
                 CoreHelper.Log($"Apply Video Settings\nResolution: [{Screen.currentResolution}]\nFullscreen: [{Screen.fullScreen}]\nVSync Count: [{QualitySettings.vSyncCount}]");
+            }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Library of input states.
+        /// </summary>
+        public static class Input
+        {
+            #region Values
+
+            /// <summary>
+            /// If the user is interacting with an InputField.
+            /// </summary>
+            public static bool IsUsingInputField { get; set; }
+
+            /// <summary>
+            /// Mouse position scaled inversely by the screen scale.
+            /// </summary>
+            public static Vector2 MousePositionScaled => UnityInput.mousePosition * Window.ScreenScaleInverse;
+
+            /// <summary>
+            /// Array of <see cref="KeyCode"/>s.
+            /// </summary>
+            public static KeyCode[] keyCodes;
+
+            #endregion
+
+            #region Functions
+
+            /// <summary>
+            /// Gets the current pressed key.
+            /// </summary>
+            /// <returns>Returns the current pressed down key. If there is none, returns <see cref="KeyCode.None"/>.</returns>
+            public static KeyCode GetKeyCodeDown()
+            {
+                for (int i = 0; i < keyCodes.Length; i++)
+                {
+                    var keyCode = keyCodes[i];
+                    if (keyCode != KeyCode.None && UnityInput.GetKeyDown(keyCode))
+                        return keyCode;
+                }
+                return KeyCode.None;
             }
 
             #endregion

@@ -261,10 +261,10 @@ namespace BetterLegacy.Editor.Managers
 		{
 			var rect2 = BrightnessPanelRect;
 			var offset = baseColorPicker.transform.position;
-			offset.y -= 100f * CoreHelper.ScreenScale;
+			offset.y -= 100f * ProjectArrhythmia.Window.ScreenScale;
 			var mousePosition = Input.mousePosition;
 
-			var pos = new Vector2(mousePosition.x - offset.x, mousePosition.y - offset.y) * CoreHelper.ScreenScaleInverse;
+			var pos = new Vector2(mousePosition.x - offset.x, mousePosition.y - offset.y) * ProjectArrhythmia.Window.ScreenScaleInverse;
 			pos.x /= rect2.width;
 			pos.y /= rect2.height;
 
@@ -279,7 +279,7 @@ namespace BetterLegacy.Editor.Managers
 		{
             colorCoord = new Vector2(saturation, value);
 			baseColorPicker.brightnessPanelSlider.GetComponent<Image>().color = ((value <= 0.5) ? LSColors.white : LSColors.black);
-			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * ((panelScreenRect.width - 2.5f) * CoreHelper.ScreenScale), value * ((panelScreenRect.height - 2.5f) * CoreHelper.ScreenScale)) * CoreHelper.ScreenScaleInverse;
+			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * ((panelScreenRect.width - 2.5f) * ProjectArrhythmia.Window.ScreenScale), value * ((panelScreenRect.height - 2.5f) * ProjectArrhythmia.Window.ScreenScale)) * ProjectArrhythmia.Window.ScreenScaleInverse;
 		}
 
 		void RenderEditor(Color color)

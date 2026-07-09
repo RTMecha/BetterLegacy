@@ -302,7 +302,7 @@ namespace BetterLegacy.Core.Managers
                 infos[i].Tick();
 
             if (canvas != null)
-                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+                canvas.Canvas.scaleFactor = ProjectArrhythmia.Window.ScreenScale;
         }
 
         /// <summary>

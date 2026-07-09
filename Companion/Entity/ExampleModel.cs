@@ -152,7 +152,7 @@ namespace BetterLegacy.Companion.Entity
             if (baseCanvas && canvas)
             {
                 UpdateActive();
-                canvas.scaleFactor = CoreHelper.ScreenScale;
+                canvas.scaleFactor = ProjectArrhythmia.Window.ScreenScale;
             }
 
             if ((!CoreConfig.Instance.BorderlessFullscreen.Value && !Application.isFocused) || !Visible)
@@ -413,7 +413,7 @@ namespace BetterLegacy.Companion.Entity
 
                 CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(position.x, position.y);
                 reference.dragPos = new Vector3(position.x, position.y);
                 reference.dragging = true;
@@ -646,7 +646,7 @@ namespace BetterLegacy.Companion.Entity
                 if (!reference || !reference.canDragLeftHand || !part)
                     return;
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(part.position.x, part.position.y);
                 reference.draggingLeftHand = true;
 
@@ -689,7 +689,7 @@ namespace BetterLegacy.Companion.Entity
                 if (!reference || !reference.canDragRightHand || !part)
                     return;
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(part.position.x, part.position.y);
                 reference.draggingRightHand = true;
 
@@ -2655,7 +2655,7 @@ namespace BetterLegacy.Companion.Entity
 
                 CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
                 reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
                 reference.dragging = true;
@@ -2690,7 +2690,7 @@ namespace BetterLegacy.Companion.Entity
 
                 var reference = thisElement.model.reference;
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
                 reference.draggingLeftHand = true;
             }
@@ -2718,7 +2718,7 @@ namespace BetterLegacy.Companion.Entity
 
                 var reference = thisElement.model.reference;
 
-                reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                reference.startMousePos = ProjectArrhythmia.Input.MousePositionScaled;
                 reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
                 reference.draggingRightHand = true;
             }

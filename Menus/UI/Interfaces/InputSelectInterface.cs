@@ -243,7 +243,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             UpdateText();
 
-            if (!CoreHelper.IsUsingInputField && !PlayerManager.Players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
+            if (!ProjectArrhythmia.Input.IsUsingInputField && !PlayerManager.Players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
                 Continue();
         }
 

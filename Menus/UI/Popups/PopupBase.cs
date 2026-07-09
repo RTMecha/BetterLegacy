@@ -186,7 +186,7 @@ namespace BetterLegacy.Menus.UI.Popups
         public static void TickPopups()
         {
             if (canvas != null)
-                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+                canvas.Canvas.scaleFactor = ProjectArrhythmia.Window.ScreenScale;
             for (int i = 0; i < popups.Count; i++)
                 popups[i].Tick();
         }

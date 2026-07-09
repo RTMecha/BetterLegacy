@@ -1746,7 +1746,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public override void UpdateControls()
         {
-            if (CurrentTab == Tab.Queue && !CoreHelper.IsUsingInputField && isOpen && !generating)
+            if (CurrentTab == Tab.Queue && !ProjectArrhythmia.Input.IsUsingInputField && isOpen && !generating)
             {
                 if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
                     ArcadeHelper.CopyArcadeQueue();

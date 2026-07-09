@@ -339,7 +339,7 @@ namespace BetterLegacy.Editor.Managers
             if (!movingTimeline)
                 return;
 
-            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            var vector = ProjectArrhythmia.Input.MousePositionScaled;
             //float multiply = 12f / EditorManager.inst.Zoom;
             //float multiply = AudioManager.inst.CurrentAudioSource.clip.length / 10f / EditorManager.inst.Zoom;
             float multiply = (EditorManager.inst.zoomFloat * 1000f) / AudioManager.inst.CurrentAudioSource.clip.length / (EditorManager.inst.zoomFloat * 10f);

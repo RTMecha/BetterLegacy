@@ -130,7 +130,7 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDown()
         {
-            if (!ProjectArrhythmia.State.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
+            if (!ProjectArrhythmia.State.IsEditing || ProjectArrhythmia.Input.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
 
             // don't drag object if Example is being dragged.

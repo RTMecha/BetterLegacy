@@ -190,7 +190,7 @@ namespace BetterLegacy.Menus.UI.Popups
             if (!watchingKeybind)
                 return;
 
-            var key = CoreHelper.GetKeyCodeDown();
+            var key = ProjectArrhythmia.Input.GetKeyCodeDown();
 
             if (key == KeyCode.None)
                 return;

@@ -111,10 +111,10 @@ namespace BetterLegacy.Story
 
         public override void OnTick()
         {
-            if (CoreHelper.IsUsingInputField)
+            if (ProjectArrhythmia.Input.IsUsingInputField)
                 return;
 
-            var key = CoreHelper.GetKeyCodeDown();
+            var key = ProjectArrhythmia.Input.GetKeyCodeDown();
 
             if (key == KeyCode.None)
                 return;

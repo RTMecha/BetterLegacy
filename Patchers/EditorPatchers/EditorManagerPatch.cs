@@ -345,12 +345,12 @@ namespace BetterLegacy.Patchers
 
             if (ProjectArrhythmia.State.Playing)
             {
-                if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !CoreHelper.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
+                if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !ProjectArrhythmia.Input.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
                     RTEditor.inst.TogglePreview();
 
                 if (Instance.isEditing)
                 {
-                    if (!CoreHelper.IsUsingInputField)
+                    if (!ProjectArrhythmia.Input.IsUsingInputField)
                         Instance.handleViewShortcuts();
 
                     Instance.updatePointer();

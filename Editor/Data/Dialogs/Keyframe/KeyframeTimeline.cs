@@ -364,7 +364,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (Input.GetKey(EditorConfig.Instance.BinControlKey.Value))
                     return;
 
-                if (Dialog.IsCurrent && MouseOver && !CoreHelper.IsUsingInputField && !EditorTimeline.inst.isOverMainTimeline)
+                if (Dialog.IsCurrent && MouseOver && !ProjectArrhythmia.Input.IsUsingInputField && !EditorTimeline.inst.isOverMainTimeline)
                 {
                     if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                         ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + EditorConfig.Instance.KeyframeZoomAmount.Value * multiply;
@@ -953,7 +953,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!movingTimeline)
                 return;
 
-            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            var vector = ProjectArrhythmia.Input.MousePositionScaled;
             float multiply = 12f / ObjEditor.inst.Zoom;
             SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - ObjEditor.inst.DragStartPos.x) / Screen.width) * multiply));
         }

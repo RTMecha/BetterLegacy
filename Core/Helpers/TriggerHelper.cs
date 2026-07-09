@@ -316,7 +316,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var pointerEventData = (PointerEventData)eventData;
-            EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+            EditorManager.inst.DragStartPos = ProjectArrhythmia.Input.MousePositionScaled;
             if (pointerEventData.button == PointerEventData.InputButton.Middle)
             {
                 EditorTimeline.inst.StartTimelineDrag();
@@ -335,7 +335,7 @@ namespace BetterLegacy.Core.Helpers
             if (EditorTimeline.inst.movingTimeline)
                 return;
 
-            var vector = ((PointerEventData)eventData).position * CoreHelper.ScreenScaleInverse;
+            var vector = ProjectArrhythmia.Input.MousePositionScaled;
 
             EditorManager.inst.SelectionRect.xMin = vector.x < EditorManager.inst.DragStartPos.x ? vector.x : EditorManager.inst.DragStartPos.x;
             EditorManager.inst.SelectionRect.xMax = vector.x < EditorManager.inst.DragStartPos.x ? EditorManager.inst.DragStartPos.x : vector.x;
@@ -414,7 +414,7 @@ namespace BetterLegacy.Core.Helpers
                 var pointerEventData = (PointerEventData)eventData;
                 if (pointerEventData.button == PointerEventData.InputButton.Middle)
                 {
-                    EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+                    EditorManager.inst.DragStartPos = ProjectArrhythmia.Input.MousePositionScaled;
                     timeline.StartTimelineDrag();
                     return;
                 }
@@ -596,7 +596,7 @@ namespace BetterLegacy.Core.Helpers
             var pointerEventData = (PointerEventData)eventData;
             if (pointerEventData.button == PointerEventData.InputButton.Middle)
             {
-                EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+                EditorManager.inst.DragStartPos = ProjectArrhythmia.Input.MousePositionScaled;
                 EditorTimeline.inst.StartTimelineDrag();
                 return;
             }

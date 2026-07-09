@@ -235,8 +235,8 @@ namespace BetterLegacy.Editor.Managers
             LayoutRebuilder.ForceRebuildLayoutImmediate(contextMenuLayout.transform.AsRT());
             LayoutRebuilder.ForceRebuildLayoutImmediate(contextMenu.transform.AsRT());
 
-            var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * CoreHelper.ScreenScaleInverse) - width);
+            var pos = ProjectArrhythmia.Input.MousePositionScaled;
+            pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * ProjectArrhythmia.Window.ScreenScaleInverse) - width);
             pos.y = Mathf.Clamp(pos.y, contextMenuLayout.transform.AsRT().sizeDelta.y, float.PositiveInfinity);
             contextMenu.transform.AsRT().anchoredPosition = pos;
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, contextMenuLayout.transform.AsRT().sizeDelta.y);

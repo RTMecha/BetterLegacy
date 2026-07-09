@@ -609,7 +609,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanBoost
         {
-            get => ProjectArrhythmia.State.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !ProjectArrhythmia.State.Paused && !CoreHelper.IsUsingInputField;
+            get => ProjectArrhythmia.State.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !ProjectArrhythmia.State.Paused && !ProjectArrhythmia.Input.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -1823,7 +1823,7 @@ namespace BetterLegacy.Core.Components.Player
             rb.gravityScale = 0f;
 
             if (Alive && Core.Input && Core.active && CanMove && !ProjectArrhythmia.State.Paused &&
-                (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
+                (CoreConfig.Instance.AllowControlsInputField.Value || !ProjectArrhythmia.Input.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!ProjectArrhythmia.State.InEditor || !RTEditor.inst.editorInfo.freecamEnabled))
             {
                 Jumping = false;

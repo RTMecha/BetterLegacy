@@ -197,7 +197,7 @@ namespace BetterLegacy.Companion.Entity
         {
             get
             {
-                var vector = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                var vector = ProjectArrhythmia.Input.MousePositionScaled;
 
                 float x = startMousePos.x - vector.x;
                 float y = startMousePos.y - vector.y;

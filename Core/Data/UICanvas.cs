@@ -33,7 +33,7 @@ namespace BetterLegacy.Core.Data
             if (dontDestroy)
                 UnityObject.DontDestroyOnLoad(gameObject);
 
-            gameObject.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
+            gameObject.transform.localScale = Vector3.one * ProjectArrhythmia.Window.ScreenScale;
             var rectTransform = gameObject.AddComponent<RectTransform>();
             rectTransform.anchoredPosition = new Vector2(960f, 540f);
             rectTransform.sizeDelta = new Vector2(1920f, 1080f);
@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Data
             var canvas = gameObject.AddComponent<Canvas>();
             canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None | AdditionalCanvasShaderChannels.TexCoord1 | AdditionalCanvasShaderChannels.Tangent | AdditionalCanvasShaderChannels.Normal;
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = CoreHelper.ScreenScale;
+            canvas.scaleFactor = ProjectArrhythmia.Window.ScreenScale;
             canvas.sortingOrder = sortingOrder;
 
             var canvasGroup = gameObject.AddComponent<CanvasGroup>();

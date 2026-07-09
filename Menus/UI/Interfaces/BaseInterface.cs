@@ -1245,7 +1245,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            if (CoreHelper.IsUsingInputField)
+            if (ProjectArrhythmia.Input.IsUsingInputField)
                 return;
 
             if (actions.Left.WasPressed)
@@ -1354,7 +1354,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 Camera.main.backgroundColor = Theme.backgroundColor;
 
             if (canvas != null)
-                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+                canvas.Canvas.scaleFactor = ProjectArrhythmia.Window.ScreenScale;
 
             if (elements == null)
                 return;

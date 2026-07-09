@@ -241,7 +241,7 @@ namespace BetterLegacy.Core.Runtime
 
         public override void Tick()
         {
-            var logTick = !CoreHelper.IsUsingInputField && Input.GetKeyDown(KeyCode.I);
+            var logTick = !ProjectArrhythmia.Input.IsUsingInputField && Input.GetKeyDown(KeyCode.I);
             System.Diagnostics.Stopwatch sw = logTick ? CoreHelper.StartNewStopwatch() : null;
 
             AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
