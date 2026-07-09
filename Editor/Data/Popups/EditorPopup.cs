@@ -24,6 +24,8 @@ namespace BetterLegacy.Editor.Data.Popups
     /// </summary>
     public class EditorPopup : Exists
     {
+        #region Constructors
+
         public EditorPopup() { }
 
         public EditorPopup(string name)
@@ -31,6 +33,8 @@ namespace BetterLegacy.Editor.Data.Popups
             Name = name;
             UpdateCustom();
         }
+
+        #endregion
 
         #region Values
 
@@ -153,7 +157,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Updates the parent depending on the current state of the editor.
