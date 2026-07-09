@@ -24,6 +24,11 @@ namespace BetterLegacy.Editor.Managers
         #region Values
 
         /// <summary>
+        /// The color picker popup.
+        /// </summary>
+        public ColorPickerPopup Popup { get; set; }
+
+        /// <summary>
         /// The base color picker.
         /// </summary>
         public ColorPicker baseColorPicker;
@@ -117,11 +122,18 @@ namespace BetterLegacy.Editor.Managers
 
         public override void OnInit()
         {
-			var dialog = EditorManager.inst.GetDialog(EditorPopup.COLOR_PICKER).Dialog.Find("content");
-			baseColorPicker = dialog.Find("Color Picker").GetComponent<ColorPicker>();
-			var draggable = dialog.gameObject.AddComponent<DraggableUI>();
-			draggable.target = dialog;
-            draggable.mode = DraggableUI.DragMode.RequiredDrag;
+            Popup = new ColorPickerPopup();
+            var legacyDialog = EditorManager.inst.GetDialog(EditorPopup.COLOR_PICKER).Dialog;
+            var dialog = legacyDialog.Find("content");
+            Popup.Assign(legacyDialog.gameObject);
+            Popup.Dragger = Popup.GameObject.GetOrAddComponent<DraggableUI>();
+            Popup.Dragger.target = Popup.GameObject.transform;
+            Popup.Dragger.ogPos = Popup.GameObject.transform.position;
+            Popup.Dragger.mode = DraggableUI.DragMode.RequiredDrag;
+            Popup.size = Popup.GameObject.transform.AsRT().sizeDelta;
+            legacyDialog.gameObject.SetActive(false);
+
+            baseColorPicker = dialog.Find("Color Picker").GetComponent<ColorPicker>();
 
 			baseColorPicker.hueSliderTexture = new Texture2D(1, 359, TextureFormat.ARGB32, false);
 			Color[] array = new Color[359];
@@ -148,8 +160,9 @@ namespace BetterLegacy.Editor.Managers
 			var topPanel = dialog.Find("title").GetComponent<Image>();
 			EditorThemeManager.ApplyGraphic(topPanel, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
-			var title = topPanel.transform.Find("Text").GetComponent<Text>();
-			EditorThemeManager.ApplyLightText(title);
+            Popup.Title = topPanel.transform.Find("Text").GetComponent<Text>();
+            Popup.title = Popup.Title.text;
+            EditorThemeManager.ApplyLightText(Popup.Title);
 
 			closeButton = topPanel.transform.Find("x").GetComponent<Button>();
 			Destroy(closeButton.GetComponent<Animator>());
@@ -225,9 +238,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="cancel">Function to run on cancel.</param>
 		public void Show(Color currentColor, Action<Color, string> colorChanged, Action<Color, string> colorSaved, Action cancel = null)
 		{
-			RTEditor.inst.ShowDialog(EditorPopup.COLOR_PICKER);
+            Popup.Open();
 
-			this.colorChanged = null;
+            this.colorChanged = null;
 			SwitchCurrentColor(currentColor);
 			this.colorSaved = colorSaved;
 			this.colorChanged = colorChanged;
@@ -251,9 +264,9 @@ namespace BetterLegacy.Editor.Managers
 			offset.y -= 100f * CoreHelper.ScreenScale;
 			var mousePosition = Input.mousePosition;
 
-			var pos = new Vector2((mousePosition.x - offset.x) * CoreHelper.ScreenScale, (mousePosition.y - offset.y) * CoreHelper.ScreenScale);
-			pos.x /= rect2.width * CoreHelper.ScreenScale;
-			pos.y /= rect2.height * CoreHelper.ScreenScale;
+			var pos = new Vector2(mousePosition.x - offset.x, mousePosition.y - offset.y) * CoreHelper.ScreenScaleInverse;
+			pos.x /= rect2.width;
+			pos.y /= rect2.height;
 
 			pos = RTMath.Clamp(pos, Vector2.zero, Vector2.one);
 
@@ -266,7 +279,7 @@ namespace BetterLegacy.Editor.Managers
 		{
             colorCoord = new Vector2(saturation, value);
 			baseColorPicker.brightnessPanelSlider.GetComponent<Image>().color = ((value <= 0.5) ? LSColors.white : LSColors.black);
-			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * panelScreenRect.width - 2.5f, value * panelScreenRect.height - 2.5f) * CoreHelper.ScreenScaleInverse;
+			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * ((panelScreenRect.width - 2.5f) * CoreHelper.ScreenScale), value * ((panelScreenRect.height - 2.5f) * CoreHelper.ScreenScale)) * CoreHelper.ScreenScaleInverse;
 		}
 
 		void RenderEditor(Color color)
@@ -396,7 +409,7 @@ namespace BetterLegacy.Editor.Managers
 
 		void Cancel()
 		{
-			RTEditor.inst.HideDialog(EditorPopup.COLOR_PICKER);
+            Popup.Close();
 			cancel?.Invoke();
 		}
 
@@ -412,8 +425,8 @@ namespace BetterLegacy.Editor.Managers
 				EditorManager.inst.DisplayNotification($"Color Picker failed to save the color due to an exception.", 4f, EditorManager.NotificationType.Error);
 				CoreHelper.LogException(ex);
             }
-			RTEditor.inst.HideDialog(EditorPopup.COLOR_PICKER);
-		}
+            Popup.Close();
+        }
 
 		#endregion
 	}

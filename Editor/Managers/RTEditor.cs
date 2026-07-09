@@ -5918,18 +5918,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
-        /// Shows a dialog.
-        /// </summary>
-        /// <param name="name">Name of the dialog to show.</param>
-        public void ShowDialog(string name) => EditorManager.inst.ShowDialog(name);
-
-        /// <summary>
-        /// Hides a dialog.
-        /// </summary>
-        /// <param name="name">Name of the dialog to hide.</param>
-        public void HideDialog(string name) => EditorManager.inst.HideDialog(name);
-
-        /// <summary>
         /// Sets a dialogs' status.
         /// </summary>
         /// <param name="dialogName">The dialog to set the status of.</param>
