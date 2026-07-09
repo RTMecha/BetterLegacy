@@ -98,6 +98,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> PhysicsUpdateMatchFramerate { get; set; }
 
         /// <summary>
+        /// Forces all physics related things to match the delta time.
+        /// </summary>
+        public Setting<bool> PhysicsUpdateMatchDeltaTime { get; set; }
+
+        /// <summary>
         /// The player will not move while an InputField is being used with this off.
         /// </summary>
         public Setting<bool> AllowControlsInputField { get; set; }
@@ -412,7 +417,8 @@ namespace BetterLegacy.Configs
 
             #region Game
 
-            PhysicsUpdateMatchFramerate = Bind(this, GAME, "Physics Update Match Framerate", false, "Forces all physics related things to match your FPS.");
+            PhysicsUpdateMatchFramerate = Bind(this, GAME, "Physics Update Match Framerate", true, "Forces all physics related things to match your FPS.");
+            PhysicsUpdateMatchDeltaTime = Bind(this, GAME, "Physics Update Match Delta Time", false, "Forces all physics related things to match the delta time.");
             AllowControlsInputField = Bind(this, GAME, "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
             AntiAliasing = Bind(this, GAME, "Anti-Aliasing", true, "If anti-aliasing is on or not.");
             RunInBackground = Bind(this, GAME, "Run In Background", true, "If you want the game to continue playing when minimized.");
