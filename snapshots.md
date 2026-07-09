@@ -1,4 +1,18 @@
-﻿# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul 9, 2026]
+﻿# snapshot-2026.7.5 - (Multiplayer Playtest) [Jul ?, 2026]
+## Features
+### Core
+- Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
+
+### Editor
+- Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
+
+## Fixes
+- Fixed the color picker value/saturation area not being scaled correctly to the game resolution.
+- Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul 9, 2026]
 ## Features
 ### Core
 - Added "Open Lobby Key" setting to Config Manager > Core > Game. Pressing the set key will open the Lobby Manager.
