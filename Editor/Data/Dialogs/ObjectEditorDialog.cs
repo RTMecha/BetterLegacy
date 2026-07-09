@@ -891,11 +891,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Position Z
             {
                 var positionBase = ObjEditor.inst.KeyframeDialogs[0].transform.Find("position");
+                positionBase.AsRT().sizeDelta = new Vector2(366f, 32f);
 
                 var posZ = positionBase.Find("x").gameObject.Duplicate(positionBase, "z");
-
-                CoreHelper.Destroy(positionBase.GetComponent<HorizontalLayoutGroup>(), true);
-                var grp = positionBase.gameObject.AddComponent<GridLayoutGroup>();
 
                 CoreHelper.Destroy(positionBase.Find("x/input").GetComponent<LayoutElement>(), true);
                 CoreHelper.Destroy(positionBase.Find("y/input").GetComponent<LayoutElement>(), true);
@@ -914,8 +912,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var posZLabelText = posZLabel.GetComponent<Text>();
                 posZLabelText.text = "Position Z";
                 EditorThemeManager.ApplyLightText(posZLabelText);
-
-                positionBase.AsRT().sizeDelta = new Vector2(553f, 32f);
             }
 
             // Opacity

@@ -123,6 +123,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool interactible = true;
 
+        /// <summary>
+        /// If the UI is shown.
+        /// </summary>
+        public bool enabled = true;
+
         #region InputField
 
         /// <summary>
@@ -204,6 +209,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             label = jn["l"] ?? string.Empty;
             multiValue = jn["multi_val"] ?? "1";
             interactible = jn["interact"] == null || jn["interact"].AsBool;
+            enabled = jn["enabled"] == null || jn["enabled"].AsBool;
 
             switch (type)
             {
@@ -264,6 +270,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["multi_val"] = multiValue ?? "1";
             if (!interactible)
                 jn["interact"] = interactible;
+            if (!enabled)
+                jn["enabled"] = enabled;
 
             switch (type)
             {
@@ -311,6 +319,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             label = reader.ReadString();
             multiValue = reader.ReadString();
             interactible = reader.ReadBoolean();
+            enabled = reader.ReadBoolean();
             switch (type)
             {
                 case UIType.InputField: {
@@ -342,6 +351,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             writer.Write(label);
             writer.Write(multiValue);
             writer.Write(interactible);
+            writer.Write(enabled);
             switch (type)
             {
                 case UIType.InputField: {
@@ -377,6 +387,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             label = other.label;
             multiValue = other.multiValue;
             interactible = other.interactible;
+            enabled = other.enabled;
 
             overrideScroll = other.overrideScroll;
             scrollAmount = other.scrollAmount;

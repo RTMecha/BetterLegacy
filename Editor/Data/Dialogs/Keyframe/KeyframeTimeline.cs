@@ -1620,21 +1620,48 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/random_active");
                         RenderDialog(animatable);
-                    }),
+                    }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/random_active")),
                     new ButtonElement("Show Relative Toggle", () =>
                     {
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/relative_active");
                         RenderDialog(animatable);
-                    }),
+                    }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/relative_active")),
                     new ButtonElement("Show Flip Buttons", () =>
                     {
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/flip_active");
                         RenderDialog(animatable);
-                    }),
+                    }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/flip_active")),
                     new ButtonElement("Show 3D Axis Toggles", () =>
                     {
                         animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
                         RenderDialog(animatable);
+                    }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/3d_axis_active")),
+                    new ButtonElement("Unhide Values", () =>
+                    {
+                        for (int i = 0; i < animatable.EditorData.displays.Count; i++)
+                        {
+                            var display = animatable.EditorData.displays[i];
+                            switch (type)
+                            {
+                                case 0: {
+                                        if (!string.IsNullOrEmpty(display.path) && display.path.Contains("position"))
+                                            display.enabled = true;
+                                        break;
+                                    }
+                                case 1: {
+                                        if (!string.IsNullOrEmpty(display.path) && display.path.Contains("scale"))
+                                            display.enabled = true;
+                                        break;
+                                    }
+                                case 2: {
+                                        if (!string.IsNullOrEmpty(display.path) && display.path.Contains("rotation"))
+                                            display.enabled = true;
+                                        break;
+                                    }
+                            }
+                        }
+                        for (int i = 0; i < dialog.EventValueElements.Count; i++)
+                            dialog.EventValueElements[i].Render(type, i, selected, firstKF, animatable);
                     }),
                     new SpacerElement(),
                     new ButtonElement("Remove Keyframe Settings", () =>

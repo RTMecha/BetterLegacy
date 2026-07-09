@@ -1263,10 +1263,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             };
             var axis = RTString.axis.GetAtOrDefault(valueIndex, string.Empty);
             var complexityPath = $"{typeName}_keyframe/{axis}_axis";
-            EditorHelper.SetComplexity(GameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex);
+            EditorHelper.SetComplexity(GameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
             if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
             {
-                EditorHelper.SetComplexity(label.gameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex);
+                EditorHelper.SetComplexity(label.gameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
                 label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
             }
         }
@@ -1342,8 +1342,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Field.eventTrigger.triggers.Clear();
 
+            var resetValue = getResetValue?.Invoke().ToString() ?? type switch
+            {
+                0 => "0",
+                1 => "1",
+                2 => "0",
+                _ => string.Empty,
+            };
             EditorContextMenu.AddContextMenu(Field.inputField.gameObject,
-                new ButtonElement("Reset Value", () => Field.Text = getResetValue?.Invoke().ToString() ?? type switch
+                new ButtonElement($"Reset Value [{resetValue}]", () => Field.Text = getResetValue?.Invoke().ToString() ?? type switch
                 {
                     0 => "0",
                     1 => "1",
@@ -1363,7 +1370,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     UpdateDisplay(animatable);
                     RTEditor.inst.HideNameEditor();
                 })),
-                new ButtonElement("Set Max", () => RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
+                new ButtonElement($"Set Max [{Display.max}]", () => RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
                 {
                     if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
                         return;
@@ -1372,7 +1379,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     UpdateDisplay(animatable);
                     RTEditor.inst.HideNameEditor();
                 })),
-                new ButtonElement("Set Min", () => RTEditor.inst.ShowNameEditor("Set minimum value", "Min", Display.min.ToString(), "Set", () =>
+                new ButtonElement($"Set Min [{Display.min}]", () => RTEditor.inst.ShowNameEditor("Set minimum value", "Min", Display.min.ToString(), "Set", () =>
                 {
                     if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float min))
                         return;
@@ -1398,7 +1405,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.resetValue = resetValue;
                     UpdateDisplay(animatable);
                 }),
-                new ButtonElement("Set Scroll Amount", () => RTEditor.inst.ShowNameEditor("Set scroll amount", "Amount", Display.scrollAmount.ToString(), "Set", () =>
+                new ButtonElement($"Set Scroll Amount [{Display.scrollAmount}]", () => RTEditor.inst.ShowNameEditor("Set scroll amount", "Amount", Display.scrollAmount.ToString(), "Set", () =>
                 {
                     if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
                         return;
@@ -1407,7 +1414,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     UpdateDisplay(animatable);
                     RTEditor.inst.HideNameEditor();
                 })),
-                new ButtonElement("Set Scroll Multiply", () => RTEditor.inst.ShowNameEditor("Set scroll multiply", "Multiply", Display.scrollMultiply.ToString(), "Set", () =>
+                new ButtonElement($"Set Scroll Multiply [{Display.scrollMultiply}]", () => RTEditor.inst.ShowNameEditor("Set scroll multiply", "Multiply", Display.scrollMultiply.ToString(), "Set", () =>
                 {
                     if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
                         return;
@@ -1450,7 +1457,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay),
+                new SpacerElement(),
+                new ButtonElement("Hide", () =>
+                {
+                    Display.enabled = false;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Hidden UI.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             var amount = Display.overrideScroll ? Display.scrollAmount : type switch
             {
@@ -1680,8 +1694,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Dropdown.interactable = Display.interactible;
 
+            if (getOptions != null)
+                Dropdown.options = getOptions.Invoke();
+
             EditorContextMenu.AddContextMenu(Dropdown.gameObject,
-                new ButtonElement("Reset Value", () => Dropdown.value = 0),
+                new ButtonElement($"Reset Value [{(Dropdown.options.TryGetAt((int)Display.resetValue, out Dropdown.OptionData optionData) ? optionData.text : "")}]", () => Dropdown.value = 0),
                 new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
                 {
                     Display.interactible = !Display.interactible;
@@ -1695,7 +1712,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     UpdateDisplay(animatable);
                     RTEditor.inst.HideNameEditor();
                 })),
-                new ButtonElement("Add Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
+                new ButtonElement($"Add Entry", () => RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
                 {
                     var name = RTEditor.inst.folderCreatorName.text;
                     RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
@@ -1775,6 +1792,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.options.Clear();
                     UpdateDisplay(animatable);
                 }, shouldGenerate: () => !Display.options.IsEmpty()),
+                new ButtonElement("Set Reset", () => RTEditor.inst.ShowNameEditor("Set reset value", "Reset", Display.resetValue.ToString(), "Set", () =>
+                {
+                    if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float resetValue))
+                        return;
+
+                    Display.resetValue = resetValue;
+                    UpdateDisplay(animatable);
+                    RTEditor.inst.HideNameEditor();
+                })),
+                new ButtonElement("Set Current Reset", () =>
+                {
+                    Display.resetValue = Dropdown.value;
+                    UpdateDisplay(animatable);
+                }),
                 new SpacerElement(),
                 new ButtonElement("Change to Input Field", () =>
                 {
@@ -1803,10 +1834,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay),
+                new SpacerElement(),
+                new ButtonElement("Hide", () =>
+                {
+                    Display.enabled = false;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Hidden UI.", 2f, EditorManager.NotificationType.Success);
+                }));
 
-            if (getOptions != null)
-                Dropdown.options = getOptions.Invoke();
             Dropdown.SetValueWithoutNotify(isSingle ? (int)firstKF.eventKeyframe.values[valueIndex] : Parser.TryParse(getMultiValue?.Invoke(), 0));
             Dropdown.onValueChanged.NewListener(_val =>
             {
@@ -1920,7 +1956,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Toggle.interactable = Display.interactible;
 
             EditorContextMenu.AddContextMenu(Toggle.gameObject,
-                new ButtonElement("Reset Value", () => Toggle.isOn = false),
+                new ButtonElement("Reset Value [false]", () => Toggle.isOn = false),
                 new ButtonElement(Display.interactible ? "Lock Value" : "Unlock Value", () =>
                 {
                     Display.interactible = !Display.interactible;
@@ -1986,7 +2022,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Display.ApplyFrom(ObjectEditor.inst.copiedValueDisplay);
                     UpdateDisplay(animatable);
                     EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
-                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay));
+                }, shouldGenerate: () => ObjectEditor.inst.copiedValueDisplay),
+                new SpacerElement(),
+                new ButtonElement("Hide", () =>
+                {
+                    Display.enabled = false;
+                    UpdateDisplay(animatable);
+                    EditorManager.inst.DisplayNotification($"Hidden UI.", 2f, EditorManager.NotificationType.Success);
+                }));
 
             Toggle.SetIsOnWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex] == onValue : Parser.TryParse(getMultiValue?.Invoke(), false));
             Toggle.onValueChanged.NewListener(_val =>
