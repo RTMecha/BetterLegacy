@@ -1,4 +1,4 @@
-﻿using SteamworksFacepunch.Ugc;
+﻿using System.Collections.Generic;
 
 namespace BetterLegacy.Core.Data.Network
 {
@@ -24,5 +24,7 @@ namespace BetterLegacy.Core.Data.Network
         public static LevelSort SteamLevelSort { get; set; }
 
         public static bool SteamLevelAscend { get; set; }
+
+        public static Dictionary<string, bool> HostJSONFileTriggers { get; set; } = new Dictionary<string, bool>();
     }
 }

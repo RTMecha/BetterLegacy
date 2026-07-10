@@ -76,6 +76,24 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int REQUEST_HOST = 10;
 
+        public const int KEY_PRESS_DOWN = 3437654;
+
+        public const int KEY_PRESS = 4326347;
+
+        public const int KEY_PRESS_UP = 86325;
+
+        public const int MOUSE_BUTTON_DOWN = 362626;
+
+        public const int MOUSE_BUTTON = 97587;
+
+        public const int MOUSE_BUTTON_UP = 462889;
+
+        public const int CONTROL_PRESS_DOWN = 367246;
+
+        public const int CONTROL_PRESS = 753736;
+
+        public const int CONTROL_PRESS_UP = 9630986;
+
         #endregion
 
         #region Player
@@ -158,6 +176,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int RESTART_LEVEL = 4285788;
 
+        public const int SEND_HOST_JSON_TRIGGER = 673257345;
+
         #endregion
 
         #region Editor
@@ -217,6 +237,24 @@ namespace BetterLegacy.Core.Data.Network
             new ULongParameter(RTSteamManager.inst.steamUser.steamID));
 
         public static void RequestHost(string message) => NetworkManager.inst.RunFunction(REQUEST_HOST, new StringParameter(message));
+
+        public static void KeyPressDown(KeyCode keyCode) => NetworkManager.inst.RunFunction(KEY_PRESS_DOWN, new IntParameter((int)keyCode));
+        
+        public static void KeyPress(KeyCode keyCode) => NetworkManager.inst.RunFunction(KEY_PRESS, SendType.Unreliable, new IntParameter((int)keyCode));
+        
+        public static void KeyPressUp(KeyCode keyCode) => NetworkManager.inst.RunFunction(KEY_PRESS_UP, new IntParameter((int)keyCode));
+
+        public static void MouseButtonDown(int button) => NetworkManager.inst.RunFunction(MOUSE_BUTTON_DOWN, new IntParameter(button));
+        
+        public static void MouseButton(int button) => NetworkManager.inst.RunFunction(MOUSE_BUTTON, SendType.Unreliable, new IntParameter(button));
+        
+        public static void MouseButtonUp(int button) => NetworkManager.inst.RunFunction(MOUSE_BUTTON_UP, new IntParameter(button));
+
+        public static void ControlPressDown(InControl.InputControlType inputControlType) => NetworkManager.inst.RunFunction(CONTROL_PRESS_DOWN, new IntParameter((int)inputControlType));
+        
+        public static void ControlPress(InControl.InputControlType inputControlType) => NetworkManager.inst.RunFunction(CONTROL_PRESS, SendType.Unreliable, new IntParameter((int)inputControlType));
+        
+        public static void ControlPressUp(InControl.InputControlType inputControlType) => NetworkManager.inst.RunFunction(CONTROL_PRESS_UP, new IntParameter((int)inputControlType));
 
         #endregion
 
@@ -334,6 +372,10 @@ namespace BetterLegacy.Core.Data.Network
             );
 
         public static void RestartLevel() => NetworkManager.inst.RunFunction(Group.Game, RESTART_LEVEL);
+
+        public static void SendHostJSONTrigger(string path, bool value) => NetworkManager.inst.RunFunction(Group.Game, SEND_HOST_JSON_TRIGGER,
+            new StringParameter(path),
+            new BoolParameter(value));
 
         #endregion
 

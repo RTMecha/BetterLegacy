@@ -92,6 +92,16 @@ namespace BetterLegacy.Core.Managers
                 }
                 CoreHelper.Notify(message, RTColors.InvertColor(ProjectArrhythmia.State.InGame ? ThemeManager.inst.Current.backgroundColor : InterfaceManager.inst.CurrentTheme.backgroundColor));
             }),
+
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_DOWN, 1, reader => ProjectArrhythmia.Input.keyPressDownOnline.Add((KeyCode)reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS, 1, reader => ProjectArrhythmia.Input.keyPressOnline.Add((KeyCode)reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_UP, 1, reader => ProjectArrhythmia.Input.keyPressUpOnline.Add((KeyCode)reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.MOUSE_BUTTON_DOWN, 1, reader => ProjectArrhythmia.Input.mouseButtonDownOnline.Add(reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.MOUSE_BUTTON, 1, reader => ProjectArrhythmia.Input.mouseButtonOnline.Add(reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.MOUSE_BUTTON_UP, 1, reader => ProjectArrhythmia.Input.mouseButtonUpOnline.Add(reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.CONTROL_PRESS_DOWN, 1, reader => ProjectArrhythmia.Input.controlPressDownOnline.Add((PlayerInputControlType)reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.CONTROL_PRESS, 1, reader => ProjectArrhythmia.Input.controlPressOnline.Add((PlayerInputControlType)reader.ReadInt32())),
+            new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.CONTROL_PRESS_UP, 1, reader => ProjectArrhythmia.Input.controlPressUpOnline.Add((PlayerInputControlType)reader.ReadInt32())),
         };
 
         public List<NetworkFunction> playerFunctions = new List<NetworkFunction>
@@ -529,6 +539,14 @@ namespace BetterLegacy.Core.Managers
             }),
 
             new NetworkFunction(Side.Client, NetworkFunction.RESTART_LEVEL, reader => ArcadeHelper.RestartLevel()),
+
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_HOST_JSON_TRIGGER, 2, reader =>
+            {
+                var key = reader.ReadString();
+                var value = reader.ReadBoolean();
+                if (!string.IsNullOrEmpty(key))
+                    LobbyInfo.HostJSONFileTriggers[key] = value;
+            }),
         };
 
         public List<NetworkFunction> editorFunctions = new List<NetworkFunction>
@@ -617,6 +635,14 @@ namespace BetterLegacy.Core.Managers
         /// <param name="id">ID of the function.</param>
         /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
         public void RunFunction(int id, params IPacket[] packets) => RunFunction(NetworkFunction.Group.Core, id, SendType.Reliable, packets);
+
+        /// <summary>
+        /// Runs a function over the network.
+        /// </summary>
+        /// <param name="id">ID of the function.</param>
+        /// <param name="sendType">How the packet data should be handled over the network.</param>
+        /// <param name="packets">Parameters as packets. Must match the specific network functions' parameter count.</param>
+        public void RunFunction(int id, SendType sendType, params IPacket[] packets) => RunFunction(NetworkFunction.Group.Core, id, sendType, packets);
 
         /// <summary>
         /// Runs a function over the network.

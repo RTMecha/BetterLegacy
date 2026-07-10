@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using UnityEngine;
@@ -315,6 +316,51 @@ namespace BetterLegacy.Core
             /// </summary>
             public static KeyCode[] keyCodes;
 
+            /// <summary>
+            /// List of key press down keys sent from the network.
+            /// </summary>
+            public static List<KeyCode> keyPressDownOnline = new List<KeyCode>();
+
+            /// <summary>
+            /// List of key press keys sent from the network.
+            /// </summary>
+            public static List<KeyCode> keyPressOnline = new List<KeyCode>();
+
+            /// <summary>
+            /// List of key press up keys sent from the network.
+            /// </summary>
+            public static List<KeyCode> keyPressUpOnline = new List<KeyCode>();
+
+            /// <summary>
+            /// List of mouse button down buttons sent from the network.
+            /// </summary>
+            public static List<int> mouseButtonDownOnline = new List<int>();
+
+            /// <summary>
+            /// List of mouse button buttons sent from the network.
+            /// </summary>
+            public static List<int> mouseButtonOnline = new List<int>();
+
+            /// <summary>
+            /// List of mouse button up buttons sent from the network.
+            /// </summary>
+            public static List<int> mouseButtonUpOnline = new List<int>();
+
+            /// <summary>
+            /// List of control press down keys sent from the network.
+            /// </summary>
+            public static List<PlayerInputControlType> controlPressDownOnline = new List<PlayerInputControlType>();
+
+            /// <summary>
+            /// List of control press keys sent from the network.
+            /// </summary>
+            public static List<PlayerInputControlType> controlPressOnline = new List<PlayerInputControlType>();
+
+            /// <summary>
+            /// List of control press up keys sent from the network.
+            /// </summary>
+            public static List<PlayerInputControlType> controlPressUpOnline = new List<PlayerInputControlType>();
+
             #endregion
 
             #region Functions
@@ -332,6 +378,36 @@ namespace BetterLegacy.Core
                         return keyCode;
                 }
                 return KeyCode.None;
+            }
+
+            /// <summary>
+            /// Clears the input cache sent from the lobby.
+            /// </summary>
+            public static void ClearLobbyInput()
+            {
+                if (!State.IsInLobby)
+                    return;
+
+                if (!keyPressDownOnline.IsEmpty())
+                    keyPressDownOnline.Clear();
+                if (!keyPressOnline.IsEmpty())
+                    keyPressOnline.Clear();
+                if (!keyPressUpOnline.IsEmpty())
+                    keyPressUpOnline.Clear();
+
+                if (!mouseButtonDownOnline.IsEmpty())
+                    mouseButtonDownOnline.Clear();
+                if (!mouseButtonOnline.IsEmpty())
+                    mouseButtonOnline.Clear();
+                if (!mouseButtonUpOnline.IsEmpty())
+                    mouseButtonUpOnline.Clear();
+
+                if (!controlPressDownOnline.IsEmpty())
+                    controlPressDownOnline.Clear();
+                if (!controlPressOnline.IsEmpty())
+                    controlPressOnline.Clear();
+                if (!controlPressUpOnline.IsEmpty())
+                    controlPressUpOnline.Clear();
             }
 
             #endregion

@@ -21,6 +21,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -15293,32 +15294,74 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool keyPressDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
+            var keyCode = (KeyCode)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.keyPressDownOnline.Contains(keyCode))
+                return true;
+
+            var active = Input.GetKeyDown(keyCode);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.KeyPressDown(keyCode);
+            return active;
         }
 
         public static bool keyPress(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKey((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
+            var keyCode = (KeyCode)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.keyPressOnline.Contains(keyCode))
+                return true;
+
+            var active = Input.GetKey(keyCode);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.KeyPressDown(keyCode);
+            return active;
         }
 
         public static bool keyPressUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, modifierLoop.variables));
+            var keyCode = (KeyCode)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.keyPressUpOnline.Contains(keyCode))
+                return true;
+
+            var active = Input.GetKeyUp(keyCode);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.KeyPressUp(keyCode);
+            return active;
         }
 
         public static bool mouseButtonDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButtonDown(modifier.GetInt(0, 0, modifierLoop.variables));
+            var button = modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.mouseButtonDownOnline.Contains(button))
+                return true;
+
+            var active = Input.GetMouseButtonDown(button);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.MouseButtonDown(button);
+            return active;
         }
 
         public static bool mouseButton(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButton(modifier.GetInt(0, 0, modifierLoop.variables));
+            var button = modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.mouseButtonOnline.Contains(button))
+                return true;
+
+            var active = Input.GetMouseButton(button);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.MouseButton(button);
+            return active;
         }
 
         public static bool mouseButtonUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return Input.GetMouseButtonUp(modifier.GetInt(0, 0, modifierLoop.variables));
+            var button = modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.mouseButtonUpOnline.Contains(button))
+                return true;
+
+            var active = Input.GetMouseButtonUp(button);
+            if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                NetworkFunction.MouseButtonUp(button);
+            return active;
         }
 
         public static bool mouseOver(Modifier modifier, ModifierLoop modifierLoop)
@@ -15374,7 +15417,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool controlPressDown(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, modifierLoop.variables);
+            var type = (PlayerInputControlType)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.controlPressDownOnline.Contains(type))
+                return true;
 
             var transformable = modifierLoop.reference.AsTransformable();
             var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
@@ -15383,12 +15428,21 @@ namespace BetterLegacy.Core.Helpers
             if (device == null)
                 return false;
 
-            return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
+            if (Enum.TryParse(type.ToString(), out InControl.InputControlType inputControlType))
+            {
+                var active = device.GetControl(inputControlType).WasPressed;
+                if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                    NetworkFunction.ControlPressDown(inputControlType);
+                return active;
+            }
+            return false;
         }
 
         public static bool controlPress(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, modifierLoop.variables);
+            var type = (PlayerInputControlType)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.controlPressOnline.Contains(type))
+                return true;
 
             var transformable = modifierLoop.reference.AsTransformable();
             var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
@@ -15397,12 +15451,21 @@ namespace BetterLegacy.Core.Helpers
             if (device == null)
                 return false;
 
-            return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
+            if (Enum.TryParse(type.ToString(), out InControl.InputControlType inputControlType))
+            {
+                var active = device.GetControl(inputControlType).IsPressed;
+                if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                    NetworkFunction.ControlPressDown(inputControlType);
+                return active;
+            }
+            return false;
         }
 
         public static bool controlPressUp(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var type = modifier.GetInt(0, 0, modifierLoop.variables);
+            var type = (PlayerInputControlType)modifier.GetInt(0, 0, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.Input.controlPressUpOnline.Contains(type))
+                return true;
 
             var transformable = modifierLoop.reference.AsTransformable();
             var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
@@ -15411,7 +15474,14 @@ namespace BetterLegacy.Core.Helpers
             if (device == null)
                 return false;
 
-            return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
+            if (Enum.TryParse(type.ToString(), out InControl.InputControlType inputControlType))
+            {
+                var active = device.GetControl(inputControlType).WasReleased;
+                if (ProjectArrhythmia.State.IsInLobby && active && modifier.GetBool(1, true, modifierLoop.variables))
+                    NetworkFunction.ControlPressDown(inputControlType);
+                return active;
+            }
+            return false;
         }
 
         #endregion
@@ -15420,10 +15490,19 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var value = modifier.GetValue(2, modifierLoop.variables);
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json))
             {
                 var jn = JSON.Parse(json);
-                return jn.GetPath(modifier.GetValue(0, modifierLoop.variables)) == modifier.GetValue(1, modifierLoop.variables);
+                var active = jn.GetPath(jsonPath) == value;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+                return active;
             }
 
             return false;
@@ -15431,13 +15510,21 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONLesserEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var value = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
-
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat <= modifier.GetFloat(0, 0f, modifierLoop.variables);
+                var fjn = jn.GetPath(jsonPath);
+                var active = !string.IsNullOrEmpty(fjn) && fjn.AsFloat <= value;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+                return active;
             }
 
             return false;
@@ -15445,13 +15532,21 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONGreaterEquals(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var value = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
-
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat >= modifier.GetFloat(0, 0f, modifierLoop.variables);
+                var fjn = jn.GetPath(jsonPath);
+                var active = !string.IsNullOrEmpty(fjn) && fjn.AsFloat >= value;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+                return active;
             }
 
             return false;
@@ -15459,13 +15554,21 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONLesser(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var value = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
-
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat < modifier.GetFloat(0, 0f, modifierLoop.variables);
+                var fjn = jn.GetPath(jsonPath);
+                var active = !string.IsNullOrEmpty(fjn) && fjn.AsFloat < value;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+                return active;
             }
 
             return false;
@@ -15473,13 +15576,21 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONGreater(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, modifierLoop.variables)), out string json))
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var value = modifier.GetFloat(2, 0f, modifierLoop.variables);
+            if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json))
             {
                 var jn = JSON.Parse(json);
 
-                var fjn = jn.GetPath(modifier.GetValue(2, modifierLoop.variables));
-
-                return !string.IsNullOrEmpty(fjn) && fjn.AsFloat > modifier.GetFloat(0, 0f, modifierLoop.variables);
+                var fjn = jn.GetPath(jsonPath);
+                var active = !string.IsNullOrEmpty(fjn) && fjn.AsFloat > value;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+                return active;
             }
 
             return false;
@@ -15487,7 +15598,15 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool loadJSONExists(Modifier modifier, ModifierLoop modifierLoop)
         {
-            return RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(0, modifierLoop.variables)), out string json) && JSON.Parse(json).GetPath(modifier.GetValue(1, modifierLoop.variables)) != null;
+            var path = modifier.GetValue(0, modifierLoop.variables);
+            var jsonPath = modifier.GetValue(1, modifierLoop.variables);
+            if (ProjectArrhythmia.State.IsClient)
+                return LobbyInfo.HostJSONFileTriggers.TryGetValue(path + jsonPath, out bool hostTrigger) && hostTrigger;
+
+            var active = RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(path), out string json) && JSON.Parse(json).GetPath(jsonPath) != null;
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.SendHostJSONTrigger(path + jsonPath, active);
+            return active;
         }
 
         public static bool loadEquals(Modifier modifier, ModifierLoop modifierLoop)

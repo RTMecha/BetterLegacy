@@ -5230,9 +5230,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Integer
 
-                case nameof(ModifierFunctions.mouseButtonDown):
-                case nameof(ModifierFunctions.mouseButton):
-                case nameof(ModifierFunctions.mouseButtonUp):
                 case nameof(ModifierFunctions.playerCountEquals):
                 case nameof(ModifierFunctions.playerCountLesserEquals):
                 case nameof(ModifierFunctions.playerCountGreaterEquals):
@@ -5322,6 +5319,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.keyPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<KeyCode>();
                         DropdownGenerator(modifier, reference, "Key", 0, dropdownData.Key, dropdownData.Value);
+                        BoolGenerator(modifier, reference, "Sync To Lobby", 1);
 
                         break;
                     }
@@ -5331,6 +5329,16 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierFunctions.controlPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<PlayerInputControlType>();
                         DropdownGenerator(modifier, reference, "Button", 0, dropdownData.Key, dropdownData.Value);
+                        BoolGenerator(modifier, reference, "Sync To Lobby", 1);
+
+                        break;
+                    }
+
+                case nameof(ModifierFunctions.mouseButtonDown):
+                case nameof(ModifierFunctions.mouseButton):
+                case nameof(ModifierFunctions.mouseButtonUp): {
+                        IntegerGenerator(modifier, reference, "Button", 0);
+                        BoolGenerator(modifier, reference, "Sync To Lobby", 1);
 
                         break;
                     }

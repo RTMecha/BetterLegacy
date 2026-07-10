@@ -354,6 +354,7 @@ namespace BetterLegacy.Core.Runtime
 
             PostTick();
             ScheduleTick();
+            ProjectArrhythmia.Input.ClearLobbyInput();
         }
 
         public override void Clear()

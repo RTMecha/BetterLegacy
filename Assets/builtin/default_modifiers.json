@@ -2502,56 +2502,56 @@
 
       {
         "type": 0,
-        "commands": [ "keyPressDown" ],
-        "value": "0",
+        "name": "keyPressDown",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // keyPressDown
       {
         "type": 0,
-        "commands": [ "keyPress" ],
-        "value": "0",
+        "name": "keyPress",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // keyPress
       {
         "type": 0,
-        "commands": [ "keyPressUp" ],
-        "value": "0",
+        "name": "keyPressUp",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // keyPressUp
       {
         "type": 0,
-        "commands": [ "controlPressDown" ],
-        "value": "0",
+        "name": "controlPressDown",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // controlPressDown
       {
         "type": 0,
-        "commands": [ "controlPress" ],
-        "value": "0",
+        "name": "controlPress",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // controlPress
       {
         "type": 0,
-        "commands": [ "controlPressUp" ],
-        "value": "0",
+        "name": "controlPressUp",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // controlPressUp
       {
         "type": 0,
-        "commands": [ "mouseButtonDown" ],
-        "value": "0",
+        "name": "mouseButtonDown",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // mouseButtonDown
       {
         "type": 0,
-        "commands": [ "mouseButton" ],
-        "value": "0",
+        "name": "mouseButton",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // mouseButton
       {
         "type": 0,
-        "commands": [ "mouseButtonUp" ],
-        "value": "0",
+        "name": "mouseButtonUp",
+        "values": [ "0", "True" ],
         "const": "True"
       }, // mouseButtonUp
       {
