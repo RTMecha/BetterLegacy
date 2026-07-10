@@ -428,18 +428,11 @@ namespace BetterLegacy.Core.Managers
 
             if (!Transport.Instance)
             {
-                NetworkManager.inst.onClientConnectedTemp += connection =>
-                {
-                    SyncPlayersToServer();
-                    NetworkFunction.RequestGameData(RTSteamManager.inst.steamUser.steamID, SceneHelper.Current, InterfaceManager.inst.CurrentInterface?.name ?? string.Empty);
-                };
+                NetworkManager.inst.onClientConnectedTemp += connection => SyncPlayersToServer();
                 RTSteamManager.inst.StartClient(lobby.Owner.Id);
             }
             else
-            {
                 SyncPlayersToServer();
-                NetworkFunction.RequestGameData(RTSteamManager.inst.steamUser.steamID, SceneHelper.Current, InterfaceManager.inst.CurrentInterface?.name ?? string.Empty);
-            }
             foreach (var lobbyMember in lobby.Members)
             {
                 //if (lobbyMember.Id != RTSteamManager.inst.steamUser.steamID)

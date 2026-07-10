@@ -153,7 +153,6 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_GAME_DATA = 9432119;
         public const int SET_CLIENT_META_DATA = 52635853;
         public const int SET_CLIENT_RUNTIME = 2536736;
-        public const int REQUEST_GAME_DATA = 636725988;
 
         public const int SET_CLIENT_AUDIO = 82386538;
 
@@ -321,12 +320,10 @@ namespace BetterLegacy.Core.Data.Network
         #region Game
 
         public static void SetClientScene(SceneName scene, bool showLoading, int onLoadFunc) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SCENE, new ByteParameter((byte)scene), new BoolParameter(showLoading), new IntParameter(onLoadFunc));
-
-        public static void RequestGameData(ulong id, SceneName scene, string interfaceName) => NetworkManager.inst.RunFunction(Group.Game, REQUEST_GAME_DATA, new ULongParameter(id), new ByteParameter((byte)scene), new StringParameter(interfaceName));
-
+        
         public static void SetClientRuntime(RTBeatmap runtime, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_RUNTIME, new StringParameter(id), runtime);
 
-        public static void SetClientSeed(string seed, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SEED, new StringParameter(id), new StringParameter(seed));
+        public static void SetClientSeed(string seed, SteamId? steamId) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SEED, steamId, new StringParameter(seed));
 
         public static void SetClientMetaData(MetaData metaData, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_META_DATA, new StringParameter(id), metaData);
 

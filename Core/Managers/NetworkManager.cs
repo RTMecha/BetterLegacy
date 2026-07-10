@@ -444,44 +444,7 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
-            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 2, reader =>
-            {
-                var steamID = reader.ReadString();
-                if (!string.IsNullOrEmpty(steamID) && ulong.TryParse(steamID, out ulong id) && RTSteamManager.inst.steamUser.steamID != id)
-                    return;
-
-                try
-                {
-                    RandomHelper.CurrentSeed = reader.ReadString();
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Failed to read game data due to the exception: {ex}");
-                }
-            }),
-
-            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_GAME_DATA, 3, reader =>
-            {
-                var id = reader.ReadUInt64();
-                var clientScene = (SceneName)reader.ReadByte();
-                var currentScene = SceneHelper.Current;
-                var currentInterface = reader.ReadString();
-                if (currentScene != clientScene)
-                {
-                    NetworkFunction.SetClientScene(currentScene, true, 0);
-                    NetworkFunction.RequestGameData(id, currentScene, currentInterface);
-                }
-                else if (SceneHelper.GetSceneType(currentScene) != SceneType.Interface)
-                {
-                    NetworkFunction.SetClientSeed(RandomHelper.CurrentSeed, id.ToString());
-                    NetworkFunction.SetClientMetaData(MetaData.Current, id.ToString());
-                    NetworkFunction.SetClientGameData(GameData.Current, id.ToString());
-                    NetworkFunction.SetClientMusicTime(AudioManager.inst.CurrentAudioSource.time);
-                    NetworkFunction.SetClientPitch(RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.pitchOffset : AudioManager.inst.pitch);
-                    NetworkFunction.SetClientRuntime(RTBeatmap.Current, id.ToString());
-                    NetworkFunction.SetClientAudio(AudioManager.inst.CurrentAudioSource.clip);
-                }
-            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 1, reader => RandomHelper.HostSeed = reader.ReadString()),
 
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_AUDIO, 1, reader =>
             {
