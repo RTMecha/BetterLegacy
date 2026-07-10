@@ -96,7 +96,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (audio)
                 yield break;
 
-            var path = RTFile.CombinePaths(RTFile.BasePath, name);
+            var path = AssetPack.TryGetFile(name, out string asset) ? asset : RTFile.CombinePaths(RTFile.BasePath, name);
             if (RTFile.FileExists(path + FileFormat.OGG.Dot()))
                 path += FileFormat.OGG.Dot();
             if (RTFile.FileExists(path + FileFormat.WAV.Dot()))
