@@ -166,16 +166,26 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = Parser.TryParse(jn["visibility"], true, LobbyVisibility.Public);
             State = Parser.TryParse(jn["state"], true, LobbyState.Joinable);
             Channel = jn["channel"];
-            CanViewLevels = jn["can_view_levels"].AsBool;
-            CanEdit = jn["can_edit"].AsBool;
-            CanViewEditorLevels = jn["can_view_editor_levels"].AsBool;
-            CanImportPrefabs = jn["can_import_prefabs"].AsBool;
-            CanImportThemes = jn["can_import_themes"].AsBool;
-            CanEditObjects = jn["can_edit_objects"].AsBool;
-            CanEditMarkers = jn["can_edit_markers"].AsBool;
-            CanDrawAnnotations = jn["can_draw_annotations"].AsBool;
-            CanEditEvents = jn["can_edit_events"].AsBool;
-            CanEditMetaData = jn["can_edit_metadata"].AsBool;
+            if (jn["can_view_levels"] != null)
+                CanViewLevels = jn["can_view_levels"].AsBool;
+            if (jn["can_edit"] != null)
+                CanEdit = jn["can_edit"].AsBool;
+            if (jn["can_view_editor_levels"] != null)
+                CanViewEditorLevels = jn["can_view_editor_levels"].AsBool;
+            if (jn["can_import_prefabs"] != null)
+                CanImportPrefabs = jn["can_import_prefabs"].AsBool;
+            if (jn["can_import_themes"] != null)
+                CanImportThemes = jn["can_import_themes"].AsBool;
+            if (jn["can_edit_objects"] != null)
+                CanEditObjects = jn["can_edit_objects"].AsBool;
+            if (jn["can_edit_markers"] != null)
+                CanEditMarkers = jn["can_edit_markers"].AsBool;
+            if (jn["can_draw_annotations"] != null)
+                CanDrawAnnotations = jn["can_draw_annotations"].AsBool;
+            if (jn["can_edit_events"] != null)
+                CanEditEvents = jn["can_edit_events"].AsBool;
+            if (jn["can_edit_metadata"] != null)
+                CanEditMetaData = jn["can_edit_metadata"].AsBool;
         }
 
         public override JSONNode ToJSON()
