@@ -303,7 +303,10 @@ namespace BetterLegacy.Core.Data.Level
         {
             id = reader.ReadString();
             currentFile = reader.ReadString();
-            icon = reader.ReadSprite();
+            if (!reader.ReadBoolean())
+                icon = reader.ReadSprite();
+            else
+                icon = LegacyPlugin.AtanPlaceholder;
             lockedIcon = reader.ReadSprite();
             metadata = Packet.CreateFromPacket<MetaData>(reader);
             if (reader.ReadBoolean())
@@ -320,7 +323,10 @@ namespace BetterLegacy.Core.Data.Level
         {
             writer.Write(id);
             writer.Write(currentFile);
-            writer.Write(icon, true);
+            var hasNoIcon = HasNoIcon;
+            writer.Write(hasNoIcon);
+            if (!hasNoIcon)
+                writer.Write(icon, true);
             writer.Write(lockedIcon, true);
             metadata.WritePacket(writer);
             writer.Write(saveData != null);

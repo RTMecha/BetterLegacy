@@ -986,7 +986,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns a sorted Level list.</returns>
         public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend) => sort switch
         {
-            LevelSort.Cover => levels.Order(x => x.icon != LegacyPlugin.AtanPlaceholder, !ascend),
+            LevelSort.Cover => levels.Order(x => !x.HasNoIcon, !ascend),
             LevelSort.Artist => levels.Order(x => x.metadata.artist.name, !ascend),
             LevelSort.Creator => levels.Order(x => x.metadata.creator.name, !ascend),
             LevelSort.File => levels.Order(x => System.IO.Path.GetFileName(x.path), !ascend),
