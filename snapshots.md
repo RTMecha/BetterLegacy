@@ -3,6 +3,8 @@
 ### Core
 - Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
 - Added "Sync to Lobby" toggle to keyPress, mouseButton and controlPress trigger modifiers. If the trigger is active, the input is sent to other lobby members.
+- Added Fitler Mode and Wrap Mode values to setImage modifiers.
+- Added Filter Mode to sprites stored in the level.
 
 ### Editor
 - Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
@@ -11,6 +13,7 @@
 - Fixed the color picker value/saturation area not being scaled correctly to the game resolution.
 - Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
 - Fixed JSON trigger modifier values not being correct.
+- Fixed level cover order being incorrect.
 
 -------------------------------------------------------------------
 
