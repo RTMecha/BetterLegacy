@@ -373,7 +373,7 @@ namespace BetterLegacy.Core.Managers
                 var scene = (SceneName)reader.ReadByte();
                 var showLoading = reader.ReadBoolean();
                 var func = reader.ReadInt32();
-                if (func != 0)
+                if (func >= 0)
                     SceneHelper.OnSceneLoad += scene => inst.RunFunction(func);
                 SceneHelper.OnSceneLoad += scene => SteamLobbyManager.inst.SetSceneLoaded(true);
                 SceneHelper.LoadScene(scene, showLoading);
@@ -500,6 +500,7 @@ namespace BetterLegacy.Core.Managers
 
                 EditorLevelManager.inst?.LoadLevelClient(reader);
             }),
+            new NetworkFunction(Side.Client, NetworkFunction.REMOVE_LEVEL_CACHE, reader => SteamLobbyManager.inst.DeleteLobbyLevelCache()),
 
             new NetworkFunction(Side.Client, NetworkFunction.RESTART_LEVEL, reader => ArcadeHelper.RestartLevel()),
 

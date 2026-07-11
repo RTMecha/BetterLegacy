@@ -111,6 +111,8 @@ namespace BetterLegacy.Core.Managers
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
         }
 
+        public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
+
         #region Lobby
 
         /// <summary>
@@ -403,6 +405,8 @@ namespace BetterLegacy.Core.Managers
                     NetworkFunction.LoadClientEditorLevel(EditorLevelManager.inst.CurrentLevel, friend.Id);
                 else if (ProjectArrhythmia.State.InGame)
                     NetworkFunction.LoadClientLevel(LevelManager.CurrentLevel, friend.Id);
+                else
+                    NetworkFunction.SetClientScene(SceneHelper.Current, true, -1);
             }
         }
 

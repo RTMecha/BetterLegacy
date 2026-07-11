@@ -1769,6 +1769,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 NetworkFunction.SortOnlineLevelCollections(ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value, ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value);
                 NetworkFunction.InitArcadeInterface();
             }
+            else if (ProjectArrhythmia.State.IsClient)
+                SteamLobbyManager.inst.DeleteLobbyLevelCache();
+
             InterfaceManager.inst.CloseMenus();
             LevelManager.CurrentLevel = null;
             LevelManager.CurrentLevelCollection = null;

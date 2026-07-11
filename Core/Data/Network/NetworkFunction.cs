@@ -173,6 +173,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int LOAD_CLIENT_EDITOR_LEVEL = 32583295;
 
+        public const int REMOVE_LEVEL_CACHE = 253523;
+
         public const int RESTART_LEVEL = 4285788;
 
         public const int SEND_HOST_JSON_TRIGGER = 673257345;
@@ -367,6 +369,8 @@ namespace BetterLegacy.Core.Data.Network
             new ByteArrayParameter(level.ReadZipBytes()),
             PlayersData.Current
             );
+
+        public static void RemoveLevelCache() => NetworkManager.inst.RunFunction(Group.Game, REMOVE_LEVEL_CACHE);
 
         public static void RestartLevel() => NetworkManager.inst.RunFunction(Group.Game, RESTART_LEVEL);
 

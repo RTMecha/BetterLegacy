@@ -267,6 +267,7 @@ namespace BetterLegacy.Core.Managers
             try
             {
                 LobbyPopup.Instance.Render();
+                SteamLobbyManager.inst.DeleteLobbyLevelCache();
             }
             catch
             {
