@@ -3200,14 +3200,14 @@
       {
         "type": 1,
         "name": "setImage",
-        "values": [ "Path", "0", "0", "1", "1" ],
+        "values": [ "Path", "0", "0", "1", "1", "0", "0" ],
         "const": "False",
         "compat": "obj"
       }, // setImage
       {
         "type": 1,
         "name": "setImageOther",
-        "values": [ "Path", "Object Group", "0", "0", "1", "1" ],
+        "values": [ "Path", "Object Group", "0", "0", "1", "1", "0", "0" ],
         "const": "False",
         "compat": "obj"
       }, // setImageOther

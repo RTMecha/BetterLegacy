@@ -477,20 +477,41 @@ namespace BetterLegacy.Editor.Managers
                                 new SpacerElement(),
                                 new ButtonElement("Reload Assets", () => LoadAssets(RenderPopup)),
                                 new SpacerElement(),
-                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Repeat ? "> " : string.Empty) + "Repeat Wrap Mode", () =>
+                                ButtonElement.SelectionButton(() => spriteAsset.wrapMode == TextureWrapMode.Repeat, "Repeat Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Repeat);
                                     EditorManager.inst.DisplayNotification("The texture will now repeat!", 2f, EditorManager.NotificationType.Success);
                                 }),
-                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Clamp ? "> " : string.Empty) + "Clamp Wrap Mode", () =>
+                                ButtonElement.SelectionButton(() => spriteAsset.wrapMode == TextureWrapMode.Clamp, "Clamp Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Clamp);
                                     EditorManager.inst.DisplayNotification("The texture will now clamp!", 2f, EditorManager.NotificationType.Success);
                                 }),
-                                new ButtonElement((spriteAsset.wrapMode == TextureWrapMode.Mirror ? "> " : string.Empty) + "Mirror Wrap Mode", () =>
+                                ButtonElement.SelectionButton(() => spriteAsset.wrapMode == TextureWrapMode.Mirror, "Mirror Wrap Mode", () =>
                                 {
                                     spriteAsset.SetWrapMode(TextureWrapMode.Mirror);
-                                    EditorManager.inst.DisplayNotification("The texture will now repeat and mirror!", 2f, EditorManager.NotificationType.Success);
+                                    EditorManager.inst.DisplayNotification("The texture will now mirror!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                ButtonElement.SelectionButton(() => spriteAsset.wrapMode == TextureWrapMode.MirrorOnce, "Mirror Once Wrap Mode", () =>
+                                {
+                                    spriteAsset.SetWrapMode(TextureWrapMode.MirrorOnce);
+                                    EditorManager.inst.DisplayNotification("The texture will now mirror once!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new SpacerElement(),
+                                ButtonElement.SelectionButton(() => spriteAsset.filterMode == FilterMode.Point, "Point Filter Mode", () =>
+                                {
+                                    spriteAsset.SetFilterMode(FilterMode.Point);
+                                    EditorManager.inst.DisplayNotification("Set filter mode to point!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                ButtonElement.SelectionButton(() => spriteAsset.filterMode == FilterMode.Bilinear, "Bilinear Filter Mode", () =>
+                                {
+                                    spriteAsset.SetFilterMode(FilterMode.Bilinear);
+                                    EditorManager.inst.DisplayNotification("Set filter mode to bilinear!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                ButtonElement.SelectionButton(() => spriteAsset.filterMode == FilterMode.Trilinear, "Trilinear Filter Mode", () =>
+                                {
+                                    spriteAsset.SetFilterMode(FilterMode.Trilinear);
+                                    EditorManager.inst.DisplayNotification("Set filter mode to trilinear!", 2f, EditorManager.NotificationType.Success);
                                 }),
                             };
 

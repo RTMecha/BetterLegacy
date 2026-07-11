@@ -3439,6 +3439,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Texture Offset Y", 2);
                         SingleGenerator(modifier, reference, "Texture Scale X", 3, 1f);
                         SingleGenerator(modifier, reference, "Texture Scale Y", 4, 1f);
+                        DropdownGenerator(modifier, reference, "Filter Mode", 5, CoreHelper.ToOptionData<FilterMode>());
+                        DropdownGenerator(modifier, reference, "Wrap Mode", 6, CoreHelper.ToOptionData<TextureWrapMode>());
 
                         break;
                     }
@@ -3451,6 +3453,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Texture Offset Y", 3);
                         SingleGenerator(modifier, reference, "Texture Scale X", 4, 1f);
                         SingleGenerator(modifier, reference, "Texture Scale Y", 5, 1f);
+                        DropdownGenerator(modifier, reference, "Filter Mode", 6, CoreHelper.ToOptionData<FilterMode>());
+                        DropdownGenerator(modifier, reference, "Wrap Mode", 7, CoreHelper.ToOptionData<TextureWrapMode>());
 
                         break;
                     }

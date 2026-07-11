@@ -9915,6 +9915,8 @@ namespace BetterLegacy.Core.Helpers
 
             var textureOffset = new Vector2(modifier.GetFloat(1, 0f, modifierLoop.variables), modifier.GetFloat(2, 0f, modifierLoop.variables));
             var textureScale = new Vector2(modifier.GetFloat(3, 1f, modifierLoop.variables), modifier.GetFloat(4, 0f, modifierLoop.variables));
+            var filterMode = Parser.TryParse(modifier.GetValue(5, modifierLoop.variables), FilterMode.Point);
+            var wrapMode = Parser.TryParse(modifier.GetValue(6, modifierLoop.variables), TextureWrapMode.Repeat);
 
             if (modifier.constant)
             {
@@ -9932,14 +9934,14 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.TryGetResult(out string oldPath) || oldPath != value)
                 {
                     modifier.Result = value;
-                    SetImageFunction(value, beatmapObject, textureOffset, textureScale);
+                    SetImageFunction(value, beatmapObject, textureOffset, textureScale, filterMode, wrapMode);
                 }
             }
             else
-                SetImageFunction(value, beatmapObject, textureOffset, textureScale);
+                SetImageFunction(value, beatmapObject, textureOffset, textureScale, filterMode, wrapMode);
         }
 
-        static void SetImageFunction(string value, BeatmapObject beatmapObject, Vector2 textureOffset, Vector2 textureScale)
+        static void SetImageFunction(string value, BeatmapObject beatmapObject, Vector2 textureOffset, Vector2 textureScale, FilterMode filterMode, TextureWrapMode wrapMode)
         {
             var sprite = beatmapObject.GetSprite(value);
 
@@ -9962,7 +9964,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, callback: imageObject.SetTexture, onError: imageObject.SetDefaultSprite));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, callback: texture2D => imageObject.SetTexture(texture2D, filterMode, wrapMode), onError: imageObject.SetDefaultSprite));
             }
             else if (beatmapObject.runtimeObject.visualObject is SolidObject solidObject && solidObject.renderer)
             {
@@ -9990,6 +9992,8 @@ namespace BetterLegacy.Core.Helpers
                         if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
                             return;
 
+                        texture2D.filterMode = filterMode;
+                        texture2D.wrapMode = wrapMode;
                         var renderer = solidObject.renderer;
                         if (renderer)
                             renderer.material.SetTexture("_MainTex", texture2D);
@@ -10008,6 +10012,8 @@ namespace BetterLegacy.Core.Helpers
 
             var textureOffset = new Vector2(modifier.GetFloat(2, 0f, modifierLoop.variables), modifier.GetFloat(3, 0f, modifierLoop.variables));
             var textureScale = new Vector2(modifier.GetFloat(4, 1f, modifierLoop.variables), modifier.GetFloat(5, 0f, modifierLoop.variables));
+            var filterMode = Parser.TryParse(modifier.GetValue(6, modifierLoop.variables), FilterMode.Point);
+            var wrapMode = Parser.TryParse(modifier.GetValue(7, modifierLoop.variables), TextureWrapMode.Repeat);
 
             var cache = modifier.GetResultOrDefault(() =>
             {
@@ -10042,7 +10048,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (sprite)
             {
-                cache.SetImage(sprite.texture, textureOffset, textureScale);
+                cache.SetImage(sprite.texture, textureOffset, textureScale, filterMode, wrapMode);
                 return;
             }
 
@@ -10050,13 +10056,13 @@ namespace BetterLegacy.Core.Helpers
             var path = RTFile.FileExists(assetPath) ? assetPath : RTFile.CombinePaths(RTFile.BasePath, value);
             if (!RTFile.FileExists(path))
             {
-                cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale);
+                cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale, filterMode, wrapMode);
                 return;
             }
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path,
-                callback: texture2D => cache.SetImage(texture2D, textureOffset, textureScale),
-                onError: (string onError, long responseCode, string errorMsg) => cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale)));
+                callback: texture2D => cache.SetImage(texture2D, textureOffset, textureScale, filterMode, wrapMode),
+                onError: (string onError, long responseCode, string errorMsg) => cache.SetImage(LegacyPlugin.PALogoSprite.texture, textureOffset, textureScale, filterMode, wrapMode)));
         }
 
         public class ImageGroupCache
@@ -10084,7 +10090,7 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
 
-            public void SetImage(Texture2D texture2D, Vector2 textureOffset, Vector2 textureScale)
+            public void SetImage(Texture2D texture2D, Vector2 textureOffset, Vector2 textureScale, FilterMode filterMode, TextureWrapMode wrapMode)
             {
                 foreach (var bm in beatmapObjects)
                 {
@@ -10095,10 +10101,12 @@ namespace BetterLegacy.Core.Helpers
                             imageObject.material.mainTextureOffset = textureOffset;
                             imageObject.material.mainTextureScale = textureScale;
                         }
-                        imageObject.SetTexture(texture2D);
+                        imageObject.SetTexture(texture2D, filterMode, wrapMode);
                     }
                     else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
                     {
+                        texture2D.filterMode = filterMode;
+                        texture2D.wrapMode = wrapMode;
                         if (solidObject.material)
                         {
                             solidObject.material.mainTextureOffset = textureOffset;

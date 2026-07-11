@@ -35,6 +35,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Sprite sprite;
 
         /// <summary>
+        /// How the texture should be filtered.
+        /// </summary>
+        public FilterMode filterMode = FilterMode.Point;
+
+        /// <summary>
         /// How the texture should wrap.
         /// </summary>
         public TextureWrapMode wrapMode = TextureWrapMode.Clamp;
@@ -48,6 +53,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             id = newID ? GetStringID() : orig.id;
             name = orig.name ?? string.Empty;
             sprite = orig.sprite;
+            filterMode = orig.filterMode;
             wrapMode = orig.wrapMode;
         }
 
@@ -55,9 +61,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             id = jn["id"] ?? GetStringID();
             name = jn["n"] ?? string.Empty;
+            if (jn["f"] != null)
+                filterMode = (FilterMode)jn["f"].AsInt;
             if (jn["w"] != null)
                 wrapMode = (TextureWrapMode)jn["w"].AsInt;
-            sprite = SpriteHelper.StringToSprite(jn["i"], textureWrapMode: wrapMode);
+            sprite = SpriteHelper.StringToSprite(jn["i"], textureWrapMode: wrapMode, filterMode: filterMode);
         }
 
         public override JSONNode ToJSON()
@@ -70,6 +78,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["i"] = SpriteHelper.SpriteToString(sprite);
             if (wrapMode != TextureWrapMode.Clamp)
                 jn["w"] = (int)wrapMode;
+            if (filterMode != FilterMode.Point)
+                jn["f"] = (int)filterMode;
 
             return jn;
         }
@@ -79,6 +89,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             id = reader.ReadString();
             name = reader.ReadString();
             wrapMode = (TextureWrapMode)reader.ReadByte();
+            filterMode = (FilterMode)reader.ReadByte();
             sprite = reader.ReadSprite();
         }
 
@@ -87,6 +98,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             writer.Write(id);
             writer.Write(name);
             writer.Write((byte)wrapMode);
+            writer.Write((byte)filterMode);
             writer.Write(sprite);
         }
 
@@ -98,6 +110,17 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (sprite)
                 CoreHelper.Destroy(sprite);
             sprite = null;
+        }
+
+        /// <summary>
+        /// SEts the filter mode of the sprite texture.
+        /// </summary>
+        /// <param name="filterMode">Filter mode to set.</param>
+        public void SetFilterMode(FilterMode filterMode)
+        {
+            this.filterMode = filterMode;
+            if (sprite && sprite.texture)
+                sprite.texture.filterMode = filterMode;
         }
 
         /// <summary>

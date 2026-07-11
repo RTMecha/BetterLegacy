@@ -135,9 +135,16 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Sets the image objects' image.
         /// </summary>
         /// <param name="texture2D">Creates a sprite from this texture and applies it to the sprite renderer.</param>
-        public void SetTexture(Texture2D texture2D)
+        public void SetTexture(Texture2D texture2D) => SetTexture(texture2D, FilterMode.Point, TextureWrapMode.Repeat);
+
+        /// <summary>
+        /// Sets the image objects' image.
+        /// </summary>
+        /// <param name="texture2D">Creates a sprite from this texture and applies it to the sprite renderer.</param>
+        public void SetTexture(Texture2D texture2D, FilterMode filterMode, TextureWrapMode wrapMode)
         {
-            texture2D.filterMode = FilterMode.Point;
+            texture2D.filterMode = filterMode;
+            texture2D.wrapMode = wrapMode;
             SetSprite(SpriteHelper.CreateSprite(texture2D));
         }
 
