@@ -225,7 +225,7 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator ILoadScene(string level, bool showLoading = true)
         {
             if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level.Replace(" ", "_"), true, out SceneName sceneName))
-                NetworkFunction.SetClientScene(sceneName, showLoading, 0);
+                NetworkFunction.SetClientScene(sceneName, showLoading, -1);
 
             LobbyPopup.Instance?.Close();
 
