@@ -1362,6 +1362,15 @@ namespace BetterLegacy.Editor.Managers
             RectValues.FullAnchored.AssignToRectTransform(levelPanelStorage.selectedImage.rectTransform);
             levelPanelSelectedUI.SetActive(false);
 
+            levelPanelStorage.progressCheckmark = Creator.NewUIObject("check", prefabHolder.LevelPanel.transform).AddComponent<Image>();
+            levelPanelStorage.progressCheckmark.sprite = EditorSprites.CheckmarkSprite;
+            levelPanelStorage.progressCheckmark.gameObject.SetActive(false);
+
+            var labelElement = new LabelElement("0%");
+            labelElement.Init(EditorElement.InitSettings.Default.Parent(prefabHolder.LevelPanel.transform).Name("progress"));
+            levelPanelStorage.progressText = labelElement.uiText;
+            levelPanelStorage.progressText.gameObject.SetActive(false);
+
             EditorLevelManager.inst.levelPanelPool = new Pool(EditorPrefabHolder.Instance.LevelPanel, transform, 500);
         }
 

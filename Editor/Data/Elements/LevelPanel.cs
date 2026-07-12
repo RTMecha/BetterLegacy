@@ -51,7 +51,9 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public GameObject SelectedUI { get; set; }
 
-        public GameObject Progress { get; set; }
+        public Image ProgressCheckmark { get; set; }
+
+        public Text ProgressText { get; set; }
 
         #endregion
 
@@ -287,6 +289,9 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyGraphic(DeleteButton.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
             DeleteButton.gameObject.SetActive(ShowDeleteInComplexity);
 
+            ProgressCheckmark = levelPanelStorage.progressCheckmark;
+            ProgressText = levelPanelStorage.progressText;
+
             SelectedUI = levelPanelStorage.selectedImage.gameObject;
             SelectedUI.SetActive(false);
 
@@ -423,24 +428,27 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void RenderProgress()
         {
-            CoreHelper.Delete(Progress);
             if (!EditorInfo || !ShowProgressInComplexity)
+            {
+                ProgressCheckmark.gameObject.SetActive(false);
+                ProgressText.gameObject.SetActive(false);
                 return;
+            }
 
             if (EditorInfo.IsComplete)
             {
-                var checkmark = Creator.NewUIObject("check", GameObject.transform);
-                checkmarkRect.AssignToRectTransform(checkmark.transform.AsRT());
-                var checkmarkImage = checkmark.AddComponent<Image>();
-                checkmarkImage.sprite = EditorSprites.CheckmarkSprite;
-                EditorThemeManager.ApplyGraphic(checkmarkImage, ThemeGroup.Light_Text);
-                Progress = checkmark;
+                ProgressCheckmark.gameObject.SetActive(true);
+                ProgressText.gameObject.SetActive(false);
+                checkmarkRect.AssignToRectTransform(ProgressCheckmark.rectTransform);
+                ProgressCheckmark.sprite = EditorSprites.CheckmarkSprite;
+                EditorThemeManager.ApplyGraphic(ProgressCheckmark, ThemeGroup.Light_Text);
             }
             else if (!EditorConfig.Instance.DisableProgressIfZero.Value || EditorInfo.Progress != 0f)
             {
-                var labelElement = new LabelElement($"{RTString.Percentage(EditorInfo.Progress, 100f)}%");
-                labelElement.Init(EditorElement.InitSettings.Default.Parent(GameObject.transform).Rect(progressRect));
-                Progress = labelElement.GameObject;
+                ProgressCheckmark.gameObject.SetActive(false);
+                ProgressText.gameObject.SetActive(true);
+                progressRect.AssignToRectTransform(ProgressText.rectTransform);
+                ProgressText.text = $"{RTString.Percentage(EditorInfo.Progress, 100f)}%";
             }
         }
 

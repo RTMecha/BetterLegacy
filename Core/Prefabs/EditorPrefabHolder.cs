@@ -104,6 +104,12 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Editor.Components.FolderButtonFunction folderButton;
+
+        [SerializeField]
+        public Text progressText;
+
+        [SerializeField]
+        public Image progressCheckmark;
     }
 
     public class DropdownStorage : MonoBehaviour
