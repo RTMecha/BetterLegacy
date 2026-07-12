@@ -189,6 +189,10 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int REFRESH_EDITOR_LEVEL_LIST = 53262467;
 
+        public const int SUBMIT_BEATMAP_OBJECT = 26465267;
+
+        public const int CREATE_BEATMAP_OBJECT = 8458634;
+
         #endregion
 
         #endregion
@@ -388,6 +392,10 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void RefreshEditorLevelList(string searchTerm) => NetworkManager.inst.RunFunction(Group.Editor, REFRESH_EDITOR_LEVEL_LIST,
             new StringParameter(searchTerm));
+
+        public static void SubmitBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_BEATMAP_OBJECT, beatmapObject);
+
+        public static void CreateBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, CREATE_BEATMAP_OBJECT, beatmapObject);
 
         #endregion
 

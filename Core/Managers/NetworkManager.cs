@@ -544,6 +544,20 @@ namespace BetterLegacy.Core.Managers
                 levelPanel.Init(levelPanel.Item);
             }),
             new NetworkFunction(Side.Client, NetworkFunction.REFRESH_EDITOR_LEVEL_LIST, 1, reader => EditorLevelManager.inst.OpenLevelPopup.SearchField.text = reader.ReadString()),
+            new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_BEATMAP_OBJECT, 1, reader =>
+            {
+                var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
+                if (!SteamLobbyManager.inst.LobbySettings.CanEditObjects)
+                    return;
+
+                GameData.Current.beatmapObjects.Add(beatmapObject);
+                NetworkFunction.CreateBeatmapObject(beatmapObject);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.CREATE_BEATMAP_OBJECT, 1, reader =>
+            {
+                var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
+                GameData.Current.beatmapObjects.Add(beatmapObject);
+            }),
         };
 
         Dictionary<string, NetworkWriterQueue> dataChunks = new Dictionary<string, NetworkWriterQueue>();
