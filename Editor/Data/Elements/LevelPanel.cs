@@ -213,37 +213,30 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorLevelManager.inst.levelPanelPool.Get(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
+            var levelPanelStorage = gameObject.GetComponent<LevelPanelStorage>();
 
-            Button = gameObject.AddComponent<FolderButtonFunction>();
-
-            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus = levelPanelStorage.hoverFocus;
             HoverFocus.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
             HoverFocus.animatePos = false;
             HoverFocus.animateSca = true;
 
-            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-            Label = folderButtonStorage.label;
+            Label = levelPanelStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.OnClick.ClearAll();
 
-            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
-            var iconBaseImage = iconBase.AddComponent<Image>();
-            iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
-            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+            Button = levelPanelStorage.folderButton;
+            levelPanelStorage.OnClick.ClearAll();
+            EditorThemeManager.ApplySelectable(levelPanelStorage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(levelPanelStorage.label);
 
-            var icon = Creator.NewUIObject("icon", iconBase.transform);
-            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
-            var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = EditorSprites.OpenSprite;
-            IconImage = iconImage;
+            iconRect.AssignToRectTransform(levelPanelStorage.baseIcon.rectTransform);
+            EditorThemeManager.ApplyGraphic(levelPanelStorage.baseIcon, ThemeGroup.Null, true);
 
-            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+            levelPanelStorage.icon.sprite = EditorSprites.OpenSprite;
+            IconImage = levelPanelStorage.icon;
 
             Render();
         }
@@ -262,54 +255,40 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorLevelManager.inst.levelPanelPool.Get(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
-            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+            var levelPanelStorage = gameObject.GetComponent<LevelPanelStorage>();
 
-            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus = levelPanelStorage.hoverFocus;
             HoverFocus.animatePos = false;
             HoverFocus.animateSca = true;
 
-            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-            Label = folderButtonStorage.label;
+            Label = levelPanelStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.OnClick.ClearAll();
-            Button = folderButtonFunction;
-            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
-            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
-            var iconBaseImage = iconBase.AddComponent<Image>();
-            iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
-            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+            levelPanelStorage.OnClick.ClearAll();
+            Button = levelPanelStorage.folderButton;
+            EditorThemeManager.ApplySelectable(levelPanelStorage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(levelPanelStorage.label);
 
-            var icon = Creator.NewUIObject("icon", iconBase.transform);
-            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
+            iconRect.AssignToRectTransform(levelPanelStorage.baseIcon.rectTransform);
+            EditorThemeManager.ApplyGraphic(levelPanelStorage.baseIcon, ThemeGroup.Null, true);
 
-            var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = Item.icon;
-            IconImage = iconImage;
+            levelPanelStorage.icon.sprite = Item.icon;
+            IconImage = levelPanelStorage.icon;
 
-            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
+            DeleteButton = levelPanelStorage.deleteButton;
 
-            var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-            DeleteButton = deleteStorage;
+            deleteRect.AssignToRectTransform(DeleteButton.transform.AsRT());
 
-            deleteRect.AssignToRectTransform(delete.transform.AsRT());
+            EditorThemeManager.ApplyGraphic(DeleteButton.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
+            EditorThemeManager.ApplyGraphic(DeleteButton.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
+            DeleteButton.gameObject.SetActive(ShowDeleteInComplexity);
 
-            EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
-            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
-            delete.SetActive(ShowDeleteInComplexity);
-
-            SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
+            SelectedUI = levelPanelStorage.selectedImage.gameObject;
             SelectedUI.SetActive(false);
-            var selectedImage = SelectedUI.AddComponent<Image>();
-            selectedImage.color = LSColors.HexToColorAlpha("0088FF25");
-
-            RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
             Render();
             RenderProgress();
@@ -324,55 +303,40 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorLevelManager.inst.levelPanelPool.Get(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             baseRect.AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
-            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+            var levelPanelStorage = gameObject.GetComponent<LevelPanelStorage>();
 
-            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus = levelPanelStorage.hoverFocus;
             HoverFocus.animatePos = false;
             HoverFocus.animateSca = true;
 
-            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-            Label = folderButtonStorage.label;
+            Label = levelPanelStorage.label;
             Label.enabled = true;
             labelRect.AssignToRectTransform(Label.rectTransform);
-            folderButtonStorage.OnClick.ClearAll();
-            Button = folderButtonFunction;
-            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
-            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
-            var iconBaseImage = iconBase.AddComponent<Image>();
-            iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
-            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+            levelPanelStorage.OnClick.ClearAll();
+            Button = levelPanelStorage.folderButton;
+            EditorThemeManager.ApplySelectable(levelPanelStorage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(levelPanelStorage.label);
 
-            var icon = Creator.NewUIObject("icon", iconBase.transform);
-            RectValues.FullAnchored.AssignToRectTransform(icon.transform.AsRT());
-            var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = Info?.icon ?? Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
-            IconImage = iconImage;
+            iconRect.AssignToRectTransform(levelPanelStorage.baseIcon.rectTransform);
+            EditorThemeManager.ApplyGraphic(levelPanelStorage.baseIcon, ThemeGroup.Null, true);
 
-            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
+            levelPanelStorage.icon.sprite = Info?.icon ?? Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
+            IconImage = levelPanelStorage.icon;
 
-            var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-            DeleteButton = deleteStorage;
+            DeleteButton = levelPanelStorage.deleteButton;
 
-            deleteRect.AssignToRectTransform(delete.transform.AsRT());
+            deleteRect.AssignToRectTransform(DeleteButton.transform.AsRT());
 
-            new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)).AssignToRectTransform(delete.transform.AsRT());
+            EditorThemeManager.ApplyGraphic(DeleteButton.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
+            EditorThemeManager.ApplyGraphic(DeleteButton.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
+            DeleteButton.gameObject.SetActive(true);
 
-            EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
-            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
-            delete.SetActive(true);
-
-            SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
+            SelectedUI = levelPanelStorage.selectedImage.gameObject;
             SelectedUI.SetActive(false);
-            var selectedImage = SelectedUI.AddComponent<Image>();
-            selectedImage.color = LSColors.HexToColorAlpha("0088FF25");
-
-            RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
             Render();
         }

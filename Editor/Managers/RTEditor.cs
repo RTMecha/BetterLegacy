@@ -1333,6 +1333,36 @@ namespace BetterLegacy.Editor.Managers
             prefabHolder.DoubleContentPopup = EditorManager.inst.GetDialog(EditorPopup.PREFAB_POPUP).Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Double Content Popup");
             prefabHolder.DoubleContentPopup.transform.Find("internal prefabs").name = "internal";
             prefabHolder.DoubleContentPopup.transform.Find("external prefabs").name = "external";
+
+            prefabHolder.LevelPanel = EditorManager.inst.folderButtonPrefab.Duplicate(prefabHolder.PrefabParent, "Level Panel");
+            CoreHelper.Destroy(true, prefabHolder.LevelPanel.GetComponent<FunctionButtonStorage>());
+            var levelPanelStorage = prefabHolder.LevelPanel.AddComponent<LevelPanelStorage>();
+            levelPanelStorage.button = prefabHolder.LevelPanel.GetComponent<Button>();
+            levelPanelStorage.label = prefabHolder.LevelPanel.transform.GetChild(0).GetComponent<Text>();
+
+            levelPanelStorage.folderButton = prefabHolder.LevelPanel.AddComponent<FolderButtonFunction>();
+
+            levelPanelStorage.hoverFocus = prefabHolder.LevelPanel.AddComponent<HoverUI>();
+            levelPanelStorage.hoverFocus.animatePos = false;
+            levelPanelStorage.hoverFocus.animateSca = true;
+
+            levelPanelStorage.baseIcon = Creator.NewUIObject("icon base", prefabHolder.LevelPanel.transform).AddComponent<Image>();
+            levelPanelStorage.baseIcon.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+
+            levelPanelStorage.icon = Creator.NewUIObject("icon", levelPanelStorage.baseIcon.transform).AddComponent<Image>();
+            RectValues.FullAnchored.AssignToRectTransform(levelPanelStorage.icon.rectTransform);
+            levelPanelStorage.icon.sprite = LegacyPlugin.AtanPlaceholder;
+
+            levelPanelStorage.deleteButton = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabHolder.LevelPanel.transform, "delete").GetComponent<DeleteButtonStorage>();
+            levelPanelStorage.deleteButton.gameObject.SetActive(false);
+
+            var levelPanelSelectedUI = Creator.NewUIObject("selected", prefabHolder.LevelPanel.transform);
+            levelPanelStorage.selectedImage = levelPanelSelectedUI.AddComponent<Image>();
+            levelPanelStorage.selectedImage.color = LSColors.HexToColorAlpha("0088FF25");
+            RectValues.FullAnchored.AssignToRectTransform(levelPanelStorage.selectedImage.rectTransform);
+            levelPanelSelectedUI.SetActive(false);
+
+            EditorLevelManager.inst.levelPanelPool = new Pool(EditorPrefabHolder.Instance.LevelPanel, transform, 500);
         }
 
         // 5 - setup misc editor UI

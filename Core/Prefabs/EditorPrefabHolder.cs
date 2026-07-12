@@ -56,6 +56,8 @@ namespace BetterLegacy.Core.Prefabs
 
         public GameObject EventEditor { get; set; }
 
+        public GameObject LevelPanel { get; set; }
+
         public FunctionButtonStorage CreateAddButton(Transform parent, string name = "add", bool applyThemes = true)
         {
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(parent, name);
@@ -81,6 +83,27 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Text title;
+    }
+
+    public class LevelPanelStorage : FunctionButtonStorage
+    {
+        [SerializeField]
+        public Image baseIcon;
+
+        [SerializeField]
+        public Image icon;
+
+        [SerializeField]
+        public DeleteButtonStorage deleteButton;
+
+        [SerializeField]
+        public Image selectedImage;
+
+        [SerializeField]
+        public HoverUI hoverFocus;
+
+        [SerializeField]
+        public Editor.Components.FolderButtonFunction folderButton;
     }
 
     public class DropdownStorage : MonoBehaviour

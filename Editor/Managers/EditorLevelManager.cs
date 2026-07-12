@@ -47,6 +47,11 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool editStory = true;
 
+        /// <summary>
+        /// The level panel object pool.
+        /// </summary>
+        public Pool levelPanelPool;
+
         #region Levels
 
         /// <summary>
@@ -553,6 +558,16 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Clears the level list.
+        /// </summary>
+        public void ClearLevels()
+        {
+            LevelPanels.Clear();
+            levelPanelPool.ReturnChildren(OpenLevelPopup.Content);
+            OpenLevelPopup.ClearContent();
+        }
+
+        /// <summary>
         /// Loads editor levels from the current editor folder.
         /// </summary>
         public void LoadLevels() => CoroutineHelper.StartCoroutine(ILoadLevels());
@@ -562,9 +577,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public IEnumerator ILoadLevels()
         {
-            LevelPanels.Clear();
-            OpenLevelPopup.ClearContent();
-
+            ClearLevels();
             if (ProjectArrhythmia.State.IsHosting)
                 NetworkFunction.ClearEditorLevels();
 
