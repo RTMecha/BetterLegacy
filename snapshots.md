@@ -9,6 +9,10 @@
 ### Editor
 - Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
 
+## Changes
+### Editor
+- Levels in the level list now use object pooling, hopefully making level list load times faster.
+
 ## Fixes
 - Fixed the color picker value/saturation area not being scaled correctly to the game resolution.
 - Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
