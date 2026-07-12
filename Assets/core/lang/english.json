@@ -1,6 +1,10 @@
 ﻿{
   "splash.dictionaries": "Dictionaries!",
 
+  // popups
+  "popups.config.title": "Config Manager",
+  "popups.lobby.title": "Lobby Manager",
+
   // arcade
   "arcade.steam.no_access": "<size=40><align=center><b>Steam could not be accessed.\nOpen Steam and relaunch the game to access the workshop.",
 
