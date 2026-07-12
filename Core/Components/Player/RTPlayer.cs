@@ -73,7 +73,17 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Current index of the player in the players list.
         /// </summary>
-        public int playerIndex;
+        public int index;
+
+        /// <summary>
+        /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
+        /// </summary>
+        public int colorSlot = -1;
+
+        /// <summary>
+        /// Color slot the player uses.
+        /// </summary>
+        public int ColorSlot => colorSlot >= 0 ? colorSlot : index;
 
         /// <summary>
         /// How much health the player has when they spawn.
@@ -632,7 +642,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 try
                 {
-                    return !Core ? string.Empty : $"<#{LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4)))}>{Core.DisplayName}{(playerIndex != 0 ? " " + playerIndex : string.Empty)} " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
+                    return !Core ? string.Empty : $"<#{LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(ColorSlot, 4)))}>{Core.DisplayName}{(index != 0 ? " " + index : string.Empty)} " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
                 }
                 catch (Exception)
                 {
@@ -1025,7 +1035,7 @@ namespace BetterLegacy.Core.Components.Player
 
             path.Add(new MovementPath(spawnPos, Quaternion.identity, null));
 
-            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {playerIndex}").GetComponent<Text>();
+            healthText = PlayerManager.healthImages.Duplicate(PlayerManager.healthParent, $"Health {index}").GetComponent<Text>();
 
             for (int i = 0; i < 3; i++)
                 healthObjects.Add(new HealthObject(healthText.transform.GetChild(i).gameObject, healthText.transform.GetChild(i).GetComponent<Image>()));
@@ -1459,7 +1469,7 @@ namespace BetterLegacy.Core.Components.Player
                 canvas.SetActive(act);
                 if (act && nametagText)
                 {
-                    var index = PlayersData.Current.GetMaxIndex(playerIndex, 4);
+                    var index = PlayersData.Current.GetMaxIndex(ColorSlot, 4);
                     nametagText.text = NametagText;
                     nametagBase.material.color = RTColors.FadeColor(ThemeManager.inst.Current.GetPlayerColor(index), 0.3f);
                     nametagBase.transform.localScale = new Vector3(initialHealthCount * 2.25f, 1.5f, 1f);
@@ -2161,7 +2171,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!Model)
                 return;
 
-            var index = PlayersData.Current.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
 
             if (head.gameObject)
             {
@@ -2259,7 +2269,7 @@ namespace BetterLegacy.Core.Components.Player
             if (customObjects.IsEmpty())
                 return;
 
-            var index = PlayersData.Current.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
             playerObjects.ForLoop(playerObject =>
             {
                 if (!playerObject.gameObject)
@@ -2369,7 +2379,7 @@ namespace BetterLegacy.Core.Components.Player
             if (emitted.IsEmpty())
                 return;
 
-            var index = PlayersData.Current.GetMaxIndex(playerIndex);
+            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
 
             emitted.ForLoop(boost =>
             {
@@ -2455,7 +2465,7 @@ namespace BetterLegacy.Core.Components.Player
                 CoreHelper.LogException(ex);
             }
 
-            CoreHelper.Log($"Spawned Player {playerIndex}");
+            CoreHelper.Log($"Spawned Player {index}");
         }
 
         /// <summary>
@@ -2837,7 +2847,7 @@ namespace BetterLegacy.Core.Components.Player
                 pulse.transform.GetChild(0).tag = Tags.HELPER;
             }
 
-            pulse.transform.GetChild(0).gameObject.name = "bullet (Player " + (playerIndex + 1).ToString() + ")";
+            pulse.transform.GetChild(0).gameObject.name = "bullet (Player " + (index + 1).ToString() + ")";
 
             float speed = Mathf.Clamp(currentModel.bulletPart.speed, 0.001f, 20f) / CoreHelper.ForwardPitch;
             var b = pulse.AddComponent<Bullet>();
@@ -2986,7 +2996,7 @@ namespace BetterLegacy.Core.Components.Player
             Core?.GetControl().CollideModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
         }
 
-        bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";
+        bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {index + 1})";
 
         IEnumerator BoostCooldownLoop()
         {
@@ -3037,12 +3047,12 @@ namespace BetterLegacy.Core.Components.Player
             Core.RuntimePlayer = null;
             //anim.SetTrigger("kill");
             InitDeathAnimation();
-            InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
+            InputDataManager.inst.SetControllerRumble(index, 1f);
             Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(Core));
             if (PlayerConfig.Instance.PlayDeathSound.Value)
                 SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.KillPlayer);
             yield return CoroutineHelper.SecondsRealtime(0.2f);
-            InputDataManager.inst.StopControllerRumble(playerIndex);
+            InputDataManager.inst.StopControllerRumble(index);
             yield break;
         } // if you want to kill the player, just set health to zero.
 
@@ -3764,7 +3774,7 @@ namespace BetterLegacy.Core.Components.Player
         public void InitNametag()
         {
             Destroy(canvas);
-            canvas = Creator.NewGameObject("Name Tag Canvas" + (playerIndex + 1).ToString(), transform);
+            canvas = Creator.NewGameObject("Name Tag Canvas" + (index + 1).ToString(), transform);
             canvas.transform.localRotation = Quaternion.identity;
 
             var nametagBase = ObjectManager.inst.objectPrefabs[0].options[0].Duplicate(canvas.transform);

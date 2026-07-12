@@ -125,6 +125,11 @@ namespace BetterLegacy.Core.Data.Player
         public int index;
 
         /// <summary>
+        /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
+        /// </summary>
+        public int colorSlot = -1;
+
+        /// <summary>
         /// Controller device name.
         /// </summary>
         public string deviceName;
@@ -201,6 +206,9 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;
 
+        /// <summary>
+        /// Player device input.
+        /// </summary>
         public PlayerInput Input { get; set; }
 
         /// <summary>
@@ -238,6 +246,7 @@ namespace BetterLegacy.Core.Data.Player
             lives = reader.ReadInt32();
             Health = reader.ReadInt32();
             index = reader.ReadInt32();
+            colorSlot = reader.ReadInt32();
             var hasSteamID = reader.ReadBoolean();
             if (hasSteamID)
                 ID = reader.ReadUInt64();
@@ -252,6 +261,7 @@ namespace BetterLegacy.Core.Data.Player
             writer.Write(lives);
             writer.Write(Health);
             writer.Write(index);
+            writer.Write(colorSlot);
             if (ID.TryGetValue(out SteamId steamID))
             {
                 writer.Write(true);

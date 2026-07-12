@@ -30,18 +30,42 @@ namespace BetterLegacy.Menus.UI.Popups
     {
         #region Values
 
+        /// <summary>
+        /// The current <see cref="LobbyPopup"/> instance.
+        /// </summary>
         public static LobbyPopup Instance { get; set; }
 
+        /// <summary>
+        /// The currently selected tab.
+        /// </summary>
         public LobbyTab CurrentTab { get; set; } = LobbyTab.List;
+
+        /// <summary>
+        /// List of tabs to display.
+        /// </summary>
         public enum LobbyTab
         {
+            /// <summary>
+            /// Creates and hosts a lobby.
+            /// </summary>
             Create,
+            /// <summary>
+            /// List of lobbies to join.
+            /// </summary>
             List,
+            /// <summary>
+            /// Joins a random lobby.
+            /// </summary>
             Random,
+            /// <summary>
+            /// Manages player settings.
+            /// </summary>
+            Settings,
         }
 
         public Transform tabs;
-        public Transform content;
+        public Transform lobbyContent;
+        public Transform playerSettingsContent;
         public string searchTerm;
 
         public List<GameObject> tabObjects = new List<GameObject>();
@@ -85,7 +109,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
             InitDragging();
             InitTopPanel();
-            InitTitle("popups.lobby.title", "Lobbies");
+            InitTitle("popups.lobby.title", "Lobby Manager");
             InitCloseButton();
 
             var tabs = Creator.NewUIObject("Tabs", gameObject.transform);
@@ -261,16 +285,28 @@ namespace BetterLegacy.Menus.UI.Popups
                             searchFieldInput.GetPlaceholderText().text = "Search lobby...";
                             EditorThemeManager.ApplyInputField(searchFieldInput, ThemeGroup.Search_Field_1);
 
-                            content = Creator.NewUIObject("Content", tabObject.transform).transform;
-                            var contentVerticalLayoutGroup = content.gameObject.AddComponent<VerticalLayoutGroup>();
+                            lobbyContent = Creator.NewUIObject("Content", tabObject.transform).transform;
+                            var contentVerticalLayoutGroup = lobbyContent.gameObject.AddComponent<VerticalLayoutGroup>();
                             contentVerticalLayoutGroup.spacing = 8f;
                             contentVerticalLayoutGroup.childControlHeight = false;
                             contentVerticalLayoutGroup.childForceExpandHeight = false;
-                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.95f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(content.AsRT());
+                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.95f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(lobbyContent.AsRT());
 
                             break;
                         }
                     case LobbyTab.Random: {
+                            break;
+                        }
+                    case LobbyTab.Settings: {
+                            RectValues.FullAnchored.AssignToRectTransform(tabObject.transform.AsRT());
+
+                            playerSettingsContent = Creator.NewUIObject("Content", tabObject.transform).transform;
+                            var contentVerticalLayoutGroup = playerSettingsContent.gameObject.AddComponent<VerticalLayoutGroup>();
+                            contentVerticalLayoutGroup.spacing = 8f;
+                            contentVerticalLayoutGroup.childControlHeight = false;
+                            contentVerticalLayoutGroup.childForceExpandHeight = false;
+                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.95f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(playerSettingsContent.AsRT());
+
                             break;
                         }
                 }
@@ -394,6 +430,10 @@ namespace BetterLegacy.Menus.UI.Popups
                 case LobbyTab.Random: {
                         break;
                     }
+                case LobbyTab.Settings: {
+                        RenderPlayerSettings();
+                        break;
+                    }
             }
         }
 
@@ -410,7 +450,7 @@ namespace BetterLegacy.Menus.UI.Popups
             LegacyPlugin.MainTick += () =>
             {
                 loadingLobbies = false;
-                LSHelpers.DeleteChildren(content);
+                LSHelpers.DeleteChildren(lobbyContent);
                 if (lobbies == null)
                 {
                     SteamLobbyManager.LogError($"Could not get lobbies!");
@@ -428,7 +468,7 @@ namespace BetterLegacy.Menus.UI.Popups
                         SteamLobbyManager.Log($"Lobby is not valid, so cannot join.");
                         continue;
                     }
-                    var gameObject = Creator.NewUIObject("Lobby", content);
+                    var gameObject = Creator.NewUIObject("Lobby", lobbyContent);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
 
                     // add hover ui here
@@ -444,6 +484,116 @@ namespace BetterLegacy.Menus.UI.Popups
                     EditorThemeManager.ApplyLightText(label);
                 }
             };
+        }
+
+        void RenderPlayerSettings()
+        {
+            LSHelpers.DeleteChildren(playerSettingsContent);
+            for (int i = 0; i < SteamLobbyManager.inst.playerSettings.Count; i++)
+            {
+                var playerSettings = SteamLobbyManager.inst.playerSettings[i];
+                var gameObject = Creator.NewUIObject("Settings", playerSettingsContent);
+                gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 100f);
+
+                var verticalLayoutGroup = gameObject.AddComponent<VerticalLayoutGroup>();
+                verticalLayoutGroup.childControlHeight = false;
+                verticalLayoutGroup.childForceExpandHeight = false;
+                var contentSizeFitter = gameObject.AddComponent<ContentSizeFitter>();
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+                #region Player Index
+
+                var playerIndexLabel = GenerateText(gameObject.transform, "Index", RectValues.Default.SizeDelta(300f, 32f));
+                EditorThemeManager.ApplyLightText(playerIndexLabel);
+
+                var playerIndexField = numberFieldStorage.Duplicate(gameObject.transform, "Player Index").GetComponent<InputFieldStorage>();
+                playerIndexField.gameObject.SetActive(true);
+                RectValues.Default.SizeDelta(400f, 32f).AssignToRectTransform(playerIndexField.transform.AsRT());
+                playerIndexField.SetTextWithoutNotify(playerSettings.index.ToString());
+                playerIndexField.OnValueChanged.NewListener(_val =>
+                {
+                    if (!int.TryParse(_val, out int num))
+                        return;
+                    playerSettings.index = num;
+                    SteamLobbyManager.inst.SaveLobbySettings();
+                });
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(playerIndexField, max: int.MaxValue);
+                TriggerHelper.AddEventTriggers(playerIndexField.gameObject, TriggerHelper.ScrollDeltaInt(playerIndexField.inputField, max: int.MaxValue));
+
+                EditorThemeManager.ApplyInputField(playerIndexField);
+
+                #endregion
+
+                #region Model ID
+
+                var modelIDLabel = GenerateText(gameObject.transform, "Model ID", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
+                EditorThemeManager.ApplyLightText(modelIDLabel);
+
+                var modelID = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform);
+                modelID.SetActive(true);
+                RectValues.Default.AnchoredPosition(0f, 300f).SizeDelta(400f, 32f).AssignToRectTransform(modelID.transform.AsRT());
+                var modelIDField = modelID.GetComponent<InputField>();
+                modelIDField.textComponent.alignment = TextAnchor.MiddleLeft;
+                modelIDField.SetTextWithoutNotify(playerSettings.playerModelID);
+                modelIDField.onValueChanged.ClearAll();
+                modelIDField.onEndEdit.NewListener(_val =>
+                {
+                    playerSettings.playerModelID = _val;
+                    SteamLobbyManager.inst.SaveLobbySettings();
+                });
+                modelIDField.GetPlaceholderText().text = "Set ID...";
+                EditorThemeManager.ApplyInputField(modelIDField, ThemeGroup.Search_Field_1);
+
+                #endregion
+
+                #region Color Slot
+
+                var colorSlotLabel = GenerateText(gameObject.transform, "Color Slot", RectValues.Default.SizeDelta(300f, 32f));
+                EditorThemeManager.ApplyLightText(colorSlotLabel);
+
+                var colorSlotField = numberFieldStorage.Duplicate(gameObject.transform, "Color Slot").GetComponent<InputFieldStorage>();
+                colorSlotField.gameObject.SetActive(true);
+                RectValues.Default.SizeDelta(400f, 32f).AssignToRectTransform(colorSlotField.transform.AsRT());
+                colorSlotField.SetTextWithoutNotify(playerSettings.colorSlot.ToString());
+                colorSlotField.OnValueChanged.NewListener(_val =>
+                {
+                    if (!int.TryParse(_val, out int num))
+                        return;
+                    playerSettings.colorSlot = num;
+                    SteamLobbyManager.inst.SaveLobbySettings();
+                });
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(colorSlotField, max: int.MaxValue);
+                TriggerHelper.AddEventTriggers(colorSlotField.gameObject, TriggerHelper.ScrollDeltaInt(colorSlotField.inputField, max: int.MaxValue));
+
+                EditorThemeManager.ApplyInputField(colorSlotField);
+
+                #endregion
+
+                LayoutRebuilder.ForceRebuildLayoutImmediate(gameObject.transform.AsRT());
+            }
+
+            var addObject = Creator.NewUIObject("Add Settings", playerSettingsContent);
+            addObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
+
+            var image = addObject.AddComponent<Image>();
+            var button = addObject.AddComponent<Button>();
+            button.image = image;
+            button.onClick.NewListener(() =>
+            {
+                SteamLobbyManager.inst.playerSettings.Add(new Core.Data.Player.PlayerSettings
+                {
+                    index = SteamLobbyManager.inst.playerSettings.Count,
+                });
+                SteamLobbyManager.inst.SaveLobbySettings();
+                RenderPlayerSettings();
+            });
+
+            var label = GenerateText(addObject.transform, "Add Settings", RectValues.FullAnchored.SizeDelta(-12f, 0f));
+
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(label);
         }
 
         public override void Tick()

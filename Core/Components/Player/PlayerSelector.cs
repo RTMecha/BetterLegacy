@@ -31,7 +31,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!focused)
                 return;
 
-            EditorManager.inst.SetTooltip(null, $"<#{LSColors.ColorToHex(CoreHelper.CurrentBeatmapTheme.GetPlayerColor(player.playerIndex))}>Player {player.playerIndex + 1}</color>",
+            EditorManager.inst.SetTooltip(null, $"<#{LSColors.ColorToHex(CoreHelper.CurrentBeatmapTheme.GetPlayerColor(player.index))}>Player {player.index + 1}</color>",
                 $"<b>Health</b>: <#4B86B4>{player.Core?.Health ?? 3}</color>\n" +
                 $"<b>Damage Colliding</b>: <#4B86B4>{player.collisionState.triggerColliding}</color>\n" +
                 $"<b>Solid Colliding</b>: <#4B86B4>{player.collisionState.solidColliding}</color>\n" +
@@ -59,7 +59,7 @@ namespace BetterLegacy.Core.Components.Player
             //    return;
 
             if (player)
-                PlayerEditor.inst.playerIndex = player.playerIndex;
+                PlayerEditor.inst.playerIndex = player.index;
             PlayerEditor.inst.OpenDialog();
             AchievementManager.inst.UnlockAchievement("select_player");
         }

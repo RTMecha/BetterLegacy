@@ -4,6 +4,7 @@ using System.Linq;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
+using SimpleJSON;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -12,7 +13,6 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
@@ -38,6 +38,8 @@ namespace BetterLegacy.Core.Managers
         /// The current lobby channel.
         /// </summary>
         public string LobbyChannel { get; set; } = string.Empty;
+
+        public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
 
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
 
@@ -79,6 +81,7 @@ namespace BetterLegacy.Core.Managers
             SteamMatchmaking.OnChatMessage += OnChatMessage;
 
             LoadLobbySettings();
+            LoadPlayerSettings();
         }
 
         public override void OnTick()
@@ -87,7 +90,15 @@ namespace BetterLegacy.Core.Managers
                 NetworkFunction.SyncLevelToClients();
         }
 
-        public void SaveLobbySettings() => LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
+        public void SaveLobbySettings()
+        {
+            LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
+
+            var jn = Parser.NewJSONObject();
+            for (int i = 0; i < playerSettings.Count; i++)
+                jn["settings"][i] = playerSettings[i].ToJSON();
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot()), jn.ToString(3));
+        }
 
         public void LoadLobbySettings()
         {
@@ -98,6 +109,24 @@ namespace BetterLegacy.Core.Managers
             LobbyPopup.Instance.nameField?.SetTextWithoutNotify(LobbySettings.Name);
             LobbyPopup.Instance.playerCountField?.SetTextWithoutNotify(LobbySettings.PlayerCount.ToString());
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
+        }
+
+        public void LoadPlayerSettings()
+        {
+            try
+            {
+                playerSettings.Clear();
+                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot());
+                if (!RTFile.TryReadFromFile(path, out string file))
+                    return;
+                var jn = JSON.Parse(file);
+                for (int i = 0; i < jn["settings"].Count; i++)
+                    playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         public void SyncPlayersToServer()
@@ -112,6 +141,14 @@ namespace BetterLegacy.Core.Managers
         }
 
         public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
+
+        public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
+
+        public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
+        {
+            playerSettings = GetPlayerSettings(index);
+            return playerSettings;
+        }
 
         #region Lobby
 

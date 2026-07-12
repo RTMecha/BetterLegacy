@@ -681,6 +681,8 @@ namespace BetterLegacy.Core.Data.Player
 
             #region Visual
 
+            public int colorSlot = -1;
+
             public Easing rotationCurveType = Easing.OutCirc;
 
             public float rotationSpeed = 0.2f;
@@ -767,6 +769,7 @@ namespace BetterLegacy.Core.Data.Player
                 minBoostTime = orig.minBoostTime;
                 maxBoostTime = orig.maxBoostTime;
                 hitCooldown = orig.hitCooldown;
+                colorSlot = orig.colorSlot;
                 rotateMode = orig.rotateMode;
                 rotationSpeed = orig.rotationSpeed;
                 rotationCurveType = orig.rotationCurveType;
@@ -846,6 +849,9 @@ namespace BetterLegacy.Core.Data.Player
                     stretchAmount = jn["stretch_amount"].AsFloat;
                 if (jn["stretch_easing"] != null)
                     stretchEasing = jn["stretch_easing"].AsInt;
+
+                if (jn["col"] != null)
+                    colorSlot = jn["col"].AsInt;
             }
 
             public override JSONNode ToJSON()
@@ -872,6 +878,8 @@ namespace BetterLegacy.Core.Data.Player
                     jn["stretch_amount"] = stretchAmount;
                 if (stretchEasing != 6)
                     jn["stretch_easing"] = stretchEasing;
+                if (colorSlot != -1)
+                    jn["col"] = colorSlot;
 
                 #endregion
 

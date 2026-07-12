@@ -443,7 +443,11 @@ namespace BetterLegacy.Core.Managers
 
             runtimePlayer.Core = player;
             runtimePlayer.Model = player.PlayerModel;
-            runtimePlayer.playerIndex = player.index;
+            runtimePlayer.index = player.index;
+            if (SteamLobbyManager.inst && SteamLobbyManager.inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
+                runtimePlayer.colorSlot = playerSettings.colorSlot;
+            else if (player.PlayerModel)
+                runtimePlayer.colorSlot = player.PlayerModel.basePart.colorSlot;
             runtimePlayer.initialHealthCount = player.Health;
             player.RuntimePlayer = runtimePlayer;
 
@@ -488,7 +492,7 @@ namespace BetterLegacy.Core.Managers
                 }
             };
 
-            if (IncludeOtherPlayersInRank || runtimePlayer.playerIndex == 0)
+            if (IncludeOtherPlayersInRank || runtimePlayer.index == 0)
             {
                 runtimePlayer.playerDeathEvent += _val =>
                 {
@@ -531,7 +535,7 @@ namespace BetterLegacy.Core.Managers
             var player = gameObject.GetOrAddComponent<RTPlayer>();
 
             player.Model = playerModel;
-            player.playerIndex = index;
+            player.index = index;
 
             player.Init();
 
