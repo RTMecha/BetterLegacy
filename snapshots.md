@@ -10,6 +10,14 @@
 - Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
 
 ## Changes
+### Core
+- Removed the "Global" toggle from the playSound modifiers as Asset Packs exist now.
+- BREAKING CHANGE!  
+  Rewrote a lot of the modifier code.  
+  Due to this, some really modifiers might not work anymore.  
+  Please let me know if a modifier is not behaving as it should or appears where it shouldn't.  
+  Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.
+
 ### Editor
 - Levels in the level list now use object pooling, hopefully making level list load times faster.
 
