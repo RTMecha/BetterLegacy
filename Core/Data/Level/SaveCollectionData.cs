@@ -153,7 +153,8 @@ namespace BetterLegacy.Core.Data.Level
             Completed = reader.ReadBoolean();
             PlayedTimes = reader.ReadInt32();
             UnlockedAchievements = reader.ReadDictionary(reader.ReadString, reader.ReadBoolean);
-            Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
+            if (reader.ReadBoolean())
+                Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
             var hasLastPlayed = reader.ReadBoolean();
             if (hasLastPlayed)
                 LastPlayed = new DateTime(reader.ReadInt64());
@@ -168,9 +169,11 @@ namespace BetterLegacy.Core.Data.Level
             writer.Write(UnlockedAchievements,
                 writeKey: writer.Write,
                 writeValue: writer.Write);
-            writer.Write(Variables,
-                writeKey: writer.Write,
-                writeValue: writer.Write);
+            writer.Write(Variables != null);
+            if (Variables != null)
+                writer.Write(Variables,
+                    writeKey: writer.Write,
+                    writeValue: writer.Write);
             var hasLastPlayed = LastPlayed.HasValue;
             writer.Write(hasLastPlayed);
             if (hasLastPlayed)
