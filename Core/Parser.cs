@@ -160,10 +160,8 @@ namespace BetterLegacy.Core
                 for (int i = 0; i < jn.Count; i++)
                 {
                     var jnModifierBlock = jn[i];
-                    var modifierBlock = ModifierBlock.Parse(jnModifierBlock);
-                    modifierBlock.Name = jnModifierBlock["name"];
-                    modifierBlock.ReferenceType = referenceType;
-                    modifierBlock.UpdateFunctions();
+                    var modifierBlock = new ModifierBlock(jnModifierBlock["name"], referenceType);
+                    modifierBlock.ReadJSON(jnModifierBlock);
                     modifierBlocks.Add(modifierBlock);
                 }
             return modifierBlocks;

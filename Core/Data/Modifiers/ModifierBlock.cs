@@ -46,8 +46,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         public override void ReadJSON(JSONNode jn)
         {
             this.ReadModifiersJSON(jn);
-            if (!Modifiers.IsEmpty())
-                this.UpdateFunctions();
         }
 
         public override JSONNode ToJSON()
@@ -83,7 +81,7 @@ namespace BetterLegacy.Core.Data.Modifiers
                 return default;
 
             loop.ValidateDictionary();
-            return OrderModifiers ? ModifiersHelper.RunModifiersLoop(Modifiers, loop) : ModifiersHelper.RunModifiersAll(Modifiers, loop);
+            return OrderModifiers ? loop.RunModifiersLoop(Modifiers) : loop.RunModifiersAll(Modifiers);
         }
 
         /// <summary>

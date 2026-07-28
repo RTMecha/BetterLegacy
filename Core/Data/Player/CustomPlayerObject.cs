@@ -329,8 +329,6 @@ namespace BetterLegacy.Core.Data.Player
             }
 
             this.ReadModifiersJSON(jn);
-            if (!Modifiers.IsEmpty())
-                this.UpdateFunctions();
         }
 
         public override JSONNode ToJSON()

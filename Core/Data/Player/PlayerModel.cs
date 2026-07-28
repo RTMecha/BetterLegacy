@@ -460,8 +460,6 @@ namespace BetterLegacy.Core.Data.Player
                 tailParts = GetDefaultTail();
 
             this.ReadModifiersJSON(jn);
-            if (!modifiers.IsEmpty())
-                this.UpdateFunctions();
 
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)

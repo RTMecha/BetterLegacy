@@ -778,28 +778,20 @@ namespace BetterLegacy.Editor.Managers
             new ButtonElement("VG Blue Red", () => inputField.text = ObjectEditorData.RED_BLUE)
         };
 
-        public static List<EditorElement> GetModifierSoundPathFunctions(Func<bool> getGlobal, Action<string> setPath) => new List<EditorElement>
+        public static List<EditorElement> GetModifierSoundPathFunctions(Action<string> setPath) => new List<EditorElement>
         {
             new ButtonElement($"Use {RTFileBrowser.SYSTEM_BROWSER}", () =>
             {
-                var isGlobal = getGlobal?.Invoke() ?? false;
-                var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
+                var directory = RTFile.RemoveEndSlash(RTFile.BasePath);
 
-                if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                {
-                    EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
+                var result = FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
                 if (string.IsNullOrEmpty(result))
                     return;
 
                 result = RTFile.ReplaceSlash(result);
-                if (result.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                if (result.Contains(RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                 {
-                    setPath?.Invoke(result.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
+                    setPath?.Invoke(result.Remove(RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
                     RTFileBrowser.inst.Popup.Close();
                     return;
                 }
@@ -810,22 +802,14 @@ namespace BetterLegacy.Editor.Managers
             {
                 RTFileBrowser.inst.Popup.Open();
 
-                var isGlobal = getGlobal?.Invoke() ?? false;
-                var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
-                                RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
-
-                if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
-                {
-                    EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                    return;
-                }
+                var directory = RTFile.RemoveEndSlash(RTFile.BasePath);
 
                 RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
                 {
                     _val = RTFile.ReplaceSlash(_val);
-                    if (_val.Contains(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                    if (_val.Contains(RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                     {
-                        setPath?.Invoke(_val.Remove(isGlobal ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
+                        setPath?.Invoke(_val.Remove(RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))));
                         RTFileBrowser.inst.Popup.Close();
                         return;
                     }

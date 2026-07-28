@@ -195,7 +195,7 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public ModifierCompatibility WithBeatmapObject(bool compat = true)
         {

@@ -729,8 +729,7 @@ namespace BetterLegacy.Core.Helpers
                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
                             timelineObject.GetData<BeatmapObject>().modifiers.ForLoop(modifier =>
                             {
-                                var name = modifier.Name;
-                                if (ModifiersHelper.IsGroupModifier(name))
+                                if (modifier.function && modifier.function.IsGroup)
                                     modifier.prefabInstanceOnly = enabled;
                             });
                             break;
@@ -738,8 +737,7 @@ namespace BetterLegacy.Core.Helpers
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
                             timelineObject.GetData<BackgroundObject>().modifiers.ForLoop(modifier =>
                             {
-                                var name = modifier.Name;
-                                if (ModifiersHelper.IsGroupModifier(name))
+                                if (modifier.function && modifier.function.IsGroup)
                                     modifier.prefabInstanceOnly = enabled;
                             });
                             break;
@@ -747,8 +745,7 @@ namespace BetterLegacy.Core.Helpers
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             timelineObject.GetData<PrefabObject>().modifiers.ForLoop(modifier =>
                             {
-                                var name = modifier.Name;
-                                if (ModifiersHelper.IsGroupModifier(name))
+                                if (modifier.function && modifier.function.IsGroup)
                                     modifier.prefabInstanceOnly = enabled;
                             });
                             break;

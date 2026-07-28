@@ -1401,47 +1401,21 @@ namespace BetterLegacy.Editor.Managers
 
             // reset modifiers
             foreach (var beatmapObject in GameData.Current.beatmapObjects)
-            {
-                beatmapObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-            }
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
-            {
-                backgroundObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.RunInactive(modifier, backgroundObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-            }
+                ModifiersEditor.inst.RecalculateModifiers(backgroundObject);
             foreach (var prefabObject in GameData.Current.prefabObjects)
-            {
-                prefabObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.RunInactive(modifier, prefabObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-            }
+                ModifiersEditor.inst.RecalculateModifiers(prefabObject);
             foreach (var modifierBlock in GameData.Current.modifierBlocks)
             {
                 modifierBlock.Modifiers.ForLoop(modifier =>
                 {
                     modifier.RunInactive(modifier, null, null);
-                    ModifiersHelper.OnRemoveCache(modifier);
+                    modifier.OnRemoveCache();
                     modifier.Result = default;
                 });
             }
-            GameData.Current.modifiers.ForLoop(modifier =>
-            {
-                modifier.RunInactive(modifier, GameData.Current);
-                ModifiersHelper.OnRemoveCache(modifier);
-                modifier.Result = default;
-            });
+            ModifiersEditor.inst.RecalculateModifiers(GameData.Current);
 
             PlayerManager.RespawnPlayers();
 
@@ -1463,26 +1437,14 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.customShape = -1;
                             beatmapObject.customShapeOption = -1;
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
-                            beatmapObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.RunInactive(modifier, beatmapObject);
-                                ModifiersHelper.OnRemoveCache(modifier);
-                                modifier.Result = default;
-                            });
-
+                            ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.customParent = null;
                             RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                            prefabObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.RunInactive(modifier, prefabObject);
-                                ModifiersHelper.OnRemoveCache(modifier);
-                                modifier.Result = default;
-                            });
-
+                            ModifiersEditor.inst.RecalculateModifiers(prefabObject);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -1490,13 +1452,7 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.customShape = -1;
                             backgroundObject.customShapeOption = -1;
                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                            backgroundObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.RunInactive(modifier, backgroundObject);
-                                ModifiersHelper.OnRemoveCache(modifier);
-                                modifier.Result = default;
-                            });
-
+                            ModifiersEditor.inst.RecalculateModifiers(backgroundObject);
                             break;
                         }
                 }

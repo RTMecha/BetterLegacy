@@ -139,6 +139,21 @@ namespace BetterLegacy.Core
         /// <param name="hue">Hue offset.</param>
         /// <param name="sat">Saturation offset.</param>
         /// <param name="val">Value offset.</param>
+        /// <param name="opacity">Opacity to set.</param>
+        /// <returns>Returns a changed color based on the hue / sat / val offset values.</returns>
+        public static Color ChangeColorHSVA(Color color, float hue, float sat, float val, float opacity)
+        {
+            LSColors.ColorToHSV(color, out double num, out double saturation, out double value);
+            return FadeColor(LSColors.ColorFromHSV(num + hue, saturation + sat, value + val), opacity);
+        }
+
+        /// <summary>
+        /// Changes the hue, saturation and value of a color.
+        /// </summary>
+        /// <param name="color">Color to change.</param>
+        /// <param name="hue">Hue offset.</param>
+        /// <param name="sat">Saturation offset.</param>
+        /// <param name="val">Value offset.</param>
         /// <returns>Returns a changed color based on the hue / sat / val offset values.</returns>
         public static Color ChangeColorHSV(Color color, float hue, float sat, float val)
         {

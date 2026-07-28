@@ -48,6 +48,11 @@ namespace BetterLegacy.Editor.Managers
             { ModifierReferenceType.ModifierBlock, new List<Modifier>() },
         };
 
+        /// <summary>
+        /// If development only modifiers should be viewed.
+        /// </summary>
+        public bool development = false;
+
         #region Prefabs
 
         /// <summary>
@@ -221,6 +226,27 @@ namespace BetterLegacy.Editor.Managers
             };
         }
 
+        public void ToggleDevelopment()
+        {
+            development = !development;
+            if (Popup.IsOpen)
+                Popup.SearchField.onValueChanged.Invoke(Popup.SearchTerm);
+        }
+
+        public void RecalculateModifiers(IModifyable modifyable)
+        {
+            if (modifyable.Modifiers != null && modifyable is IModifierReference reference)
+                for (int i = 0; i < modifyable.Modifiers.Count; i++)
+                    RecalculateModifier(modifyable.Modifiers[i], reference);
+        }
+        
+        public void RecalculateModifier(Modifier modifier, IModifierReference reference)
+        {
+            modifier.RunInactive(modifier, reference);
+            modifier.OnRemoveCache();
+            modifier.Result = default;
+        }
+
         /// <summary>
         /// Gets the copied list of modifiers associated with a specific reference type.
         /// </summary>
@@ -261,9 +287,18 @@ namespace BetterLegacy.Editor.Managers
 
             var modifiersEditorDialog = dialog;
 
-            foreach (var defaultModifier in ModifiersManager.inst.modifiers)
+            foreach (var modifierFunction in ModifiersManager.inst.functions)
             {
-                if (!SearchModifier(Popup.SearchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
+                var defaultModifier = modifierFunction.Modifier;
+                if (!defaultModifier)
+                    continue;
+                if (!modifierFunction.DisplayInEditor)
+                    continue;
+                if (!SearchModifier(Popup.SearchTerm, defaultModifier))
+                    continue;
+                if (!modifierFunction.Compatibility.CompareType(referenceType))
+                    continue;
+                if (modifierFunction.Compatibility.StoryOnly && !development)
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
@@ -290,13 +325,11 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var modifier = defaultModifier.Copy();
+                    var modifier = modifierFunction.Create();
                     if (addIndex == -1)
                         modifyable.Modifiers.Add(modifier);
                     else
                         modifyable.Modifiers.Insert(Mathf.Clamp(addIndex, 0, modifyable.Modifiers.Count), modifier);
-
-                    modifyable.UpdateFunctions();
 
                     CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
                     Popup.Close();
@@ -316,18 +349,12 @@ namespace BetterLegacy.Editor.Managers
                             }
                     }
                 });
-                spriteFunctionButton.image.sprite = GetSprite(defaultModifier);
+                spriteFunctionButton.image.sprite = modifierFunction.Icon;
 
                 EditorThemeManager.ApplyLightText(spriteFunctionButton.label);
                 EditorThemeManager.ApplySelectable(spriteFunctionButton.button, ThemeGroup.List_Button_1);
             }
         }
-
-        Sprite GetSprite(Modifier modifier) =>
-            ModifiersHelper.IsEditorModifier(modifier.Name) ? EditorSprites.EditSprite :
-            modifier.Name.StartsWith("get") ? EditorSprites.DownArrow :
-            modifier.type == Modifier.Type.Trigger ? EditorSprites.QuestionSprite :
-            EditorSprites.ExclaimSprite;
 
         bool SearchModifier(string searchTerm, Modifier modifier) =>
             string.IsNullOrEmpty(searchTerm) ||
@@ -370,7 +397,6 @@ namespace BetterLegacy.Editor.Managers
             buttonStorage.OnClick.NewListener(() =>
             {
                 modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
-                modifyable.UpdateFunctions();
 
                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)

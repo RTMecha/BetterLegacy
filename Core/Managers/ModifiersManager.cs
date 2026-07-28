@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 
-using UnityEngine;
-
-using SimpleJSON;
-
 using BetterLegacy.Core.Data.Modifiers;
-using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Data.Modifiers.Functions;
+using BetterLegacy.Core.Data.Modifiers.Updaters;
 using BetterLegacy.Core.Managers.Settings;
 
 namespace BetterLegacy.Core.Managers
@@ -14,113 +11,45 @@ namespace BetterLegacy.Core.Managers
     {
         #region Values
 
-        // TODO: change soundlibrary to be based on Asset Packs.
-        public const string SOUNDLIBRARY_PATH = "beatmaps/soundlibrary";
+        /// <summary>
+        /// List of modifier functions.
+        /// </summary>
+        public List<ModifierFunctionBase> functions = new List<ModifierFunctionBase>();
 
-        public List<Modifier> modifiers = new List<Modifier>();
+        public Dictionary<ModifierFunctionBase.CategoryType, List<ModifierFunctionBase>> categories = new Dictionary<ModifierFunctionBase.CategoryType, List<ModifierFunctionBase>>();
 
-        public List<Modifier> defaultLevelModifiers = new List<Modifier>()
+        public List<ModifierTriggerBase> triggers = new List<ModifierTriggerBase>();
+
+        public List<ModifierActionBase> actions = new List<ModifierActionBase>();
+
+        public List<ModifierUpdaterBase> updaters = new List<ModifierUpdaterBase>
         {
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerBubble", false,
-                "Text", // Text
-                "0" // Time
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerMoveAll", false,
-                "0", // X
-                "0", // Y
-                "0" // Time
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerEnableBoostAll", false,
-                "False", // Lock Enabled
-                string.Empty, // Show Bubble
-                string.Empty // Bubble Time
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerXLock", false,
-                "False", // Lock Enabled
-                string.Empty, // Show Bubble
-                string.Empty // Lock Enabled
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerYLock", false,
-                "False", // Lock Enabled
-                string.Empty, // Show Bubble
-                string.Empty // Lock Enabled
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "setMusicTime", false,
-                "0" // Time
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "setPitch", false,
-                "1" // Time
-                ),
-
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "timeInRange", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerHit", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerDeath", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelStart", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRestart", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
-            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRewind", false,
-                string.Empty, // IDK
-                "0", // Activation Time Range Min
-                "0" // Activation Time Range Max
-                ),
+            new DisableObjectUpdater(),
+            new FollowMousePositionUpdater(),
+            new HideMouseUpdater(),
+            new LoadJSONUpdater(),
+            new ObjectActiveOtherUpdater(),
+            new ObjectVariableUpdater(),
+            new PlayerDisableBoostUpdater(),
+            new PlaySoundOnlineUpdater(),
+            new RealTimeUpdater(1),
+            new RealTimeUpdater(2),
+            new RealTimeUpdater(3),
+            new RealTimeUpdater(4),
+            new RealTimeUpdater(5),
+            new RealTimeUpdater(6),
+            new RealTimeUpdater(7),
+            new RealTimeUpdater(8),
+            new ReinitLevelUpdater(),
+            new SaveJSONUpdater(),
+            new SaveLevelDataUpdater(),
+            new SetActiveUpdater(),
+            new SetBGActiveUpdater(),
+            new SetGameModeUpdater(),
+            new SetGlobalPlayerSpeedUpdater(),
+            new SetPlayerVelocityUpdater(),
+            new TextUpdater(),
         };
-
-        public List<Modifier> defaultPlayerModifiers = new List<Modifier>
-        {
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.setCustomObjectActive), true, "False", "0", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.setCustomObjectIdle), true, "0", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.playAnimation), false, "0", "boost"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.setIdleAnimation), false, "0", "boost"),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.kill), false, string.Empty),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.hit), false, "0"),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.boost), false, string.Empty, string.Empty),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.shoot), false, string.Empty),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.pulse), false, string.Empty),
-            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.jump), false, string.Empty),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getHealth), true, "HEALTH_VAR"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLives), true, "LIVES_VAR"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMaxHealth), true, "MAX_HEALTH_VAR"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMaxLives), true, "MAX_LIVES_VAR"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getIndex), true, "INDEX_VAR"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMove), true, "MOVE_X_VAR", "MOVE_Y_VAR", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMoveX), true, "MOVE_X_VAR", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getMoveY), true, "MOVE_Y_VAR", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLook), true, "LOOK_X_VAR", "LOOK_Y_VAR", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLookX), true, "LOOK_X_VAR", "True"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierFunctions.getLookY), true, "LOOK_Y_VAR", "True"),
-
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthEquals), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthGreaterEquals), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthLesserEquals), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthGreater), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.healthLesser), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isDead), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isBoosting), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isJumping), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isColliding), true, "0"),
-            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Trigger, nameof(ModifierFunctions.isSolidColliding), true, "0"),
-        };
-
-        public static Dictionary<string, AudioSource> audioSources = new Dictionary<string, AudioSource>();
 
         #endregion
 
@@ -128,82 +57,70 @@ namespace BetterLegacy.Core.Managers
 
         public override void OnInit()
         {
-            modifiers.Clear();
-
-            LoadFile(modifiers, RTFile.GetAsset("builtin/default_modifiers.json"));
-
-            AddDevelopmentModifiers();
-
-            modifiers.AddRange(defaultPlayerModifiers);
-            modifiers.ForLoop(modifier =>
+            var type = typeof(ModifierFunctions);
+            var fields = type.GetFields();
+            for (int i = 0; i < fields.Length; i++)
             {
-                var name = modifier.Name;
-
-                if (modifier.type == Modifier.Type.Trigger && ModifiersHelper.triggers.TryFind(x => x.name == name, out ModifierTrigger trigger))
-                    modifier.Trigger = trigger.function;
-
-                if (modifier.type == Modifier.Type.Action && ModifiersHelper.actions.TryFind(x => x.name == name, out ModifierAction action))
-                    modifier.Action = action.function;
-
-                if (ModifiersHelper.inactives.TryFind(x => x.name == name, out ModifierInactive inactive))
-                    modifier.Inactive = inactive.function;
-            });
-        }
-
-        void LoadFile(List<Modifier> modifiers, string path)
-        {
-            if (!RTFile.FileExists(path))
-                return;
-
-            var jn = JSON.Parse(RTFile.ReadFromFile(path));
-
-            for (int i = 0; i < jn["modifiers"].Count; i++)
-                LoadModifiers(modifiers, jn["modifiers"][i]);
-        }
-
-        void LoadModifiers(List<Modifier> modifiers, JSONNode jn)
-        {
-            if (jn.IsArray)
-            {
-                for (int i = 0; i < jn.Count; i++)
-                    LoadModifiers(modifiers, jn[i]);
-                return;
+                if (fields[i].GetValue(null) is ModifierFunctionBase function)
+                    functions.Add(function);
             }
 
-            var modifier = Modifier.Parse(jn);
-            modifier.compatibility = ModifierCompatibility.Parse(jn["compat"]);
-            modifiers.Add(modifier);
+            for (int i = 0; i < functions.Count; i++)
+            {
+                var function = functions[i];
+                if (function is ModifierTriggerBase trigger)
+                    triggers.Add(trigger);
+                if (function is ModifierActionBase action)
+                    actions.Add(action);
+                if (!categories.TryGetValue(function.Category, out List<ModifierFunctionBase> list))
+                {
+                    list = new List<ModifierFunctionBase>();
+                    categories[function.Category] = list;
+                }
+                list.Add(function);
+            }
         }
 
-        void AddDevelopmentModifiers()
+        /// <summary>
+        /// Verifies a modifier is up to date.
+        /// </summary>
+        /// <param name="modifier">Modifier to verify.</param>
+        /// <param name="modifyable">Modifyable reference.</param>
+        /// <returns>Returns <see langword="true"/> if the modifier is valid, otherwise returns <see langword="false"/>.</returns>
+        public bool VerifyModifier(Modifier modifier, IModifyable modifyable)
         {
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
+            if (modifier.verified)
+                return !string.IsNullOrEmpty(modifier.name);
 
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
+            for (int i = 0; i < updaters.Count; i++)
+            {
+                var updater = updaters[i];
+                if (updater.RequiresUpdate(modifier))
+                    updater.UpdateModifier(modifier, modifyable);
+            }
 
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleEnableDEVONLY", false, "False"));
-            modifiers.Add(new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), Modifier.Type.Action, "exampleSayDEVONLY", false, "Something!"));
+            modifier.verified = true;
+            if (modifier.Name.Contains("DEVONLY") || !functions.TryFind(x => x.Modifier && x.Name == modifier.Name && x.Modifier.type == modifier.type, out ModifierFunctionBase function) || !function.Compatibility.CompareType(modifyable.ReferenceType))
+                return !string.IsNullOrEmpty(modifier.Name);
 
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntLesserDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadIntGreaterDEVONLY", false, "IntVariable", "0", "0"));
-            modifiers.Add(new Modifier(ModifierCompatibility.AllCompatible.WithStoryOnly(), Modifier.Type.Trigger, "storyLoadBoolDEVONLY", false, "BoolVariable", "False"));
+            modifier.function = function;
+            if (function is ModifierTriggerBase trigger)
+                modifier.trigger = trigger;
+            if (function is ModifierActionBase action)
+                modifier.action = action;
+            modifier.compatibility = function.Compatibility;
+
+            modifier.function.ValidateModifier(modifier, modifyable);
+
+            int num = modifier.values.Count;
+            while (modifier.values.Count < function.Modifier.values.Count)
+            {
+                modifier.values.Add(function.Modifier.values[num]);
+                num++;
+            }
+
+            return !string.IsNullOrEmpty(modifier.name);
         }
-
-        static Modifier RegisterModifier(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(type, name, constant, values);
-
-        static Modifier RegisterModifierDEVONLY(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(ModifierCompatibility.LevelControlCompatible.WithStoryOnly(), type, name, constant, values);
 
         #endregion
     }

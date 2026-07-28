@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Modifiers.Functions;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Elements;
@@ -29,9 +30,9 @@ namespace BetterLegacy.Core.Data.Modifiers
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant, params string[] values) : this(type, name, constant, values) => this.compatibility = compatibility;
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, ModifierLoop> action,
-            Func<Modifier, ModifierLoop, bool> trigger,
-            Action<Modifier, ModifierLoop> inactive,
+            ModifierActionBase action,
+            ModifierTriggerBase trigger,
+            ModifierFunctionBase function,
             params string[] values)
         {
             this.name = name;
@@ -40,45 +41,45 @@ namespace BetterLegacy.Core.Data.Modifiers
             for (int i = 0; i < values.Length; i++)
                 this.values.Add(values[i]);
 
-            Action = action;
-            Trigger = trigger;
-            Inactive = inactive;
+            this.action = action;
+            this.trigger = trigger;
+            this.function = function;
         }
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, ModifierLoop> action,
-            Action<Modifier, ModifierLoop> inactive,
-            params string[] values) : this(type, name, constant, action, null, inactive, values) { }
+            ModifierActionBase action,
+            ModifierFunctionBase function,
+            params string[] values) : this(type, name, constant, action, null, function, values) { }
 
         public Modifier(Type type, string name, bool constant,
-            Func<Modifier, ModifierLoop, bool> trigger,
-            Action<Modifier, ModifierLoop> inactive,
-            params string[] values) : this(type, name, constant, null, trigger, inactive, values) { }
+            ModifierTriggerBase trigger,
+            ModifierFunctionBase function,
+            params string[] values) : this(type, name, constant, null, trigger, function, values) { }
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Action<Modifier, ModifierLoop> action,
-            Action<Modifier, ModifierLoop> inactive,
-            params string[] values) : this(type, name, constant, action, null, inactive, values) => this.compatibility = compatibility;
+            ModifierActionBase action,
+            ModifierFunctionBase function,
+            params string[] values) : this(type, name, constant, action, null, function, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Func<Modifier, ModifierLoop, bool> trigger,
-            Action<Modifier, ModifierLoop> inactive,
-            params string[] values) : this(type, name, constant, null, trigger, inactive, values) => this.compatibility = compatibility;
+            ModifierTriggerBase trigger,
+            ModifierFunctionBase function,
+            params string[] values) : this(type, name, constant, null, trigger, function, values) => this.compatibility = compatibility;
 
         public Modifier(Type type, string name, bool constant,
-            Action<Modifier, ModifierLoop> action,
+            ModifierActionBase action,
             params string[] values) : this(type, name, constant, action, null, null, values) { }
 
         public Modifier(Type type, string name, bool constant,
-            Func<Modifier, ModifierLoop, bool> trigger,
+            ModifierTriggerBase trigger,
             params string[] values) : this(type, name, constant, null, trigger, null, values) { }
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Action<Modifier, ModifierLoop> action,
+            ModifierActionBase action,
             params string[] values) : this(type, name, constant, action, null, null, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
-            Func<Modifier, ModifierLoop, bool> trigger,
+            ModifierTriggerBase trigger,
             params string[] values) : this(type, name, constant, null, trigger, null, values) => this.compatibility = compatibility;
 
         #endregion
@@ -93,17 +94,17 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// <summary>
         /// Action to run per-tick.
         /// </summary>
-        public Action<Modifier, ModifierLoop> Action { get; set; }
+        public ModifierActionBase action;
 
         /// <summary>
         /// Trigger to check if other modifiers should run.
         /// </summary>
-        public Func<Modifier, ModifierLoop, bool> Trigger { get; set; }
+        public ModifierTriggerBase trigger;
 
         /// <summary>
-        /// Inactive state.
+        /// Base function.
         /// </summary>
-        public Action<Modifier, ModifierLoop> Inactive { get; set; }
+        public ModifierFunctionBase function;
 
         public string name;
         /// <summary>
@@ -283,9 +284,9 @@ namespace BetterLegacy.Core.Data.Modifiers
             customName = orig.customName;
             description = orig.description;
 
-            Action = orig.Action;
-            Trigger = orig.Trigger;
-            Inactive = orig.Inactive;
+            action = orig.action;
+            trigger = orig.trigger;
+            function = orig.function;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -434,33 +435,18 @@ namespace BetterLegacy.Core.Data.Modifiers
                 writer.Write(values[i]);
         }
 
-        public void VerifyModifier(List<Modifier> modifiers)
-        {
-            if (modifiers != null && modifiers.TryFind(x => x.Name == Name && x.type == type, out Modifier defaultModifier))
-            {
-                compatibility = defaultModifier.compatibility;
-
-                int num = values.Count;
-                while (values.Count < defaultModifier.values.Count)
-                {
-                    values.Add(defaultModifier.values[num]);
-                    num++;
-                }
-            }
-        }
-
         #region Run
 
         public void RunAction(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!tryCatch)
             {
-                Action?.Invoke(modifier, modifierLoop);
+                action?.Run(modifier, modifierLoop);
                 return;
             }
             try
             {
-                Action?.Invoke(modifier, modifierLoop);
+                action?.Run(modifier, modifierLoop);
             }
             catch (Exception ex)
             {
@@ -471,10 +457,10 @@ namespace BetterLegacy.Core.Data.Modifiers
         public bool RunTrigger(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!tryCatch)
-                return Trigger?.Invoke(modifier, modifierLoop) == true;
+                return trigger?.Run(modifier, modifierLoop) == true;
             try
             {
-                return Trigger?.Invoke(modifier, modifierLoop) == true;
+                return trigger?.Run(modifier, modifierLoop) == true;
             }
             catch (Exception ex)
             {
@@ -487,12 +473,12 @@ namespace BetterLegacy.Core.Data.Modifiers
         {
             if (!tryCatch)
             {
-                Inactive?.Invoke(modifier, modifierLoop);
+                function?.Inactive(modifier, modifierLoop);
                 return;
             }
             try
             {
-                Inactive?.Invoke(modifier, modifierLoop);
+                function?.Inactive(modifier, modifierLoop);
             }
             catch (Exception ex)
             {
@@ -504,12 +490,12 @@ namespace BetterLegacy.Core.Data.Modifiers
         {
             if (!tryCatch)
             {
-                Inactive?.Invoke(modifier, new ModifierLoop(reference, null));
+                function?.Inactive(modifier, new ModifierLoop(reference, null));
                 return;
             }
             try
             {
-                Inactive?.Invoke(modifier, new ModifierLoop(reference, null));
+                function?.Inactive(modifier, new ModifierLoop(reference, null));
             }
             catch (Exception ex)
             {
@@ -521,12 +507,12 @@ namespace BetterLegacy.Core.Data.Modifiers
         {
             if (!tryCatch)
             {
-                Inactive?.Invoke(modifier, new ModifierLoop(reference, variables));
+                function?.Inactive(modifier, new ModifierLoop(reference, variables));
                 return;
             }
             try
             {
-                Inactive?.Invoke(modifier, new ModifierLoop(reference, variables));
+                function?.Inactive(modifier, new ModifierLoop(reference, variables));
             }
             catch (Exception ex)
             {
@@ -583,6 +569,11 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// </summary>
         /// <returns>Returns true if the modifier has a result, otherwise returns false.</returns>
         public bool HasResult() => Result != null;
+
+        /// <summary>
+        /// Function occurs when <see cref="Result"/> is reset to the default.
+        /// </summary>
+        public void OnRemoveCache() => function?.OnRemoveCache(this);
 
         #endregion
 

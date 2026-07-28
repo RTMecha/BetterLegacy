@@ -3,6 +3,7 @@
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
@@ -20,8 +21,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             ParentRuntime = parentRuntime;
             StartTime = startTime;
             KillTime = killTime;
-
-            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, reference.ReferenceType));
 
             loop = new ModifierLoop
             {
@@ -97,9 +96,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         public virtual void Interpolate(float time)
         {
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, loop);
+                loop.RunModifiersLoop(modifiers);
             else
-                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, loop);
+                loop.RunModifiersAll(triggers, actions, modifiers);
         }
 
         public override string ToString() => reference?.ToString() ?? string.Empty;

@@ -662,8 +662,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     }
 
                     var modifier = Modifier.Parse(jnModifier);
-                    ModifiersHelper.AssignModifierFunctions(modifier, ModifierReferenceType.GameData);
-                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.defaultLevelModifiers))
+                    if (ModifiersManager.inst.VerifyModifier(modifier, this))
                         modifiers.Add(modifier);
                 }
 
@@ -1472,10 +1471,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int j = 0; j < 0; j++)
                 {
                     var modifier = beatmapObject.modifiers[j];
-                    modifier.Action = null;
-                    modifier.Trigger = null;
-                    modifier.Inactive = null;
-                    ModifiersHelper.OnRemoveCache(modifier);
+                    modifier.OnRemoveCache();
+                    modifier.action = null;
+                    modifier.trigger = null;
+                    modifier.function = null;
                     modifier.Result = null;
                 }
             }
@@ -1863,6 +1862,44 @@ namespace BetterLegacy.Core.Data.Beatmap
             var modifyables = beatmap.GetModifyables();
             return string.IsNullOrEmpty(tag) ? prefabable as IModifyable : modifyables.FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
                     x.Tags.Contains(tag) && (!prefabInstanceOnly || x is IPrefabable p && p.SamePrefabInstance(prefabable)));
+        }
+
+        public IEnumerable<IModifierReference> FindModifierReferences(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                if (prefabable is IModifierReference modifyable)
+                    yield return modifyable;
+                yield break;
+            }
+
+            IBeatmap beatmap = GetBeatmap(modifier, prefabable);
+            var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
+
+            var modifierReferences = beatmap.GetModifierReferences();
+            foreach (var modifierReference in modifierReferences)
+            {
+                if ((!modifier.groupAlive || modifierReference is ILifetime akt && akt.Alive) &&
+                    modifierReference is IModifyable modifyable && modifyable.Tags.Contains(tag) &&
+                    (!prefabInstanceOnly || modifierReference is IPrefabable p && p.SamePrefabInstance(prefabable)))
+                    yield return modifierReference;
+            }
+        }
+
+        public bool TryFindModifierReferenceWithTag(Modifier modifier, IPrefabable prefabable, string tag, out IModifierReference result)
+        {
+            result = FindModifierReferenceWithTag(modifier, prefabable, tag);
+            return result is not null;
+        }
+
+        public IModifierReference FindModifierReferenceWithTag(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            IBeatmap beatmap = GetBeatmap(modifier, prefabable);
+            var prefabInstanceOnly = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID);
+
+            var modifierReferences = beatmap.GetModifierReferences();
+            return string.IsNullOrEmpty(tag) ? prefabable as IModifierReference : modifierReferences.FirstOrDefault(x => (!modifier.groupAlive || x is ILifetime akt && akt.Alive) &&
+                    x is IModifyable modifyable && modifyable.Tags.Contains(tag) && (!prefabInstanceOnly || x is IPrefabable p && p.SamePrefabInstance(prefabable)));
         }
 
         public IEnumerable<IParentable> FindParentables(Modifier modifier, IPrefabable prefabable, string tag)

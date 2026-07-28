@@ -34,6 +34,7 @@ using Ease = BetterLegacy.Core.Animation.Ease;
 
 namespace BetterLegacy.Core.Components.Player
 {
+    // TODO: please restructure this class
     /// <summary>
     /// Runtime Player component.
     /// </summary>
@@ -562,6 +563,7 @@ namespace BetterLegacy.Core.Components.Player
         public bool updated;
         public bool playerNeedsUpdating;
 
+        public bool isMoving;
         public bool isTakingHit;
         public bool isBoosting;
         public bool isBoostCancelled;
@@ -1451,9 +1453,9 @@ namespace BetterLegacy.Core.Components.Player
                 if (modelLoop.reference == null)
                     modelLoop.reference = Core;
                 if (Model.OrderModifiers)
-                    ModifiersHelper.RunModifiersLoop(Model.modifiers, modelLoop);
+                    modelLoop.RunModifiersLoop(Model.modifiers);
                 else
-                    ModifiersHelper.RunModifiersAll(Model.modifiers, modelLoop);
+                    modelLoop.RunModifiersAll(Model.modifiers);
             }
 
             if (!isColliderTrigger)
@@ -1773,7 +1775,7 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            if (CanCancelBoosting && (Core.Input && Core.Input.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+            if (Core.Input && Core.Input.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time)
                 StopBoosting();
 
             if (Alive && Core.Input && Model.bulletPart.active && (Model.bulletPart.constant ? Core.Input.Shoot.IsPressed : Core.Input.Shoot.WasPressed) && canShoot)
@@ -1814,6 +1816,9 @@ namespace BetterLegacy.Core.Components.Player
                     var vector = new Vector2(x, y * jumpBoostMultiplier);
 
                     rb.velocity = PlayerForce + vector * BoostSpeed * pitch * SpeedMultiplier;
+                    isMoving = vector != Vector2.zero;
+                    if (isMoving && RTBeatmap.Current)
+                        RTBeatmap.Current.playerMoved = true;
                     return;
                 }
 
@@ -1826,6 +1831,10 @@ namespace BetterLegacy.Core.Components.Player
                 var velocity = rb.velocity;
                 velocity.x = x * MoveSpeed * pitch * SprintSneakSpeed * SpeedMultiplier;
                 rb.velocity = velocity;
+
+                isMoving = velocity != Vector2.zero;
+                if (isMoving && RTBeatmap.Current)
+                    RTBeatmap.Current.playerMoved = true;
 
                 return;
             }
@@ -1958,6 +1967,9 @@ namespace BetterLegacy.Core.Components.Player
                         }
                     }
                 }
+                isMoving = vector != Vector2.zero;
+                if (isMoving && RTBeatmap.Current)
+                    RTBeatmap.Current.playerMoved = true;
 
                 if (rb.velocity != Vector2.zero)
                     lastVelocity = rb.velocity;
@@ -2288,9 +2300,9 @@ namespace BetterLegacy.Core.Components.Player
                 customObject.loop.reference = customObject;
 
                 if (reference.OrderModifiers)
-                    ModifiersHelper.RunModifiersLoop(reference.Modifiers, customObject.loop);
+                    customObject.loop.RunModifiersLoop(reference.Modifiers);
                 else
-                    ModifiersHelper.RunModifiersAll(reference.Modifiers, customObject.loop);
+                    customObject.loop.RunModifiersAll(reference.Modifiers);
 
                 var active = customObject.active &&
                     (reference.visibilitySettings.IsEmpty() ? reference.active :
@@ -2616,6 +2628,9 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void StopBoosting()
         {
+            if (!CanCancelBoosting)
+                return;
+
             float num = Time.time - startBoostTime;
             StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
             if (ProjectArrhythmia.State.IsOnlineMultiplayer && Core && Core.IsLocalPlayer)
@@ -2960,6 +2975,21 @@ namespace BetterLegacy.Core.Components.Player
         public static bool IsDamageCollision(Collider2D collider) => CoreHelper.GetObjectType(collider) == BeatmapObject.ObjectType.Normal;
 
         public static bool IsHelperCollision(Collider2D collider) => CoreHelper.GetObjectType(collider) == BeatmapObject.ObjectType.Decoration;
+
+        public void LockMovement(int axis, bool locked)
+        {
+            switch (axis)
+            {
+                case 0: {
+                        LockXMovement = locked;
+                        break;
+                    }
+                case 1: {
+                        LockYMovement = locked;
+                        break;
+                    }
+            }
+        }
 
         #region Particles
 

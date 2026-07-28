@@ -483,6 +483,8 @@ namespace BetterLegacy.Core
         /// <returns>Returns a string with the specified string removed.</returns>
         public static string Remove(this string input, string remove) => input.Replace(remove, string.Empty);
 
+        public static string TryRemove(this string input, int startIndex, int count) => input.Length > startIndex + count ? input.Remove(startIndex, count) : input;
+
         /// <summary>
         /// Gets a vector value at an index.
         /// </summary>
@@ -2840,11 +2842,6 @@ namespace BetterLegacy.Core
         public static RTLevelBase GetParentRuntime(this IRTObject reference) => (reference.ParentRuntime ?? RTLevel.Current);
 
         /// <summary>
-        /// Updates the modifier functions.
-        /// </summary>
-        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, modifyable.ReferenceType));
-
-        /// <summary>
         /// Checks if an object can spawn.
         /// </summary>
         /// <returns>Returns true if the LDM setting matches the detail mode, otherwise returns false.</returns>
@@ -2943,7 +2940,7 @@ namespace BetterLegacy.Core
         /// <returns>Returns a collection of modifyables.</returns>
         public static List<IModifyable> FindModifyablesList(this IBeatmap beatmap, Predicate<IModifyable> match)
         {
-            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
             var list = new List<IModifyable>(count);
             for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
             {
@@ -2972,6 +2969,66 @@ namespace BetterLegacy.Core
         /// <param name="beatmap">Package reference.</param>
         /// <returns>Returns a collection of modifyables.</returns>
         public static IEnumerable<IModifyable> GetModifyables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var backgroundObject in beatmap.BackgroundObjects)
+                yield return backgroundObject;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
+        }
+
+        /// <summary>
+        /// Gets all modifier reference objects from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifier reference objects.</returns>
+        public static List<IModifierReference> GetModifierReferenceList(this IBeatmap beatmap)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var modifyables = new List<IModifierReference>(count);
+            modifyables.AddRange(beatmap.BeatmapObjects);
+            modifyables.AddRange(beatmap.BackgroundObjects);
+            modifyables.AddRange(beatmap.PrefabObjects);
+            return modifyables;
+        }
+
+        /// <summary>
+        /// Gets all modifier reference objects matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifier reference objects.</returns>
+        public static List<IModifierReference> FindModifierReferenceList(this IBeatmap beatmap, Predicate<IModifierReference> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<IModifierReference>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundObjects.Count; i++)
+            {
+                var item = beatmap.BackgroundObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Gets all modifier reference objects from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifier reference objects.</returns>
+        public static IEnumerable<IModifierReference> GetModifierReferences(this IBeatmap beatmap)
         {
             foreach (var beatmapObject in beatmap.BeatmapObjects)
                 yield return beatmapObject;
@@ -3519,7 +3576,7 @@ namespace BetterLegacy.Core
                         for (int j = 0; j < jn["modifiers"][i].Count; j++)
                         {
                             var modifier = Modifier.Parse(jn["modifiers"][i][j]);
-                            if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
+                            if (ModifiersManager.inst.VerifyModifier(modifier, modifyable))
                                 list.Add(modifier);
                         }
 
@@ -3533,7 +3590,7 @@ namespace BetterLegacy.Core
                     else
                     {
                         var modifier = Modifier.Parse(jn["modifiers"][i]);
-                        if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
+                        if (ModifiersManager.inst.VerifyModifier(modifier, modifyable))
                             modifyable.Modifiers.Add(modifier);
                     }
                 }
@@ -3544,7 +3601,7 @@ namespace BetterLegacy.Core
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 var modifier = Modifier.Parse(jn["modifiers"][i]);
-                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
+                if (ModifiersManager.inst.VerifyModifier(modifier, modifyable))
                     modifyable.Modifiers.Add(modifier);
             }
         }

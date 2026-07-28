@@ -26,7 +26,7 @@ namespace BetterLegacy.Core.Components
             if (!Modifier)
                 return;
 
-            ModifiersHelper.OnRemoveCache(Modifier);
+            Modifier.OnRemoveCache();
             Modifier.Result = default;
             Modifier = null;
         }

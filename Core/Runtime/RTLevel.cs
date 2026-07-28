@@ -280,7 +280,7 @@ namespace BetterLegacy.Core.Runtime
                     if (loop.reference == null)
                         loop.reference = GameData.Current;
                     loop.ValidateDictionary();
-                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, loop);
+                    loop.RunModifiersLoop(GameData.Current.modifiers);
                 }
 
                 OnObjectModifiersTick(); // modifiers update second
@@ -328,6 +328,7 @@ namespace BetterLegacy.Core.Runtime
             // reset player cache
             if (RTBeatmap.Current)
             {
+                RTBeatmap.Current.playerMoved = false;
                 RTBeatmap.Current.playerHit = false;
                 RTBeatmap.Current.playerDied = false;
                 RTBeatmap.Current.playerJumped = false;

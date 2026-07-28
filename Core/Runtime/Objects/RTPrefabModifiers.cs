@@ -3,6 +3,7 @@
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
@@ -19,8 +20,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = startTime;
             KillTime = killTime;
 
-            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, reference.ReferenceType));
-
             runtimePrefabObject = prefabObject.runtimeObject;
 
             loop = new ModifierLoop
@@ -35,9 +34,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         public override void Interpolate(float time)
         {
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, loop);
+                loop.RunModifiersLoop(modifiers);
             else
-                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, loop);
+                loop.RunModifiersAll(triggers, actions, modifiers);
 
             if (!runtimePrefabObject)
                 return;

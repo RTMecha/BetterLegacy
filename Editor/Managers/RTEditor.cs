@@ -677,9 +677,6 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonElement("Create audio object", () =>
                     {
-                        if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.playSound), out Modifier modifier))
-                            return;
-
                         var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
                         string jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(dropInfo.filePath));
 
@@ -695,7 +692,7 @@ namespace BetterLegacy.Editor.Managers
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
                             beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
-                            modifier = modifier.Copy();
+                            var modifier = ModifierFunctions.playSound.Create();
                             modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
                             beatmapObject.modifiers.Add(modifier);
                         });
@@ -5378,20 +5375,16 @@ namespace BetterLegacy.Editor.Managers
                                 })),
                                 new ButtonElement($"Force Modded Formatting", () =>
                                 {
-                                    var formatText = "formatText";
-                                    if (shapeable is not IModifyable modifyable || modifyable.Modifiers.Has(x => x.Name == formatText))
+                                    if (shapeable is not IModifyable modifyable || modifyable.Modifiers.Has(x => x.Name == "formatText"))
                                         return;
 
-                                    if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == formatText, out Modifier modifier))
-                                    {
-                                        modifyable.Modifiers.Add(modifier.Copy());
-                                        if (shapeable is BeatmapObject beatmapObject)
-                                            CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
-                                        if (shapeable is BackgroundObject backgroundObject)
-                                            CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
-                                        if (shapeable is PrefabObject prefabObject)
-                                            CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
-                                    }
+                                    modifyable.Modifiers.Add(ModifierFunctions.formatText.Create());
+                                    if (shapeable is BeatmapObject beatmapObject)
+                                        CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
+                                    if (shapeable is BackgroundObject backgroundObject)
+                                        CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
+                                    if (shapeable is PrefabObject prefabObject)
+                                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
                                 }),
                                 new SpacerElement(),
                                 new ButtonElement($"Auto Align: [{shapeable.AutoTextAlign}]", () =>

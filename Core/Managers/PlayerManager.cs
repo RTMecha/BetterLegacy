@@ -661,6 +661,25 @@ namespace BetterLegacy.Core.Managers
         }
 
         /// <summary>
+        /// Respawns a specific player at the default spawn position.
+        /// </summary>
+        /// <param name="player">The player to respawn.</param>
+        public static void RespawnPlayer(PAPlayer player) => RespawnPlayer(player, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[player.index]);
+
+        /// <summary>
+        /// Respawns a specific player at a set spawn position.
+        /// </summary>
+        /// <param name="player">The player to respawn.</param>
+        /// <param name="pos">Position to spawn at.</param>
+        public static void RespawnPlayer(PAPlayer player, Vector2 pos)
+        {
+            player.RuntimePlayer?.Clear();
+            player.CurrentModel = PlayersData.Current.GetPlayerModel(player.index).basePart.id;
+
+            SpawnPlayers(pos);
+        }
+
+        /// <summary>
         /// Gets the last active checkpoint and its position.
         /// </summary>
         /// <returns>Returns the last active checkpoint position.</returns>

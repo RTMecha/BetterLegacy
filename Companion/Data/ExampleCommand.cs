@@ -2397,7 +2397,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Apply(Modifier obj, string[] parameters)
                 {
-                    if (ModifiersHelper.IsGroupModifier(obj.Name))
+                    if (obj.function && obj.function.IsGroup)
                         obj.prefabInstanceOnly = Parser.TryParse(parameters[0], false);
                 }
             }
@@ -2417,7 +2417,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Apply(Modifier obj, string[] parameters)
                 {
-                    if (ModifiersHelper.IsGroupModifier(obj.Name))
+                    if (obj.function && obj.function.IsGroup)
                         obj.groupAlive = Parser.TryParse(parameters[0], false);
                 }
             }
@@ -5707,7 +5707,7 @@ namespace BetterLegacy.Companion.Data
                         if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable))
                             modifyable.Modifiers.ForLoop(modifier =>
                             {
-                                if (ModifiersHelper.IsGroupModifier(modifier.Name))
+                                if (modifier.function && modifier.function.IsGroup)
                                     modifier.prefabInstanceOnly = prefabGroupOnly;
                             });
                 }
@@ -5730,7 +5730,7 @@ namespace BetterLegacy.Companion.Data
                         if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable))
                             modifyable.Modifiers.ForLoop(modifier =>
                             {
-                                if (ModifiersHelper.IsGroupModifier(modifier.Name))
+                                if (modifier.function && modifier.function.IsGroup)
                                     modifier.prefabInstanceOnly = !modifier.prefabInstanceOnly;
                             });
                 }

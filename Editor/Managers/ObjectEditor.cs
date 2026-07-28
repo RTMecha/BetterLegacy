@@ -164,8 +164,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
                 beatmapObject.shape = 4;
                 beatmapObject.shapeOption = 0;
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.textSequence), out Modifier modifier))
-                    beatmapObject.modifiers.Add(modifier.Copy());
+                beatmapObject.modifiers.Add(ModifierFunctions.textSequence.Create());
             }),
             new ObjectOption("Screen Overlay", "An object that covers the screen.", timelineObject =>
             {
@@ -183,13 +182,10 @@ namespace BetterLegacy.Editor.Managers
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                 beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
 
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out Modifier modifier))
-                {
-                    modifier = modifier.Copy();
-                    modifier.SetValue(11, "0.5");
-                    modifier.SetValue(12, "0.5");
-                    beatmapObject.modifiers.Add(modifier);
-                }
+                var modifier = ModifierFunctions.actorFrameTexture.Create();
+                modifier.SetValue(11, "0.5");
+                modifier.SetValue(12, "0.5");
+                beatmapObject.modifiers.Add(modifier);
             }),
         };
 
@@ -1563,14 +1559,7 @@ namespace BetterLegacy.Editor.Managers
                     // StartTime affects both physical object and timeline object.
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                    beatmapObject.modifiers.ForEach(modifier =>
-                    {
-                        modifier.RunInactive(modifier, beatmapObject);
-                        ModifiersHelper.OnRemoveCache(modifier);
-                        modifier.Result = default;
-                    });
-
+                    ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                     Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                     Dialog.Timeline.RenderMarkers(beatmapObject);
                 }
@@ -1587,14 +1576,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                beatmapObject.modifiers.ForEach(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
             });
@@ -1607,14 +1589,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                beatmapObject.modifiers.ForEach(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
             });
@@ -1625,14 +1600,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                beatmapObject.modifiers.ForEach(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
             });
@@ -1645,14 +1613,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                beatmapObject.modifiers.ForEach(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
             });
@@ -1665,14 +1626,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-
-                beatmapObject.modifiers.ForEach(modifier =>
-                {
-                    modifier.RunInactive(modifier, beatmapObject);
-                    ModifiersHelper.OnRemoveCache(modifier);
-                    modifier.Result = default;
-                });
-
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
             });
@@ -1722,14 +1676,7 @@ namespace BetterLegacy.Editor.Managers
                         // AutoKillType affects both physical object and timeline object.
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-
-                        beatmapObject.modifiers.ForEach(modifier =>
-                        {
-                            modifier.RunInactive(modifier, beatmapObject);
-                            ModifiersHelper.OnRemoveCache(modifier);
-                            modifier.Result = default;
-                        });
-
+                        ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                         Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                         Dialog.Timeline.RenderMarkers(beatmapObject);
                     }

@@ -97,7 +97,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">Finds the theme with the matching ID.</param>
         /// <returns>Returns the current theme.</returns>
-        public BeatmapTheme GetTheme(string id) => AllThemes.TryFind(x => x.id == id, out BeatmapTheme beatmapTheme) ? beatmapTheme : DefaultThemes[0];
+        public BeatmapTheme GetTheme(string id) => string.IsNullOrEmpty(id) ? null : AllThemes.TryFind(x => x.id == id, out BeatmapTheme beatmapTheme) ? beatmapTheme : DefaultThemes[0];
 
         /// <summary>
         /// Gets a theme based on the ID.

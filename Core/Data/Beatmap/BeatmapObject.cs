@@ -10,6 +10,7 @@ using ILMath;
 using SimpleJSON;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
@@ -2215,6 +2216,89 @@ namespace BetterLegacy.Core.Data.Beatmap
                 color.a = 1f;
 
             return color;
+        }
+
+        public GradientColors GetColors() => GetColors(this.GetParentRuntime().CurrentTime - StartTime);
+
+        public GradientColors GetColors(float time)
+        {
+            Color color;
+            Color secondColor;
+            {
+                var prevKFIndex = events[3].FindLastIndex(x => x.time < time);
+
+                if (prevKFIndex < 0)
+                    prevKFIndex = 0;
+
+                var prevKF = events[3][prevKFIndex];
+                var nextKF = events[3][Mathf.Clamp(prevKFIndex + 1, 0, events[3].Count - 1)];
+                var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
+                var lerp = RTMath.Lerp(0f, 1f, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 1f;
+
+                color = Color.Lerp(
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(0)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)prevKF.values[0]),
+                    nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(0)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)nextKF.values[0]),
+                    lerp);
+
+                var prevOpacity = prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(0)).a : prevKF.values[1];
+                var nextOpacity = nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(0)).a : nextKF.values[1];
+
+                lerp = RTMath.Lerp(prevOpacity, nextOpacity, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 0f;
+
+                color = RTColors.FadeColor(color, -(lerp - 1f));
+
+                var lerpHue = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[2], nextKF.random == 1 ? 0f : nextKF.values[2], easing);
+                var lerpSat = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[3], nextKF.random == 1 ? 0f : nextKF.values[3], easing);
+                var lerpVal = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[4], nextKF.random == 1 ? 0f : nextKF.values[4], easing);
+
+                if (float.IsNaN(lerpHue))
+                    lerpHue = nextKF.random == 1 ? 0f : nextKF.values[2];
+                if (float.IsNaN(lerpSat))
+                    lerpSat = nextKF.random == 1 ? 0f : nextKF.values[3];
+                if (float.IsNaN(lerpVal))
+                    lerpVal = nextKF.random == 1 ? 0f : nextKF.values[4];
+
+                if (lerpHue != 0f || lerpSat != 0f || lerpVal != 0f)
+                    color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+
+                lerp = RTMath.Lerp(0f, 1f, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 1f;
+
+                secondColor = Color.Lerp(
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)prevKF.values[5]),
+                    prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)) : CoreHelper.CurrentBeatmapTheme.GetObjColor((int)nextKF.values[5]),
+                    lerp);
+
+                prevOpacity = prevKF.random == 1 ? RTColors.HexToColor(prevKF.GetStringValue(1)).a : prevKF.values[6];
+                nextOpacity = nextKF.random == 1 ? RTColors.HexToColor(nextKF.GetStringValue(1)).a : nextKF.values[6];
+
+                lerp = RTMath.Lerp(prevOpacity, nextOpacity, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 0f;
+
+                secondColor = RTColors.FadeColor(secondColor, -(lerp - 1f));
+
+                lerpHue = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[7], nextKF.random == 1 ? 0f : nextKF.values[7], easing);
+                lerpSat = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[8], nextKF.random == 1 ? 0f : nextKF.values[8], easing);
+                lerpVal = RTMath.Lerp(prevKF.random == 1 ? 0f : prevKF.values[9], nextKF.random == 1 ? 0f : nextKF.values[9], easing);
+
+                if (float.IsNaN(lerpHue))
+                    lerpHue = nextKF.random == 1 ? 0f : nextKF.values[7];
+                if (float.IsNaN(lerpSat))
+                    lerpSat = nextKF.random == 1 ? 0f : nextKF.values[8];
+                if (float.IsNaN(lerpVal))
+                    lerpVal = nextKF.random == 1 ? 0f : nextKF.values[9];
+
+                if (lerpHue != 0f || lerpSat != 0f || lerpVal != 0f)
+                    secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+            } // assign
+
+            return new GradientColors(color, secondColor);
         }
 
         #endregion
