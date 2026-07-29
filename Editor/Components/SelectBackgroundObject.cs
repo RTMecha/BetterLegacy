@@ -32,6 +32,9 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDown()
         {
+            if (!Application.isFocused) // don't select
+                return;
+
             if (!ProjectArrhythmia.State.IsEditing || ProjectArrhythmia.Input.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
 
@@ -47,6 +50,9 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseEnter()
         {
+            if (!Application.isFocused) // don't highlight
+                return;
+
             hovered = true;
         }
 

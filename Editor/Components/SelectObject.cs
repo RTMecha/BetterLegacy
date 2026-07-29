@@ -130,6 +130,9 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDown()
         {
+            if (!Application.isFocused) // don't select
+                return;
+
             if (!ProjectArrhythmia.State.IsEditing || ProjectArrhythmia.Input.IsUsingInputField || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
 
@@ -145,6 +148,9 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseEnter()
         {
+            if (!Application.isFocused) // don't highlight
+                return;
+
             hovered = true;
             Core.Components.Player.PlayerSelector.focused = false;
 
@@ -171,6 +177,9 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDrag()
         {
+            if (!Application.isFocused) // don't drag
+                return;
+
             dragTime = Time.time;
             if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;
