@@ -666,7 +666,7 @@ namespace BetterLegacy.Core.Components.Player
                 var levelData = GameData.Current.data.level;
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
-                GameMode = (GameMode)levelData.gameMode;
+                GameMode = levelData.gameMode;
                 GlobalJumpGravity = levelData.jumpGravity;
                 GlobalJumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
@@ -1730,13 +1730,14 @@ namespace BetterLegacy.Core.Components.Player
                 return;
             }
 
-            var enabled = CurrentCollider.enabled;
-            CurrentCollider.enabled = false; // disable to prevent detecting itself
+            //var enabled = CurrentCollider.enabled;
+            //CurrentCollider.enabled = false; // disable to prevent detecting itself
+            collisionState.player = this;
             collisionState.leftCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(1f, 0f), 1f);
             collisionState.rightCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(-1f, 0f), 1f);
             collisionState.upCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(0f, 1f), 1f);
             collisionState.downCasts = Physics2D.CircleCastAll(rb.position, circleCollider2D.radius, new Vector2(0f, -1f), 1f);
-            CurrentCollider.enabled = enabled;
+            //CurrentCollider.enabled = enabled;
             collisionState.All = collisionState.GetAll();
 
             var cast = collisionState.Cast;
@@ -2951,14 +2952,12 @@ namespace BetterLegacy.Core.Components.Player
         public void SetTriggerCollision(bool enabled)
         {
             if (!ChangeIsTriggerOnBoost)
-            {
-                circleCollider2D.isTrigger = false;
-                polygonCollider2D.isTrigger = false;
-                return;
-            }
+                enabled = false;
 
-            circleCollider2D.isTrigger = enabled;
-            polygonCollider2D.isTrigger = enabled;
+            if (circleCollider2D.isTrigger != enabled)
+                circleCollider2D.isTrigger = enabled;
+            if (polygonCollider2D.isTrigger != enabled)
+                polygonCollider2D.isTrigger = enabled;
         }
 
         public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
@@ -4036,6 +4035,8 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public struct CastCollision
         {
+            public RTPlayer player;
+
             /// <summary>
             /// If the player is colliding with colliders with <see cref="Collider2D.isTrigger"/> on. (Damage)
             /// </summary>
@@ -4066,12 +4067,7 @@ namespace BetterLegacy.Core.Components.Player
             /// </summary>
             public RaycastHit2D[] downCasts;
 
-            RaycastHit2D[] all;
-            public RaycastHit2D[] All
-            {
-                get => all ?? GetAll();
-                set => all = value;
-            }
+            public RaycastHit2D[] All { get; set; }
 
             /// <summary>
             /// Detected raycast.
@@ -4111,10 +4107,11 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool AnySolid(RaycastHit2D[] raycastHits)
             {
+                var collider2D = player.CurrentCollider;
                 for (int i = 0; i < raycastHits.Length; i++)
                 {
                     var cast = raycastHits[i];
-                    if (cast.collider && !cast.collider.isTrigger)
+                    if (cast.collider && cast.collider != collider2D && !cast.collider.isTrigger)
                         return true;
                 }
                 return false;
@@ -4122,10 +4119,11 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool AnyTrigger(RaycastHit2D[] raycastHits)
             {
+                var collider2D = player.CurrentCollider;
                 for (int i = 0; i < raycastHits.Length; i++)
                 {
                     var cast = raycastHits[i];
-                    if (cast.collider && cast.collider.isTrigger)
+                    if (cast.collider && cast.collider != collider2D && cast.collider.isTrigger)
                         return true;
                 }
                 return false;
@@ -4133,10 +4131,11 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool AnySolid(RaycastHit2D[] raycastHits, out RaycastHit2D cast)
             {
+                var collider2D = player.CurrentCollider;
                 for (int i = 0; i < raycastHits.Length; i++)
                 {
                     cast = raycastHits[i];
-                    if (cast.collider && !cast.collider.isTrigger)
+                    if (cast.collider && cast.collider != collider2D && !cast.collider.isTrigger)
                         return true;
                 }
                 cast = default;
@@ -4145,10 +4144,11 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool AnyTrigger(RaycastHit2D[] raycastHits, out RaycastHit2D cast)
             {
+                var collider2D = player.CurrentCollider;
                 for (int i = 0; i < raycastHits.Length; i++)
                 {
                     cast = raycastHits[i];
-                    if (cast.collider && cast.collider.isTrigger)
+                    if (cast.collider && cast.collider != collider2D && cast.collider.isTrigger)
                         return true;
                 }
                 cast = default;
@@ -4157,13 +4157,14 @@ namespace BetterLegacy.Core.Components.Player
 
             public RaycastHit2D[] GetAll()
             {
-                var collection = leftCasts.AsEnumerable();
+                var collider2D = player.CurrentCollider;
+                var collection = leftCasts.Where(x => x.collider != collider2D);
                 if (!rightCasts.IsEmpty())
-                    collection = collection.Union(rightCasts);
+                    collection = collection.Union(rightCasts.Where(x => x.collider != collider2D));
                 if (!upCasts.IsEmpty())
-                    collection = collection.Union(upCasts);
+                    collection = collection.Union(upCasts.Where(x => x.collider != collider2D));
                 if (!downCasts.IsEmpty())
-                    collection = collection.Union(downCasts);
+                    collection = collection.Union(downCasts.Where(x => x.collider != collider2D));
                 return collection.ToArray();
             }
         }

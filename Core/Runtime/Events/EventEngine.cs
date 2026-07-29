@@ -1019,7 +1019,8 @@ namespace BetterLegacy.Core.Runtime.Events
             if (GameManager.inst.gameState == (GameManager.State.Paused | GameManager.State.Finish) && LevelManager.LevelEnded)
                 a = false;
 
-            GameManager.inst.players.SetActive(a);
+            if (GameManager.inst.players.activeSelf != a)
+                GameManager.inst.players.SetActive(a);
             GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
         }
 

@@ -9,7 +9,14 @@ namespace BetterLegacy.Core.Components.Player
     {
         public RTPlayer player;
 
-        void OnTriggerEnter2D(Collider2D other) => player?.HandleCollision(other);
+        public static bool logCollision;
+
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            player?.HandleCollision(other);
+            if (logCollision)
+                Helpers.CoreHelper.Log($"Entered [{other}]");
+        }
 
         void OnTriggerEnter(Collider other) => player?.HandleCollision(other);
 
@@ -21,6 +28,8 @@ namespace BetterLegacy.Core.Components.Player
         {
             if (player)
                 player.triggerColliding = false;
+            if (logCollision)
+                Helpers.CoreHelper.Log($"Exited [{other}]");
         }
         
         void OnTriggerExit(Collider other)
