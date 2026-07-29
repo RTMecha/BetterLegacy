@@ -3,7 +3,7 @@
 ### Core
 - Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
 - Added "Sync to Lobby" toggle to keyPress, mouseButton and controlPress trigger modifiers. If the trigger is active, the input is sent to other lobby members.
-- Added Fitler Mode and Wrap Mode values to setImage modifiers.
+- Added Filter Mode and Wrap Mode values to setImage modifiers.
 - Added Filter Mode to sprites stored in the level.
 
 ### Companion
@@ -30,6 +30,7 @@
 - Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
 - Fixed JSON trigger modifier values not being correct.
 - Fixed level cover order being incorrect.
+- Fixed playerCollide trigger modifiers constantly flickering.
 
 -------------------------------------------------------------------
 
