@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.JSON;
+        public override ModifierCategoryType Category => ModifierCategoryType.JSON;
 
         readonly Type type;
 

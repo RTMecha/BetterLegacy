@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "audioSource";
 
-        public override CategoryType Category => CategoryType.Audio;
+        public override ModifierCategoryType Category => ModifierCategoryType.Audio;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 

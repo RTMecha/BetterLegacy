@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "animateVariableOther";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

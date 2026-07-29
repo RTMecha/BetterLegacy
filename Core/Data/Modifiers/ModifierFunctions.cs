@@ -11,9 +11,9 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static Break breakModifier = new Break();
 
-        public static Continue continueModifier = new Continue();
+        public static Continue continueModifier = new Continue(false);
 
-        public static Return returnModifier = new Return();
+        public static Continue returnModifier = new Continue(true);
 
         public static Else elseModifier = new Else();
 
@@ -239,15 +239,21 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static PitchCompare pitchGreater = new PitchCompare(NumberComparison.Greater);
 
-        public static MusicTimeCompare musicTimeGreater = new MusicTimeCompare(NumberComparison.Greater);
+        public static MusicTimeCompare musicTimeEquals = new MusicTimeCompare(NumberComparison.Equals);
+
+        public static MusicTimeCompare musicTimeLesserEquals = new MusicTimeCompare(NumberComparison.LesserEquals);
+
+        public static MusicTimeCompare musicTimeGreaterEquals = new MusicTimeCompare(NumberComparison.GreaterEquals);
 
         public static MusicTimeCompare musicTimeLesser = new MusicTimeCompare(NumberComparison.Lesser);
+
+        public static MusicTimeCompare musicTimeGreater = new MusicTimeCompare(NumberComparison.Greater);
 
         public static MusicTimeInRange musicTimeInRange = new MusicTimeInRange();
 
         public static MusicPlaying musicPlaying = new MusicPlaying();
 
-        //public static OnBPM onBPM = new OnBPM();
+        public static OnBPM onBPM = new OnBPM();
 
         public static SetAudioProperty setPitch = new SetAudioProperty(MathOperation.Set, SetAudioProperty.AudioProperty.Pitch, SetAudioProperty.ObjectProperty.None, false);
 
@@ -1167,7 +1173,6 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static LegacyTail legacyTail = new LegacyTail();
 
-        // TODO: make sure this is working before allowing people to use it
         public static InverseKinematicsModifier inverseKinematics = new InverseKinematicsModifier();
 
         public static Gravity gravity = new Gravity(false);
@@ -1389,6 +1394,18 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static LoadScene loadSceneDEVONLY = new LoadScene();
 
         public static LoadStoryLevel loadStoryLevelDEVONLY = new LoadStoryLevel();
+
+        public static StorySavePropertyCompare storyLoadBoolDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Bool, NumberComparison.Equals);
+
+        public static StorySavePropertyCompare storyLoadIntEqualsDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Int, NumberComparison.Equals);
+        
+        public static StorySavePropertyCompare storyLoadIntLesserEqualsDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Int, NumberComparison.LesserEquals);
+        
+        public static StorySavePropertyCompare storyLoadIntGreaterEqualsDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Int, NumberComparison.GreaterEquals);
+        
+        public static StorySavePropertyCompare storyLoadIntLesserDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Int, NumberComparison.Lesser);
+        
+        public static StorySavePropertyCompare storyLoadIntGreaterDEVONLY = new StorySavePropertyCompare(StorySavePropertyCompare.Property.Int, NumberComparison.Greater);
 
         public static StorySaveProperty storySaveBoolDEVONLY = new StorySaveProperty(StorySaveProperty.Property.Bool);
 

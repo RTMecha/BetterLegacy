@@ -5,7 +5,7 @@ using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
-    public class GetAxis : ModifierActionBase
+    public class GetAxis : ModifierVariableBase
     {
         #region Constructors
 
@@ -29,7 +29,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Animation;
+        public override ModifierCategoryType Category => ModifierCategoryType.Animation;
 
         public override ModifierCompatibility Compatibility => base.Compatibility;
 
@@ -54,11 +54,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifier.version++;
         }
 
-        public override void Run(Modifier modifier, ModifierLoop modifierLoop)
+        public override string GetValue(Modifier modifier, ModifierLoop modifierLoop)
         {
             var prefabable = modifierLoop.reference.AsPrefabable();
             if (prefabable == null)
-                return;
+                return null;
 
             int fromType = modifier.GetInt(1, 0, modifierLoop.variables);
             int fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
@@ -82,19 +82,19 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             var beatmapObject = cache.obj;
             if (!beatmapObject)
-                return;
+                return null;
 
             fromType = RTMath.Clamp(fromType, 0, beatmapObject.events.Count);
 
             if (fromType < 0 || fromType > 2)
-                return;
+                return null;
 
             var t = !offsetAudio ? delay : ModifiersHelper.GetTime(beatmapObject) - beatmapObject.StartTime - delay;
 
             if (isMath)
             {
                 if (modifierLoop.reference is not IEvaluatable evaluatable)
-                    return;
+                    return null;
 
                 var evaluation = FormatStringVariables(modifier.GetValue(6, modifierLoop.variables), modifierLoop.variables);
                 var numberVariables = evaluatable.GetObjectVariables();
@@ -105,8 +105,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                 float value = RTMath.Parse(evaluation, RTLevel.Current?.evaluationContext, numberVariables);
 
-                modifierLoop.variables[FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value.ToString();
-                return;
+                return value.ToString();
             }
 
             float multiply = modifier.GetFloat(4, 0f, modifierLoop.variables);
@@ -114,7 +113,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             float min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
             float max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
             float loop = modifier.GetFloat(9, 9999f, modifierLoop.variables);
-            modifierLoop.variables[FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, modifier.version).ToString();
+            return ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, modifier.version).ToString();
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

@@ -49,126 +49,10 @@ namespace BetterLegacy.Core.Data.Modifiers
         #region Functions
         
         /// <summary>
-        /// The original way modifiers run.
-        /// </summary>
-        /// <param name="modifiers">The list of modifiers to run.</param>
-        public ModifierLoopResult RunModifiersAll(List<Modifier> modifiers) => RunModifiersAll(null, null, modifiers);
-
-        /// <summary>
-        /// The original way modifiers run.
-        /// </summary>
-        /// <param name="triggers">The list of triggers to check.</param>
-        /// <param name="actions">The list of actions to run.</param>
-        /// <param name="modifiers">The list of modifiers to run.</param>
-        public ModifierLoopResult RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers)
-        {
-            if (triggers == null || actions == null)
-            {
-                triggers = new List<Modifier>();
-                actions = new List<Modifier>();
-                modifiers.ForLoop(modifier =>
-                {
-                    switch (modifier.type)
-                    {
-                        case Modifier.Type.Trigger: {
-                                triggers.Add(modifier);
-                                break;
-                            }
-                        case Modifier.Type.Action: {
-                                actions.Add(modifier);
-                                break;
-                            }
-                    }
-                });
-            }
-            if (!state)
-                state = new State();
-            else
-                state.Reset();
-            if (!triggers.IsEmpty())
-            {
-                // If all triggers are active
-                bool result = true;
-                triggers.ForLoop(trigger =>
-                {
-                    if (trigger.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
-                    {
-                        trigger.triggered = false;
-                        result = false;
-                        return;
-                    }
-
-                    var innerResult = trigger.not ? !trigger.RunTrigger(trigger, this) : trigger.RunTrigger(trigger, this);
-
-                    if (trigger.elseIf && !result && innerResult)
-                        result = true;
-
-                    if (!trigger.elseIf && !innerResult)
-                        result = false;
-
-                    trigger.triggered = innerResult;
-
-                    if (!trigger.running)
-                        trigger.runCount = Mathf.FloorToInt(trigger.runCount + (1 * Time.deltaTime));
-                    if (!trigger.constant)
-                        trigger.active = true;
-
-                    trigger.running = true;
-                });
-                if (result)
-                {
-                    bool returned = false;
-                    actions.ForLoop(act =>
-                    {
-                        if (!act.enabled || act.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
-                            return;
-
-                        if (!act.running)
-                            act.runCount = Mathf.FloorToInt(act.runCount + (1 * Time.deltaTime));
-                        if (!act.constant)
-                            act.active = true;
-
-                        act.running = true;
-                        act.RunAction(act, this);
-                        if (act.Name == "return")
-                            returned = true;
-                    });
-                    return new ModifierLoopResult(returned, true, Modifier.Type.Action, modifiers.Count);
-                }
-
-                // Deactivate both action and trigger modifiers
-                modifiers.ForLoop(modifier =>
-                {
-                    if (!modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || !modifier.active && !modifier.running)
-                        return;
-
-                    modifier.active = false;
-                    modifier.running = false;
-                    modifier.RunInactive(modifier, this);
-                });
-                return new ModifierLoopResult(false, false, Modifier.Type.Action, modifiers.Count);
-            }
-            actions.ForLoop(act =>
-            {
-                if (!act.enabled || act.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
-                    return;
-
-                if (!act.running)
-                    act.runCount = Mathf.FloorToInt(act.runCount + (1 * Time.deltaTime));
-                if (!act.constant)
-                    act.active = true;
-
-                act.running = true;
-                act.RunAction(act, this);
-            });
-            return new ModifierLoopResult(false, true, Modifier.Type.Action, modifiers.Count);
-        }
-
-        /// <summary>
         /// The advanced way modifiers run.
         /// </summary>
         /// <param name="modifiers">The list of modifiers to run.</param>
-        public ModifierLoopResult RunModifiersLoop(List<Modifier> modifiers, int sequence = 0, int end = 0)
+        public ModifierLoopResult Run(List<Modifier> modifiers, int sequence = 0, int end = 0)
         {
             if (!state)
                 state = new State();
@@ -179,7 +63,7 @@ namespace BetterLegacy.Core.Data.Modifiers
             while (state.index < modifiers.Count)
             {
                 var modifier = modifiers[state.index];
-                if (!modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory)
+                if (!modifier.function || !modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory)
                 {
                     state.index++;
                     continue;
@@ -198,6 +82,14 @@ namespace BetterLegacy.Core.Data.Modifiers
                     continue;
                 }
 
+                if (modifier.function.SpecialFunction)
+                {
+                    modifier.RunAction(this);
+                    state.previousType = modifier.type;
+                    state.triggerIndex++;
+                    continue;
+                }
+
                 if (isTrigger)
                 {
                     if (state.previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
@@ -207,6 +99,8 @@ namespace BetterLegacy.Core.Data.Modifiers
                         state.triggered = false;
                         state.triggerIndex = 0;
                     }
+
+                    state.previousResult = state.result;
 
                     if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                     {
@@ -221,7 +115,7 @@ namespace BetterLegacy.Core.Data.Modifiers
                     }
                     else
                     {
-                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, this) : modifier.RunTrigger(modifier, this);
+                        var innerResult = modifier.not ? !modifier.RunTrigger(this) : modifier.RunTrigger(this);
                         var elseIf = state.triggerIndex > 0 && modifier.elseIf;
 
                         if (elseIf)
@@ -248,75 +142,27 @@ namespace BetterLegacy.Core.Data.Modifiers
                     state.triggerIndex++;
                 }
 
-                if (name == "return" || name == "continue") // return stops the loop (any), continue moves it to the next loop (forLoop only)
-                {
-                    // Set modifier inactive state
-                    if (!state.result && !(!modifier.active && !modifier.running))
-                    {
-                        modifier.active = false;
-                        modifier.running = false;
-                        state.result = false;
-                    }
-
-                    if (modifier.active || !state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount) // don't return
-                        state.result = false;
-
-                    if (!modifier.running)
-                        modifier.runCount = Mathf.FloorToInt(modifier.runCount + (1 * Time.deltaTime));
-
-                    // Only occur once
-                    if (!modifier.constant && state.sequence + 1 >= state.end)
-                        modifier.active = true;
-
-                    modifier.running = state.result;
-
-                    if (state.result)
-                    {
-                        state.continued = true;
-                        state.returned = name == "return";
-                    }
-
-                    state.result = true;
-
-                    state.previousType = modifier.type;
-                    state.index++;
-                    continue;
-                }
-
                 // Set modifier inactive state
                 if (!state.result && !(!modifier.active && !modifier.running))
                 {
-                    modifier.active = false;
-                    modifier.running = false;
-                    modifier.RunInactive(modifier, this);
-
-                    state.previousType = modifier.type;
-                    state.index++;
+                    if (modifier.type != Modifier.Type.Trigger || !state.previousResult) // triggers should only be inactive if the previous triggers are inactive.
+                        modifier.Reset(this, false);
+                    modifier.function.HandleSkip(modifier, this, modifiers);
                     continue;
                 }
 
                 // Continue if modifier was already active with constant on
                 if (modifier.active || !state.result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                 {
-                    if (name == nameof(ModifierFunctions.forLoop) || name == nameof(ModifierFunctions.forLoopPlayer))
-                    {
-                        var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-                        state.previousType = modifier.type;
-                        state.index = endIndex <= state.index ? modifiers.Count : endIndex;
-                        continue;
-                    }
-
-                    state.previousType = modifier.type;
-                    state.index++;
+                    modifier.function.HandleSkip(modifier, this, modifiers);
                     continue;
                 }
 
                 // run count is handled by the resetLoop function.
-                if (name != nameof(ModifierFunctions.resetLoop))
+                if (!modifier.function.OverrideRunningState)
                 {
                     if (!modifier.running)
                         modifier.runCount = Mathf.FloorToInt(modifier.runCount + (1 * Time.deltaTime));
-
                     modifier.running = true;
                 }
 
@@ -325,7 +171,7 @@ namespace BetterLegacy.Core.Data.Modifiers
                     modifier.active = true;
 
                 if (isAction && state.result) // Only run modifier if result is true
-                    modifier.RunAction(modifier, this);
+                    modifier.RunAction(this);
 
                 state.previousType = modifier.type;
                 state.index++;
@@ -378,6 +224,7 @@ namespace BetterLegacy.Core.Data.Modifiers
             /// The previous type of modifier.
             /// </summary>
             public Modifier.Type previousType = Modifier.Type.Action;
+            public bool previousResult = true;
             /// <summary>
             /// The current index of the modifier loop.
             /// </summary>

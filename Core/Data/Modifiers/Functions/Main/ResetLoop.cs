@@ -15,7 +15,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "resetLoop";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
+
+        public override bool OverrideRunningState => true;
 
         #endregion
 
@@ -38,10 +40,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                     if (modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory || !modifier.active && !modifier.running)
                         return;
 
-                    modifier.active = false;
-                    modifier.running = false;
-                    modifier.runCount = 0;
-                    modifier.RunInactive(modifier, modifierLoop);
+                    modifier.Reset(modifierLoop);
                 });
 
             modifier.runCount = runCount;

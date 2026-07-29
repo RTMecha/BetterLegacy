@@ -1,9 +1,4 @@
 ﻿using BetterLegacy.Editor.Data.Elements;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
@@ -13,10 +8,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
     {
         #region Constructors
 
-        public OnBPM()
-        {
-
-        }
+        public OnBPM() => SetupModifier();
 
         #endregion
 
@@ -24,7 +16,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "onBPM";
 
-        public override CategoryType Category => CategoryType.Audio;
+        public override ModifierCategoryType Category => ModifierCategoryType.Audio;
+
+        public override bool DisplayInEditor => false; // wip
 
         #endregion
 

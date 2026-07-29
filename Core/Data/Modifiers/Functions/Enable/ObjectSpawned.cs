@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "objectSpawned";
 
-        public override CategoryType Category => CategoryType.Enable;
+        public override ModifierCategoryType Category => ModifierCategoryType.Enable;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 

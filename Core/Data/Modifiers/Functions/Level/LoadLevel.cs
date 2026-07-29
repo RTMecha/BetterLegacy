@@ -13,6 +13,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public LoadLevel(Type type)
         {
+            this.type = type;
             Name = "loadLevel";
             if (type != Type.Path)
                 Name += type.ToString();
@@ -29,7 +30,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Level;
+        public override ModifierCategoryType Category => ModifierCategoryType.Level;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

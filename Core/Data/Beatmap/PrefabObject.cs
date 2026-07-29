@@ -301,7 +301,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// If the order of triggers and actions matter.
         /// </summary>
-        public bool orderModifiers = false;
+        public bool orderModifiers = true;
 
         public bool OrderModifiers { get => orderModifiers; set => orderModifiers = value; }
 

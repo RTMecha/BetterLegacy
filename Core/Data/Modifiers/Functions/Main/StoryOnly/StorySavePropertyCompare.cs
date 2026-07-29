@@ -34,7 +34,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.StoryOnlyCompatible;
 
@@ -52,6 +52,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             Property.Int => StoryManager.inst && StoryManager.inst.CurrentSave && comparison.Compare(StoryManager.inst.CurrentSave.LoadInt(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetInt(1, 0, modifierLoop.variables)), modifier.GetInt(2, 0, modifierLoop.variables)),
             Property.Float => StoryManager.inst && StoryManager.inst.CurrentSave && comparison.Compare(StoryManager.inst.CurrentSave.LoadFloat(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetFloat(1, 0, modifierLoop.variables)), modifier.GetFloat(2, 0, modifierLoop.variables)),
             Property.String => StoryManager.inst && StoryManager.inst.CurrentSave && StoryManager.inst.CurrentSave.LoadString(FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables), modifier.GetValue(1, modifierLoop.variables)) == modifier.GetValue(2, modifierLoop.variables),
+            _ => false,
         };
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

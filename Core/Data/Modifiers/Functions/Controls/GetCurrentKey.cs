@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "getCurrentKey";
 
-        public override CategoryType Category => CategoryType.Controls;
+        public override ModifierCategoryType Category => ModifierCategoryType.Controls;
 
         #endregion
 

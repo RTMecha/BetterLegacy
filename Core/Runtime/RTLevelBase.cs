@@ -469,7 +469,6 @@ namespace BetterLegacy.Core.Runtime
                 case ObjectContext.START_TIME: {
                         if (beatmapObject.runtimeModifiers)
                         {
-                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
                             beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
@@ -501,7 +500,6 @@ namespace BetterLegacy.Core.Runtime
                 case ObjectContext.AUTOKILL: {
                         if (beatmapObject.runtimeModifiers)
                         {
-                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
                             beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
@@ -652,7 +650,6 @@ namespace BetterLegacy.Core.Runtime
                 case ObjectContext.KEYFRAMES: {
                         if (beatmapObject.runtimeModifiers)
                         {
-                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
                             beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
                             beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
@@ -1208,7 +1205,6 @@ namespace BetterLegacy.Core.Runtime
                 case BackgroundObjectContext.START_TIME: {
                         if (backgroundObject.runtimeModifiers)
                         {
-                            backgroundObject.runtimeModifiers.orderMatters = backgroundObject.orderModifiers;
                             backgroundObject.runtimeModifiers.StartTime = backgroundObject.ignoreLifespan ? 0f : backgroundObject.StartTime;
                             backgroundObject.runtimeModifiers.KillTime = backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration;
                             backgroundObject.runtimeModifiers.SetActive(backgroundObject.ModifiersActive);
@@ -1458,7 +1454,6 @@ namespace BetterLegacy.Core.Runtime
 
                         if (prefabObject.runtimeModifiers)
                         {
-                            prefabObject.runtimeModifiers.orderMatters = prefabObject.orderModifiers;
                             prefabObject.runtimeModifiers.StartTime = prefabObject.ignoreLifespan ? -SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset;
                             prefabObject.runtimeModifiers.KillTime = prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
                             prefabObject.runtimeModifiers.SetActive(prefabObject.ModifiersActive);

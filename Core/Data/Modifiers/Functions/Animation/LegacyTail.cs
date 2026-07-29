@@ -26,7 +26,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "legacyTail";
 
-        public override CategoryType Category => CategoryType.Animation;
+        public override ModifierCategoryType Category => ModifierCategoryType.Animation;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 

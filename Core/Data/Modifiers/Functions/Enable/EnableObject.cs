@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Enable;
+        public override ModifierCategoryType Category => ModifierCategoryType.Enable;
 
         public override ModifierCompatibility Compatibility => !isTree && !isGroup ? ModifierCompatibility.FullBeatmapCompatible.WithPAPlayer() : isGroup ? ModifierCompatibility.FullBeatmapCompatible : ModifierCompatibility.BeatmapObjectCompatible;
 
@@ -236,6 +236,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         {
             modifierCard.BoolGenerator(modifier, reference, "Enabled", 0, true);
             modifierCard.BoolGenerator(modifier, reference, "Reset", 1, true);
+            if (isGroup)
+            {
+                modifierCard.PrefabGroupOnly(modifier, reference);
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", 2);
+            }
+            if (isTree)
+                modifierCard.BoolGenerator(modifier, reference, "Use Self", isGroup ? 3 : 2);
         }
 
         #endregion

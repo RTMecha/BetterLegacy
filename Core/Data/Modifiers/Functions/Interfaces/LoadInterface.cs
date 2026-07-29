@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "loadInterface";
 
-        public override CategoryType Category => CategoryType.Interfaces;
+        public override ModifierCategoryType Category => ModifierCategoryType.Interfaces;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

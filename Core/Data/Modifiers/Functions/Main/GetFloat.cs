@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "getFloat";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         #endregion
 

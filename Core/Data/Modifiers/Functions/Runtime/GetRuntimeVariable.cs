@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "getRuntimeVariable";
 
-        public override CategoryType Category => CategoryType.Runtime;
+        public override ModifierCategoryType Category => ModifierCategoryType.Runtime;
 
         #endregion
 

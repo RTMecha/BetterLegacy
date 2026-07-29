@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "playerLockBoostAll";
 
-        public override CategoryType Category => CategoryType.Player;
+        public override ModifierCategoryType Category => ModifierCategoryType.Player;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

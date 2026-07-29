@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "setAudio";
 
-        public override CategoryType Category => CategoryType.Runtime;
+        public override ModifierCategoryType Category => ModifierCategoryType.Runtime;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

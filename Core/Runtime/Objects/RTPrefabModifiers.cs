@@ -2,19 +2,15 @@
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTPrefabModifiers : RTModifiers
     {
-        public RTPrefabModifiers(List<Modifier> modifiers, PrefabObject prefabObject, bool orderMatters, float startTime, float killTime, RTLevelBase parentRuntime)
+        public RTPrefabModifiers(List<Modifier> modifiers, PrefabObject prefabObject, float startTime, float killTime, RTLevelBase parentRuntime)
         {
             this.modifiers = modifiers;
             reference = prefabObject;
-            this.orderMatters = orderMatters;
-            UpdateCache();
 
             ParentRuntime = parentRuntime;
             StartTime = startTime;
@@ -33,10 +29,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override void Interpolate(float time)
         {
-            if (orderMatters)
-                loop.RunModifiersLoop(modifiers);
-            else
-                loop.RunModifiersAll(triggers, actions, modifiers);
+            loop.Run(modifiers);
 
             if (!runtimePrefabObject)
                 return;

@@ -17,6 +17,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public Blur(Type type, bool isGroup)
         {
+            this.type = type;
+            this.isGroup = isGroup;
             Name = "blur";
             if (type != Type.None)
                 Name += type.ToString();
@@ -32,13 +34,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Rendering;
+        public override ModifierCategoryType Category => ModifierCategoryType.Rendering;
 
         public override ModifierCompatibility Compatibility => isGroup ? ModifierCompatibility.FullBeatmapCompatible : ModifierCompatibility.BeatmapObjectCompatible;
 
-        readonly bool isGroup;
-
         readonly Type type;
+
+        readonly bool isGroup;
 
         #endregion
 

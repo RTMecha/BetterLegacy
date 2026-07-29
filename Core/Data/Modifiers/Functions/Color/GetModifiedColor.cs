@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "getModifiedColor";
 
-        public override CategoryType Category => CategoryType.Color;
+        public override ModifierCategoryType Category => ModifierCategoryType.Color;
 
         #endregion
 

@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "editorNotify";
 
-        public override CategoryType Category => CategoryType.Editor;
+        public override ModifierCategoryType Category => ModifierCategoryType.Editor;
 
         #endregion
 

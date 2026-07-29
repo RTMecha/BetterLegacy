@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "vignetteTracksPlayer";
 
-        public override CategoryType Category => CategoryType.Events;
+        public override ModifierCategoryType Category => ModifierCategoryType.Events;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

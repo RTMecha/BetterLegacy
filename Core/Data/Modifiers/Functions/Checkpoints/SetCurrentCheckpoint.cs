@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "setCurrentCheckpoint";
 
-        public override CategoryType Category => CategoryType.Checkpoints;
+        public override ModifierCategoryType Category => ModifierCategoryType.Checkpoints;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

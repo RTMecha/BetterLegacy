@@ -46,7 +46,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Component;
+        public override ModifierCategoryType Category => ModifierCategoryType.Component;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 

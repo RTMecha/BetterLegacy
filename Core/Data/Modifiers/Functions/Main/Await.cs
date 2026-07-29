@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "await";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         #endregion
 
@@ -50,7 +50,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             return time >= modifier.GetFloat(1, 0f, modifierLoop.variables);
         }
 
-        public override void Inactive(Modifier modifier, ModifierLoop modifierLoop) => modifier.Result = default;
+        //public override void Inactive(Modifier modifier, ModifierLoop modifierLoop) => modifier.Result = default;
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {

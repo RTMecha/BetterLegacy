@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Checkpoints;
+        public override ModifierCategoryType Category => ModifierCategoryType.Checkpoints;
 
         readonly Type type;
 

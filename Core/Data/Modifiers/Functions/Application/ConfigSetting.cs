@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Application;
+        public override ModifierCategoryType Category => ModifierCategoryType.Application;
 
         readonly Setting setting;
 

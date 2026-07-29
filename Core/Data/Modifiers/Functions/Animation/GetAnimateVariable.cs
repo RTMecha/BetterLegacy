@@ -30,7 +30,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Animation;
+        public override ModifierCategoryType Category => ModifierCategoryType.Animation;
 
         #endregion
 

@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Editor;
+        public override ModifierCategoryType Category => ModifierCategoryType.Editor;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.FullBeatmapCompatible;
 

@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "fromPrefab";
 
-        public override CategoryType Category => CategoryType.Prefab;
+        public override ModifierCategoryType Category => ModifierCategoryType.Prefab;
 
         #endregion
 

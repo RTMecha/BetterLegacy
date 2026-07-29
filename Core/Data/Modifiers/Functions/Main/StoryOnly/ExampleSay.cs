@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "exampleSayDEVONLY";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.StoryOnlyCompatible;
 

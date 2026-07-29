@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "saveJSON";
 
-        public override CategoryType Category => CategoryType.JSON;
+        public override ModifierCategoryType Category => ModifierCategoryType.JSON;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

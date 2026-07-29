@@ -14,32 +14,87 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
     {
         #region Values
 
+        /// <summary>
+        /// Name of the modifier function.
+        /// </summary>
         public abstract string Name { get; }
 
-        public abstract CategoryType Category { get; }
+        /// <summary>
+        /// Category of the modifier.
+        /// </summary>
+        public abstract ModifierCategoryType Category { get; }
 
+        /// <summary>
+        /// What the modifier function is compatible with.
+        /// </summary>
         public virtual ModifierCompatibility Compatibility => ModifierCompatibility.AllCompatible;
 
+        /// <summary>
+        /// The default modifier.
+        /// </summary>
         public Modifier Modifier { get; internal set; }
 
+        /// <summary>
+        /// If the modifier function is a special function that overrides the default action function.
+        /// </summary>
+        public virtual bool SpecialFunction => false;
+
+        /// <summary>
+        /// If the running state should be overridden.
+        /// </summary>
+        public virtual bool OverrideRunningState => false;
+
+        /// <summary>
+        /// If the modifier is a group type.
+        /// </summary>
         public bool IsGroup { get; internal set; }
 
+        /// <summary>
+        /// Icon of the modifier function to display in the editor.
+        /// </summary>
         public virtual Sprite Icon { get; }
 
+        /// <summary>
+        /// If the modifier is only for the editor.
+        /// </summary>
         public virtual bool IsEditorModifier => false;
 
+        /// <summary>
+        /// If the modifier should display in the editor.
+        /// </summary>
         public virtual bool DisplayInEditor => true;
 
         #endregion
 
         #region Functions
 
+        /// <summary>
+        /// Validates the modifier has the correct values.
+        /// </summary>
+        /// <param name="modifier">Modifier to validate.</param>
+        /// <param name="modifyable">Modifyable object reference.</param>
         public virtual void ValidateModifier(Modifier modifier, IModifyable modifyable) { }
 
+        /// <summary>
+        /// Inactive function.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="modifierLoop">Modifier loop reference.</param>
         public virtual void Inactive(Modifier modifier, ModifierLoop modifierLoop) { }
 
+        /// <summary>
+        /// Renders the modifier in the editor.
+        /// </summary>
+        /// <param name="modifier">Modifier to render.</param>
+        /// <param name="modifierCard">Editor display.</param>
+        /// <param name="reference">Object reference.</param>
+        /// <param name="modifyable">Modifyable reference.</param>
         public abstract void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable);
 
+        /// <summary>
+        /// Function occurs when the cache is removed.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
         public virtual void OnRemoveCache(Modifier modifier) { }
 
         /// <summary>
@@ -48,8 +103,29 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         /// <returns>Returns a copy of the modifier.</returns>
         public Modifier Create() => Modifier?.Copy();
 
+        /// <summary>
+        /// Handles the skip function in the modifier loop.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="modifierLoop">Modifier loop.</param>
+        /// <param name="modifiers">Modifier list.</param>
+        public virtual void HandleSkip(Modifier modifier, ModifierLoop modifierLoop, List<Modifier> modifiers)
+        {
+            modifierLoop.state.previousType = modifier.type;
+            modifierLoop.state.index++;
+        }
+
+        /// <summary>
+        /// Formats the input based on the modifier variables.
+        /// </summary>
+        /// <param name="input">Input to format.</param>
+        /// <param name="variables">Modifier variables.</param>
+        /// <returns>Returns the formatted input.</returns>
         public static string FormatStringVariables(string input, Dictionary<string, string> variables)
         {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
             foreach (var variable in variables)
                 input = input.Replace("{" + variable.Key + "}", variable.Value);
             return input;
@@ -85,34 +161,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             return null;
         }
 
+        public override string ToString() => Name ?? "Invalid Modifier";
+
         #endregion
 
         #region Sub Classes
-
-        public enum CategoryType
-        {
-            Main,
-            Editor,
-            Modifier,
-            Audio,
-            Level,
-            Component,
-            Rendering,
-            Player,
-            Controls,
-            Enable,
-            JSON,
-            Events,
-            Color,
-            Shape,
-            Animation,
-            Prefab,
-            Runtime,
-            Physics,
-            Checkpoints,
-            Interfaces,
-            Application,
-        }
 
         public class MathCache
         {

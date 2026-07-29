@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "onCheckpoint";
 
-        public override CategoryType Category => CategoryType.Checkpoints;
+        public override ModifierCategoryType Category => ModifierCategoryType.Checkpoints;
 
         #endregion
 

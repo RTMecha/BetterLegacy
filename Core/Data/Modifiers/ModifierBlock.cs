@@ -81,7 +81,7 @@ namespace BetterLegacy.Core.Data.Modifiers
                 return default;
 
             loop.ValidateDictionary();
-            return OrderModifiers ? loop.RunModifiersLoop(Modifiers) : loop.RunModifiersAll(Modifiers);
+            return loop.Run(Modifiers);
         }
 
         /// <summary>

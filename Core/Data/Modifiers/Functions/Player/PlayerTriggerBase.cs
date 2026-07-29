@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         #region Values
 
-        public override CategoryType Category => CategoryType.Player;
+        public override ModifierCategoryType Category => ModifierCategoryType.Player;
 
         public override ModifierCompatibility Compatibility => requirement == Requirement.Nearest ? ModifierCompatibility.BeatmapObjectCompatible : base.Compatibility;
 

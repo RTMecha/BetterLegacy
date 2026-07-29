@@ -18,7 +18,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "loadJSONExists";
 
-        public override CategoryType Category => CategoryType.JSON;
+        public override ModifierCategoryType Category => ModifierCategoryType.JSON;
 
         #endregion
 

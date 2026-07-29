@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "musicTimeInRange";
 
-        public override CategoryType Category => CategoryType.Audio;
+        public override ModifierCategoryType Category => ModifierCategoryType.Audio;
 
         // this modifier is just for VG compatibility
         public override bool DisplayInEditor => false;

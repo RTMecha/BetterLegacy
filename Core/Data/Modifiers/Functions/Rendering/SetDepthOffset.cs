@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "setDepthOffset";
 
-        public override CategoryType Category => CategoryType.Rendering;
+        public override ModifierCategoryType Category => ModifierCategoryType.Rendering;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BackgroundObjectCompatible;
 

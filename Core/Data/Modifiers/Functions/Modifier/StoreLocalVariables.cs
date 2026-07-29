@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "storeLocalVariables";
 
-        public override CategoryType Category => CategoryType.Modifier;
+        public override ModifierCategoryType Category => ModifierCategoryType.Modifier;
 
         #endregion
 

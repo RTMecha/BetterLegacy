@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "pauseLevel";
 
-        public override CategoryType Category => CategoryType.Interfaces;
+        public override ModifierCategoryType Category => ModifierCategoryType.Interfaces;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

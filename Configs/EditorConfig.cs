@@ -400,7 +400,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> CreateObjectPositionParentDefault { get; set; }
         public Setting<bool> CreateObjectScaleParentDefault { get; set; }
         public Setting<bool> CreateObjectRotationParentDefault { get; set; }
-        public Setting<bool> CreateObjectModifierOrderDefault { get; set; }
         public Setting<bool> CreateObjectOpacityCollisionDefault { get; set; }
         public Setting<bool> CreateObjectAutoTextAlignDefault { get; set; }
         public Setting<bool> CreateObjectPositionKFRelativeDefault { get; set; }
@@ -953,7 +952,6 @@ namespace BetterLegacy.Configs
             CreateObjectPositionParentDefault = Bind(this, CREATION, "Object Position Parent Default", true, "The default value for new Beatmap Objects' Position Parent.");
             CreateObjectScaleParentDefault = Bind(this, CREATION, "Object Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
             CreateObjectRotationParentDefault = Bind(this, CREATION, "Object Rotation Parent Default", true, "The default value for new Beatmap Objects' Rotation Parent.");
-            CreateObjectModifierOrderDefault = Bind(this, CREATION, "Object Modifier Order Default", true, "The default value for new objects' Order Matters toggle.");
             CreateObjectOpacityCollisionDefault = Bind(this, CREATION, "Object Opacity Collision Default", false, "The default value for new objects' Opacity Collision toggle.");
             CreateObjectAutoTextAlignDefault = Bind(this, CREATION, "Object Auto Text Align Default", false, "The default value for new objects' Auto Text Align toggle.");
             CreateObjectPositionKFRelativeDefault = Bind(this, CREATION, "Object Position KF Relative Default", false, "The default value for new objects' position keyframe relative toggle.");

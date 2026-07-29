@@ -841,7 +841,6 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The new object.</param>
         public void ApplyObjectCreationSettings(BeatmapObject beatmapObject)
         {
-            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
             beatmapObject.opacityCollision = EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value;
             beatmapObject.autoTextAlign = EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value;
 

@@ -80,11 +80,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Toggle IgnoreToggle { get; set; }
 
         /// <summary>
-        /// Toggle for if the modifiers' order matters.
-        /// </summary>
-        public Toggle OrderToggle { get; set; }
-
-        /// <summary>
         /// Content parent of the UI.
         /// </summary>
         public Transform Content { get; set; }
@@ -164,7 +159,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "int_variable");
 
             IntVariableUI = label.transform.GetChild(0).GetComponent<Text>();
-            IntVariableUI.text = "Integer Variable: [ null ]";
+            IntVariableUI.text = "Object Variable: [ null ]";
             IntVariableUI.fontSize = 18;
             EditorThemeManager.ApplyLightText(IntVariableUI);
             label.AddComponent<Image>().color = LSColors.transparent;
@@ -181,18 +176,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.ApplyToggle(IgnoreToggle, graphic: ignoreLifespanToggleButton.label);
             TooltipHelper.AssignTooltip(ignoreLifespan, "Modifiers Ignore Lifespan");
-        }
-
-        public void InitOrderMatters(Transform parent)
-        {
-            var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "order modifiers");
-            var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
-            orderMattersToggleButton.label.text = "Order Matters";
-
-            OrderToggle = orderMattersToggleButton.toggle;
-
-            EditorThemeManager.ApplyToggle(OrderToggle, graphic: orderMattersToggleButton.label);
-            TooltipHelper.AssignTooltip(orderMatters, "Modifiers Order Matters");
         }
 
         public void InitActive(Transform parent)
@@ -239,7 +222,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (doIgnoreLifespan)
                 InitIgnoreLifespan(parent);
 
-            InitOrderMatters(parent);
             InitActive(parent);
             InitScrollView(parent);
         }
@@ -263,8 +245,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorHelper.SetComplexity(IntVariableUI.gameObject, "modifiers", Complexity.Advanced);
             if (IgnoreToggle)
                 EditorHelper.SetComplexity(IgnoreToggle.gameObject, "modifiers", Complexity.Advanced);
-            if (OrderToggle)
-                EditorHelper.SetComplexity(OrderToggle.gameObject, "modifiers", Complexity.Advanced);
 
             if (NameField)
             {
@@ -308,19 +288,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
                     if (modifyable is PrefabObject prefabObject)
                         RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
-                });
-            }
-
-            if (OrderToggle)
-            {
-                OrderToggle.SetIsOnWithoutNotify(modifyable.OrderModifiers);
-                OrderToggle.onValueChanged.NewListener(_val =>
-                {
-                    modifyable.OrderModifiers = _val;
-                    if (modifyable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                    if (modifyable is BackgroundObject backgroundObject)
-                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
                 });
             }
 
@@ -428,7 +395,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(IntVariableUI);
             CoreHelper.Delete(ActiveToggle);
             CoreHelper.Delete(IgnoreToggle);
-            CoreHelper.Delete(OrderToggle);
             CoreHelper.Delete(ScrollView);
             modifierCards.Clear();
             showModifiersFunc = null;

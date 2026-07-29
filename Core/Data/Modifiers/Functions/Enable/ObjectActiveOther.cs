@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "objectActiveOther";
 
-        public override CategoryType Category => CategoryType.Enable;
+        public override ModifierCategoryType Category => ModifierCategoryType.Enable;
 
         #endregion
 

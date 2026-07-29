@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Data.Elements;
 
@@ -17,11 +17,17 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "forLoop";
 
-        public override CategoryType Category => CategoryType.Main;
+        public override ModifierCategoryType Category => ModifierCategoryType.Main;
 
         #endregion
 
         #region Functions
+
+        public virtual int GetStartIndex(Modifier modifier, ModifierLoop modifierLoop) => modifier.GetInt(1, 0, modifierLoop.variables);
+        
+        public virtual int GetEndCount(Modifier modifier, ModifierLoop modifierLoop) => modifier.GetInt(2, 0, modifierLoop.variables);
+        
+        public virtual int GetIncrement(Modifier modifier, ModifierLoop modifierLoop) => modifier.GetInt(3, 0, modifierLoop.variables);
 
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
@@ -31,9 +37,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var modifiers = modifyable.Modifiers;
 
             var variable = FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
-            var startIndex = modifier.GetInt(1, 0, modifierLoop.variables);
-            var endCount = modifier.GetInt(2, 0, modifierLoop.variables);
-            var increment = modifier.GetInt(3, 1, modifierLoop.variables);
+            var startIndex = GetStartIndex(modifier, modifierLoop);
+            var endCount = GetEndCount(modifier, modifierLoop);
+            var increment = GetIncrement(modifier, modifierLoop);
 
             var allowed = increment != 0 && endCount > startIndex;
 
@@ -52,24 +58,31 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         for (int i = startIndex; i < endCount; i += increment)
                         {
                             innerLoop.variables[variable] = i.ToString();
-                            innerLoop.RunModifiersLoop(selectModifiers, i, endCount);
+                            innerLoop.Run(selectModifiers, i, endCount);
                         }
                     else
                         for (int i = endCount - 1; i >= startIndex; i -= increment)
                         {
                             innerLoop.variables[variable] = i.ToString();
-                            innerLoop.RunModifiersLoop(selectModifiers, i, endCount);
+                            innerLoop.Run(selectModifiers, i, endCount);
                         }
                 }
             }
             catch (Exception ex)
             {
-                CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
+                CoreHelper.LogError($"Had an exception with the {Name} modifier.\n" +
                     $"Index: {modifierLoop.state.index}\n" +
                     $"End Index: {endIndex}\nException: {ex}");
             }
 
             modifierLoop.state.index = endIndex; // exit for loop.
+        }
+
+        public override void HandleSkip(Modifier modifier, ModifierLoop modifierLoop, List<Modifier> modifiers)
+        {
+            var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+            modifierLoop.state.previousType = modifier.type;
+            modifierLoop.state.index = endIndex <= modifierLoop.state.index ? modifiers.Count : endIndex;
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

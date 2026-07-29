@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Player;
+        public override ModifierCategoryType Category => ModifierCategoryType.Player;
 
         readonly Property property;
 

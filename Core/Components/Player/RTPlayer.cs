@@ -1452,10 +1452,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 if (modelLoop.reference == null)
                     modelLoop.reference = Core;
-                if (Model.OrderModifiers)
-                    modelLoop.RunModifiersLoop(Model.modifiers);
-                else
-                    modelLoop.RunModifiersAll(Model.modifiers);
+                modelLoop.Run(Model.modifiers);
             }
 
             if (!isColliderTrigger)
@@ -2298,11 +2295,7 @@ namespace BetterLegacy.Core.Components.Player
                 var reference = customObject.reference;
 
                 customObject.loop.reference = customObject;
-
-                if (reference.OrderModifiers)
-                    customObject.loop.RunModifiersLoop(reference.Modifiers);
-                else
-                    customObject.loop.RunModifiersAll(reference.Modifiers);
+                customObject.loop.Run(reference.Modifiers);
 
                 var active = customObject.active &&
                     (reference.visibilitySettings.IsEmpty() ? reference.active :

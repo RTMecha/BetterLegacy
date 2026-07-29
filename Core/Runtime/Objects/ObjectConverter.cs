@@ -334,7 +334,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         RTModifiers ToRuntimeModifiers(BeatmapObject beatmapObject)
         {
             var runtimeModifiers = new RTModifiers(
-                    beatmapObject.modifiers, beatmapObject, beatmapObject.orderModifiers,
+                    beatmapObject.modifiers, beatmapObject,
                     beatmapObject.ignoreLifespan ? -SoundManager.inst.MusicLength : beatmapObject.StartTime,
                     beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration,
                     runtimeLevel
@@ -565,7 +565,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         RTModifiers ToRuntimeModifiers(BackgroundObject backgroundObject)
         {
             var runtimeModifiers = new RTModifiers(
-                    backgroundObject.modifiers, backgroundObject, backgroundObject.orderModifiers,
+                    backgroundObject.modifiers, backgroundObject,
                     backgroundObject.ignoreLifespan ? -SoundManager.inst.MusicLength : backgroundObject.StartTime,
                     backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration,
                     runtimeLevel
@@ -667,7 +667,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         RTModifiers ToRuntimeModifiers(Prefab prefab, PrefabObject prefabObject)
         {
             var runtimeModifiers = new RTPrefabModifiers(
-                    prefabObject.modifiers, prefabObject, prefabObject.orderModifiers,
+                    prefabObject.modifiers, prefabObject,
                     prefabObject.ignoreLifespan ? -SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset,
                     prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration,
                     runtimeLevel

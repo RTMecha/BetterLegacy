@@ -90,7 +90,6 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.ApplyRandomToSingleBackgroundObject.Value)
                 RandomizeBackgroundObject(backgroundObject);
 
-            backgroundObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
             backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
 
             GameData.Current.backgroundObjects.Add(backgroundObject);
@@ -214,7 +213,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 var backgroundObject = new BackgroundObject();
                 backgroundObject.name = "bg - " + i;
-                backgroundObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
                 RandomizeBackgroundObject(backgroundObject);
 

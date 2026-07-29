@@ -1468,8 +1468,6 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.editorData.Layer = editorData.Layer;
             }
 
-            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
-
             if (copiedInstanceData)
                 prefabObject.PasteInstanceData(copiedInstanceData);
             else if (newPrefab.defaultInstanceData)
@@ -1632,8 +1630,6 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.LogException(ex);
                 }
             }
-
-            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             if (target)
             {

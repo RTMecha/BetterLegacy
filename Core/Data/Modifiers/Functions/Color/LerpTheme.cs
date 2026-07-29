@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "lerpTheme";
 
-        public override CategoryType Category => CategoryType.Color;
+        public override ModifierCategoryType Category => ModifierCategoryType.Color;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

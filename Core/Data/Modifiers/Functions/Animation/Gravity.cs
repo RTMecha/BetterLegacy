@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -28,7 +30,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Animation;
+        public override ModifierCategoryType Category => ModifierCategoryType.Animation;
 
         public override ModifierCompatibility Compatibility => base.Compatibility;
 
@@ -50,35 +52,26 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(0, modifierLoop.variables));
-
-                if (modifier.Result == null)
+                var tag = modifier.GetValue(0, modifierLoop.variables);
+                var cache = modifier.GetResultOrDefault(() => new Cache(tag, GameData.Current.FindTransformablesWithTag(modifier, prefabable, tag)));
+                if (cache.tag != tag)
                 {
-                    modifier.Result = Vector2.zero;
-                    modifier.ResultTimer = Time.time;
+                    cache.tag = tag;
+                    cache.transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, tag);
                 }
-                else
-                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
+                cache.pos = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - cache.time, curve)) * (time * CoreHelper.TimeFrame));
 
-                var vector = modifier.GetResult<Vector2>();
-                foreach (var transformable in transformables)
-                    transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
+                foreach (var transformable in cache.transformables)
+                    transformable.PositionOffset = RTMath.Rotate(cache.pos, -transformable.GetFullRotation(false).z);
             }
             else
             {
                 if (modifierLoop.reference is not ITransformable transformable)
                     return;
 
-                if (modifier.Result == null)
-                {
-                    modifier.Result = Vector2.zero;
-                    modifier.ResultTimer = Time.time;
-                }
-                else
-                    modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
-
-                var vector = modifier.GetResult<Vector2>();
-                transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
+                var cache = modifier.GetResultOrDefault(() => new Cache());
+                cache.pos = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - cache.time, curve)) * (time * CoreHelper.TimeFrame));
+                transformable.PositionOffset = RTMath.Rotate(cache.pos, -transformable.GetFullRotation(false).z);
             }
         }
 
@@ -96,6 +89,22 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.SingleGenerator(modifier, reference, "Y", 2, 0f);
             modifierCard.SingleGenerator(modifier, reference, "Time Multiply", 3, 1f);
             modifierCard.IntegerGenerator(modifier, reference, "Curve", 4, 2);
+        }
+
+        #endregion
+
+        #region Sub Classes
+
+        public class Cache
+        {
+            public Cache() { }
+
+            public Cache(string tag, List<ITransformable> transformables) => this.transformables = transformables;
+
+            public Vector2 pos = Vector2.zero;
+            public float time = Time.time;
+            public string tag;
+            public List<ITransformable> transformables;
         }
 
         #endregion

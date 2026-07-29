@@ -280,7 +280,7 @@ namespace BetterLegacy.Core.Runtime
                     if (loop.reference == null)
                         loop.reference = GameData.Current;
                     loop.ValidateDictionary();
-                    loop.RunModifiersLoop(GameData.Current.modifiers);
+                    loop.Run(GameData.Current.modifiers);
                 }
 
                 OnObjectModifiersTick(); // modifiers update second

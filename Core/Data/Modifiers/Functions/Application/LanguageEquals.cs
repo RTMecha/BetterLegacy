@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "languageEquals";
 
-        public override CategoryType Category => CategoryType.Application;
+        public override ModifierCategoryType Category => ModifierCategoryType.Application;
 
         #endregion
 

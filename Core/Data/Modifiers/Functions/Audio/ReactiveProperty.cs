@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Audio;
+        public override ModifierCategoryType Category => ModifierCategoryType.Audio;
 
         public override ModifierCompatibility Compatibility => property == Property.Iterations ? ModifierCompatibility.BackgroundObjectCompatible : ModifierCompatibility.BeatmapObjectCompatible;
 

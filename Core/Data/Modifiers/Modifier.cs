@@ -188,11 +188,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         public object Result { get; set; }
 
         /// <summary>
-        /// Timer result of the modifier.
-        /// </summary>
-        public float ResultTimer { get; set; }
-
-        /// <summary>
         /// If the modifier is currently running.
         /// </summary>
         public bool running = false;
@@ -206,11 +201,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// If the modifier was activated once.
         /// </summary>
         public bool active = false;
-
-        /// <summary>
-        /// If the <see cref="ResultTimer"/> was set.
-        /// </summary>
-        public bool setTimer = false;
 
         /// <summary>
         /// How many times the modifier has ran.
@@ -437,16 +427,16 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #region Run
 
-        public void RunAction(Modifier modifier, ModifierLoop modifierLoop)
+        public void RunAction(ModifierLoop modifierLoop)
         {
             if (!tryCatch)
             {
-                action?.Run(modifier, modifierLoop);
+                action?.Run(this, modifierLoop);
                 return;
             }
             try
             {
-                action?.Run(modifier, modifierLoop);
+                action?.Run(this, modifierLoop);
             }
             catch (Exception ex)
             {
@@ -454,13 +444,13 @@ namespace BetterLegacy.Core.Data.Modifiers
             }
         }
         
-        public bool RunTrigger(Modifier modifier, ModifierLoop modifierLoop)
+        public bool RunTrigger(ModifierLoop modifierLoop)
         {
             if (!tryCatch)
-                return trigger?.Run(modifier, modifierLoop) == true;
+                return trigger?.Run(this, modifierLoop) == true;
             try
             {
-                return trigger?.Run(modifier, modifierLoop) == true;
+                return trigger?.Run(this, modifierLoop) == true;
             }
             catch (Exception ex)
             {
@@ -469,16 +459,16 @@ namespace BetterLegacy.Core.Data.Modifiers
             }
         }
 
-        public void RunInactive(Modifier modifier, ModifierLoop modifierLoop)
+        public void RunInactive(ModifierLoop modifierLoop)
         {
             if (!tryCatch)
             {
-                function?.Inactive(modifier, modifierLoop);
+                function?.Inactive(this, modifierLoop);
                 return;
             }
             try
             {
-                function?.Inactive(modifier, modifierLoop);
+                function?.Inactive(this, modifierLoop);
             }
             catch (Exception ex)
             {
@@ -518,6 +508,15 @@ namespace BetterLegacy.Core.Data.Modifiers
             {
                 CoreHelper.LogError($"Encountered an exception with the modifier: {Name}.\nException: {ex}");
             }
+        }
+
+        public void Reset(ModifierLoop modifierLoop, bool resetCount = true)
+        {
+            active = false;
+            running = false;
+            if (resetCount)
+                runCount = 0;
+            RunInactive(modifierLoop);
         }
 
         #endregion

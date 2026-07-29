@@ -16,18 +16,31 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public List<ModifierFunctionBase> functions = new List<ModifierFunctionBase>();
 
-        public Dictionary<ModifierFunctionBase.CategoryType, List<ModifierFunctionBase>> categories = new Dictionary<ModifierFunctionBase.CategoryType, List<ModifierFunctionBase>>();
+        /// <summary>
+        /// List of modifier categories.
+        /// </summary>
+        public Dictionary<ModifierCategoryType, List<ModifierFunctionBase>> categories = new Dictionary<ModifierCategoryType, List<ModifierFunctionBase>>();
 
+        /// <summary>
+        /// List of modifier triggers.
+        /// </summary>
         public List<ModifierTriggerBase> triggers = new List<ModifierTriggerBase>();
 
+        /// <summary>
+        /// List of modifier actions.
+        /// </summary>
         public List<ModifierActionBase> actions = new List<ModifierActionBase>();
 
+        /// <summary>
+        /// List of modifier updaters.
+        /// </summary>
         public List<ModifierUpdaterBase> updaters = new List<ModifierUpdaterBase>
         {
             new DisableObjectUpdater(),
             new FollowMousePositionUpdater(),
             new HideMouseUpdater(),
             new LoadJSONUpdater(),
+            new MusicTimeCompareUpdater(),
             new ObjectActiveOtherUpdater(),
             new ObjectVariableUpdater(),
             new PlayerDisableBoostUpdater(),
@@ -100,7 +113,9 @@ namespace BetterLegacy.Core.Managers
             }
 
             modifier.verified = true;
-            if (modifier.Name.Contains("DEVONLY") || !functions.TryFind(x => x.Modifier && x.Name == modifier.Name && x.Modifier.type == modifier.type, out ModifierFunctionBase function) || !function.Compatibility.CompareType(modifyable.ReferenceType))
+            if (!functions.TryFind(x => x.Modifier && x.Name == modifier.Name && x.Modifier.type == modifier.type, out ModifierFunctionBase function))
+                return !string.IsNullOrEmpty(modifier.Name);
+            if (function.Compatibility.StoryOnly ? !ProjectArrhythmia.State.InEditor && !ProjectArrhythmia.State.InStory : !function.Compatibility.CompareType(modifyable.ReferenceType))
                 return !string.IsNullOrEmpty(modifier.Name);
 
             modifier.function = function;

@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "setMusicPlaying";
 
-        public override CategoryType Category => CategoryType.Audio;
+        public override ModifierCategoryType Category => ModifierCategoryType.Audio;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.LevelControlCompatible;
 

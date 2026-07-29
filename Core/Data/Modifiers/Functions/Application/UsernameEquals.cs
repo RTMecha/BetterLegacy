@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "usernameEquals";
 
-        public override CategoryType Category => CategoryType.Application;
+        public override ModifierCategoryType Category => ModifierCategoryType.Application;
 
         #endregion
 

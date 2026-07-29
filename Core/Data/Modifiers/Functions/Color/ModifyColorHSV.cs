@@ -27,7 +27,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Color;
+        public override ModifierCategoryType Category => ModifierCategoryType.Color;
 
         public override ModifierCompatibility Compatibility => isGroup ? ModifierCompatibility.FullBeatmapCompatible : ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject();
 

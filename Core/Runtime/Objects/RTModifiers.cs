@@ -2,8 +2,6 @@
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Modifiers;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
@@ -11,12 +9,10 @@ namespace BetterLegacy.Core.Runtime.Objects
     {
         public RTModifiers() { }
 
-        public RTModifiers(List<Modifier> modifiers, IModifierReference reference, bool orderMatters, float startTime, float killTime, RTLevelBase parentRuntime)
+        public RTModifiers(List<Modifier> modifiers, IModifierReference reference, float startTime, float killTime, RTLevelBase parentRuntime)
         {
             this.modifiers = modifiers;
             this.reference = reference;
-            this.orderMatters = orderMatters;
-            UpdateCache();
 
             ParentRuntime = parentRuntime;
             StartTime = startTime;
@@ -33,8 +29,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public List<Modifier> modifiers;
 
-        public bool orderMatters;
-
         public RTLevelBase ParentRuntime { get; set; }
 
         public float StartTime { get; set; }
@@ -46,29 +40,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         public List<Modifier> triggers;
 
         public List<Modifier> actions;
-
-        public void UpdateCache()
-        {
-            if (orderMatters)
-                return;
-
-            triggers = new List<Modifier>();
-            actions = new List<Modifier>();
-            modifiers.ForLoop(modifier =>
-            {
-                switch (modifier.type)
-                {
-                    case Modifier.Type.Trigger: {
-                            triggers.Add(modifier);
-                            break;
-                        }
-                    case Modifier.Type.Action: {
-                            actions.Add(modifier);
-                            break;
-                        }
-                }
-            });
-        }
 
         public ModifierLoop loop;
 
@@ -84,22 +55,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (active)
                 return;
 
-            modifiers.ForLoop(modifier =>
-            {
-                modifier.runCount = 0;
-                modifier.active = false;
-                modifier.running = false;
-                modifier.RunInactive(modifier, loop);
-            });
+            modifiers.ForLoop(modifier => modifier.Reset(loop));
         }
 
-        public virtual void Interpolate(float time)
-        {
-            if (orderMatters)
-                loop.RunModifiersLoop(modifiers);
-            else
-                loop.RunModifiersAll(triggers, actions, modifiers);
-        }
+        public virtual void Interpolate(float time) => loop.Run(modifiers);
 
         public override string ToString() => reference?.ToString() ?? string.Empty;
     }

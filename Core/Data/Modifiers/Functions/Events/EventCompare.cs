@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name { get; }
 
-        public override CategoryType Category => CategoryType.Events;
+        public override ModifierCategoryType Category => ModifierCategoryType.Events;
 
         readonly NumberComparison comparison;
 

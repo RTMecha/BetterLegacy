@@ -2854,6 +2854,18 @@ namespace BetterLegacy.Core
             _ => true,
         };
 
+        /// <summary>
+        /// Sorts the modifier list if order matters is off.
+        /// </summary>
+        /// <param name="modifyable">Modifyable reference.</param>
+        public static void SortModifiers(this IModifyable modifyable)
+        {
+            if (modifyable.OrderModifiers || modifyable.Modifiers == null)
+                return;
+            modifyable.OrderModifiers = true;
+            modifyable.Modifiers.Sort((a, b) => a.type.CompareTo(b.type));
+        }
+
         #endregion
 
         #region Beatmap
@@ -3594,16 +3606,16 @@ namespace BetterLegacy.Core
                             modifyable.Modifiers.Add(modifier);
                     }
                 }
-
+                modifyable.SortModifiers();
                 return;
             }
-
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 var modifier = Modifier.Parse(jn["modifiers"][i]);
                 if (ModifiersManager.inst.VerifyModifier(modifier, modifyable))
                     modifyable.Modifiers.Add(modifier);
             }
+            modifyable.SortModifiers();
         }
 
         /// <summary>
@@ -3788,7 +3800,6 @@ namespace BetterLegacy.Core
             if (hasTags)
                 modifyable.Tags = reader.ReadList(() => reader.ReadString());
             modifyable.IgnoreLifespan = reader.ReadBoolean();
-            modifyable.OrderModifiers = reader.ReadBoolean();
             Packet.ReadPacketList(modifyable.Modifiers, reader);
         }
 
@@ -3804,7 +3815,7 @@ namespace BetterLegacy.Core
             if (hasTags)
                 writer.Write(modifyable.Tags, tag => writer.Write(tag));
             writer.Write(modifyable.IgnoreLifespan);
-            writer.Write(modifyable.OrderModifiers);
+            modifyable.SortModifiers();
             Packet.WritePacketList(modifyable.Modifiers, writer);
         }
 

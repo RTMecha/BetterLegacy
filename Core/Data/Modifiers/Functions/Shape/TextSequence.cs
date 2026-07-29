@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "textSequence";
 
-        public override CategoryType Category => CategoryType.Shape;
+        public override ModifierCategoryType Category => ModifierCategoryType.Shape;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 
@@ -126,29 +126,33 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (cache.current != stringLength && cache.textWithoutFormatting[Mathf.Clamp(stringLength - 1, 0, cache.textWithoutFormatting.Length - 1)] != ' ')
             {
                 cache.current = stringLength;
-                float pitch = modifier.GetFloat(5, 1f, modifierLoop.variables);
-                float volume = modifier.GetFloat(6, 1f, modifierLoop.variables);
-                float pitchVary = modifier.GetFloat(7, 0f, modifierLoop.variables);
+                var pitch = modifier.GetFloat(5, 1f, modifierLoop.variables);
+                var volume = modifier.GetFloat(6, 1f, modifierLoop.variables);
+                var pitchVary = modifier.GetFloat(7, 0f, modifierLoop.variables);
+                var panStereo = modifier.GetFloat(11, 0f, modifierLoop.variables);
 
                 if (pitchVary != 0f)
                     pitch += UnityRandom.Range(-pitchVary, pitchVary);
 
                 // Don't play any sounds.
-                if (!modifier.GetBool(1, true, modifierLoop.variables))
+                if (!modifier.GetBool(2, true, modifierLoop.variables))
                     return;
 
                 // Don't play custom sound.
-                if (!modifier.GetBool(2, false, modifierLoop.variables))
+                if (!modifier.GetBool(3, false, modifierLoop.variables))
                 {
-                    SoundManager.inst.PlaySound(DefaultSounds.Click, volume, volume);
+                    SoundManager.inst.PlaySound(DefaultSounds.Click, volume, volume, panStereo: panStereo);
                     return;
                 }
 
-                var soundName = modifier.GetValue(3, modifierLoop.variables);
+                var soundName = modifier.GetValue(4, modifierLoop.variables);
+                if (string.IsNullOrEmpty(soundName))
+                    return;
+
                 if (GameData.Current.assets.sounds.TryFind(x => x.name == soundName, out SoundAsset soundAsset) && soundAsset.audio)
-                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch, panStereo: modifier.GetFloat(11, 0f, modifierLoop.variables));
+                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch, panStereo: panStereo);
                 else if (SoundManager.inst.TryGetSound(soundName, out AudioClip audioClip))
-                    SoundManager.inst.PlaySound(audioClip, volume, pitch, panStereo: modifier.GetFloat(11, 0f, modifierLoop.variables));
+                    SoundManager.inst.PlaySound(audioClip, volume, pitch, panStereo: panStereo);
                 else
                 {
                     var fullPath = AssetPack.TryGetFile(soundName, out string assetFile) ? assetFile : RTFile.CombinePaths(RTFile.BasePath, soundName);
@@ -165,11 +169,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                     if (fullPath.EndsWith(FileFormat.MP3.Dot()))
                     {
-                        modifier.Result = ModifiersHelper.PlaySound(beatmapObject.id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, false, panStereo: modifier.GetFloat(11, 0f, modifierLoop.variables));
+                        modifier.Result = ModifiersHelper.PlaySound(beatmapObject.id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, false, panStereo: panStereo);
                         return;
                     }
                     CoroutineHelper.StartCoroutine(ModifiersHelper.LoadMusicFileRaw(fullPath,
-                        callback: audioClip => modifier.Result = ModifiersHelper.PlaySound(beatmapObject.id, audioClip, pitch, volume, false, panStereo: modifier.GetFloat(11, 0f, modifierLoop.variables))));
+                        callback: audioClip => modifier.Result = ModifiersHelper.PlaySound(beatmapObject.id, audioClip, pitch, volume, false, panStereo: panStereo)));
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "onLevelStart";
 
-        public override CategoryType Category => CategoryType.Level;
+        public override ModifierCategoryType Category => ModifierCategoryType.Level;
 
         #endregion
 

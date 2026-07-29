@@ -296,9 +296,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 if (!SearchModifier(Popup.SearchTerm, defaultModifier))
                     continue;
-                if (!modifierFunction.Compatibility.CompareType(referenceType))
-                    continue;
-                if (modifierFunction.Compatibility.StoryOnly && !development)
+                if (modifierFunction.Compatibility.StoryOnly ? !development : !modifierFunction.Compatibility.CompareType(referenceType))
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
