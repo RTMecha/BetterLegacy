@@ -581,6 +581,7 @@ namespace BetterLegacy.Core.Helpers
             };
 
             AnimationManager.inst?.Play(animation);
+            ScreenshotsView.inst?.Refresh();
 
             yield break;
         }

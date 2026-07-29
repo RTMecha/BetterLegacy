@@ -359,13 +359,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Screenshots
-
-        public int screenshotsPerPage = 5;
-        public int screenshotCount;
-
-        #endregion
-
         #region Editor Layer
 
         /// <summary>
@@ -1390,7 +1383,6 @@ namespace BetterLegacy.Editor.Managers
             CreatePreview();
             CreateDebug();
             CreateIntroDialog();
-            CreateScreenshotsView();
             CreateFontSelector();
             SetupEaseDropdowns();
             CreateCameraArea();
@@ -1402,6 +1394,7 @@ namespace BetterLegacy.Editor.Managers
         // 6 - initialize editors
         void InitEditors()
         {
+            ScreenshotsView.Init();
             RTColorPicker.Init();
 
             RTSettingEditor.Init();
@@ -6727,92 +6720,6 @@ namespace BetterLegacy.Editor.Managers
             IntroDialog.Init();
 
             EditorHelper.AddEditorDropdown("View Welcome Dialog", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.UpArrow, OpenIntroDialog);
-        }
-
-        #endregion
-
-        #region Screenshots
-
-        /// <summary>
-        /// Refreshes the screenshots in the screenshots folder.
-        /// </summary>
-        public void RefreshScreenshots()
-        {
-            var directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
-
-            ScreenshotsDialog.ClearContent();
-            var files = Directory.GetFiles(directory, FileFormat.PNG.ToPattern(), SearchOption.TopDirectoryOnly);
-            screenshotCount = files.Length;
-
-            if (screenshotCount > screenshotsPerPage)
-                TriggerHelper.AddEventTriggers(ScreenshotsDialog.PageField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(ScreenshotsDialog.PageField.inputField, max: ScreenshotsDialog.MaxPageCount));
-            else
-                TriggerHelper.AddEventTriggers(ScreenshotsDialog.PageField.inputField.gameObject);
-
-            var screenshotsOnPage = 0;
-            for (int i = 0; i < files.Length; i++)
-            {
-                if (!ScreenshotsDialog.InPage(i, screenshotsPerPage))
-                    continue;
-
-                var index = i;
-                var file = files[index];
-
-                var gameObject = Creator.NewUIObject("screenshot", ScreenshotsDialog.Content);
-                gameObject.transform.localScale = Vector3.one;
-                gameObject.transform.AsRT().sizeDelta = new Vector2(720f, 405f);
-
-                var image = gameObject.AddComponent<Image>();
-                image.enabled = false;
-
-                var button = gameObject.AddComponent<Button>();
-                button.onClick.NewListener(() => RTFile.OpenInFileBrowser.OpenFile(file));
-                button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
-
-                EditorContextMenu.AddContextMenu(gameObject,
-                    new ButtonElement("Open File", () => RTFile.OpenInFileBrowser.OpenFile(file)),
-                    new ButtonElement("Open Folder", () => RTFile.OpenInFileBrowser.Open(directory)),
-                    new SpacerElement(),
-                    new ButtonElement("Duplicate", () =>
-                    {
-                        var destination = RTFile.CombinePaths(directory, DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT) + FileFormat.PNG.Dot());
-                        RTFile.CopyFile(file, destination);
-                        EditorManager.inst.DisplayNotification("Made a copy of the screenshot!", 2f, EditorManager.NotificationType.Success);
-                        RefreshScreenshots();
-                    }),
-                    new ButtonElement("Delete", () => ShowWarningPopup("Are you sure you want to delete this screenshot? This is permanent!", () =>
-                    {
-                        RTFile.DeleteFile(file);
-                        EditorManager.inst.DisplayNotification("Deleted the screenshot!", 2f, EditorManager.NotificationType.Success);
-                        if (screenshotsOnPage == 1)
-                            ScreenshotsDialog.SetPage(ScreenshotsDialog.Page - 1);
-                        else
-                            RefreshScreenshots();
-                    })));
-
-                StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{files[i]}", texture2D =>
-                {
-                    if (!image)
-                        return;
-
-                    image.enabled = true;
-                    image.sprite = SpriteHelper.CreateSprite(texture2D);
-                }));
-                screenshotsOnPage++;
-            }
-        }
-
-        void CreateScreenshotsView()
-        {
-            try
-            {
-                ScreenshotsDialog = new ScreenshotsViewDialog();
-                ScreenshotsDialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
         }
 
         #endregion

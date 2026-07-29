@@ -30,7 +30,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public int Page { get; set; }
 
-        public int MaxPageCount => RTEditor.inst.screenshotCount / RTEditor.inst.screenshotsPerPage;
+        public int MaxPageCount => ScreenshotsView.inst.screenshotCount / ScreenshotsView.inst.screenshotsPerPage;
 
         public void ClearContent() => CoreHelper.DestroyChildren(Content);
 
@@ -60,6 +60,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var spacer = editorDialogObject.transform.Find("spacer");
 
+            var takeScreenshot = EditorPrefabHolder.Instance.Function2Button.Duplicate(spacer, "take screenshot");
+            takeScreenshot.transform.AsRT().anchoredPosition = new Vector2(120f, 27f);
+            takeScreenshot.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
+            var takeScreenshotButton = takeScreenshot.GetComponent<FunctionButtonStorage>();
+            takeScreenshotButton.Text = "Take Screenshot";
+            takeScreenshotButton.OnClick.NewListener(CoreHelper.TakeScreenshot);
+            EditorThemeManager.ApplySelectable(takeScreenshotButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(takeScreenshotButton.label, ThemeGroup.Function_2_Text);
+            
             var openFolder = EditorPrefabHolder.Instance.Function2Button.Duplicate(spacer, "open folder");
             openFolder.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
             var openFolderButton = openFolder.GetComponent<FunctionButtonStorage>();
@@ -113,7 +122,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.AddEditorDropdown("View Screenshots", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
                 Open();
-                RTEditor.inst.RefreshScreenshots();
+                ScreenshotsView.inst.Refresh();
             });
         }
 
@@ -124,8 +133,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public void SetPage(int page)
         {
             PageField.SetTextWithoutNotify(page.ToString());
-            Page = Mathf.Clamp(page, 0, RTEditor.inst.screenshotCount / RTEditor.inst.screenshotsPerPage);
-            RTEditor.inst.RefreshScreenshots();
+            Page = Mathf.Clamp(page, 0, ScreenshotsView.inst.screenshotCount / ScreenshotsView.inst.screenshotsPerPage);
+            ScreenshotsView.inst.Refresh();
         }
     }
 }
