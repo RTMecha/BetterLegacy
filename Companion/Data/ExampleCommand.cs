@@ -2779,6 +2779,7 @@ namespace BetterLegacy.Companion.Data
                 new NameRegexParameter(),
                 new DescriptionRegexParameter(),
                 new ContainsTagParameter(),
+                new ContainsModifierParameter(),
 
                 #endregion
 
@@ -3824,6 +3825,28 @@ namespace BetterLegacy.Companion.Data
                     var tag = parameters[0];
                     foreach (var selectable in selectables)
                         if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable) && modifyable.Tags != null && NotCheck(not, modifyable.Tags.Contains(tag)))
+                            yield return selectable;
+                }
+            }
+
+            /// <summary>
+            /// Compares the modifier of selectables.
+            /// </summary>
+            public class ContainsModifierParameter : GetSelectableParameter
+            {
+                public override string Name => "modifier";
+
+                public override int ParameterCount => 1;
+
+                public override string Description => "Checks if a modifyable object contains a modifier.";
+
+                public override string AddToAutocomplete => "modifier copyAxis";
+
+                public override IEnumerable<ISelectable> GetSelectables(IEnumerable<ISelectable> selectables, string[] parameters, bool not)
+                {
+                    var name = parameters[0];
+                    foreach (var selectable in selectables)
+                        if (selectable is TimelineObject timelineObject && timelineObject.TryGetData(out IModifyable modifyable) && modifyable.Modifiers != null && NotCheck(not, modifyable.Modifiers.Has(x => x && x.Name == name)))
                             yield return selectable;
                 }
             }
