@@ -8,8 +8,6 @@ using UnityEngine.UI;
 
 using TMPro;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
@@ -1167,7 +1165,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 multiKeyframeEditor.GetChild(1).gameObject.SetActive(false);
 
-                RTEditor.GenerateLabels("time_label", multiKeyframeEditor, new Label("Time"));
+                new LabelsElement("Time").Init(EditorElement.InitSettings.Default.Name("time_label").Parent(multiKeyframeEditor));
 
                 var timeBase = Creator.NewUIObject("time", multiKeyframeEditor);
                 timeBase.transform.AsRT().sizeDelta = new Vector2(765f, 38f);
@@ -1186,7 +1184,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplySelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.ApplySelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
-                RTEditor.GenerateLabels("curve_label", multiKeyframeEditor, new Label("Ease Type"));
+                new LabelsElement("Ease Type").Init(EditorElement.InitSettings.Default.Name("curve_label").Parent(multiKeyframeEditor));
 
                 var curveBase = Creator.NewUIObject("curves", multiKeyframeEditor);
                 curveBase.transform.AsRT().sizeDelta = new Vector2(765f, 38f);
@@ -1208,7 +1206,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(curvesApplyFunctionButton.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(curvesApplyFunctionButton.label, ThemeGroup.Function_1_Text);
 
-                RTEditor.GenerateLabels("value index_label", multiKeyframeEditor, new Label("Value Index / Value"));
+                new LabelsElement("Value Index / Value").Init(EditorElement.InitSettings.Default.Name("value index_label").Parent(multiKeyframeEditor));
 
                 var valueBase = Creator.NewUIObject("value base", multiKeyframeEditor);
                 valueBase.transform.AsRT().sizeDelta = new Vector2(364f, 32f);
@@ -1243,7 +1241,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplySelectable(valueStorage.middleButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.ApplySelectable(valueStorage.rightButton, ThemeGroup.Function_2, false);
 
-                RTEditor.GenerateLabels("snap_label", multiKeyframeEditor, new Label("Force Snap Time to BPM"));
+                new LabelsElement("Force Snap Time to BPM").Init(EditorElement.InitSettings.Default.Name("snap_label").Parent(multiKeyframeEditor));
 
                 var snapToBPMObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(multiKeyframeEditor, "snap bpm");
                 snapToBPMObject.transform.localScale = Vector3.one;
@@ -1279,7 +1277,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(snapToBPM.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(snapToBPMText, ThemeGroup.Function_1_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("All Types"));
+                new LabelsElement("All Types").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pasteAllObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(multiKeyframeEditor, "paste");
                 pasteAllObject.transform.localScale = Vector3.one;
@@ -1307,7 +1305,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(pasteAll.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(pasteAllText, ThemeGroup.Paste_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("Position / Scale"));
+                new LabelsElement("Position / Scale").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pastePosScaObject = new GameObject("paste pos sca base");
                 pastePosScaObject.transform.SetParent(multiKeyframeEditor);
@@ -1375,7 +1373,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(pasteSca.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(pasteScaText, ThemeGroup.Paste_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("Rotation / Color"));
+                new LabelsElement("Rotation / Color").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pasteRotColObject = new GameObject("paste rot col base");
                 pasteRotColObject.transform.SetParent(multiKeyframeEditor);

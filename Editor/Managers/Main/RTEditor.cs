@@ -3244,37 +3244,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Generate UI
 
-        public static GameObject GenerateSpacer(string name, Transform parent, Vector2 size)
-        {
-            var spacer = Creator.NewUIObject(name, parent);
-            spacer.transform.AsRT().sizeDelta = size;
-
-            return spacer;
-        }
-
-        public static GameObject GenerateLabels(string name, Transform parent, params Label[] labels) => GenerateLabels(name, parent, -1, labels);
-
-        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, params Label[] labels)
-        {
-            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
-            var first = label.transform.GetChild(0);
-
-            for (int i = 0; i < labels.Length; i++)
-            {
-                var labelSetting = labels[i];
-                if (i >= label.transform.childCount)
-                    first.gameObject.Duplicate(label.transform, first.name);
-
-                var child = label.transform.GetChild(i);
-                var labelText = child.GetComponent<Text>();
-                labelSetting.Apply(labelText);
-
-                EditorThemeManager.ApplyLightText(labelText);
-            }
-
-            return label;
-        }
-        
         public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, bool applyThemes, params Label[] labels)
         {
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);

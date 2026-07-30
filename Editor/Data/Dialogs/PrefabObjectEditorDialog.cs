@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Tags
 
-            RTEditor.GenerateLabels("time label", LeftContent, new Label("Tags"));
+            new LabelsElement("Tags").Init(EditorElement.InitSettings.Default.Name("tags label").Parent(LeftContent));
 
             // Tags Scroll View/Viewport/Content
             var tagScrollView = Creator.NewUIObject("Tags Scroll View", LeftContent);
@@ -234,7 +234,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Start Time
 
-            RTEditor.GenerateLabels("time label", LeftContent, new Label("Start Time"));
+            new LabelsElement("Start Time").Init(EditorElement.InitSettings.Default.Name("time label").Parent(LeftContent));
 
             var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "time");
             StartTimeField = time.GetComponent<InputFieldStorage>();
@@ -260,7 +260,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Autokill
 
-            RTEditor.GenerateLabels("tod-dropdown label", LeftContent, new Label("Time of Death"));
+            new LabelsElement("Time of Death").Init(EditorElement.InitSettings.Default.Name("tod-dropdown label").Parent(LeftContent));
 
             var autoKillParent = Creator.NewUIObject("autokill", LeftContent);
             autoKillParent.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
@@ -319,7 +319,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             //public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
 
-            RTEditor.GenerateLabels("parent label", LeftContent, new Label("Parent Object"));
+            new LabelsElement("Parent Object").Init(EditorElement.InitSettings.Default.Name("parent label").Parent(LeftContent));
 
             var parentUI = ObjEditor.inst.ObjectView.transform.Find("parent").gameObject.Duplicate(LeftContent, "parent");
             ParentSettingsParent = ObjEditor.inst.ObjectView.transform.Find("parent_more").gameObject.Duplicate(LeftContent, "parent_more");
@@ -406,7 +406,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Transform Offsets
 
             // Position
-            var posLabel = RTEditor.GenerateLabels("pos label", LeftContent, new Label("Position X Offset", new Vector2(175f, 20f)), new Label("Position Y Offset", new Vector2(175f, 20f)));
+            new LabelsElement(new LabelElement("Position X Offset", new Vector2(175f, 20f)), new LabelElement("Position Y Offset", new Vector2(175f, 20f))).Init(EditorElement.InitSettings.Default.Name("pos label").Parent(LeftContent));
 
             var position = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "position");
             var positionStorage = position.GetComponent<Vector2InputFieldStorage>();
@@ -421,7 +421,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(positionStorage);
             TransformFields[0] = new InputFieldStorage[2] { positionStorage.x, positionStorage.y };
 
-            var r_posLabel = RTEditor.GenerateLabels("r_position label", LeftContent, new Label("Random X", new Vector2(175f, 20f)), new Label("Random Y", new Vector2(175f, 20f)));
+            new LabelsElement(new LabelElement("Random X", new Vector2(175f, 20f)), new LabelElement("Random Y", new Vector2(175f, 20f))).Init(EditorElement.InitSettings.Default.Name("r_position label").Parent(LeftContent));
 
             var r_position = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "r_position");
             var r_positionStorage = r_position.GetComponent<Vector2InputFieldStorage>();
@@ -437,7 +437,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RandomTransformFields[0] = new InputFieldStorage[2] { r_positionStorage.x, r_positionStorage.y };
 
             var randomPrefab = ObjEditor.inst.KeyframeDialogs[0].transform.Find("random").gameObject;
-            var randomPositionLabel = RTEditor.GenerateLabels("position-random-label", LeftContent, "Randomize");
+            new LabelsElement("Randomize").Init(EditorElement.InitSettings.Default.Name("position-random-label").Parent(LeftContent));
             var randomPosition = randomPrefab.Duplicate(LeftContent, "position-random");
             CoreHelper.DestroyChildren(randomPosition.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
 
@@ -452,7 +452,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RandomIntervalFields[0] = randomPositionInterval;
 
             // Scale
-            var scaLabel = RTEditor.GenerateLabels("sca label", LeftContent, new Label("Scale X Offset", new Vector2(175f, 20f)), new Label("Scale Y Offset", new Vector2(175f, 20f)));
+            new LabelsElement(new LabelElement("Scale X Offset", new Vector2(175f, 20f)), new LabelElement("Scale Y Offset", new Vector2(175f, 20f))).Init(EditorElement.InitSettings.Default.Name("scale label").Parent(LeftContent));
 
             var scale = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "scale");
             var scaleStorage = scale.GetComponent<Vector2InputFieldStorage>();
@@ -467,7 +467,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(scaleStorage);
             TransformFields[1] = new InputFieldStorage[2] { scaleStorage.x, scaleStorage.y };
 
-            var r_scaLabel = RTEditor.GenerateLabels("r_scale label", LeftContent, new Label("Random X", new Vector2(175f, 20f)), new Label("Random Y", new Vector2(175f, 20f)));
+            new LabelsElement(new LabelElement("Random X", new Vector2(175f, 20f)), new LabelElement("Random Y", new Vector2(175f, 20f))).Init(EditorElement.InitSettings.Default.Name("r_scale label").Parent(LeftContent));
 
             var r_scale = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "r_scale");
             var r_scaleStorage = r_scale.GetComponent<Vector2InputFieldStorage>();
@@ -482,7 +482,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(r_scaleStorage);
             RandomTransformFields[1] = new InputFieldStorage[2] { r_scaleStorage.x, r_scaleStorage.y };
 
-            var randomScaleLabel = RTEditor.GenerateLabels("scale-random-label", LeftContent, "Randomize");
+            new LabelsElement("Randomize").Init(EditorElement.InitSettings.Default.Name("scale-random-label").Parent(LeftContent));
             var randomScale = randomPrefab.Duplicate(LeftContent, "scale-random");
             CoreHelper.DestroyChildren(randomScale.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
 
@@ -497,7 +497,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RandomIntervalFields[1] = randomScaleInterval;
 
             // Rotation
-            var rotLabel = RTEditor.GenerateLabels("rot label", LeftContent, "Rotation Offset");
+            new LabelsElement("Rotation Offset").Init(EditorElement.InitSettings.Default.Name("rot label").Parent(LeftContent));
 
             var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "rotation");
             var rotationStorage = rotation.GetComponent<InputFieldStorage>();
@@ -508,7 +508,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(rotationStorage);
             TransformFields[2] = new InputFieldStorage[1] { rotationStorage };
 
-            var r_rotLabel = RTEditor.GenerateLabels("r_rotation label", LeftContent, "Random");
+            new LabelsElement("Random").Init(EditorElement.InitSettings.Default.Name("r_rotation label").Parent(LeftContent));
 
             var r_rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "r_rotation");
             var r_rotationStorage = r_rotation.GetComponent<InputFieldStorage>();
@@ -519,7 +519,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(r_rotationStorage);
             RandomTransformFields[2] = new InputFieldStorage[1] { r_rotationStorage };
 
-            var randomRotationLabel = RTEditor.GenerateLabels("rotation-random-label", LeftContent, new Label("Randomize"));
+            new LabelsElement("Randomize").Init(EditorElement.InitSettings.Default.Name("rotation-random-label").Parent(LeftContent));
             var randomRotation = randomPrefab.Duplicate(LeftContent, "rotation-random");
             CoreHelper.DestroyChildren(randomRotation.transform, x => x.name == "scale" || x.name == "homing-static" || x.name == "homing-dynamic");
 
@@ -534,7 +534,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RandomIntervalFields[2] = randomRotationInterval;
 
             // Depth
-            var depthLabel = RTEditor.GenerateLabels("depth label", LeftContent, "Depth");
+            new LabelsElement("Depth").Init(EditorElement.InitSettings.Default.Name("depth label").Parent(LeftContent));
             var depth = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "depth");
             DepthField = depth.GetComponent<InputFieldStorage>();
             CoreHelper.Delete(DepthField.middleButton);
@@ -546,7 +546,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Repeat / Speed
 
             // Repeat
-            RTEditor.GenerateLabels("repeat label", LeftContent, new Label("Repeat Count", new Vector2(175f, 20f)), new Label("Repeat Time", new Vector2(175f, 20f)));
+            new LabelsElement(new LabelElement("Repeat Count", new Vector2(175f, 20f)), new LabelElement("Repeat Time", new Vector2(175f, 20f))).Init(EditorElement.InitSettings.Default.Name("repeat label").Parent(LeftContent));
 
             var repeat = EditorPrefabHolder.Instance.Vector2InputFields.Duplicate(LeftContent, "repeat");
             var repeatStorage = repeat.GetComponent<Vector2InputFieldStorage>();
@@ -573,7 +573,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyInputField(RepeatOffsetTimeField);
 
             // Speed
-            RTEditor.GenerateLabels("speed label", LeftContent, new Label("Speed"));
+            new LabelsElement("Speed").Init(EditorElement.InitSettings.Default.Name("speed label").Parent(LeftContent));
 
             var speed = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "speed");
             SpeedField = speed.GetComponent<InputFieldStorage>();
@@ -593,7 +593,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Instance Data
 
-            RTEditor.GenerateLabels("copy label", LeftContent, new Label("Instance Data"));
+            new LabelsElement("Instance Data").Init(EditorElement.InitSettings.Default.Name("copy label").Parent(LeftContent));
 
             var copyInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "copy instance data");
             copyInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
@@ -628,7 +628,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var editorSettingsIndex = EditorSettingsParent.GetSiblingIndex();
             CoreHelper.Delete(LeftContent.GetChild(editorSettingsIndex - 1).gameObject);
-            RTEditor.GenerateLabels("editor label", LeftContent, new Label("Editor Layer"), new Label("Editor Bin"));
+            new LabelsElement("Editor Layer", "Editor Bin").Init(EditorElement.InitSettings.Default.Name("editor label").Parent(LeftContent));
 
             EditorSettingsParent.Find("layer").gameObject.SetActive(false);
             EditorSettingsParent.SetSiblingIndex(LeftContent.childCount - 1);
@@ -743,7 +743,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (ModCompatibility.UnityExplorerInstalled)
             {
-                RTEditor.GenerateLabels("inspect label", LeftContent, new Label("Unity Explorer"));
+                new LabelsElement("Unity Explorer").Init(EditorElement.InitSettings.Default.Name("inspect label").Parent(LeftContent));
 
                 var inspectPrefabObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect prefab object");
                 InspectPrefabObject = inspectPrefabObject.GetComponent<FunctionButtonStorage>();
@@ -798,8 +798,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Name
 
-            // Name
-            var nameLabel = RTEditor.GenerateLabels("name label", Right, new Label("Name"));
+            new LabelsElement("Name").Init(EditorElement.InitSettings.Default.Name("name label").Parent(Right));
 
             var prefabName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Right, "name");
             prefabName.transform.localScale = Vector3.one;
@@ -816,8 +815,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Type
 
-            // Type
-            var typeLabel = RTEditor.GenerateLabels("type label", Right, new Label("Type"));
+            new LabelsElement("Type").Init(EditorElement.InitSettings.Default.Name("type label").Parent(Right));
 
             var type = EditorPrefabHolder.Instance.Function1Button.Duplicate(Right, "type");
 
@@ -832,7 +830,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Save to a Prefab
 
-            var savePrefabLabel = new Labels(Labels.InitSettings.Default.Name("save prefab label").Parent(Right), new Label("Overwrite External Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
+            var savePrefabLabel = new LabelsElement(EditorElement.InitSettings.Default.Name("save prefab label").Parent(Right), new LabelElement("Overwrite External Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
 
             var savePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "save prefab");
             SavePrefabButton = savePrefab.GetComponent<FunctionButtonStorage>();
@@ -845,7 +843,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Default Instance Data
 
-            var defaultInstanceDataLabel = new Labels(Labels.InitSettings.Default.Name("default instance data label").Parent(Right), new Label("Default Instance Data"));
+            var defaultInstanceDataLabel = new LabelsElement(EditorElement.InitSettings.Default.Name("default instance data label").Parent(Right), new LabelElement("Default Instance Data"));
 
             var defaultInstanceData = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "default instance data");
             DefaultInstanceDataButton = defaultInstanceData.GetComponent<FunctionButtonStorage>();
@@ -860,7 +858,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (ModCompatibility.UnityExplorerInstalled)
             {
-                var inspectPrefabLabel = new Labels(Labels.InitSettings.Default.Name("inspect prefab label").Parent(Right), new Label("Unity Explorer"));
+                var inspectPrefabLabel = new LabelsElement(EditorElement.InitSettings.Default.Name("inspect prefab label").Parent(Right), new LabelElement("Unity Explorer"));
 
                 var inspectPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "inspect prefab");
                 InspectPrefab = inspectPrefab.GetComponent<FunctionButtonStorage>();
@@ -870,27 +868,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(InspectPrefab.label, ThemeGroup.Function_2_Text);
             }
 
-
-
             #endregion
 
             #region Counters
 
             // Object Count
-            var objectCounter = RTEditor.GenerateLabels("object count label", Right, new Label("Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
-            ObjectCountText = objectCounter.transform.GetChild(0).GetComponent<Text>();
+            var objectCounter = new LabelsElement(EditorElement.InitSettings.Default.Name("object count label").Parent(Right), new LabelElement("Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
+            ObjectCountText = objectCounter.GameObject.transform.GetChild(0).GetComponent<Text>();
 
             // Prefab Object Count
-            var prefabObjectCounter = RTEditor.GenerateLabels("prefab object count label", Right, new Label("Prefab Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
-            PrefabObjectCountText = prefabObjectCounter.transform.GetChild(0).GetComponent<Text>();
+            var prefabObjectCounter = new LabelsElement(EditorElement.InitSettings.Default.Name("prefab object count label").Parent(Right), new LabelElement("Prefab Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
+            PrefabObjectCountText = prefabObjectCounter.GameObject.transform.GetChild(0).GetComponent<Text>();
 
             // Prefab Object Count
-            var backgroundObjectCounter = RTEditor.GenerateLabels("background object count label", Right, new Label("Background Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
-            BackgroundObjectCountText = backgroundObjectCounter.transform.GetChild(0).GetComponent<Text>();
+            var backgroundObjectCounter = new LabelsElement(EditorElement.InitSettings.Default.Name("background object count label").Parent(Right), new LabelElement("Background Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
+            BackgroundObjectCountText = backgroundObjectCounter.GameObject.transform.GetChild(0).GetComponent<Text>();
 
             // Timeline Object Count
-            var timelineObjectCounter = RTEditor.GenerateLabels("timeline object count label", Right, new Label("Timeline Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
-            TimelineObjectCountText = timelineObjectCounter.transform.GetChild(0).GetComponent<Text>();
+            var timelineObjectCounter = new LabelsElement(EditorElement.InitSettings.Default.Name("timeline object count label").Parent(Right), new LabelElement("Timeline Object Count: 0") { horizontalWrap = HorizontalWrapMode.Overflow, });
+            TimelineObjectCountText = timelineObjectCounter.GameObject.transform.GetChild(0).GetComponent<Text>();
 
             #endregion
 
