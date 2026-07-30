@@ -9,8 +9,6 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
-using InControl;
-
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
@@ -20,7 +18,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
-using BetterLegacy.Menus;
 
 namespace BetterLegacy.Core.Helpers
 {

@@ -15,8 +15,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 
-using Ease = BetterLegacy.Core.Animation.Ease;
-
 namespace BetterLegacy.Core.Runtime.Events
 {
     /// <summary>
