@@ -21,6 +21,7 @@
   Please let me know if a modifier is not behaving as it should or appears where it shouldn't.  
   Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.  
 - Removed the Order Matters toggle and made the on state the default.
+- Attempted to make input select interface sync players in a lobby.
 
 ### Editor
 - Levels in the level list now use object pooling, hopefully making level list load times faster.
