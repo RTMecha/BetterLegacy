@@ -6928,7 +6928,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (!player.IsLocalPlayer)
                     return;
-                player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
+                player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetProperties()?.Health ?? 3;
                 if (ProjectArrhythmia.State.IsInLobby)
                     NetworkFunction.SetPlayerHealth(player.id, player.Health);
             }

@@ -233,7 +233,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.Name = SetupString("Base Name", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.Creator = SetupString("Base Creator", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.Version = SetupString("Base Version", PlayerEditor.Tab.Base, editorTab: BaseTab);
-            BaseTab.EditControls = SetupBool("Edit Controls", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.EditControls = SetupBool("Edit Properties", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.EditControls.ShowInDefault = true;
             BaseTab.Health = SetupNumber("Base Health", PlayerEditor.Tab.Base, ValueType.Int, editorTab: BaseTab);
             BaseTab.Lives = SetupNumber("Base Lives", PlayerEditor.Tab.Base, ValueType.Int, editorTab: BaseTab);

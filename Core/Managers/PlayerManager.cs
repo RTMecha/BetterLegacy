@@ -563,7 +563,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < Players.Count; i++)
             {
                 var player = Players[i];
-                player.lives = RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : player.GetControl()?.lives ?? -1;
+                player.lives = RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : player.GetProperties()?.lives ?? -1;
             }
 
             if (GameData.Current && GameData.Current.data && (!GameData.Current.data.level || GameData.Current.data.level.spawnPlayers))

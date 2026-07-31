@@ -74,12 +74,12 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// List of player controls.
         /// </summary>
-        public List<PlayerControl> playerControls = new List<PlayerControl>
+        public List<PlayerProperties> playersProperties = new List<PlayerProperties>
         {
-            new PlayerControl(),
-            new PlayerControl(),
-            new PlayerControl(),
-            new PlayerControl(),
+            new PlayerProperties(),
+            new PlayerProperties(),
+            new PlayerProperties(),
+            new PlayerProperties(),
         };
 
         #endregion
@@ -94,7 +94,7 @@ namespace BetterLegacy.Core.Data.Player
                 playerModels[keyValuePair.Key] = keyValuePair.Value.Copy();
             AssignDefaultModels();
             playerModelsIndex = new List<string>(playerModelsIndex);
-            playerControls = new List<PlayerControl>(playerControls.Select(x => x.Copy()));
+            playersProperties = new List<PlayerProperties>(playersProperties.Select(x => x.Copy()));
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -110,11 +110,11 @@ namespace BetterLegacy.Core.Data.Player
                 SetPlayerModel(i, jn["indexes"][i]);
             for (int i = 0; i < jn["controls"].Count; i++)
             {
-                var control = PlayerControl.Parse(jn["controls"][i]);
-                if (i < playerControls.Count)
-                    playerControls[i] = control;
+                var control = PlayerProperties.Parse(jn["controls"][i]);
+                if (i < playersProperties.Count)
+                    playersProperties[i] = control;
                 else
-                    playerControls.Add(control);
+                    playersProperties.Add(control);
             }
         }
 
@@ -125,8 +125,8 @@ namespace BetterLegacy.Core.Data.Player
                 jn["max"] = (int)maxBehavior;
             for (int i = 0; i < playerModelsIndex.Count; i++)
                 jn["indexes"][i] = playerModelsIndex[i];
-            for (int i = 0; i < playerControls.Count; i++)
-                jn["controls"][i] = playerControls[i].ToJSON();
+            for (int i = 0; i < playersProperties.Count; i++)
+                jn["controls"][i] = playersProperties[i].ToJSON();
 
             int index = 0;
             foreach (var keyValuePair in playerModels)
@@ -144,7 +144,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             maxBehavior = (MaxBehavior)reader.ReadByte();
             playerModelsIndex = reader.ReadList(reader.ReadString);
-            Packet.ReadPacketList(playerControls, reader);
+            Packet.ReadPacketList(playersProperties, reader);
             Packet.ReadPacketDictionary(playerModels, reader, reader.ReadString);
         }
 
@@ -152,7 +152,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             writer.Write((byte)maxBehavior);
             writer.Write(playerModelsIndex, writer.Write);
-            Packet.WritePacketList(playerControls, writer);
+            Packet.WritePacketList(playersProperties, writer);
             Packet.WritePacketDictionary(playerModels, writer,
                 writeKey: writer.Write,
                 writeValue: value => value.WritePacket(writer));
@@ -192,15 +192,15 @@ namespace BetterLegacy.Core.Data.Player
             {
                 for (int i = 0; i < Current.playerModelsIndex.Count; i++)
                     Current.playerModelsIndex[i] = currentLevel.IsVG ? PlayerModel.DEV_ID : PlayerModel.DEFAULT_ID;
-                for (int i = 0; i < Current.playerControls.Count; i++)
+                for (int i = 0; i < Current.playersProperties.Count; i++)
                 {
-                    var playerControl = Current.playerControls[i];
-                    playerControl.moveSpeed = 22f;
-                    playerControl.boostSpeed = 80f;
-                    playerControl.boostCooldown = 0f;
-                    playerControl.minBoostTime = 0.05f;
-                    playerControl.maxBoostTime = 0.25f;
-                    playerControl.hitCooldown = 2f;
+                    var playerProperties = Current.playersProperties[i];
+                    playerProperties.moveSpeed = 22f;
+                    playerProperties.boostSpeed = 80f;
+                    playerProperties.boostCooldown = 0f;
+                    playerProperties.minBoostTime = 0.05f;
+                    playerProperties.maxBoostTime = 0.25f;
+                    playerProperties.hitCooldown = 2f;
                 }
             }
 

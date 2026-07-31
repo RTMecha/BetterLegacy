@@ -35,7 +35,7 @@ using BetterLegacy.Editor.Data.Popups;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Manages editing <see cref="PlayerModel"/>s, <see cref="PlayerControl"/> and other misc player related things.
+    /// Manages editing <see cref="PlayerModel"/>s, <see cref="PlayerProperties"/> and other misc player related things.
     /// </summary>
     public class PlayerEditor : BaseManager<PlayerEditor, EditorManagerSettings>
     {
@@ -1485,7 +1485,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderBaseTab(PlayerModel currentModel)
         {
-            var control = PlayersData.Current.playerControls.GetAt(playerIndex);
+            var control = PlayersData.Current.playersProperties.GetAt(playerIndex);
 
             var text = Dialog.BaseTab.ID.GameObject.transform.GetChild(0).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(text.rectTransform);
@@ -1844,7 +1844,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerIndex).TickModifierBlock));
+                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playersProperties.GetAt(playerIndex).TickModifierBlock));
                 CoroutineHelper.StartCoroutine(Dialog.BaseTab.ModelModifiers.Modifiers.RenderModifiers(currentModel));
             }
             catch (Exception ex)

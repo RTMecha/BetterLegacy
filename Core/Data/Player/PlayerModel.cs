@@ -622,10 +622,10 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
-        /// Gets a player control from the model.
+        /// Gets player properties from the model.
         /// </summary>
-        /// <returns>Returns a player control based on the models' values.</returns>
-        public PlayerControl ToPlayerControl() => new PlayerControl
+        /// <returns>Returns player properties based on the models' values.</returns>
+        public PlayerProperties ToPlayerControl() => new PlayerProperties
         {
             Health = basePart.health,
             lives = basePart.lives,

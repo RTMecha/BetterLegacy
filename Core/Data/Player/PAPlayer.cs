@@ -293,25 +293,25 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the players' maximum amount of health.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? 3;
 
         /// <summary>
         /// Gets the players' maximum amount of lives.
         /// </summary>
         /// <returns>Returns the challenge mode lives count if the challenge mode lives count is greater than 0, otherwise returns the player controls' lives count.</returns>
-        public int GetMaxLives() => RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : GetControl()?.lives ?? -1;
+        public int GetMaxLives() => RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : GetProperties()?.lives ?? -1;
 
         /// <summary>
-        /// Gets the players' control data.
+        /// Gets the players' properties.
         /// </summary>
-        /// <returns>Returns the player model converted to a player control if <see cref="LevelData.allowPlayerModelControls"/> is true, otherwise returns <see cref="GetCustomControl"/>.</returns>
-        public PlayerControl GetControl() => GameData.Current.data.level.allowPlayerModelControls ? PlayerModel.ToPlayerControl() : GetCustomControl();
+        /// <returns>Returns the player model converted to player properties if <see cref="LevelData.allowPlayerModelControls"/> is true, otherwise returns <see cref="GetCustomProperties"/>.</returns>
+        public PlayerProperties GetProperties() => GameData.Current.data.level.allowPlayerModelControls ? PlayerModel.ToPlayerControl() : GetCustomProperties();
 
         /// <summary>
-        /// Gets the player control data.
+        /// Gets the player properties.
         /// </summary>
-        /// <returns>Returns the player control data associated with this player.</returns>
-        public PlayerControl GetCustomControl() => PlayersData.Current && PlayersData.Current.playerControls.TryGetAt(index, out PlayerControl playerControl) ? playerControl : new PlayerControl();
+        /// <returns>Returns the player properties associated with this player.</returns>
+        public PlayerProperties GetCustomProperties() => PlayersData.Current && PlayersData.Current.playersProperties.TryGetAt(index, out PlayerProperties playerProperties) ? playerProperties : new PlayerProperties();
 
         /// <summary>
         /// Gets the <see cref="PlayerIndex"/> value for the player.
@@ -417,7 +417,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the default health for this player.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the user is not editing and the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? 3;
 
         /// <summary>
         /// Initializes the player input.

@@ -131,7 +131,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// The collider that is currently being used.
         /// </summary>
-        public Collider2D CurrentCollider => Core && Core.GetControl().collisionAccurate ? polygonCollider2D : circleCollider2D;
+        public Collider2D CurrentCollider => Core && Core.GetProperties().collisionAccurate ? polygonCollider2D : circleCollider2D;
 
         public Transform customObjectParent;
 
@@ -346,7 +346,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             get
             {
-                var control = Core?.GetControl() ?? new PlayerControl();
+                var control = Core?.GetProperties() ?? new PlayerProperties();
                 var sprintSpeed = control.sprintSpeed;
                 var sneakSpeed = control.sneakSpeed;
                 return Model.basePart.sprintSneakActive ? Core.Input.Sprint.IsPressed ? sprintSpeed : Core.Input.Sneak.IsPressed ? sneakSpeed : 1f : 1f;
@@ -621,7 +621,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanBoost
         {
-            get => ProjectArrhythmia.State.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !ProjectArrhythmia.State.Paused && !ProjectArrhythmia.Input.IsUsingInputField;
+            get => ProjectArrhythmia.State.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetProperties().canBoost) && !ProjectArrhythmia.State.Paused && !ProjectArrhythmia.Input.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -1446,7 +1446,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (controlLoop.reference == null)
                 controlLoop.reference = Core;
-            Core?.GetControl()?.TickModifierBlock?.Run(controlLoop);
+            Core?.GetProperties()?.TickModifierBlock?.Run(controlLoop);
 
             if (Model)
             {
@@ -1570,7 +1570,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!Model)
                 return;
 
-            var control = Core.GetControl();
+            var control = Core.GetProperties();
 
             var idleSpeed = control.moveSpeed;
             var boostSpeed = control.boostSpeed;
@@ -2614,7 +2614,7 @@ namespace BetterLegacy.Core.Components.Player
                 boostTail.parent.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
             }
 
-            Core?.GetControl()?.BoostModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
+            Core?.GetProperties()?.BoostModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
         }
 
         /// <summary>
@@ -3015,7 +3015,7 @@ namespace BetterLegacy.Core.Components.Player
             if (Core && Core.IsLocalPlayer && CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
 
-            Core?.GetControl().CollideModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
+            Core?.GetProperties().CollideModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
         }
 
         bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {index + 1})";
@@ -3061,7 +3061,7 @@ namespace BetterLegacy.Core.Components.Player
 
             if (RTBeatmap.Current)
                 RTBeatmap.Current.playerDied = true;
-            Core?.GetControl()?.DeathModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
+            Core?.GetProperties()?.DeathModifierBlock?.Run(new ModifierLoop(Core, new Dictionary<string, string>()));
             isDead = true;
             Core.active = false;
             Core.health = 0;
@@ -3292,7 +3292,7 @@ namespace BetterLegacy.Core.Components.Player
 
             #region Cache
 
-            var control = Core?.GetControl() ?? currentModel.ToPlayerControl();
+            var control = Core?.GetProperties() ?? currentModel.ToPlayerControl();
 
             tailDistance = currentModel.tailBase.distance;
             tailMode = currentModel.tailBase.mode;
@@ -3340,7 +3340,7 @@ namespace BetterLegacy.Core.Components.Player
             circleCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
             polygonCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
 
-            var colAcc = Core && (Core.GetControl()?.collisionAccurate ?? false);
+            var colAcc = Core && (Core.GetProperties()?.collisionAccurate ?? false);
             circleCollider2D.enabled = !colAcc;
             polygonCollider2D.enabled = colAcc;
             if (colAcc)

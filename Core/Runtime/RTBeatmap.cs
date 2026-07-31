@@ -696,7 +696,7 @@ namespace BetterLegacy.Core.Runtime
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
                 var player = PlayerManager.Players[i];
-                player.lives = lives > 0 ? lives : player.GetControl()?.lives ?? -1;
+                player.lives = lives > 0 ? lives : player.GetProperties()?.lives ?? -1;
             }
         }
 
