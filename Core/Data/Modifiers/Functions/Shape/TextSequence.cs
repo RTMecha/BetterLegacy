@@ -184,6 +184,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 cache.setTimer = false;
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Text;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.SingleGenerator(modifier, reference, "Length", 0, 1f);

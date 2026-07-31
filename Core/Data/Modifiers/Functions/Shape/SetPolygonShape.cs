@@ -122,6 +122,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => isGroup || modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Polygon;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             var index = 0;

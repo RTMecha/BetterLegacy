@@ -128,6 +128,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 textObject.text = beatmapObject.text;
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => isGroup || modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Text;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             if (isGroup)

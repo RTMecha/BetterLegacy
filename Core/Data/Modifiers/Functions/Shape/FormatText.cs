@@ -33,6 +33,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 textObject.SetText(RTString.FormatText(beatmapObject, textObject.text, modifierLoop.variables));
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Text;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable) { }
 
         #endregion

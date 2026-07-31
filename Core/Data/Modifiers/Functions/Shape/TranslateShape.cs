@@ -131,6 +131,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 cache.collider2D.points = cache.points;
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => modifyable is IShapeable shapeable && !shapeable.IsSpecialShape;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             if (is3D)

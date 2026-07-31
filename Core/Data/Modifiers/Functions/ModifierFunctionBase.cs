@@ -83,6 +83,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public virtual void Inactive(Modifier modifier, ModifierLoop modifierLoop) { }
 
         /// <summary>
+        /// If the modifier can be added to an object.
+        /// </summary>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <returns>Returns <see langword="true"/> if the modifier can be added, otherwise returns false.</returns>
+        public virtual bool IsCompatible(IModifyable modifyable) => true;
+
+        /// <summary>
         /// Renders the modifier in the editor.
         /// </summary>
         /// <param name="modifier">Modifier to render.</param>
