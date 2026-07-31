@@ -6,9 +6,12 @@ using UnityEngine;
 
 using LSFunctions;
 
+using InControl;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
@@ -241,10 +244,39 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (generating)
                 return;
 
+            if (PlayerManager.Players.Count < 8)
+            {
+                if (PlayerInput.controllerListener && PlayerInput.controllerListener.Join.WasPressed)
+                {
+                    var activeDevice = InputManager.ActiveDevice;
+                    if (PlayerManager.DeviceNotConnected(activeDevice))
+                    {
+                        PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, activeDevice));
+                        SyncPlayers();
+                    }
+                }
+
+                if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
+                {
+                    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, null));
+                    SyncPlayers();
+                }
+            }
+
             UpdateText();
 
             if (!ProjectArrhythmia.Input.IsUsingInputField && !PlayerManager.Players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
                 Continue();
+        }
+
+        void SyncPlayers()
+        {
+            if (!ProjectArrhythmia.State.IsInLobby)
+                return;
+            if (ProjectArrhythmia.State.IsClient)
+                SteamLobbyManager.inst.SyncPlayersToServer();
+            else
+                SteamLobbyManager.inst.SyncPlayersToClients();
         }
 
         public override void Clear()

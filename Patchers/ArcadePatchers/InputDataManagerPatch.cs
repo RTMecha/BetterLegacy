@@ -84,23 +84,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(InputDataManager.Update))]
         [HarmonyPrefix]
-        static bool UpdatePrefix()
-        {
-            if (!Instance.playersCanJoin || PlayerManager.Players.Count >= 8)
-                return false;
-
-            if (PlayerInput.controllerListener && PlayerInput.controllerListener.Join.WasPressed)
-            {
-                var activeDevice = InputManager.ActiveDevice;
-                if (PlayerManager.DeviceNotConnected(activeDevice))
-                    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, activeDevice));
-            }
-
-            if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
-                PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, null));
-
-            return false;
-        }
+        static bool UpdatePrefix() => false;
 
         [HarmonyPatch(nameof(InputDataManager.ClearInputs))]
         [HarmonyPrefix]

@@ -327,11 +327,11 @@ namespace BetterLegacy.Core.Managers
 
         public static PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => Players.Find(x => x.device == inputDevice);
 
-        public static bool DeviceNotConnected(InputDevice inputDevice) => !Players.Has(x => x.device == inputDevice);
+        public static bool DeviceNotConnected(InputDevice inputDevice) => !Players.Has(x => !x.IsLocalPlayer || x.device == inputDevice);
 
         public static PAPlayer FindPlayerUsingKeyboard() => Players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
-        public static bool KeyboardNotConnected() => !Players.Has(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+        public static bool KeyboardNotConnected() => !Players.Has(x => !x.IsLocalPlayer || x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
         public static void RemovePlayer(PAPlayer player)
         {
