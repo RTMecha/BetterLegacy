@@ -357,10 +357,6 @@ namespace BetterLegacy.Core.Components.Player
         /// If negative zoom should be included with calculating player bounds.
         /// </summary>
         public bool includeNegativeZoom = false;
-        /// <summary>
-        /// The kind of movement used for the player. Will move mouse mode to GameModes.
-        /// </summary>
-        public MovementMode movementMode = MovementMode.KeyboardController;
 
         /// <summary>
         /// Current rotation method assigned by the player model.
@@ -368,6 +364,8 @@ namespace BetterLegacy.Core.Components.Player
         public PlayerRotateMode rotateMode = PlayerRotateMode.RotateToDirection;
 
         public bool FlippedLeft => (rotateMode == PlayerRotateMode.FlipX || rotateMode == PlayerRotateMode.RotateFlipX) && lastMovement.x < 0f;
+
+        public bool RotateToDirection => rotateMode == PlayerRotateMode.RotateToDirection || rotateMode == PlayerRotateMode.RotateReset || rotateMode == PlayerRotateMode.RotateFlipX || rotateMode == PlayerRotateMode.RotateFlipY;
 
         public Vector2 lastMousePos;
 
@@ -390,113 +388,6 @@ namespace BetterLegacy.Core.Components.Player
 
         public MathOperation RotationOperation { get; set; }
 
-        public void ResetOffsets()
-        {
-            PositionOffset = Vector3.zero;
-            ScaleOffset = Vector3.zero;
-            RotationOffset = Vector3.zero;
-
-            PositionOperation = MathOperation.Addition;
-            ScaleOperation = MathOperation.Addition;
-            RotationOperation = MathOperation.Addition;
-
-            PositionOperation = MathOperation.Addition;
-            ScaleOperation = MathOperation.Addition;
-            RotationOperation = MathOperation.Addition;
-        }
-
-        public Vector3 GetFullPosition() => rb.position;
-
-        public Vector3 GetFullScale() => rb.transform.lossyScale;
-
-        public Vector3 GetFullRotation(bool includeSelf) => rb.transform.eulerAngles;
-
-        public Vector3 GetTransformOffset(int type) => type switch
-        {
-            0 => PositionOffset,
-            1 => ScaleOffset,
-            2 => RotationOffset,
-            _ => Vector3.zero,
-        };
-
-        public void SetTransform(int type, Vector3 value)
-        {
-            switch (type)
-            {
-                case 0: {
-                        PositionOffset = value;
-                        rb.position = value;
-                        break;
-                    }
-                case 1: {
-                        ScaleOffset = value;
-                        break;
-                    }
-                case 2: {
-                        RotationOffset = value;
-                        rb.transform.eulerAngles = new Vector3(0f, 0f, value.z);
-                        break;
-                    }
-            }
-        }
-
-        public void SetTransform(int type, int axis, float value)
-        {
-            switch (type)
-            {
-                case 0: {
-                        positionOffset[axis] = value;
-                        SetPosition(axis, value);
-                        break;
-                    }
-                case 1: {
-                        scaleOffset[axis] = value;
-                        break;
-                    }
-                case 2: {
-                        rotationOffset[axis] = value;
-                        break;
-                    }
-            }
-        }
-
-        public void SetPosition(Vector3 pos)
-        {
-            if (rb)
-                rb.position = pos;
-        }
-
-        public void SetPosition(int axis, float value)
-        {
-            if (!rb)
-                return;
-
-            switch (axis)
-            {
-                case 0: {
-                        var pos = rb.position;
-                        pos.x = value;
-                        rb.position = pos;
-                        break;
-                    }
-                case 1: {
-                        var pos = rb.position;
-                        pos.y = value;
-                        rb.position = pos;
-                        break;
-                    }
-            }
-        }
-
-        /// <summary>
-        /// Unused. Will move mouse to <see cref="GameMode"/>.
-        /// </summary>
-        public enum MovementMode
-        {
-            KeyboardController,
-            Mouse
-        }
-        
         #region States
 
         #region Global
@@ -653,43 +544,6 @@ namespace BetterLegacy.Core.Components.Player
             }
         }
 
-        /// <summary>
-        /// Updates player properties based on <see cref="LevelData"/>.
-        /// </summary>
-        public static void SetGameDataProperties()
-        {
-            try
-            {
-                if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
-                    return;
-
-                var levelData = GameData.Current.data.level;
-                LockBoost = levelData.lockBoost;
-                SpeedMultiplier = levelData.speedMultiplier;
-                GameMode = levelData.gameMode;
-                GlobalJumpGravity = levelData.jumpGravity;
-                GlobalJumpIntensity = levelData.jumpIntensity;
-                MaxJumpCount = levelData.maxJumpCount;
-                MaxJumpBoostCount = levelData.maxJumpBoostCount;
-                GlobalAllowJumping = levelData.allowJumping;
-                GlobalAllowReversedJumping = levelData.allowReversedJumping;
-                GlobalAllowWallJumping = levelData.allowWallJumping;
-                GlobalAllowWallSticking = levelData.allowWallSticking;
-                PAPlayer.MaxHealth = levelData.maxHealth;
-
-                if (ProjectArrhythmia.State.InEditor && !PlayerManager.NoPlayers)
-                {
-                    foreach (var player in PlayerManager.Players)
-                        player.ResetHealth();
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Could not set properties {ex}");
-            }
-
-        }
-
         #region Internal
 
         float timeOffset;
@@ -776,8 +630,45 @@ namespace BetterLegacy.Core.Components.Player
         #endregion
 
         #region Functions
-        
+
         #region Init
+
+        /// <summary>
+        /// Updates player properties based on <see cref="LevelData"/>.
+        /// </summary>
+        public static void SetGameDataProperties()
+        {
+            try
+            {
+                if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                    return;
+
+                var levelData = GameData.Current.data.level;
+                LockBoost = levelData.lockBoost;
+                SpeedMultiplier = levelData.speedMultiplier;
+                GameMode = levelData.gameMode;
+                GlobalJumpGravity = levelData.jumpGravity;
+                GlobalJumpIntensity = levelData.jumpIntensity;
+                MaxJumpCount = levelData.maxJumpCount;
+                MaxJumpBoostCount = levelData.maxJumpBoostCount;
+                GlobalAllowJumping = levelData.allowJumping;
+                GlobalAllowReversedJumping = levelData.allowReversedJumping;
+                GlobalAllowWallJumping = levelData.allowWallJumping;
+                GlobalAllowWallSticking = levelData.allowWallSticking;
+                PAPlayer.MaxHealth = levelData.maxHealth;
+
+                if (ProjectArrhythmia.State.InEditor && !PlayerManager.NoPlayers)
+                {
+                    foreach (var player in PlayerManager.Players)
+                        player.ResetHealth();
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not set properties {ex}");
+            }
+
+        }
 
         public void Init()
         {
@@ -1455,13 +1346,19 @@ namespace BetterLegacy.Core.Components.Player
                 modelLoop.Run(Model.modifiers);
             }
 
+            if (healthText)
+                healthText.gameObject.SetActive(Model && Model.guiPart.active && GameManager.inst.timeline.activeSelf);
+
             if (!isColliderTrigger)
                 SetTriggerCollision(false);
 
             if (UpdateMode == TailUpdateMode.Update)
                 UpdateTailDistance();
 
-            UpdateCustomTheme(); UpdateBoostTheme(); UpdateSpeeds(); UpdateTrailLengths(); UpdateTheme();
+            UpdateSpeeds();
+            UpdateTrailLengths();
+            UpdateObjects();
+
             if (canvas)
             {
                 bool act = ShowNameTags;
@@ -1495,9 +1392,6 @@ namespace BetterLegacy.Core.Components.Player
         {
             if (UpdateMode == TailUpdateMode.FixedUpdate)
                 UpdateTailDistance();
-
-            if (healthText)
-                healthText.gameObject.SetActive(Model && Model.guiPart.active && GameManager.inst.timeline.activeSelf);
         }
 
         void LateUpdate()
@@ -1514,8 +1408,9 @@ namespace BetterLegacy.Core.Components.Player
             if (UpdateMode == TailUpdateMode.LateUpdate)
                 UpdateTailDistance();
 
-            UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes();
-
+            UpdateTailTransform();
+            UpdateTailDev();
+            UpdateTailSizes();
             ClampToCamera();
 
             if (!Model || !Model.faceControlActive || !Core.Input)
@@ -1570,14 +1465,14 @@ namespace BetterLegacy.Core.Components.Player
             if (!Model)
                 return;
 
-            var control = Core.GetProperties();
+            var properties = Core.GetProperties();
 
-            var idleSpeed = control.moveSpeed;
-            var boostSpeed = control.boostSpeed;
-            var boostCooldown = control.boostCooldown;
-            var minBoostTime = control.minBoostTime;
-            var maxBoostTime = control.maxBoostTime;
-            var hitCooldown = control.hitCooldown;
+            var idleSpeed = properties.moveSpeed;
+            var boostSpeed = properties.boostSpeed;
+            var boostCooldown = properties.boostCooldown;
+            var minBoostTime = properties.minBoostTime;
+            var maxBoostTime = properties.maxBoostTime;
+            var hitCooldown = properties.hitCooldown;
 
             if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData && levelData.limitPlayer)
             {
@@ -1839,9 +1734,7 @@ namespace BetterLegacy.Core.Components.Player
 
             rb.gravityScale = 0f;
 
-            if (Alive && Core.Input && Core.active && CanMove && !ProjectArrhythmia.State.Paused &&
-                (CoreConfig.Instance.AllowControlsInputField.Value || !ProjectArrhythmia.Input.IsUsingInputField) &&
-                movementMode == MovementMode.KeyboardController && (!ProjectArrhythmia.State.InEditor || !RTEditor.inst.editorInfo.freecamEnabled))
+            if (Alive && Core.Input && Core.active && CanMove && !ProjectArrhythmia.State.Paused && (CoreConfig.Instance.AllowControlsInputField.Value || !ProjectArrhythmia.Input.IsUsingInputField) && (!ProjectArrhythmia.State.InEditor || !RTEditor.inst.editorInfo.freecamEnabled))
             {
                 Jumping = false;
                 var x = !LockXMovement ? Core.Input.Move.Vector.x : 0f;
@@ -2148,7 +2041,7 @@ namespace BetterLegacy.Core.Components.Player
 
             var posCalc = (player.transform.position - lastPos);
 
-            if (!JumpMode && (rotateMode == PlayerRotateMode.RotateToDirection || rotateMode == PlayerRotateMode.RotateReset || rotateMode == PlayerRotateMode.RotateFlipX || rotateMode == PlayerRotateMode.RotateFlipY))
+            if (!JumpMode && RotateToDirection)
             {
                 if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
                     lastMovement = posCalc;
@@ -2176,12 +2069,16 @@ namespace BetterLegacy.Core.Components.Player
             player.transform.localPosition = dfs;
         }
 
-        void UpdateTheme()
+        void UpdateObjects()
         {
+            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
+            if (!playerObjects.IsEmpty())
+                playerObjects.ForLoop(playerObject => playerObject?.Update(index));
+            if (!emitted.IsEmpty())
+                emitted.ForLoop(boost => boost?.Update(index));
+
             if (!Model)
                 return;
-
-            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
 
             if (head.gameObject)
             {
@@ -2272,141 +2169,6 @@ namespace BetterLegacy.Core.Components.Player
                 var main = boost.particleSystem.main;
                 main.startColor = RTColors.GetPlayerColor(index, Model.boostPart.Particles.color, 1f, Model.boostPart.Particles.customColor);
             }
-        }
-
-        void UpdateCustomTheme()
-        {
-            if (customObjects.IsEmpty())
-                return;
-
-            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
-            playerObjects.ForLoop(playerObject =>
-            {
-                if (!playerObject.gameObject)
-                    return;
-
-                if (!playerObject.isCustom)
-                {
-                    playerObject.gameObject.SetActive(playerObject.active);
-                    return;
-                }
-
-                var customObject = playerObject as RTCustomPlayerObject;
-
-                var reference = customObject.reference;
-
-                customObject.loop.reference = customObject;
-                customObject.loop.Run(reference.Modifiers);
-
-                var active = customObject.active &&
-                    (reference.visibilitySettings.IsEmpty() ? reference.active :
-                        reference.requireAll ?
-                            reference.visibilitySettings.All(x => CheckVisibility(x)) :
-                            reference.visibilitySettings.Any(x => CheckVisibility(x)));
-
-                customObject.gameObject.SetActive(active);
-
-                if (!active)
-                    return;
-
-                if (customObject.text)
-                    customObject.text.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
-                else if (customObject.renderer)
-                    customObject.renderer.material.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
-
-                if (!customObject.idle || reference.animations.IsEmpty())
-                {
-                    var origPos = reference.position;
-                    var origSca = reference.scale;
-                    var origRot = reference.rotation;
-
-                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
-                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
-                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
-                    return;
-                }
-
-                bool hasIdle = false;
-                reference.animations.ForLoop(animation =>
-                {
-                    if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
-                        return;
-
-                    if (ProjectArrhythmia.State.InEditor && AnimationEditor.inst && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
-                        return;
-
-                    var length = animation.GetLength();
-                    var origPos = reference.position;
-                    var origSca = reference.scale;
-                    var origRot = reference.rotation;
-
-                    if (animation.animatePosition)
-                    {
-                        var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
-                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position + customObject.positionOffset + customObject.anim.position);
-                    }
-                    else
-                        customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
-
-                    if (animation.animateScale)
-                    {
-                        var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
-                        customObject.gameObject.transform.localScale = new Vector3(origSca.x * scale.x + customObject.scaleOffset.x, origSca.y * scale.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
-                    }
-                    else
-                        customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
-
-                    if (animation.animateRotation)
-                    {
-                        var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
-                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + rotation + customObject.rotationOffset.z + customObject.anim.rotation);
-                    }
-                    else
-                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
-                    hasIdle = true;
-                });
-
-                // no idle animation was found so update transforms
-                if (!hasIdle)
-                {
-                    var origPos = reference.position;
-                    var origSca = reference.scale;
-                    var origRot = reference.rotation;
-
-                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
-                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
-                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
-                }
-            });
-        }
-
-        void UpdateBoostTheme()
-        {
-            if (emitted.IsEmpty())
-                return;
-
-            var index = PlayersData.Current.GetMaxIndex(ColorSlot);
-
-            emitted.ForLoop(boost =>
-            {
-                if (!boost)
-                    return;
-
-                int startCol = boost.startColor;
-                int endCol = boost.endColor;
-
-                var startHex = boost.startCustomColor;
-                var endHex = boost.endCustomColor;
-
-                float alpha = boost.opacity;
-                float colorTween = boost.colorTween;
-
-                Color startColor = RTColors.GetPlayerColor(index, startCol, alpha, startHex);
-                Color endColor = RTColors.GetPlayerColor(index, endCol, alpha, endHex);
-
-                if (boost.renderer)
-                    boost.renderer.material.color = Color.Lerp(startColor, endColor, colorTween);
-            });
         }
 
         #endregion
@@ -4026,6 +3788,108 @@ namespace BetterLegacy.Core.Components.Player
 
         #endregion
 
+        #region Transform Offset
+        
+        public void ResetOffsets()
+        {
+            PositionOffset = Vector3.zero;
+            ScaleOffset = Vector3.zero;
+            RotationOffset = Vector3.zero;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
+
+            PositionOperation = MathOperation.Addition;
+            ScaleOperation = MathOperation.Addition;
+            RotationOperation = MathOperation.Addition;
+        }
+
+        public Vector3 GetFullPosition() => rb.position;
+
+        public Vector3 GetFullScale() => rb.transform.lossyScale;
+
+        public Vector3 GetFullRotation(bool includeSelf) => rb.transform.eulerAngles;
+
+        public Vector3 GetTransformOffset(int type) => type switch
+        {
+            0 => PositionOffset,
+            1 => ScaleOffset,
+            2 => RotationOffset,
+            _ => Vector3.zero,
+        };
+
+        public void SetTransform(int type, Vector3 value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        PositionOffset = value;
+                        rb.position = value;
+                        break;
+                    }
+                case 1: {
+                        ScaleOffset = value;
+                        break;
+                    }
+                case 2: {
+                        RotationOffset = value;
+                        rb.transform.eulerAngles = new Vector3(0f, 0f, value.z);
+                        break;
+                    }
+            }
+        }
+
+        public void SetTransform(int type, int axis, float value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        positionOffset[axis] = value;
+                        SetPosition(axis, value);
+                        break;
+                    }
+                case 1: {
+                        scaleOffset[axis] = value;
+                        break;
+                    }
+                case 2: {
+                        rotationOffset[axis] = value;
+                        break;
+                    }
+            }
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            if (rb)
+                rb.position = pos;
+        }
+
+        public void SetPosition(int axis, float value)
+        {
+            if (!rb)
+                return;
+
+            switch (axis)
+            {
+                case 0: {
+                        var pos = rb.position;
+                        pos.x = value;
+                        rb.position = pos;
+                        break;
+                    }
+                case 1: {
+                        var pos = rb.position;
+                        pos.y = value;
+                        rb.position = pos;
+                        break;
+                    }
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Sub classes
@@ -4174,7 +4038,13 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public class RTCustomPlayerObject : RTPlayerObject, ITransformable, IModifierReference, ICustomActivatable
         {
+            #region Constructors
+
             public RTCustomPlayerObject() => isCustom = true;
+
+            #endregion
+
+            #region Values
 
             public ModifierLoop loop = new ModifierLoop(null, new Dictionary<string, string>());
 
@@ -4202,6 +4072,105 @@ namespace BetterLegacy.Core.Components.Player
             public MathOperation ScaleOperation { get; set; }
 
             public MathOperation RotationOperation { get; set; }
+
+            public RTLevelBase ParentRuntime { get; set; }
+
+            public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerObject;
+
+            public int IntVariable { get; set; }
+
+            #endregion
+
+            #region Functions
+
+            public override void Update(int index)
+            {
+                if (!Player)
+                    throw new NullReferenceException($"Player is null! {id}");
+
+                loop.reference = this;
+                loop.Run(reference.Modifiers);
+
+                var active = this.active &&
+                    (reference.visibilitySettings.IsEmpty() ? reference.active :
+                        reference.requireAll ?
+                            reference.visibilitySettings.All(x => Player.CheckVisibility(x)) :
+                            reference.visibilitySettings.Any(x => Player.CheckVisibility(x)));
+
+                gameObject.SetActive(active);
+
+                if (!active)
+                    return;
+
+                if (text)
+                    text.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+                else if (renderer)
+                    renderer.material.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+
+                if (!idle || reference.animations.IsEmpty())
+                {
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
+                    gameObject.transform.localPosition = new Vector3(origPos.x + positionOffset.x, origPos.y + positionOffset.y, reference.depth + positionOffset.z) + anim.position;
+                    gameObject.transform.localScale = new Vector3(origSca.x + scaleOffset.x, origSca.y + scaleOffset.y, 1f + scaleOffset.z) * anim.scale;
+                    gameObject.transform.localEulerAngles = new Vector3(rotationOffset.x, rotationOffset.y, origRot + rotationOffset.z + anim.rotation);
+                    return;
+                }
+
+                bool hasIdle = false;
+                reference.animations.ForLoop(animation =>
+                {
+                    if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != currentIdleAnimation)
+                        return;
+
+                    if (ProjectArrhythmia.State.InEditor && AnimationEditor.inst && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
+                        return;
+
+                    var length = animation.GetLength();
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
+                    if (animation.animatePosition)
+                    {
+                        var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, Player.time % length);
+                        gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position + positionOffset + anim.position);
+                    }
+                    else
+                        gameObject.transform.localPosition = new Vector3(origPos.x + positionOffset.x, origPos.y + positionOffset.y, reference.depth + positionOffset.z) + anim.position;
+
+                    if (animation.animateScale)
+                    {
+                        var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, Player.time % length);
+                        gameObject.transform.localScale = new Vector3(origSca.x * scale.x + scaleOffset.x, origSca.y * scale.y + scaleOffset.y, 1f + scaleOffset.z) * anim.scale;
+                    }
+                    else
+                        gameObject.transform.localScale = new Vector3(origSca.x + scaleOffset.x, origSca.y + scaleOffset.y, 1f + scaleOffset.z) * anim.scale;
+
+                    if (animation.animateRotation)
+                    {
+                        var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, Player.time % length, 0);
+                        gameObject.transform.localEulerAngles = new Vector3(rotationOffset.x, rotationOffset.y, origRot + rotation + rotationOffset.z + anim.rotation);
+                    }
+                    else
+                        gameObject.transform.localEulerAngles = new Vector3(rotationOffset.x, rotationOffset.y, origRot + rotationOffset.z + anim.rotation);
+                    hasIdle = true;
+                });
+
+                // no idle animation was found so update transforms
+                if (!hasIdle)
+                {
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
+                    gameObject.transform.localPosition = new Vector3(origPos.x + positionOffset.x, origPos.y + positionOffset.y, reference.depth + positionOffset.z) + anim.position;
+                    gameObject.transform.localScale = new Vector3(origSca.x + scaleOffset.x, origSca.y + scaleOffset.y, 1f + scaleOffset.z) * anim.scale;
+                    gameObject.transform.localEulerAngles = new Vector3(rotationOffset.x, rotationOffset.y, origRot + rotationOffset.z + anim.rotation);
+                }
+            }
 
             public void ResetOffsets()
             {
@@ -4265,12 +4234,6 @@ namespace BetterLegacy.Core.Components.Player
 
             public Vector3 GetFullRotation(bool includeSelf) => gameObject.transform.eulerAngles;
 
-            public RTLevelBase ParentRuntime { get; set; }
-
-            public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerObject;
-
-            public int IntVariable { get; set; }
-
             public IRTObject GetRuntimeObject() => null;
 
             public IPrefabable AsPrefabable() => null;
@@ -4319,6 +4282,8 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             public override string ToString() => reference ? reference.name : base.ToString();
+
+            #endregion
         }
 
         /// <summary>
@@ -4326,12 +4291,31 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public class EmittedObject : RTPlayerObject
         {
+            #region Values
+
             public float opacity;
             public float colorTween;
             public int startColor;
             public int endColor;
             public string startCustomColor;
             public string endCustomColor;
+
+            #endregion
+
+            #region Functions
+
+            public override void Update(int index)
+            {
+                base.Update(index);
+                if (!gameObject || !gameObject.activeSelf || !renderer)
+                    return;
+
+                var startColor = RTColors.GetPlayerColor(index, this.startColor, opacity, startCustomColor);
+                var endColor = RTColors.GetPlayerColor(index, this.endColor, opacity, endCustomColor);
+                renderer.material.color = Color.Lerp(startColor, endColor, colorTween);
+            }
+
+            #endregion
         }
 
         /// <summary>
@@ -4339,6 +4323,8 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public class RTPlayerObject : Exists
         {
+            #region Values
+
             public bool active = true;
             public string id;
 
@@ -4356,6 +4342,12 @@ namespace BetterLegacy.Core.Components.Player
 
             public RTPlayer Player { get; set; }
             public RTPlayerObject Parent { get; set; }
+
+            #endregion
+
+            #region Functions
+
+            public virtual void Update(int index) => gameObject?.SetActive(active);
 
             public void SetStencil(CompareFunction comparison, StencilOp pass, StencilOp fail, StencilOp zFail, byte id, byte writeMask, byte readMask)
             {
@@ -4380,7 +4372,9 @@ namespace BetterLegacy.Core.Components.Player
                 material.SetFloat("_StencilReadMask", readMask);
             }
 
-            public override string ToString() => gameObject ? gameObject.ToString() : id ?? base.ToString();
+            public override string ToString() => gameObject?.ToString() ?? id ?? base.ToString();
+
+            #endregion
         }
 
         /// <summary>
