@@ -47,7 +47,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
-            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
+            var player = modifierLoop.reference is RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
             if (!player)
                 return;
 

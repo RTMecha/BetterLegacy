@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return backgroundObject.name;
             else if (modifierLoop.reference is PrefabObject prefabObject && prefabObject.GetPrefab() is Prefab prefab)
                 return prefab.name;
-            else if (modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
+            else if (modifierLoop.reference is RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
                 return customPlayerObject.reference.name;
             return null;
         }

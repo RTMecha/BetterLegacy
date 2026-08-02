@@ -2755,7 +2755,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="animation">Animation to play.</param>
         public void PlayAnimation(PAAnimation animation)
         {
-            if (!PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
+            if (!PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTCustomPlayerObject customObject))
                 return;
 
             var runtimeAnimation = new RTAnimation("Custom Animation");
