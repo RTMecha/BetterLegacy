@@ -1,4 +1,4 @@
-﻿# snapshot-2026.7.5 - (Multiplayer Playtest) [Jul ?, 2026]
+﻿# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
 ## Features
 ### Core
 - Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
@@ -22,6 +22,7 @@
   Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.  
 - Removed the Order Matters toggle and made the on state the default.
 - Attempted to make input select interface sync players in a lobby.
+- Cleaned up some player code.
 
 ### Editor
 - Levels in the level list now use object pooling, hopefully making level list load times faster.
