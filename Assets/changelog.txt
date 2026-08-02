@@ -1,49 +1,35 @@
-# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
+# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
 ## Features
 ### Core
-- Added online lobbies. This allows you to play multiplayer online.  
-  DISCLAIMERS:
-  - This feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution.  
-  - Currently you can load regular arcade levels and levels in the editor, but there is not much syncing yet.  
-  - There's not much polish yet (as in no loading bars / indicators).
-Just in case, it's highly recommended you make a separate instance of Project Arrhythmia to test multiplayer.  
-Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
+- Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
+- Added "Sync to Lobby" toggle to keyPress, mouseButton and controlPress trigger modifiers. If the trigger is active, the input is sent to other lobby members.
+- Added Filter Mode and Wrap Mode values to setImage modifiers.
+- Added Filter Mode to sprites stored in the level.
 
-## Changes
-### Core
-- Made setImageOther modifier consistent with setImage modifier behavior, allowing for texture changes and offset & scale changes.
-
-# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
-## Changes
-### Core
-- Changed level syncing send type to unreliable.
-
-## Fixes
-- Fixed singleplayer being broken.
-- Fixed issues that occur when Steam isn't open.
-
-# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul 9, 2026]
-## Features
-### Core
-- Added "Open Lobby Key" setting to Config Manager > Core > Game. Pressing the set key will open the Lobby Manager.
-- Added "Online Multiplayer NameTags" setting to Config Manager > Core > Game.
-- Added playerIsLocal trigger modifiers. These are used to detect if a specific player is a local one rather than from another client.
+### Companion
+- Added "modifier" search parameter for the select command.
 
 ### Editor
-- Added a layer range to Pinned Editor Layers.
+- Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
 
 ## Changes
 ### Core
-- Changed particle object to not be based on the song playing state.
-- The Lobby Manager now closes when the scene is changed.
-- Tweaked player keyboard & controller binding.
+- Removed the "Global" toggle from the playSound modifiers as Asset Packs exist now.
+- BREAKING CHANGE!  
+  Rewrote a lot of the modifier code.  
+  Due to this, some really modifiers might not work anymore.  
+  Please let me know if a modifier is not behaving as it should or appears where it shouldn't.  
+  Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.  
+- Removed the Order Matters toggle and made the on state the default.
+- Attempted to make input select interface sync players in a lobby.
+- Cleaned up some player code.
 
-### Interfaces
-- Moved the [ LOBBY ] button from the Extras Menu to the Main Menu for quick access.
+### Editor
+- Levels in the level list now use object pooling, hopefully making level list load times faster.
 
 ## Fixes
-- Fixed more issues with single player that occur when there is no lobby.
-- Fixed Multi Object Editor parent search not working.
-- Fixed the cursor not accounting for the Lobby Manager.
-- Fixed some modifiers working for clients when they shouldn't.
-- Fixed the page field on the Config Manager not appearing.
+- Fixed the color picker value/saturation area not being scaled correctly to the game resolution.
+- Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
+- Fixed JSON trigger modifier values not being correct.
+- Fixed level cover order being incorrect.
+- Fixed playerCollide trigger modifiers constantly flickering.
