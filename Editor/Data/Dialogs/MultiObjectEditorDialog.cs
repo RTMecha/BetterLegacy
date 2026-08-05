@@ -2436,6 +2436,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             {
                                 MultiObjectEditor.inst.ForEachModifyable(modifyable =>
                                 {
+                                    modifyable.RuntimeModifiers?.Clear();
                                     modifyable.Modifiers.Clear();
                                     if (modifyable is BeatmapObject beatmapObject)
                                         RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
