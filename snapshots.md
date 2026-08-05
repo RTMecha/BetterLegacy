@@ -1,4 +1,14 @@
-﻿# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
+﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [???]
+## Changes
+### Editor
+- Improved custom keyframe display.
+
+## Fixes
+- Account for the really old disableObject modifier.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
 ## Features
 ### Core
 - Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
