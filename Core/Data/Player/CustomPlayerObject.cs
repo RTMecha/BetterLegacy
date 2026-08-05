@@ -10,6 +10,7 @@ using SimpleJSON;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
+using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Player
 {
@@ -126,6 +127,8 @@ namespace BetterLegacy.Core.Data.Player
         public bool ModifiersActive => false;
 
         #endregion
+
+        public RTModifiers RuntimeModifiers { get; set; }
 
         #endregion
 

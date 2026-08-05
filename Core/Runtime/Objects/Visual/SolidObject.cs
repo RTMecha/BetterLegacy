@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 using LSFunctions;
@@ -19,6 +17,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, ParticleSystemData particleSystemData)
         {
             this.gameObject = gameObject;
+            poolObject = gameObject.GetComponent<Pool.PoolObject>();
 
             this.opacity = opacity;
 

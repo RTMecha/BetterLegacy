@@ -85,20 +85,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void Clear()
         {
-            if (parentObjects != null)
-            {
-                for (int i = 0; i < parentObjects.Count; i++)
-                {
-                    var parentObject = parentObjects[i];
-                    parentObject.beatmapObject = null;
-                    parentObject.gameObject = null;
-                    parentObject.id = null;
-                    parentObject.positionSequence = null;
-                    parentObject.scaleSequence = null;
-                    parentObject.rotationSequence = null;
-                }
-                parentObjects.Clear();
-            }
+            visualObject?.Clear();
+            visualObject = null;
+
+            this.ClearParentChain();
 
             if (Parent)
                 CoreHelper.Delete(Parent);
@@ -106,9 +96,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             parentObjects = null;
             Parent = null;
             beatmapObject = null;
-
-            visualObject?.Clear();
-            visualObject = null;
         }
 
         public void SetActive(bool active)

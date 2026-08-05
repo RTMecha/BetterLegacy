@@ -290,5 +290,17 @@ namespace BetterLegacy.Core.Runtime.Objects
             parentChain.ScaleParentOffset = beatmapParent.parallaxSettings[1];
             parentChain.RotationParentOffset = beatmapParent.parallaxSettings[2];
         }
+
+        /// <summary>
+        /// Clears the parent chain.
+        /// </summary>
+        public static void ClearParentChain(this IParentChain parentChain)
+        {
+            if (parentChain == null || parentChain.ParentObjects == null)
+                return;
+            for (int i = 0; i < parentChain.ParentObjects.Count; i++)
+                parentChain.ParentObjects[i].Clear();
+            parentChain.ParentObjects.Clear();
+        }
     }
 }

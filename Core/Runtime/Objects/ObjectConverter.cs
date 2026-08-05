@@ -209,86 +209,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public ParentObject ToParentObject(BeatmapObject beatmapObject, GameObject gameObject)
         {
-            CachedSequences cachedSequences = beatmapObject.cachedSequences;
-
             ParentObject parentObject = null;
 
             try
             {
-                if (cachedSequences)
-                    parentObject = new ParentObject
-                    {
-                        positionSequence = cachedSequences.PositionSequence,
-                        scaleSequence = cachedSequences.ScaleSequence,
-                        rotationSequence = cachedSequences.RotationSequence,
-
-                        parentAnimatePosition = beatmapObject.GetParentType(0),
-                        parentAnimateScale = beatmapObject.GetParentType(1),
-                        parentAnimateRotation = beatmapObject.GetParentType(2),
-
-                        parentOffsetPosition = beatmapObject.parentOffsets[0],
-                        parentOffsetScale = beatmapObject.parentOffsets[1],
-                        parentOffsetRotation = beatmapObject.parentOffsets[2],
-
-                        parentAdditivePosition = beatmapObject.GetParentAdditive(0),
-                        parentAdditiveScale = beatmapObject.GetParentAdditive(1),
-                        parentAdditiveRotation = beatmapObject.GetParentAdditive(2),
-
-                        parentParallaxPosition = beatmapObject.parallaxSettings[0],
-                        parentParallaxScale = beatmapObject.parallaxSettings[1],
-                        parentParallaxRotation = beatmapObject.parallaxSettings[2],
-
-                        boneLength = beatmapObject.boneLength,
-
-                        gameObject = gameObject,
-                        transform = gameObject.transform,
-                        id = beatmapObject.id,
-                        desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
-                        beatmapObject = beatmapObject
-                    };
-                else
-                {
-                    var pos = new List<IKeyframe<Vector3>>();
-                    pos.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
-
-                    var sca = new List<IKeyframe<Vector2>>();
-                    sca.Add(new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
-
-                    var rot = new List<IKeyframe<Vector3>>();
-                    rot.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
-
-                    parentObject = new ParentObject
-                    {
-                        positionSequence = new Sequence<Vector3>(pos),
-                        scaleSequence = new Sequence<Vector2>(sca),
-                        rotationSequence = new Sequence<Vector3>(rot),
-
-                        parentAnimatePosition = beatmapObject.GetParentType(0),
-                        parentAnimateScale = beatmapObject.GetParentType(1),
-                        parentAnimateRotation = beatmapObject.GetParentType(2),
-
-                        parentOffsetPosition = beatmapObject.GetParentOffset(0),
-                        parentOffsetScale = beatmapObject.GetParentOffset(1),
-                        parentOffsetRotation = beatmapObject.GetParentOffset(2),
-
-                        parentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
-                        parentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
-                        parentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
-
-                        parentParallaxPosition = beatmapObject.parallaxSettings[0],
-                        parentParallaxScale = beatmapObject.parallaxSettings[1],
-                        parentParallaxRotation = beatmapObject.parallaxSettings[2],
-
-                        boneLength = beatmapObject.boneLength,
-
-                        gameObject = gameObject,
-                        transform = gameObject.transform,
-                        id = beatmapObject.id,
-                        desync = !string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.desync,
-                        beatmapObject = beatmapObject
-                    };
-                } // In case the CashedSequence is null, set defaults.
-
+                parentObject = new ParentObject(gameObject, beatmapObject);
                 beatmapObject.detatched = false;
             }
             catch (Exception e)

@@ -379,6 +379,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public RTPrefabModifiers runtimeModifiers;
 
+        public RTModifiers RuntimeModifiers { get => runtimeModifiers; set => runtimeModifiers = (RTPrefabModifiers)value; }
+
         /// <summary>
         /// Cached transform.
         /// </summary>

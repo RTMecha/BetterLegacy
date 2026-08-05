@@ -37,16 +37,19 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool active;
 
-        public List<Modifier> triggers;
-
-        public List<Modifier> actions;
-
         public ModifierLoop loop;
 
 
         public Dictionary<string, string> variables = new Dictionary<string, string>();
 
-        public void Clear() { }
+        public void Clear() => modifiers.ForLoop(modifier =>
+        {
+            modifier.active = false;
+            modifier.runCount = 0;
+            modifier.RunInactive(modifier, reference);
+            modifier.OnRemoveCache();
+            modifier.Result = default;
+        });
 
         public void SetActive(bool active)
         {

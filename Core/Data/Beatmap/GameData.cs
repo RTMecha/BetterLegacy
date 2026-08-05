@@ -174,6 +174,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public RTLevelBase ParentRuntime { get; set; }
 
+        public RTModifiers RuntimeModifiers { get; set; }
+
         public enum DuplicateBehaviorType
         {
             Remove,

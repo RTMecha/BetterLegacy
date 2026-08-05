@@ -648,6 +648,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public RTModifiers runtimeModifiers;
 
+        public RTModifiers RuntimeModifiers { get => runtimeModifiers; set => runtimeModifiers = value; }
+
         /// <summary>
         /// Cached runtime particles.
         /// </summary>

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Runtime.Objects;
+
 namespace BetterLegacy.Core.Data.Modifiers
 {
     /// <summary>
@@ -42,5 +44,10 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// If the modifiers are currently active.
         /// </summary>
         public bool ModifiersActive { get; }
+
+        /// <summary>
+        /// Cached runtime modifiers.
+        /// </summary>
+        public RTModifiers RuntimeModifiers { get; set; }
     }
 }

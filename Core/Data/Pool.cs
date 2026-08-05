@@ -5,7 +5,7 @@ using UnityEngine;
 namespace BetterLegacy.Core.Data
 {
     // Thanks Tera for the pooling code
-    public class Pool : Data.Exists
+    public class Pool : Exists
     {
         #region Constructors
 
@@ -174,6 +174,11 @@ namespace BetterLegacy.Core.Data
             /// Prefab of the object.
             /// </summary>
             public GameObject prefab;
+
+            /// <summary>
+            /// Returns the pool object to the pool.
+            /// </summary>
+            public void Return() => poolPrefab.poolReference.Return(this);
         }
 
         #endregion

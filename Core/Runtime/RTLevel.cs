@@ -95,6 +95,9 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public Dictionary<string, string> variables = new Dictionary<string, string>();
 
+        /// <summary>
+        /// If the runtime level is loaded.
+        /// </summary>
         public static bool Loaded { get; private set; }
 
         /// <summary>

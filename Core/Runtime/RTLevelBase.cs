@@ -179,6 +179,19 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void Clear()
         {
+            foreach (var runtimeModifiers in Modifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeModifiers in PrefabModifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeModifiers in BGModifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeObject in Objects)
+                runtimeObject.Clear();
+            foreach (var runtimeObject in PrefabObjects)
+                runtimeObject.Clear();
+            foreach (var runtimeObject in BGObjects)
+                runtimeObject.Clear();
+
             var parent = SpawnParent;
             if (parent)
                 LSHelpers.DeleteChildren(parent);

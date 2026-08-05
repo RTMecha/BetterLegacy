@@ -11,6 +11,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Player
@@ -327,6 +328,8 @@ namespace BetterLegacy.Core.Data.Player
         public int IntVariable { get; set; }
 
         public bool ModifiersActive => false;
+
+        public RTModifiers RuntimeModifiers { get; set; }
 
         #endregion
 
