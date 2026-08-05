@@ -47,6 +47,11 @@ namespace BetterLegacy.Core.Data.Network
         /// </summary>
         public string Channel { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Password required to join the lobby. Users can see the lobby publicly but will not be able to join if the password does not match.
+        /// </summary>
+        public string Password { get; set; } = string.Empty;
+
         #region Game
 
         /// <summary>
@@ -147,6 +152,7 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = orig.Visibility;
             State = orig.State;
             Channel = orig.Channel;
+            Password = orig.Password;
             CanViewLevels = orig.CanViewLevels;
             CanEdit = orig.CanEdit;
             CanViewEditorLevels = orig.CanViewEditorLevels;
@@ -166,6 +172,11 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = Parser.TryParse(jn["visibility"], true, LobbyVisibility.Public);
             State = Parser.TryParse(jn["state"], true, LobbyState.Joinable);
             Channel = jn["channel"];
+            if (Channel == null)
+                Channel = string.Empty;
+            Password = jn["password"];
+            if (Password == null)
+                Password = string.Empty;
             if (jn["can_view_levels"] != null)
                 CanViewLevels = jn["can_view_levels"].AsBool;
             if (jn["can_edit"] != null)
@@ -197,6 +208,7 @@ namespace BetterLegacy.Core.Data.Network
             jn["visibility"] = Visibility.ToString();
             jn["state"] = State.ToString();
             jn["channel"] = Channel ?? string.Empty;
+            jn["password"] = Password ?? string.Empty;
             jn["can_view_levels"] = CanViewLevels;
             jn["can_edit"] = CanEdit;
             jn["can_view_editor_levels"] = CanViewEditorLevels;
@@ -218,6 +230,7 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = (LobbyVisibility)reader.ReadByte();
             State = (LobbyState)reader.ReadByte();
             Channel = reader.ReadString();
+            Password = reader.ReadString();
             CanViewLevels = reader.ReadBoolean();
             CanEdit = reader.ReadBoolean();
             CanViewEditorLevels = reader.ReadBoolean();
@@ -237,6 +250,7 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write((byte)Visibility);
             writer.Write((byte)State);
             writer.Write(Channel);
+            writer.Write(Password);
             writer.Write(CanViewLevels);
             writer.Write(CanEdit);
             writer.Write(CanViewEditorLevels);
