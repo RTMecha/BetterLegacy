@@ -441,6 +441,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Functions
 
+        /// <summary>
+        /// Sets the collapse state of the modifier card.
+        /// </summary>
+        /// <param name="collapse">Collapse state to set.</param>
+        /// <param name="reference">Object reference.</param>
         public void Collapse(bool collapse, IModifierReference reference)
         {
             if (Modifier.Name == "endregion")
@@ -457,6 +462,10 @@ namespace BetterLegacy.Editor.Data.Elements
             CoroutineHelper.PerformAtEndOfFrame(() => LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT()));
         }
 
+        /// <summary>
+        /// Deletes the modifier.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
         public void Delete(IModifierReference reference)
         {
             if (reference is not IModifyable modifyable)
@@ -506,6 +515,10 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
+        /// <summary>
+        /// Copies the modifier.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
         public void Copy(IModifierReference reference)
         {
             if (Modifier is not Modifier modifier)
@@ -524,8 +537,17 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
         }
 
+        /// <summary>
+        /// Updates the modifier.
+        /// </summary>
+        /// <param name="reference">Object reference.</param>
         public void Update(IModifierReference reference) => Update(Modifier, reference);
 
+        /// <summary>
+        /// Updates the modifier.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="reference">Object reference.</param>
         public void Update(Modifier modifier, IModifierReference reference)
         {
             if (!modifier)
@@ -538,6 +560,12 @@ namespace BetterLegacy.Editor.Data.Elements
             modifier.Result = default;
         }
 
+        /// <summary>
+        /// Sets a value at an index.
+        /// </summary>
+        /// <param name="index">Index of the value to set.</param>
+        /// <param name="value">Value to set.</param>
+        /// <param name="reference">Object reference.</param>
         public void SetValue(int index, string value, IModifierReference reference)
         {
             Modifier.SetValue(index, value);
@@ -1172,32 +1200,71 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Sub Classes
 
+        /// <summary>
+        /// Represents the base value that displays in a modifier card.
+        /// </summary>
         public abstract class Value : Exists
         {
+            #region Constructors
+
             public Value(int valueIndex) => this.valueIndex = valueIndex;
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Index of the value.
+            /// </summary>
             public int valueIndex;
 
+            /// <summary>
+            /// If the mouse cursor is hovering over the modifier value, meaning the raw value should display if possible.
+            /// </summary>
             public bool hovered;
 
+            #endregion
+
+            #region Functions
+
+            /// <summary>
+            /// Updates the value display per tick.
+            /// </summary>
+            /// <param name="modifierCard">Modifier card reference.</param>
+            /// <param name="reference">Object reference.</param>
             public abstract void Tick(ModifierCard modifierCard, IModifierReference reference);
 
-            public void InitHover(GameObject gameObject)
-            {
-                var hoverNotifier = gameObject.AddComponent<HoverNotifier>();
-                hoverNotifier.notifier = (hovered, pointerEventData) => this.hovered = hovered;
-            }
+            /// <summary>
+            /// Initializes the hover notifier.
+            /// </summary>
+            /// <param name="gameObject">Game object reference.</param>
+            public void InitHover(GameObject gameObject) => gameObject.AddComponent<HoverNotifier>().notifier = (hovered, pointerEventData) => this.hovered = hovered;
+
+            #endregion
         }
 
         public class StringValue : Value
         {
+            #region Constructors
+
             public StringValue(int valueIndex, InputField inputField) : base(valueIndex)
             {
                 this.inputField = inputField;
                 InitHover(inputField.gameObject);
             }
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Input field reference.
+            /// </summary>
             public InputField inputField;
+
+            #endregion
+
+            #region Functions
 
             public override void Tick(ModifierCard modifierCard, IModifierReference reference)
             {
@@ -1218,18 +1285,37 @@ namespace BetterLegacy.Editor.Data.Elements
                 else
                     inputField.SetTextWithoutNotify(value);
             }
+
+            #endregion
         }
 
         public class BoolValue : Value
         {
+            #region Constructors
+
             public BoolValue(int valueIndex, Toggle toggle) : base(valueIndex)
             {
                 this.toggle = toggle;
                 InitHover(toggle.gameObject);
             }
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Toggle reference.
+            /// </summary>
             public Toggle toggle;
+
+            /// <summary>
+            /// The default value to display if value is in an incorrect format.
+            /// </summary>
             public bool defaultValue;
+
+            #endregion
+
+            #region Functions
 
             public override void Tick(ModifierCard modifierCard, IModifierReference reference)
             {
@@ -1250,21 +1336,42 @@ namespace BetterLegacy.Editor.Data.Elements
                 else if (bool.TryParse(value, out bool isOn))
                     toggle.SetIsOnWithoutNotify(isOn);
             }
+
+            #endregion
         }
 
         public class DropdownValue : Value
         {
+            #region Constructors
+
             public DropdownValue(int valueIndex, Dropdown dropdown) : base(valueIndex)
             {
                 this.dropdown = dropdown;
                 InitHover(dropdown.gameObject);
             }
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Dropdown reference.
+            /// </summary>
             public Dropdown dropdown;
 
+            /// <summary>
+            /// Function that gets the value for the dropdown to display.
+            /// </summary>
             public Func<string, int> getValue;
 
+            /// <summary>
+            /// The default value to display if value is in an incorrect format.
+            /// </summary>
             public int defaultValue;
+
+            #endregion
+
+            #region Functions
 
             public override void Tick(ModifierCard modifierCard, IModifierReference reference)
             {
@@ -1294,18 +1401,33 @@ namespace BetterLegacy.Editor.Data.Elements
                 else if (int.TryParse(value, out int num))
                     dropdown.SetValueWithoutNotify(num);
             }
+
+            #endregion
         }
 
         public class ColorSlotsValue : Value
         {
+            #region Constructors
+
             public ColorSlotsValue(int valueIndex, GameObject gameObject, Toggle[] toggles) : base(valueIndex)
             {
                 this.toggles = toggles;
                 InitHover(gameObject);
             }
 
+            #endregion
+
+            #region Values
+
+            /// <summary>
+            /// Array of toggles.
+            /// </summary>
             public Toggle[] toggles;
             bool cachedHover;
+
+            #endregion
+
+            #region Functions
 
             public override void Tick(ModifierCard modifierCard, IModifierReference reference)
             {
@@ -1340,6 +1462,8 @@ namespace BetterLegacy.Editor.Data.Elements
                 for (int i = 0; i < toggles.Length; i++)
                     toggles[i].SetIsOnWithoutNotify(i == slot);
             }
+
+            #endregion
         }
 
         #endregion
