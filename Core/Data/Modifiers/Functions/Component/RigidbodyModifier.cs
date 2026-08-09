@@ -62,7 +62,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 if (modifierLoop.reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables));
+                var tag = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
+                var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
+                if (cache.tag != tag)
+                    cache.UpdateCache(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag));
+                var list = cache.group;
                 if (list.IsEmpty())
                     return;
 
@@ -71,8 +75,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return;
             }
 
-            if (modifierLoop.reference is BeatmapObject beatmapObject)
-                Apply(beatmapObject, gravity, collisionMode, drag, bodyType, velocityX, velocityY);
+            if (modifierLoop.reference is not BeatmapObject beatmapObject)
+                return;
+            modifier.Result = beatmapObject;
+            Apply(beatmapObject, gravity, collisionMode, drag, bodyType, velocityX, velocityY);
         }
 
         int GetValueIndex(int index) => isGroup ? index + 1 : index;
@@ -83,16 +89,16 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return;
 
-            if (!beatmapObject.rigidbody)
-                beatmapObject.rigidbody = runtimeObject.visualObject.gameObject.GetOrAddComponent<Rigidbody2D>();
+            if (!runtimeObject.visualObject.rigidbody)
+                runtimeObject.visualObject.rigidbody = runtimeObject.visualObject.gameObject.GetOrAddComponent<Rigidbody2D>();
 
-            beatmapObject.rigidbody.gravityScale = gravity;
-            beatmapObject.rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-            beatmapObject.rigidbody.drag = drag;
+            runtimeObject.visualObject.rigidbody.gravityScale = gravity;
+            runtimeObject.visualObject.rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+            runtimeObject.visualObject.rigidbody.drag = drag;
 
-            beatmapObject.rigidbody.bodyType = (RigidbodyType2D)Mathf.Clamp(bodyType, 0, 2);
+            runtimeObject.visualObject.rigidbody.bodyType = (RigidbodyType2D)Mathf.Clamp(bodyType, 0, 2);
 
-            beatmapObject.rigidbody.velocity += new Vector2(velocityX, velocityY);
+            runtimeObject.visualObject.rigidbody.velocity += new Vector2(velocityX, velocityY);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
@@ -120,6 +126,23 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             index++;
 
             modifierCard.DropdownGenerator(modifier, reference, "Body Type", index, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
+        }
+
+        public override void OnRemoveCache(Modifier modifier)
+        {
+            if (modifier.TryGetResult(out BeatmapObject beatmapObject) && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
+            {
+                CoreHelper.Destroy(beatmapObject.runtimeObject.visualObject.rigidbody);
+                beatmapObject.runtimeObject.visualObject.rigidbody = null;
+            }
+            else if (modifier.TryGetResult(out GenericGroupCache<BeatmapObject> cache))
+                foreach (var other in cache.group)
+                {
+                    if (!other.runtimeObject || !other.runtimeObject.visualObject)
+                        continue;
+                    CoreHelper.Destroy(other.runtimeObject.visualObject.rigidbody);
+                    other.runtimeObject.visualObject.rigidbody = null;
+                }
         }
 
         #endregion

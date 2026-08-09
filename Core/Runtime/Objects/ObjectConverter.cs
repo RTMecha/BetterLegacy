@@ -158,11 +158,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 visualObject.SetActive(!beatmapObject.editorData.hidden);
 
                 if (beatmapObject.editorData.selectable)
-                {
-                    var obj = visualObject.AddComponent<SelectObject>();
-                    obj.SetObject(beatmapObject);
-                    beatmapObject.selector = obj;
-                }
+                    visualObject.AddComponent<SelectObject>().SetObject(beatmapObject, visual);
             }
 
             UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());

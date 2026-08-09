@@ -182,14 +182,24 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         
         public class GenericGroupCache<TList, TObject>
         {
+            #region Constructors
+
             public GenericGroupCache() { }
 
             public GenericGroupCache(string tag, List<TList> group) => UpdateCache(tag, group);
             public GenericGroupCache(string tag, TObject obj) => UpdateCache(tag, obj);
 
+            #endregion
+
+            #region Values
+
             public string tag;
             public List<TList> group;
             public TObject obj;
+
+            #endregion
+
+            #region Values
 
             public void UpdateCache(string tag, List<TList> group)
             {
@@ -207,6 +217,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 this.tag = tag;
             }
+
+            #endregion
         }
 
         public class GenericGroupCache<T> : GenericGroupCache<T, T>

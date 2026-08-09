@@ -56,6 +56,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         #region Functions
 
+        TrailRenderer InitTrailRenderer(GameObject gameObject)
+        {
+            var trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
+            trailRenderer.material = LegacyResources.trailMaterial;
+            trailRenderer.material.color = Color.white;
+            return trailRenderer;
+        }
+
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is not BeatmapObject beatmapObject)
@@ -66,16 +74,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return;
 
             var gameObject = runtimeObject.visualObject.gameObject;
-
-            if (!beatmapObject.trailRenderer)
-            {
-                beatmapObject.trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
-
-                beatmapObject.trailRenderer.material = LegacyResources.trailMaterial;
-                beatmapObject.trailRenderer.material.color = Color.white;
-            }
-
-            var tr = beatmapObject.trailRenderer;
+            var tr = modifier.GetResultOrDefault(() => InitTrailRenderer(gameObject));
+            if (!tr)
+                tr = InitTrailRenderer(gameObject);
 
             var alignment = Parser.TryParse(modifier.GetValue(isHex ? 5 : 7, modifierLoop.variables), true, LineAlignment.View);
             if (tr.alignment != alignment)
@@ -105,8 +106,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override void Inactive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
-                beatmapObject.trailRenderer.emitting = false;
+            if (modifier.TryGetResult(out TrailRenderer trailRenderer))
+                trailRenderer.emitting = false;
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
@@ -126,6 +127,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.ColorGenerator(modifier, reference, "End Color", 5);
             modifierCard.SingleGenerator(modifier, reference, "End Opacity", 6, 0f);
             modifierCard.DropdownGenerator(modifier, reference, "Alignment", 7, CoreHelper.ToOptionData<LineAlignment>());
+        }
+
+        public override void OnRemoveCache(Modifier modifier)
+        {
+            if (!modifier.TryGetResult(out TrailRenderer trailRenderer))
+                return;
+            CoreHelper.Destroy(trailRenderer);
+            modifier.Result = default;
         }
 
         #endregion

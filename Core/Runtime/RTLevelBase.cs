@@ -712,21 +712,18 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case ObjectContext.SELECTABLE: {
-                        if (!beatmapObject.runtimeObject || beatmapObject.editorData.selectable == beatmapObject.selector)
+                        if (!beatmapObject.runtimeObject || beatmapObject.editorData.selectable == beatmapObject.runtimeObject.visualObject.selector)
                             break;
 
-                        if (beatmapObject.selector)
+                        if (beatmapObject.runtimeObject.visualObject.selector)
                         {
-                            CoreHelper.Destroy(beatmapObject.selector);
-                            beatmapObject.selector = null;
+                            CoreHelper.Destroy(beatmapObject.runtimeObject.visualObject.selector);
+                            beatmapObject.runtimeObject.visualObject.selector = null;
                             if (!beatmapObject.editorData.selectable)
                                 break;
                         }
 
-                        var obj = beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>();
-                        obj.SetObject(beatmapObject);
-                        beatmapObject.selector = obj;
-
+                        beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>().SetObject(beatmapObject, beatmapObject.runtimeObject.visualObject);
                         break;
                     }
                 case ObjectContext.HIDE: {
@@ -987,11 +984,7 @@ namespace BetterLegacy.Core.Runtime
                 visualObject.SetActive(!beatmapObject.editorData.hidden);
 
                 if (beatmapObject.editorData.selectable)
-                {
-                    var obj = visualObject.AddComponent<SelectObject>();
-                    obj.SetObject(beatmapObject);
-                    beatmapObject.selector = obj;
-                }
+                    visualObject.AddComponent<SelectObject>().SetObject(beatmapObject, visual);
             }
 
             UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());

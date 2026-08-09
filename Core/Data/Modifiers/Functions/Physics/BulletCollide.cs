@@ -40,14 +40,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 solidObject.UpdateCollider();
             }
 
-            if (!beatmapObject.detector)
-            {
-                var op = runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>();
-                op.beatmapObject = beatmapObject;
-                beatmapObject.detector = op;
-            }
-
-            return beatmapObject.detector && beatmapObject.detector.bulletOver;
+            if (!beatmapObject.runtimeObject.visualObject.detector)
+                runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>().SetObject(beatmapObject);
+            return beatmapObject.runtimeObject.visualObject.detector && beatmapObject.runtimeObject.visualObject.detector.bulletOver;
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable) { }

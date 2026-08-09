@@ -11,14 +11,12 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
@@ -88,7 +86,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => detailMode = value ? DetailMode.HighDetail : DetailMode.Normal;
         }
 
+        /// <summary>
+        /// Detail mode.
+        /// </summary>
         public DetailMode detailMode;
+
+        #region Animation
 
         /// <summary>
         /// Animation events.
@@ -103,6 +106,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<List<EventKeyframe>> Events { get => events; set => events = value; }
 
         public float AnimLength => GetObjectLifeLength();
+
+        /// <summary>
+        /// Reference ID for animations.
+        /// </summary>
+        public string animID;
+
+        #endregion
 
         #region Parent
 
@@ -606,31 +616,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Runtime
 
-        /// <summary>
-        /// For object modifiers.
-        /// </summary>
-        public List<Component> components = new List<Component>();
-
-        /// <summary>
-        /// Rigidbody for modifiers.
-        /// </summary>
-        public Rigidbody2D rigidbody;
-
-        /// <summary>
-        /// ParticleSystem for modifiers.
-        /// </summary>
-        public ParticleSystem particleSystem;
-
-        /// <summary>
-        /// TrailRender for modifiers.
-        /// </summary>
-        public TrailRenderer trailRenderer;
-
-        /// <summary>
-        /// Used for editor optimization.
-        /// </summary>
-        public SelectObject selector;
-
         public RTLevelBase ParentRuntime { get; set; }
 
         /// <summary>
@@ -655,19 +640,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public RTParticles runtimeParticles;
 
-        /// <summary>
-        /// Use for object modifiers.
-        /// </summary>
-        public Detector detector;
-
         #endregion
 
         #region Editor
-
-        /// <summary>
-        /// Reference ID for animations.
-        /// </summary>
-        public string animID;
 
         /// <summary>
         /// Data for the object in the editor.
