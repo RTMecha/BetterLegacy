@@ -5,7 +5,6 @@ using UnityEngine;
 using ILMath;
 
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Editor;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
@@ -290,117 +289,6 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                     obj = target;
             }
         }
-
-        #endregion
-    }
-
-    public abstract class ModifierTriggerBase : ModifierFunctionBase
-    {
-        #region Values
-
-        public override Sprite Icon => EditorSprites.QuestionSprite;
-
-        #endregion
-
-        #region Functions
-
-        public abstract bool Run(Modifier modifier, ModifierLoop modifierLoop);
-
-        public Modifier CreateModifier(string name, params string[] values) => new Modifier(Modifier.Type.Trigger, name, true, values)
-        {
-            function = this,
-            trigger = this,
-            compatibility = Compatibility,
-        };
-
-        public Modifier CreateModifier(string name, int version, params string[] values) => new Modifier(Modifier.Type.Trigger, name, true, values)
-        {
-            function = this,
-            trigger = this,
-            compatibility = Compatibility,
-            version = version,
-        };
-
-        public void SetupModifier(params string[] values) => Modifier = CreateModifier(Name, values);
-        
-        public void SetupModifier(int version, params string[] values) => Modifier = CreateModifier(Name, version, values);
-
-        #endregion
-    }
-
-    public abstract class ModifierActionBase : ModifierFunctionBase
-    {
-        #region Values
-
-        public override Sprite Icon => EditorSprites.ExclaimSprite;
-
-        #endregion
-
-        #region Functions
-
-        public abstract void Run(Modifier modifier, ModifierLoop modifierLoop);
-
-        public Modifier CreateModifier(string name, params string[] values) => new Modifier(Modifier.Type.Action, name, true, values)
-        {
-            function = this,
-            action = this,
-            compatibility = Compatibility,
-        };
-        
-        public Modifier CreateModifier(string name, bool constant, params string[] values) => new Modifier(Modifier.Type.Action, name, constant, values)
-        {
-            function = this,
-            action = this,
-            compatibility = Compatibility,
-        };
-
-        public Modifier CreateModifier(string name, int version, params string[] values) => new Modifier(Modifier.Type.Action, name, true, values)
-        {
-            function = this,
-            action = this,
-            compatibility = Compatibility,
-            version = version,
-        };
-        
-        public Modifier CreateModifier(string name, int version, bool constant, params string[] values) => new Modifier(Modifier.Type.Action, name, constant, values)
-        {
-            function = this,
-            action = this,
-            compatibility = Compatibility,
-            version = version,
-        };
-
-        public void SetupModifier(params string[] values) => Modifier = CreateModifier(Name, values);
-
-        public void SetupModifier(bool constant, params string[] values) => Modifier = CreateModifier(Name, constant, values);
-        
-        public void SetupModifier(int version, params string[] values) => Modifier = CreateModifier(Name, version, values);
-        
-        public void SetupModifier(int version, bool constant, params string[] values) => Modifier = CreateModifier(Name, version, constant, values);
-
-        #endregion
-    }
-
-    public abstract class ModifierVariableBase : ModifierActionBase
-    {
-        #region Values
-
-        public override Sprite Icon => EditorSprites.DownArrow;
-
-        #endregion
-
-        #region Functions
-
-        public override void Run(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            var value = GetValue(modifier, modifierLoop);
-            if (value != null)
-                modifierLoop.variables[GetKey(modifier, modifierLoop)] = value;
-        }
-
-        public virtual string GetKey(Modifier modifier, ModifierLoop modifierLoop) => FormatStringVariables(modifier.GetValue(0), modifierLoop.variables);
-
-        public abstract string GetValue(Modifier modifier, ModifierLoop modifierLoop);
 
         #endregion
     }
