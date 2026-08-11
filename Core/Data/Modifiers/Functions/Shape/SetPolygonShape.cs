@@ -144,7 +144,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.SingleGenerator(modifier, reference, "Thick Scale Y", 8 + index);
             modifierCard.SingleGenerator(modifier, reference, "Thick Angle", 10 + index);
             modifierCard.IntegerGenerator(modifier, reference, "Slices", 4 + index, max: 32);
-            modifierCard.SingleGenerator(modifier, reference, "Angle", 9 + index);
+            modifierCard.SingleGenerator(modifier, reference, "Angle", 9 + index, amount: 15f, multiply: 3f);
             modifierCard.SingleGenerator(modifier, reference, "Alternate", 11 + index, 1f);
         }
 
