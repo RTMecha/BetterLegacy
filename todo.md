@@ -89,6 +89,7 @@
   Update: 1.10.0+  
 - Object pooling  
   Update: 1.10.0  
+- Use 3D Axis toggle for scale keyframes.
   
 
 ### Story
