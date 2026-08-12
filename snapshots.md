@@ -1,5 +1,8 @@
 ﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [???]
 ## Changes
+### Core
+- callModifierBlock modifier now allows for individual caches.
+
 ### Editor
 - Improved custom keyframe display.
 
