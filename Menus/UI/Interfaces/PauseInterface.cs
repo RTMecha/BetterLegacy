@@ -283,7 +283,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.CloseMenus();
             CursorManager.inst.HideCursor();
             onCooldownEnd?.Invoke();
-            RTBeatmap.Current?.Resume();
+            if (!ProjectArrhythmia.State.IsInLobby)
+                RTBeatmap.Current?.Resume();
             if (ProjectArrhythmia.State.IsHosting)
                 NetworkFunction.SyncLevelToClients();
         }
@@ -313,7 +314,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (ProjectArrhythmia.State.IsInLobby && sendLobbySignal)
                 NetworkFunction.PauseGame();
 
-            RTBeatmap.Current?.Pause();
+            if (!ProjectArrhythmia.State.IsInLobby)
+                RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
             Current = new PauseInterface();
         }
