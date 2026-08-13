@@ -1,4 +1,7 @@
 ﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [???]
+## Features
+- Added Use 3D Axis toggle to scale keyframes.
+
 ## Changes
 ### Core
 - callModifierBlock modifier now allows for individual caches.
