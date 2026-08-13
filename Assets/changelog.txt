@@ -1,35 +1,14 @@
-# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
+# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
 ## Features
-### Core
-- Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
-- Added "Sync to Lobby" toggle to keyPress, mouseButton and controlPress trigger modifiers. If the trigger is active, the input is sent to other lobby members.
-- Added Filter Mode and Wrap Mode values to setImage modifiers.
-- Added Filter Mode to sprites stored in the level.
-
-### Companion
-- Added "modifier" search parameter for the select command.
-
-### Editor
-- Keyframe values can now be hidden via the keyframe value context menu. They can be unhidden by right clicking the keyframe editor area and selecting "Unhide Values".
+- Added Use 3D Axis toggle to scale keyframes.
 
 ## Changes
 ### Core
-- Removed the "Global" toggle from the playSound modifiers as Asset Packs exist now.
-- BREAKING CHANGE!  
-  Rewrote a lot of the modifier code.  
-  Due to this, some really modifiers might not work anymore.  
-  Please let me know if a modifier is not behaving as it should or appears where it shouldn't.  
-  Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.  
-- Removed the Order Matters toggle and made the on state the default.
-- Attempted to make input select interface sync players in a lobby.
-- Cleaned up some player code.
+- callModifierBlock modifier now allows for individual caches.
+- Levels shared over a lobby now have their resolutions scaled a quarter of the resolution.
 
 ### Editor
-- Levels in the level list now use object pooling, hopefully making level list load times faster.
+- Improved custom keyframe display.
 
 ## Fixes
-- Fixed the color picker value/saturation area not being scaled correctly to the game resolution.
-- Fixed the color picker scaling from the popup parent center rather than the color picker popup center.
-- Fixed JSON trigger modifier values not being correct.
-- Fixed level cover order being incorrect.
-- Fixed playerCollide trigger modifiers constantly flickering.
+- Account for the really old disableObject modifier.
