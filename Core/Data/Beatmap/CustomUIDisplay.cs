@@ -50,6 +50,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             resetValue = 1.0f,
         };
 
+        public static CustomValueDisplay DefaultScaleZDisplay => new CustomValueDisplay()
+        {
+            path = "scale/z",
+            type = UIType.InputField,
+            resetValue = 1.0f,
+        };
+
         public static CustomValueDisplay DefaultRotationXDisplay => new CustomValueDisplay()
         {
             path = "rotation/x",

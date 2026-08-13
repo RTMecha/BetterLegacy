@@ -3353,12 +3353,12 @@ namespace BetterLegacy.Core.Components.Player
             if (animation.animateScale)
                 for (int i = 0; i < animation.scaleKeyframes.Count; i++)
                 {
-                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation, animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation, animation.scaleKeyframes, ObjectConverter.DefaultScaleKeyframe);
 
                     if (animation.transition && customObject.visualObject)
                         scaleKeyframes[0].SetValue(customObject.anim.scale);
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, sca =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(scaleKeyframes, sca =>
                     {
                         customObject.anim.scale = sca;
                     }, interpolateOnComplete: true));

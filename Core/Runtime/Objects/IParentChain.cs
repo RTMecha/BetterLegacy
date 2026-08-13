@@ -217,7 +217,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     if (animateScale)
                     {
                         var r = parentObject.beatmapObject.reactiveScaleOffset;
-                        var value = (parentObject.beatmapObject.disableScaleSequence ? Vector2.one : parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset))).ToVector3(1f) + r;
+                        var value = (parentObject.beatmapObject.disableScaleSequence ? Vector3.one : parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset))) + r;
                         value = RTMath.Scale(value, parentObject.beatmapObject.fullTransform.scale);
                         RTMath.Operation(ref value, parentObject.beatmapObject.ScaleOffset, parentObject.beatmapObject.ScaleOperation);
 

@@ -173,10 +173,7 @@ namespace BetterLegacy.Core.Helpers
 
                 // Animate scale
                 if (animateSca)
-                {
-                    var scaleSequence = takeFrom.cachedSequences.ScaleSequence.GetValue(currentTime - time - delaySca);
-                    applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
-                }
+                    applyTo.scaleOffset = takeFrom.cachedSequences.ScaleSequence.GetValue(currentTime - time - delaySca) - Vector3.one;
 
                 // Animate rotation
                 if (animateRot)

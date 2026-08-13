@@ -980,6 +980,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyInputField(startHexColorField);
             }
 
+            // 3D Scale
+            {
+                var use3D = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.KeyframeDialogs[1].transform, "use3D");
+                var use3DToggle = use3D.GetComponent<ToggleButtonStorage>();
+                use3DToggle.Text = "Use 3D Axis";
+
+                EditorThemeManager.ApplyToggle(use3DToggle);
+
+                var labels = ObjEditor.inst.KeyframeDialogs[1].transform.Find("scale").GetPreviousSibling();
+                var scaZLabel = labels.GetChild(0).gameObject.Duplicate(labels, "text");
+                var scaZLabelText = scaZLabel.GetComponent<Text>();
+                scaZLabelText.text = "Scale Z";
+                EditorThemeManager.ApplyLightText(scaZLabelText);
+            }
+
             // 3D Rotation
             {
                 var use3D = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.KeyframeDialogs[2].transform, "use3D");
@@ -1069,28 +1084,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
 
-                        if (i == 0 || i == 2)
+                        var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
+                        flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                        var flipZStorage = flipZ.GetComponent<FunctionButtonStorage>();
+                        flipZStorage.Text = "Flip Z";
+                        flipZStorage.OnClick.NewListener(() =>
                         {
-                            var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
-                            flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-                            var flipZStorage = flipZ.GetComponent<FunctionButtonStorage>();
-                            flipZStorage.Text = "Flip Z";
-                            flipZStorage.OnClick.NewListener(() =>
+                            foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
-                                {
-                                    var eventKeyframe = timelineObject.eventKeyframe;
-                                    eventKeyframe.values[2] = -eventKeyframe.values[2];
-                                }
+                                var eventKeyframe = timelineObject.eventKeyframe;
+                                eventKeyframe.values[2] = -eventKeyframe.values[2];
+                            }
 
-                                var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                Timeline.RenderDialog(beatmapObject);
-                            });
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            Timeline.RenderDialog(beatmapObject);
+                        });
 
-                            EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
-                            EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
-                        }
+                        EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
+                        EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
                     }
 
                     var edit = parent.Find("edit");

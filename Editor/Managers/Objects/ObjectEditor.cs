@@ -2699,7 +2699,8 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.editorData.GetDisplay("position/z", CustomValueDisplay.DefaultPositionZDisplay));
             Dialog.keyframeDialogs[1].InitCustomUI(
                 beatmapObject.editorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
-                beatmapObject.editorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));
+                beatmapObject.editorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay),
+                beatmapObject.editorData.GetDisplay("scale/z", CustomValueDisplay.DefaultScaleZDisplay));
             Dialog.keyframeDialogs[2].InitCustomUI(
                 beatmapObject.editorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationXDisplay),
                 beatmapObject.editorData.GetDisplay("rotation/y", CustomValueDisplay.DefaultRotationYDisplay),

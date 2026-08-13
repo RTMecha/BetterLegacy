@@ -455,12 +455,12 @@ namespace BetterLegacy.Core.Data
             if (animateScale)
                 for (int i = 0; i < scaleKeyframes.Count; i++)
                 {
-                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(this, this.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(this, this.scaleKeyframes, ObjectConverter.DefaultScaleKeyframe);
 
                     if (transition)
                         scaleKeyframes[0].SetValue(transform.localScale);
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(scaleKeyframes, vector =>
                     {
                         if (transform)
                             transform.localScale = new Vector3(scaleOffset.x * vector.x, scaleOffset.y * vector.y, 1f);

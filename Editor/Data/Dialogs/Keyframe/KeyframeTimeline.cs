@@ -1488,6 +1488,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         var flipX = kfdialog.Find("flipx").gameObject;
                         var flipY = kfdialog.Find("flipy").gameObject;
+                        var flipZ = kfdialog.Find("flipz").gameObject;
                         EditorContextMenu.AddContextMenu(flipX,
                             new ButtonElement("Hide Flip Buttons", () =>
                             {
@@ -1500,8 +1501,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
+                        EditorContextMenu.AddContextMenu(flipZ,
+                            new ButtonElement("Hide Flip Button", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
                         EditorHelper.SetComplexity(flipX, "scale_keyframe/flip_x", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
                         EditorHelper.SetComplexity(flipY, "scale_keyframe/flip_y", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipZ, "rotation_keyframe/flip_z", Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+
+                        var use3DToggle = (dialog.Content ? dialog.Content : dialog.GameObject.transform.AsRT()).Find("use3D").GetComponent<Toggle>();
+                        use3DToggle.interactable = !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/lock_3d_axis", out float axisLock) || axisLock != 1f;
+                        use3DToggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.values.Length > 2);
+                        use3DToggle.onValueChanged.NewListener(_val =>
+                        {
+                            if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/force_3d_axis", out float forceRelative))
+                                _val = forceRelative == 1f;
+
+                            foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            {
+                                var values = firstKF.eventKeyframe.values;
+                                if (_val)
+                                    firstKF.eventKeyframe.SetValues(values[0], values[1], values.Length > 2 ? values[2] : 1f);
+                                else
+                                    firstKF.eventKeyframe.SetValues(values[0], values[1]);
+                            }
+
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (beatmapObject)
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                            RenderDialog(animatable);
+                        });
+
+                        EditorHelper.SetComplexity(use3DToggle.gameObject, "rotation_keyframe/use_3d", Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/3d_axis_active", out float use3DActive) || use3DActive == 1f);
+                        EditorContextMenu.AddContextMenu(use3DToggle.gameObject,
+                            new ButtonElement("Hide 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/3d_axis_active"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement(dialog.RelativeToggle.Interactable ? "Lock 3D Axis Toggle" : "Unlock 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/lock_3d_axis"] = use3DToggle.interactable ? 1f : 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis On", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 1f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis Off", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Don't Force 3D Axis", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/force_3d_axis")),
+                            new SpacerElement(),
+                            new ButtonElement("Remove 3D Axis Settings", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_3d_axis");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }));
 
                         break;
                     }

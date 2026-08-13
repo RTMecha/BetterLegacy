@@ -25,9 +25,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 new Vector3Keyframe(0f, Vector3.zero, Ease.Linear),
             });
-            scaleSequence = beatmapObject.cachedSequences?.ScaleSequence ?? new Sequence<Vector2>(new List<IKeyframe<Vector2>>
+            scaleSequence = beatmapObject.cachedSequences?.ScaleSequence ?? new Sequence<Vector3>(new List<IKeyframe<Vector3>>
             {
-                new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
+                new Vector3Keyframe(0f, Vector3.one, Ease.Linear),
             });
             rotationSequence = beatmapObject.cachedSequences?.RotationSequence ?? new Sequence<Vector3>(new List<IKeyframe<Vector3>>
             {
@@ -65,7 +65,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float boneLength;
 
         public Sequence<Vector3> positionSequence;
-        public Sequence<Vector2> scaleSequence;
+        public Sequence<Vector3> scaleSequence;
         public Sequence<Vector3> rotationSequence;
 
         public bool parentAnimatePosition;

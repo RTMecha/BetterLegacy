@@ -437,7 +437,8 @@ namespace BetterLegacy.Editor.Managers
                 animation.EditorData.GetDisplay("position/z", CustomValueDisplay.DefaultPositionZDisplay));
             Dialog.keyframeDialogs[1].InitCustomUI(
                 animation.EditorData.GetDisplay("scale/x", CustomValueDisplay.DefaultScaleXDisplay),
-                animation.EditorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay));
+                animation.EditorData.GetDisplay("scale/y", CustomValueDisplay.DefaultScaleYDisplay),
+                animation.EditorData.GetDisplay("scale/z", CustomValueDisplay.DefaultScaleZDisplay));
             Dialog.keyframeDialogs[2].InitCustomUI(
                 animation.EditorData.GetDisplay("rotation/x", CustomValueDisplay.DefaultRotationXDisplay),
                 animation.EditorData.GetDisplay("rotation/y", CustomValueDisplay.DefaultRotationYDisplay),

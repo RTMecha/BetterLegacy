@@ -1263,10 +1263,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             };
             var axis = RTString.axis.GetAtOrDefault(valueIndex, string.Empty);
             var complexityPath = $"{typeName}_keyframe/{axis}_axis";
-            EditorHelper.SetComplexity(GameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
+            EditorHelper.SetComplexity(GameObject, complexityPath, (type == 0 || type == 1) && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
             if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
             {
-                EditorHelper.SetComplexity(label.gameObject, complexityPath, type == 0 && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
+                EditorHelper.SetComplexity(label.gameObject, complexityPath, (type == 0 || type == 1) && valueIndex == 2 || type == 2 && valueIndex > 0 ? Complexity.Advanced : Complexity.Simple, visible: () => firstKF.eventKeyframe.values.Length > valueIndex && Display.enabled);
                 label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
             }
         }

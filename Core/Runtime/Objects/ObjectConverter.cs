@@ -603,32 +603,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         #region Sequences
 
         public static Vector3Keyframe DefaultVector3Keyframe => new Vector3Keyframe(0f, Vector3.zero, Ease.Linear);
-        public static Vector2Keyframe DefaultVector2Keyframe => new Vector2Keyframe(0f, Vector2.one, Ease.Linear);
+        public static Vector3Keyframe DefaultScaleKeyframe => new Vector3Keyframe(0f, Vector3.one, Ease.Linear);
         public static FloatKeyframe DefaultFloatKeyframe => new FloatKeyframe(0f, 0f, Ease.Linear);
         public static ThemeKeyframe DefaultThemeKeyframe => new ThemeKeyframe(0f, 0, 0f, 0f, 0f, 0f, Ease.Linear);
-
-        public IEnumerator ICacheSequence(BeatmapObject beatmapObject)
-        {
-            var collection = new CachedSequences()
-            {
-                PositionSequence = GetVector3Sequence(beatmapObject, beatmapObject.events[0], DefaultVector3Keyframe),
-                ScaleSequence = GetVector2Sequence(beatmapObject, beatmapObject.events[1], DefaultVector2Keyframe),
-            };
-            collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], DefaultVector3Keyframe, collection.PositionSequence);
-
-            // Empty objects don't need a color sequence, so it is not cached
-            if (EditorConfig.Instance.ShowEmpties.Value || beatmapObject.objectType != ObjectType.Empty)
-            {
-                collection.ColorSequence = GetColorSequence(beatmapObject, beatmapObject.events[3], DefaultThemeKeyframe);
-
-                if (beatmapObject.gradientType != 0)
-                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject, beatmapObject.events[3], DefaultThemeKeyframe, true);
-            }
-
-            beatmapObject.cachedSequences = collection;
-
-            yield break;
-        }
 
         public CachedSequences CacheSequence(BeatmapObject beatmapObject) => beatmapObject.cachedSequences = CreateSequence(beatmapObject);
 
@@ -642,7 +619,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public void UpdateCachedSequence(BeatmapObject beatmapObject, CachedSequences collection)
         {
             collection.PositionSequence = GetVector3Sequence(beatmapObject, beatmapObject.events[0], DefaultVector3Keyframe);
-            collection.ScaleSequence = GetVector2Sequence(beatmapObject, beatmapObject.events[1], DefaultVector2Keyframe);
+            collection.ScaleSequence = GetVector2Sequence(beatmapObject, beatmapObject.events[1], DefaultScaleKeyframe);
             collection.RotationSequence = GetFloatSequence(beatmapObject, beatmapObject.events[2], DefaultVector3Keyframe, collection.PositionSequence);
 
             // Empty objects don't need a color sequence, so it is not cached
@@ -704,17 +681,17 @@ namespace BetterLegacy.Core.Runtime.Objects
             return keyframes;
         }
 
-        public static Sequence<Vector2> GetVector2Sequence(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe) => new Sequence<Vector2>(GetVector2Keyframes(obj, eventKeyframes, defaultKeyframe));
+        public static Sequence<Vector3> GetVector2Sequence(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe) => new Sequence<Vector3>(GetVector2Keyframes(obj, eventKeyframes, defaultKeyframe));
 
-        public static List<IKeyframe<Vector2>> GetVector2Keyframes(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector2Keyframe defaultKeyframe)
+        public static List<IKeyframe<Vector3>> GetVector2Keyframes(PAObjectBase obj, List<EventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe)
         {
-            List<IKeyframe<Vector2>> keyframes = new List<IKeyframe<Vector2>>(eventKeyframes.Count);
+            List<IKeyframe<Vector3>> keyframes = new List<IKeyframe<Vector3>>(eventKeyframes.Count);
 
-            var currentValue = Vector2.zero;
+            var currentValue = Vector3.zero;
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                var value = new Vector2(eventKeyframe.values[0], eventKeyframe.values[1]);
+                var value = new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.GetValue(2, 1f));
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 6)
                 {
                     var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(obj.id, eventKeyframe, num);
@@ -727,7 +704,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (keyframes.Has(x => x.Time == eventKeyframe.time))
                     continue;
 
-                keyframes.Add(new Vector2Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
+                keyframes.Add(new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
                 num++;
             }
 
