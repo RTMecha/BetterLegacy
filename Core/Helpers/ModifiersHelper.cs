@@ -267,53 +267,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float t, float loop, AxisSource axisSource, int version)
         {
-            switch (axisSource)
-            {
-                case AxisSource.Sequence: {
-                        if (!reference.cachedSequences)
-                            break;
-                        if (version == 0 && fromType == 2)
-                            fromAxis = 2;
-                        return fromType switch
-                        {
-                            0 => Mathf.Clamp(((reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * reference.fullTransform.scale.At(fromAxis)) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.rotation.At(fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        };
-                    }
-                case AxisSource.Visual: {
-                        if (reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-                            return Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.parent.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
-                        break;
-                    }
-                case AxisSource.Offset: {
-                        if (version == 0 && fromType == 2)
-                            fromAxis = 2;
-                        return fromType switch
-                        {
-                            0 => Mathf.Clamp((reference.positionOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((reference.scaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp((reference.rotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        };
-                    }
-                case AxisSource.SequenceOffset: {
-                        if (version == 0 && fromType == 2)
-                            fromAxis = 2;
-                        if (!reference.cachedSequences)
-                            return Mathf.Clamp((reference.GetTransformOffset(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
-                        return fromType switch
-                        {
-                            0 => Mathf.Clamp(((reference.disablePositionSequence ? 0f : reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis)) + reference.PositionOffset.At(fromAxis) + reference.fullTransform.position.At(fromAxis) - offset) * multiply % loop, min, max),
-                            1 => Mathf.Clamp((((reference.disableScaleSequence ? 1f : reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis)) * reference.fullTransform.scale.At(fromAxis)) + reference.ScaleOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            2 => Mathf.Clamp(((reference.disableRotationSequence ? 0f : reference.cachedSequences.RotationSequence.GetValue(t).At(fromAxis)) + reference.fullTransform.rotation.At(fromAxis) + reference.RotationOffset.At(fromAxis) - offset) * multiply % loop, min, max),
-                            _ => 0f,
-                        };
-                    }
-            }
-
-            return 0f;
+            return Mathf.Clamp((GetAnimation(reference, fromType, fromAxis, t, axisSource) - offset) * multiply % loop, min, max);
         }
 
         public static float GetTime(BeatmapObject reference)

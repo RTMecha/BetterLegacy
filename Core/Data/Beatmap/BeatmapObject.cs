@@ -521,6 +521,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector3 ReactiveScaleOffset { get => reactiveScaleOffset; set => reactiveScaleOffset = value; }
         public float ReactiveRotationOffset { get => reactiveRotationOffset; set => reactiveRotationOffset = value; }
 
+        public Vector3 cachePositionOffset = Vector3.zero;
+
+        public Vector3 cacheScaleOffset = Vector3.zero;
+
+        public Vector3 cacheRotationOffset = Vector3.zero;
+
         /// <summary>
         /// Moves the objects' associated parent objects at this offset.
         /// </summary>
@@ -1822,6 +1828,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             PositionOffset = fullTransformOffset.position;
             ScaleOffset = fullTransformOffset.scale;
             RotationOffset = fullTransformOffset.rotation;
+            cachePositionOffset = Vector3.zero;
+            cacheScaleOffset = Vector3.zero;
+            cacheRotationOffset = Vector3.zero;
 
             PositionOperation = MathOperation.Addition;
             ScaleOperation = MathOperation.Addition;
@@ -1839,6 +1848,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             0 => positionOffset,
             1 => scaleOffset,
             _ => rotationOffset,
+        };
+
+        public float GetTransformOffset(int type, int axis) => GetTransformOffset(type).At(axis);
+
+        public Vector3 GetTransformCache(int type) => type switch
+        {
+            0 => cachePositionOffset,
+            1 => cacheScaleOffset,
+            _ => cacheRotationOffset,
         };
 
         public void SetTransform(int type, Vector3 value)
@@ -1874,6 +1892,25 @@ namespace BetterLegacy.Core.Data.Beatmap
                     }
                 case 2: {
                         rotationOffset[axis] = value;
+                        break;
+                    }
+            }
+        }
+
+        public void SetTransformCache(int type, int axis, float value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        cachePositionOffset[axis] = value;
+                        break;
+                    }
+                case 1: {
+                        cacheScaleOffset[axis] = value;
+                        break;
+                    }
+                case 2: {
+                        cacheRotationOffset[axis] = value;
                         break;
                     }
             }

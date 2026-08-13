@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using UnityEngine;
 using UnityEngine.UI;
 
 using ILMath;
@@ -142,7 +143,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         if (prefabable == null)
                             return;
 
-                        var tag = modifier.GetValue(0, modifierLoop.variables);
+                        var tag = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
                         var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
                         var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
@@ -196,7 +197,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                         try
                         {
-                            var tag = modifier.GetValue(0, modifierLoop.variables);
+                            var tag = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
                             var fromType = modifier.GetInt(1, 0, modifierLoop.variables);
                             var fromAxis = modifier.GetInt(2, 0, modifierLoop.variables);
@@ -205,7 +206,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             var delay = modifier.GetFloat(5, 0f, modifierLoop.variables);
                             var min = modifier.GetFloat(6, -9999f, modifierLoop.variables);
                             var max = modifier.GetFloat(7, 9999f, modifierLoop.variables);
-                            var evaluation = modifier.GetValue(8, modifierLoop.variables);
+                            var evaluation = FormatStringVariables(modifier.GetValue(8, modifierLoop.variables), modifierLoop.variables);
                             var axisSourceRaw = modifier.GetValue(9, modifierLoop.variables);
                             if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
                                 axisSourceRaw = "1";
@@ -256,7 +257,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         if (modifierLoop.reference is not IEvaluatable evaluatable)
                             return;
 
-                        var evaluation = modifier.GetValue(0, modifierLoop.variables);
+                        var evaluation = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
 
                         var toType = modifier.GetInt(1, 0, modifierLoop.variables);
                         var toAxis = modifier.GetInt(2, 0, modifierLoop.variables);
@@ -282,7 +283,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                                 for (int i = 3; i < modifier.values.Count; i += 8)
                                 {
-                                    var group = modifier.GetValue(i + 1);
+                                    var group = FormatStringVariables(modifier.GetValue(i + 1, modifierLoop.variables), modifierLoop.variables);
 
                                     if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject beatmapObject))
                                         cache.objs.Add(beatmapObject);
@@ -299,8 +300,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             int groupIndex = 0;
                             for (int i = 3; i < modifier.values.Count; i += 8)
                             {
-                                var name = modifier.GetValue(i, modifierLoop.variables);
-                                var group = modifier.GetValue(i + 1, modifierLoop.variables);
+                                var name = FormatStringVariables(modifier.GetValue(i, modifierLoop.variables), modifierLoop.variables);
                                 var fromType = modifier.GetInt(i + 2, 0, modifierLoop.variables);
                                 var fromAxis = modifier.GetInt(i + 3, 0, modifierLoop.variables);
                                 var delay = modifier.GetFloat(i + 4, 0f, modifierLoop.variables);
@@ -359,53 +359,40 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         var offsetAudio = modifier.GetBool(12, true, modifierLoop.variables);
                         var delayOffset = modifier.GetFloat(13, 0.1f, modifierLoop.variables);
                         var reverseChain = modifier.GetBool(14, true, modifierLoop.variables);
-                        var requiredTag = modifier.GetValue(15, modifierLoop.variables);
+                        var requiredTag = FormatStringVariables(modifier.GetValue(15, modifierLoop.variables), modifierLoop.variables);
                         var searchChildren = modifier.GetBool(16, false, modifierLoop.variables);
 
-                        var parents = modifier.GetResultOrDefault(() =>
-                        {
-                            var self = beatmapObject;
-                            var parents = new List<BeatmapObject>();
-                            parents.Add(self);
-                            if (searchChildren)
-                                parents.AddRange(GetChildTree(self, requiredTag, parentCount));
-                            else
-                            {
-                                for (int i = 0; i < parentCount; i++)
-                                {
-                                    var parent = self.GetParent();
-                                    if (!parent)
-                                        break;
-                                    if (!string.IsNullOrEmpty(requiredTag) && !parent.Tags.Contains(requiredTag))
-                                    {
-                                        self = parent;
-                                        continue;
-                                    }
-
-                                    parents.Add(parent);
-                                    self = parent;
-                                }
-                            }
-                            if (reverseChain)
-                                parents.Reverse();
-                            return parents;
-                        });
+                        var cache = modifier.GetResultOrDefault(() => new ChainCache(beatmapObject, parentCount, reverseChain, requiredTag, searchChildren));
+                        if (cache.parentCount != parentCount || cache.reverseChain != reverseChain || cache.requiredTag != requiredTag || cache.searchChildren != searchChildren)
+                            cache.Init(beatmapObject, parentCount, reverseChain, requiredTag, searchChildren);
                         for (int i = 0; i < parentCount; i++)
                         {
+                            var currentParentCache = cache.parents.GetAtOrDefault(i, null);
+                            if (!currentParentCache)
+                                continue;
+
+                            var currentParent = currentParentCache.beatmapObject;
+
                             if (i == 0)
                             {
                                 delay += delayOffset;
+                                if (cache.tickCount <= 0)
+                                    continue;
+
+                                for (int j = 0; j < cache.parents.Count; j++)
+                                {
+                                    var parentCache = cache.parents[j];
+                                    // account for other modifiers that have affected transform offsets
+                                    parentCache.currentValue = -(parentCache.GetTransformOffset(fromType, fromAxis) - parentCache.beatmapObject.GetTransformOffset(fromType, fromAxis));
+                                }
                                 continue;
                             }
 
-                            var currentParent = parents.GetAtOrDefault(i, null);
-                            if (!currentParent)
-                                continue;
-
                             var currentValue = 0f;
-                            for (int j = 0; j < RTMath.Clamp(parents.Count, 0, i + 1); j++)
+                            for (int j = 0; j < RTMath.Clamp(cache.parents.Count, 0, i + 1); j++)
                             {
-                                var parent = parents[j];
+                                var parentCache = cache.parents[j];
+                                var parent = parentCache.beatmapObject;
                                 var t = !offsetAudio ? delay : ModifiersHelper.GetTime(parent) - parent.StartTime - delay;
 
                                 fromType = RTMath.Clamp(fromType, 0, parent.events.Count);
@@ -414,10 +401,21 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                     continue;
 
                                 currentValue += ModifiersHelper.GetAnimation(parent, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, 1);
+                                if (axisSource == AxisSource.Offset || axisSource == AxisSource.SequenceOffset)
+                                {
+                                    currentValue -= parent.GetTransformCache(fromType).At(fromAxis);
+                                    currentValue += parentCache.currentValue;
+                                }
+                                //currentValue -= parent.GetTransformCache(fromType).At(fromAxis); // remove previous copy axis chain application
                             }
+                            currentParent.SetTransformCache(toType, toAxis, currentValue);
                             currentParent.SetTransform(toType, toAxis, currentValue);
+                            currentParentCache.positionOffset = currentParent.PositionOffset;
+                            currentParentCache.scaleOffset = currentParent.ScaleOffset;
+                            currentParentCache.rotationOffset = currentParent.RotationOffset;
                             delay += delayOffset;
                         }
+                        cache.tickCount++;
                         break;
                     }
             }
@@ -544,25 +542,6 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
         }
 
-        static List<BeatmapObject> GetChildTree(BeatmapObject self, string requiredTag, int parentCount, int subIndex = 0)
-        {
-            var list = new List<BeatmapObject>();
-            if (subIndex >= parentCount)
-                return list;
-            var children = self.GetChildren();
-            for (int i = 0; i < children.Count; i++)
-            {
-                var child = children[i];
-                if (!string.IsNullOrEmpty(requiredTag) && !child.Tags.Contains(requiredTag))
-                    continue;
-                list.Add(child);
-                var sub = GetChildTree(child, requiredTag, parentCount, subIndex + 1);
-                if (!sub.IsEmpty())
-                    list.AddRange(sub);
-            }
-            return list;
-        }
-
         #endregion
 
         #region Sub Classes
@@ -578,6 +557,112 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public class CopyAxisGroupCache : MathCache
         {
             public List<BeatmapObject> objs = new List<BeatmapObject>();
+        }
+
+        public class ChainCache
+        {
+            #region Constructors
+
+            public ChainCache(BeatmapObject beatmapObject, int parentCount, bool reverseChain, string requiredTag, bool searchChildren) => Init(beatmapObject, parentCount, reverseChain, requiredTag, searchChildren);
+
+            #endregion
+
+            #region Values
+
+            public int parentCount;
+            public bool reverseChain;
+            public string requiredTag;
+            public bool searchChildren;
+            public List<ParentCache> parents;
+            public long tickCount;
+
+            #endregion
+
+            #region Functions
+
+            public void Init(BeatmapObject beatmapObject, int parentCount, bool reverseChain, string requiredTag, bool searchChildren)
+            {
+                this.parentCount = parentCount;
+                this.reverseChain = reverseChain;
+                this.requiredTag = requiredTag;
+                this.searchChildren = searchChildren;
+
+                var self = beatmapObject;
+                parents = new List<ParentCache>();
+                parents.Add(new ParentCache(self));
+                if (searchChildren)
+                    parents.AddRange(GetChildTree(self, requiredTag, parentCount));
+                else
+                {
+                    for (int i = 0; i < parentCount; i++)
+                    {
+                        var parent = self.GetParent();
+                        if (!parent)
+                            break;
+                        if (!string.IsNullOrEmpty(requiredTag) && !parent.Tags.Contains(requiredTag))
+                        {
+                            self = parent;
+                            continue;
+                        }
+
+                        parents.Add(new ParentCache(parent));
+                        self = parent;
+                    }
+                }
+                if (reverseChain)
+                    parents.Reverse();
+            }
+
+            static List<ParentCache> GetChildTree(BeatmapObject self, string requiredTag, int parentCount, int subIndex = 0)
+            {
+                var list = new List<ParentCache>();
+                if (subIndex >= parentCount)
+                    return list;
+                var children = self.GetChildren();
+                for (int i = 0; i < children.Count; i++)
+                {
+                    var child = children[i];
+                    if (!string.IsNullOrEmpty(requiredTag) && !child.Tags.Contains(requiredTag))
+                        continue;
+                    list.Add(new ParentCache(child));
+                    var sub = GetChildTree(child, requiredTag, parentCount, subIndex + 1);
+                    if (!sub.IsEmpty())
+                        list.AddRange(sub);
+                }
+                return list;
+            }
+
+            #endregion
+
+            #region Sub Classes
+
+            public class ParentCache : Exists
+            {
+                public ParentCache(BeatmapObject beatmapObject)
+                {
+                    this.beatmapObject = beatmapObject;
+                    positionOffset = beatmapObject.PositionOffset;
+                    scaleOffset = beatmapObject.ScaleOffset;
+                    rotationOffset = beatmapObject.RotationOffset;
+                }
+
+                public BeatmapObject beatmapObject;
+
+                public Vector3 positionOffset;
+                public Vector3 scaleOffset;
+                public Vector3 rotationOffset;
+                public float currentValue;
+
+                public float GetTransformOffset(int fromType, int fromAxis) => fromType switch
+                {
+                    0 => positionOffset.At(fromAxis),
+                    1 => scaleOffset.At(fromAxis),
+                    2 => rotationOffset.At(fromAxis),
+                    _ => 0f,
+                };
+            }
+
+            #endregion
         }
 
         #endregion
