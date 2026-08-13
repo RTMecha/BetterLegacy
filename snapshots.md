@@ -1,10 +1,11 @@
-﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [???]
+﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
 ## Features
 - Added Use 3D Axis toggle to scale keyframes.
 
 ## Changes
 ### Core
 - callModifierBlock modifier now allows for individual caches.
+- Levels shared over a lobby now have their resolutions scaled a quarter of the resolution.
 
 ### Editor
 - Improved custom keyframe display.
