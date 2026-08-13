@@ -38,13 +38,13 @@ namespace BetterLegacy
     public class LegacyPlugin : BaseUnityPlugin
     {
         public static LegacyPlugin inst;
-        public static string className = "[<color=#0E36FD>Better</color> <color=#4FBDD1>Legacy</color>] " + PluginInfo.PLUGIN_VERSION + "\n";
+        public static string className = "[<color=#0E36FD>Better</color> <color=#4FBDD1>Legacy</color>] " + PluginInfo.PLUGIN_VERSION + " " + SNAPSHOT_VERSION + "\n";
         public static readonly Harmony harmony = new Harmony("BetterLegacy");
 
         /// <summary>
         /// Snapshot version of the mod. If left empty, it means the mod build is not a snapshot.
         /// </summary>
-        public const string SNAPSHOT_VERSION = "snapshot-2026.8.1";
+        public const string SNAPSHOT_VERSION = "snapshot-2026.8.2";
         public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
         public static List<BaseConfig> configs = new List<BaseConfig>();
