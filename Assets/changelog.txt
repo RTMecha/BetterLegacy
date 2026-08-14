@@ -1,14 +1,14 @@
-# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
+# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
 ## Features
-- Added Use 3D Axis toggle to scale keyframes.
+### Companion
+- Added a "tick" command. This has parameters that can control the state of the runtime ticking, good for debugging issues that occur per-tick. Only usable when in the editor and not in an online lobby.
+- Added "reinit_runtime" command. This restarts the level runtime.
 
 ## Changes
 ### Core
-- callModifierBlock modifier now allows for individual caches.
-- Levels shared over a lobby now have their resolutions scaled a quarter of the resolution.
-
-### Editor
-- Improved custom keyframe display.
+- Color related modifiers should all now have gradient support.
 
 ## Fixes
-- Account for the really old disableObject modifier.
+- Fixed Multi Object Editor hex colors not having context menus.
+- Fixed setImage modifiers setting the wrong value in the editor.
+- Attempted to fix copyAxisChain not working with axis source SequenceOffset, but unfortunately this might not be possible.
