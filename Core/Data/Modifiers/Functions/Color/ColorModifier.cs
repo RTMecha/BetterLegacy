@@ -6,6 +6,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
@@ -31,6 +32,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 Modifier.values.Insert(1, "Object Group");
             if (isPlayerDistance)
                 Modifier.values.Insert(2, "1");
+            Modifier.values.Add("0"); // end slot
+            if (mixType == MixType.Lerp && isPlayerDistance)
+                Modifier.values.Add("1");
+            Modifier.values.Add("0"); // end hue
+            Modifier.values.Add("0"); // end sat
+            Modifier.values.Add("0"); // end val
+            if (mixType == MixType.Lerp && !isPlayerDistance)
+                Modifier.values.Add("1");
             IsGroup = isGroup;
         }
 
@@ -128,23 +137,48 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 // queue post tick so the color overrides the sequence color
                 RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var color = values.colorSource switch
+                    var startColor = values.colorSource switch
                     {
                         ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
                         ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
                         ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
-                        _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.index),
+                        _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.startColorSlot),
                     };
-                    color = RTColors.ChangeColorHSV(color, values.hue, values.sat, values.val);
-                    color.a *= values.opacity;
+                    startColor = RTColors.ChangeColorHSV(startColor, values.startHue, values.startSat, values.startVal);
+                    startColor.a *= values.startOpacity;
+                    var endColor = values.colorSource switch
+                    {
+                        ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                        ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                        ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                        _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.endColorSlot),
+                    };
+                    endColor = RTColors.ChangeColorHSV(endColor, values.endHue, values.endSat, values.endVal);
+                    endColor.a *= values.endOpacity;
                     foreach (var bm in list)
                     {
                         if (!bm.runtimeObject || !bm.runtimeObject.visualObject)
                             continue;
+                        if (bm.runtimeObject.visualObject.isGradient && bm.runtimeObject.visualObject is SolidObject solidObject)
+                        {
+                            var colors = solidObject.GetColors();
+                            solidObject.SetColor(mixType switch
+                            {
+                                MixType.Add => colors.startColor + startColor * values.value,
+                                MixType.Lerp => RTMath.Lerp(colors.startColor, startColor, values.value),
+                                _ => colors.startColor,
+                            }, mixType switch
+                            {
+                                MixType.Add => colors.endColor + endColor * values.value,
+                                MixType.Lerp => RTMath.Lerp(colors.endColor, endColor, values.value),
+                                _ => colors.endColor,
+                            });
+                            continue;
+                        }
                         bm.runtimeObject.visualObject.SetColor(mixType switch
                         {
-                            MixType.Add => bm.runtimeObject.visualObject.GetPrimaryColor() + color * values.value,
-                            MixType.Lerp => RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, values.value),
+                            MixType.Add => bm.runtimeObject.visualObject.GetPrimaryColor() + startColor * values.value,
+                            MixType.Lerp => RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), startColor, values.value),
                             _ => bm.runtimeObject.visualObject.GetPrimaryColor(),
                         });
                     }
@@ -161,15 +195,25 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var color = values.colorSource switch
+                var solidObject = runtimeObject.visualObject.isGradient ? runtimeObject.visualObject as SolidObject : null;
+                var startColor = values.colorSource switch
                 {
                     ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
                     ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
                     ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
-                    _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.index),
+                    _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.startColorSlot),
                 };
-                color = RTColors.ChangeColorHSV(color, values.hue, values.sat, values.val);
-                color.a *= values.opacity;
+                startColor = RTColors.ChangeColorHSV(startColor, values.startHue, values.startSat, values.startVal);
+                startColor.a *= values.startOpacity;
+                var endColor = values.colorSource switch
+                {
+                    ThemeSource.Background => ThemeManager.inst.bgColorToLerp,
+                    ThemeSource.GUI => ThemeManager.inst.timelineColorToLerp,
+                    ThemeSource.PlayerTail => ThemeManager.inst.tailColorToLerp,
+                    _ => ThemeManager.inst.Current.GetColor(values.colorSource, values.endColorSlot),
+                };
+                endColor = RTColors.ChangeColorHSV(endColor, values.endHue, values.endSat, values.endVal);
+                endColor.a *= values.endOpacity;
                 if (isPlayerDistance)
                 {
                     var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
@@ -177,18 +221,50 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         return;
 
                     var distance = Vector2.Distance(player.RuntimePlayer.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
+                    if (runtimeObject.visualObject.isGradient && solidObject)
+                    {
+                        var colors = solidObject.GetColors();
+                        solidObject.SetColor(mixType switch
+                        {
+                            MixType.Add => colors.startColor + startColor * -(distance * values.value - values.offset),
+                            MixType.Lerp => Color.Lerp(colors.startColor, startColor, -(distance * values.value - values.offset)),
+                            _ => colors.startColor,
+                        }, mixType switch
+                        {
+                            MixType.Add => colors.endColor + endColor * -(distance * values.value - values.offset),
+                            MixType.Lerp => Color.Lerp(colors.endColor, endColor, -(distance * values.value - values.offset)),
+                            _ => colors.endColor,
+                        });
+                        return;
+                    }
                     runtimeObject.visualObject.SetColor(mixType switch
                     {
-                        MixType.Add => runtimeObject.visualObject.GetPrimaryColor() + color * -(distance * values.value - values.offset),
-                        MixType.Lerp => Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(), color, -(distance * values.value - values.offset)),
+                        MixType.Add => runtimeObject.visualObject.GetPrimaryColor() + startColor * -(distance * values.value - values.offset),
+                        MixType.Lerp => Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(), startColor, -(distance * values.value - values.offset)),
                         _ => runtimeObject.visualObject.GetPrimaryColor(),
+                    });
+                    return;
+                }
+                if (runtimeObject.visualObject.isGradient && solidObject)
+                {
+                    var colors = solidObject.GetColors();
+                    solidObject.SetColor(mixType switch
+                    {
+                        MixType.Add => colors.startColor + startColor * values.value,
+                        MixType.Lerp => RTMath.Lerp(colors.startColor, startColor, values.value),
+                        _ => colors.startColor,
+                    }, mixType switch
+                    {
+                        MixType.Add => colors.endColor + endColor * values.value,
+                        MixType.Lerp => RTMath.Lerp(colors.endColor, endColor, values.value),
+                        _ => colors.endColor,
                     });
                     return;
                 }
                 runtimeObject.visualObject.SetColor(mixType switch
                 {
-                    MixType.Add => runtimeObject.visualObject.GetPrimaryColor() + color * values.value,
-                    MixType.Lerp => RTMath.Lerp(runtimeObject.visualObject.GetPrimaryColor(), color, values.value),
+                    MixType.Add => runtimeObject.visualObject.GetPrimaryColor() + startColor * values.value,
+                    MixType.Lerp => RTMath.Lerp(runtimeObject.visualObject.GetPrimaryColor(), startColor, values.value),
                     _ => runtimeObject.visualObject.GetPrimaryColor(),
                 });
             });
@@ -206,9 +282,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         });
                         modifierCard.ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(5, 4));
 
-                        modifierCard.SingleGenerator(modifier, reference, "Hue", 2, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Saturation", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Value", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Hue", 2, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 4, 0f);
+
+                        modifierCard.SingleGenerator(modifier, reference, "End Hue", 6, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 7, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Value", 8, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Add Amount", 0, 1f);
                         break;
@@ -222,11 +302,18 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             modifier.SetValue(6, _val.ToString());
                             modifierCard.RenderModifier(reference, modifyable);
                         });
-                        modifierCard.ColorGenerator(modifier, reference, "Color", 2, (ThemeSource)modifier.GetInt(6, 4));
+                        var colorSource = (ThemeSource)modifier.GetInt(6, 4);
+                        modifierCard.ColorGenerator(modifier, reference, "Start Color", 2, colorSource);
 
-                        modifierCard.SingleGenerator(modifier, reference, "Hue", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Saturation", 4, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Value", 5, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Hue", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 5, 0f);
+
+                        modifierCard.ColorGenerator(modifier, reference, "End Color", 7, colorSource);
+
+                        modifierCard.SingleGenerator(modifier, reference, "End Hue", 8, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 9, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Value", 10, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Multiply", 0, 1f);
                         break;
@@ -237,12 +324,20 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             modifier.SetValue(6, _val.ToString());
                             modifierCard.RenderModifier(reference, modifyable);
                         });
-                        modifierCard.ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(6, 4));
+                        var colorSource = (ThemeSource)modifier.GetInt(6, 4);
+                        modifierCard.ColorGenerator(modifier, reference, "Start Color", 1, colorSource);
 
-                        modifierCard.SingleGenerator(modifier, reference, "Opacity", 5, 1f);
-                        modifierCard.SingleGenerator(modifier, reference, "Hue", 2, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Saturation", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Value", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 5, 1f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Hue", 2, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 4, 0f);
+
+                        modifierCard.ColorGenerator(modifier, reference, "End Color", 7, colorSource);
+
+                        modifierCard.SingleGenerator(modifier, reference, "End Opacity", 11, 1f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Hue", 8, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 9, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Value", 10, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
                         break;
@@ -256,12 +351,20 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             modifier.SetValue(7, _val.ToString());
                             modifierCard.RenderModifier(reference, modifyable);
                         });
-                        modifierCard.ColorGenerator(modifier, reference, "Color", 2, (ThemeSource)modifier.GetInt(7, 4));
+                        var colorSource = (ThemeSource)modifier.GetInt(7, 4);
+                        modifierCard.ColorGenerator(modifier, reference, "Start Color", 2, colorSource);
 
-                        modifierCard.SingleGenerator(modifier, reference, "Opacity", 6, 1f);
-                        modifierCard.SingleGenerator(modifier, reference, "Hue", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Saturation", 4, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Value", 5, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 6, 1f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Hue", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 5, 0f);
+
+                        modifierCard.ColorGenerator(modifier, reference, "End Color", 8, colorSource);
+
+                        modifierCard.SingleGenerator(modifier, reference, "End Opacity", 12, 1f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Hue", 9, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 10, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Value", 11, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
                         break;
@@ -317,11 +420,16 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             public string tag;
             public float value;
             public float offset;
-            public int index;
-            public float hue;
-            public float sat;
-            public float val;
-            public float opacity;
+            public int startColorSlot;
+            public float startHue;
+            public float startSat;
+            public float startVal;
+            public float startOpacity;
+            public int endColorSlot;
+            public float endHue;
+            public float endSat;
+            public float endVal;
+            public float endOpacity;
             public ThemeSource colorSource;
 
             public static Values Get(Modifier modifier, ModifierLoop modifierLoop) => modifier.Name switch
@@ -329,63 +437,96 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 "addColor" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
-                    index = modifier.GetInt(1, 0, modifierLoop.variables),
-                    hue = modifier.GetFloat(2, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(1, 0, modifierLoop.variables),
+                    startHue = modifier.GetFloat(2, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(4, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(5, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(6, 0, modifierLoop.variables),
+                    endHue = modifier.GetFloat(7, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(8, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(9, 0f, modifierLoop.variables),
+                    startOpacity = 1f,
+                    endOpacity = 1f,
                 },
                 "addColorOther" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
                     tag = modifier.GetValue(1, modifierLoop.variables),
-                    index = modifier.GetInt(2, 0, modifierLoop.variables),
-                    hue = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(4, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(5, 0f, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(2, 0, modifierLoop.variables),
+                    startHue = modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(5, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(7, 0, modifierLoop.variables),
+                    endHue = modifier.GetFloat(8, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(9, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(10, 0f, modifierLoop.variables),
+                    startOpacity = 1f,
+                    endOpacity = 1f,
                 },
                 "lerpColor" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
-                    index = modifier.GetInt(1, 0, modifierLoop.variables),
-                    hue = modifier.GetFloat(2, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(4, 0f, modifierLoop.variables),
-                    opacity = modifier.GetFloat(5, 0f, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(1, 0, modifierLoop.variables),
+                    startHue = modifier.GetFloat(2, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startOpacity = modifier.GetFloat(5, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(7, 0, modifierLoop.variables),
+                    endHue = modifier.GetFloat(8, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(9, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(10, 0f, modifierLoop.variables),
+                    endOpacity = modifier.GetFloat(11, 0f, modifierLoop.variables),
                 },
                 "lerpColorOther" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
                     tag = modifier.GetValue(1, modifierLoop.variables),
-                    index = modifier.GetInt(2, 0, modifierLoop.variables),
-                    hue = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(4, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(5, 0f, modifierLoop.variables),
-                    opacity = modifier.GetFloat(6, 0f, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(2, 0, modifierLoop.variables),
+                    startHue = modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(5, 0f, modifierLoop.variables),
+                    startOpacity = modifier.GetFloat(6, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(7, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(8, 0, modifierLoop.variables),
+                    endHue = modifier.GetFloat(9, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(10, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(11, 0f, modifierLoop.variables),
+                    endOpacity = modifier.GetFloat(12, 0f, modifierLoop.variables),
                 },
                 "addColorPlayerDistance" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
-                    index = modifier.GetInt(1, 0, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(1, 0, modifierLoop.variables),
                     offset = modifier.GetFloat(2, 10f, modifierLoop.variables),
-                    hue = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(4, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(5, 0f, modifierLoop.variables),
+                    startHue = modifier.GetFloat(3, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(5, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(6, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(7, 0, modifierLoop.variables),
+                    endHue = modifier.GetFloat(8, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(9, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(10, 0f, modifierLoop.variables),
+                    startOpacity = 1f,
+                    endOpacity = 1f,
                 },
                 "lerpColorPlayerDistance" => new Values
                 {
                     value = modifier.GetFloat(0, 1f, modifierLoop.variables),
-                    index = modifier.GetInt(1, 0, modifierLoop.variables),
+                    startColorSlot = modifier.GetInt(1, 0, modifierLoop.variables),
                     offset = modifier.GetFloat(2, 10f, modifierLoop.variables),
-                    opacity = modifier.GetFloat(3, 0f, modifierLoop.variables),
-                    hue = modifier.GetFloat(4, 0f, modifierLoop.variables),
-                    sat = modifier.GetFloat(5, 0f, modifierLoop.variables),
-                    val = modifier.GetFloat(6, 0f, modifierLoop.variables),
+                    startOpacity = modifier.GetFloat(3, 1f, modifierLoop.variables),
+                    startHue = modifier.GetFloat(4, 0f, modifierLoop.variables),
+                    startSat = modifier.GetFloat(5, 0f, modifierLoop.variables),
+                    startVal = modifier.GetFloat(6, 0f, modifierLoop.variables),
                     colorSource = (ThemeSource)modifier.GetInt(7, 4, modifierLoop.variables),
+                    endColorSlot = modifier.GetInt(8, 0, modifierLoop.variables),
+                    endOpacity = modifier.GetFloat(9, 1f, modifierLoop.variables),
+                    endHue = modifier.GetFloat(10, 0f, modifierLoop.variables),
+                    endSat = modifier.GetFloat(11, 0f, modifierLoop.variables),
+                    endVal = modifier.GetFloat(12, 0f, modifierLoop.variables),
                 },
                 _ => default,
             };
