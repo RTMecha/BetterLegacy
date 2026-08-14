@@ -1,4 +1,21 @@
-﻿# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
+﻿# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
+## Features
+### Companion
+- Added a "tick" command. This has parameters that can control the state of the runtime ticking, good for debugging issues that occur per-tick. Only usable when in the editor and not in an online lobby.
+- Added "reinit_runtime" command. This restarts the level runtime.
+
+## Changes
+### Core
+- Color related modifiers should all now have gradient support.
+
+## Fixes
+- Fixed Multi Object Editor hex colors not having context menus.
+- Fixed setImage modifiers setting the wrong value in the editor.
+- Attempted to fix copyAxisChain not working with axis source SequenceOffset, but unfortunately this might not be possible.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
 ## Features
 - Added Use 3D Axis toggle to scale keyframes.
 
