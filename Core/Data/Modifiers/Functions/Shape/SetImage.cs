@@ -206,7 +206,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 index++;
             }
 
-            modifierCard.StringGenerator(modifier, reference, "Path", 0 + index);
+            modifierCard.StringGenerator(modifier, reference, "Path", 0);
             modifierCard.SingleGenerator(modifier, reference, "Texture Offset X", 1 + index);
             modifierCard.SingleGenerator(modifier, reference, "Texture Offset Y", 2 + index);
             modifierCard.SingleGenerator(modifier, reference, "Texture Scale X", 3 + index, 1f);
