@@ -86,6 +86,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Sync,
         }
 
+        string baseColorHex = RTColors.WHITE_HEX_CODE;
+        string selectColorHex = RTColors.WHITE_HEX_CODE;
+        string textColorHex = RTColors.WHITE_HEX_CODE;
+        string markColorHex = RTColors.WHITE_HEX_CODE;
+
         #endregion
 
         #region Functions
@@ -289,7 +294,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             #region Colors
 
-                            var baseColorInput = new StringInputElement("FFFFFF", null)
+                            var baseColorInput = new StringInputElement(baseColorHex, _val =>
+                            {
+                                baseColorHex = _val;
+                            })
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
                             };
@@ -310,8 +318,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         timelineObject.Render();
                                     });
                                 }, labelAlignment: TextAnchor.MiddleCenter));
+                            EditorContextMenu.AddContextMenu(baseColorInput.GameObject, EditorContextMenu.GetEditorColorFunctions(baseColorInput.inputField, () => baseColorHex));
 
-                            var selectColorInput = new StringInputElement("FFFFFF", null)
+                            var selectColorInput = new StringInputElement(selectColorHex, _val =>
+                            {
+                                selectColorHex = _val;
+                            })
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
                             };
@@ -332,8 +344,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         timelineObject.Render();
                                     });
                                 }, labelAlignment: TextAnchor.MiddleCenter));
+                            EditorContextMenu.AddContextMenu(selectColorInput.GameObject, EditorContextMenu.GetEditorColorFunctions(selectColorInput.inputField, () => selectColorHex));
 
-                            var textColorInput = new StringInputElement("FFFFFF", null)
+                            var textColorInput = new StringInputElement(textColorHex, _val =>
+                            {
+                                textColorHex = _val;
+                            })
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
                             };
@@ -354,8 +370,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         timelineObject.Render();
                                     });
                                 }, labelAlignment: TextAnchor.MiddleCenter));
+                            EditorContextMenu.AddContextMenu(textColorInput.GameObject, EditorContextMenu.GetEditorColorFunctions(textColorInput.inputField, () => textColorHex));
 
-                            var markColorInput = new StringInputElement("FFFFFF", null)
+                            var markColorInput = new StringInputElement(markColorHex, _val =>
+                            {
+                                markColorHex = _val;
+                            })
                             {
                                 layoutElementValues = LayoutElementValues.Default.PreferredWidth(100f),
                             };
@@ -376,6 +396,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                         timelineObject.Render();
                                     });
                                 }, labelAlignment: TextAnchor.MiddleCenter));
+                            EditorContextMenu.AddContextMenu(markColorInput.GameObject, EditorContextMenu.GetEditorColorFunctions(markColorInput.inputField, () => markColorHex));
 
                             #endregion
 
