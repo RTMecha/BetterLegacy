@@ -101,6 +101,26 @@ namespace BetterLegacy.Core.Runtime
         public static bool Loaded { get; private set; }
 
         /// <summary>
+        /// Amount of ticks since the start of runtime.
+        /// </summary>
+        public long TickCount { get; private set; }
+
+        /// <summary>
+        /// If the runtime is in a tick freeze state.
+        /// </summary>
+        public static bool TickFreeze { get; set; }
+
+        /// <summary>
+        /// If <see cref="Tick"/> should log its states.
+        /// </summary>
+        public bool LogTick { get; set; }
+
+        /// <summary>
+        /// Forces the next tick to run if the value is above 0 and <see cref="TickFreeze"/> is <see langword="true"/>.
+        /// </summary>
+        public int TickStepCount { get; set; }
+
+        /// <summary>
         /// Initializes the runtime level.
         /// </summary>
         public static void Init()
@@ -244,7 +264,14 @@ namespace BetterLegacy.Core.Runtime
 
         public override void Tick()
         {
-            var logTick = !ProjectArrhythmia.Input.IsUsingInputField && Input.GetKeyDown(KeyCode.I);
+            if (TickFreeze && ProjectArrhythmia.State.InEditor && !ProjectArrhythmia.State.IsInLobby)
+            {
+                if (TickStepCount <= 0)
+                    return;
+                TickStepCount--;
+            }
+
+            var logTick = LogTick;
             System.Diagnostics.Stopwatch sw = logTick ? CoreHelper.StartNewStopwatch() : null;
 
             AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
@@ -259,7 +286,7 @@ namespace BetterLegacy.Core.Runtime
             }
 
             if (logTick)
-                Log($"Start pre-tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] pre-tick at: {sw.Elapsed}");
 
             try
             {
@@ -275,7 +302,7 @@ namespace BetterLegacy.Core.Runtime
             try
             {
                 if (logTick)
-                    Log($"Start modifier tick at: {sw.Elapsed}");
+                    Log($"Start [{TickCount}] modifier tick at: {sw.Elapsed}");
 
                 // gamedata modifiers update first
                 if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
@@ -295,38 +322,38 @@ namespace BetterLegacy.Core.Runtime
             }
 
             if (logTick)
-                Log($"Start event tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] event tick at: {sw.Elapsed}");
 
             OnEventsTick(); // events update fourth
 
             if (logTick)
-                Log($"Start object tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] object tick at: {sw.Elapsed}");
 
             OnBeatmapObjectsTick(); // objects update fifth
             
             if (logTick)
-                Log($"Start particles tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] particles tick at: {sw.Elapsed}");
 
             OnParticlesTick(); // particles update sixth
 
             if (logTick)
-                Log($"Start BG object tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] BG object tick at: {sw.Elapsed}");
 
             OnBackgroundObjectsTick(); // bgs update seventh
 
             if (logTick)
-                Log($"Start prefab modifier tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] prefab modifier tick at: {sw.Elapsed}");
 
             OnPrefabModifiersTick(); // prefab modifiers update eighth
 
             if (logTick)
-                Log($"Start prefab object tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] prefab object tick at: {sw.Elapsed}");
 
             OnPrefabObjectsTick(); // prefab objects update last
 
 
             if (logTick)
-                Log($"Reset beatmap tick cache tick at: {sw.Elapsed}");
+                Log($"Reset beatmap tick [{TickCount}] cache tick at: {sw.Elapsed}");
 
             // reset player cache
             if (RTBeatmap.Current)
@@ -352,13 +379,14 @@ namespace BetterLegacy.Core.Runtime
             }
 
             if (logTick)
-                Log($"Start post-tick at: {sw.Elapsed}");
+                Log($"Start [{TickCount}] post-tick at: {sw.Elapsed}");
             sw?.Stop();
             sw = null;
 
             PostTick();
             ScheduleTick();
             ProjectArrhythmia.Input.ClearLobbyInput();
+            TickCount++;
         }
 
         public override void Clear()
