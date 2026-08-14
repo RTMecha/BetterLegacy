@@ -365,29 +365,36 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         var cache = modifier.GetResultOrDefault(() => new ChainCache(beatmapObject, parentCount, reverseChain, requiredTag, searchChildren));
                         if (cache.parentCount != parentCount || cache.reverseChain != reverseChain || cache.requiredTag != requiredTag || cache.searchChildren != searchChildren)
                             cache.Init(beatmapObject, parentCount, reverseChain, requiredTag, searchChildren);
+                        for (int i = 0; i < cache.parents.Count; i++)
+                        {
+                            if (i == 0)
+                                continue;
+                            var parentCache = cache.parents[i];
+                            if (cache.tickCount <= 0)
+                            {
+                                parentCache.toType = toType;
+                                parentCache.toAxis = toAxis;
+                                continue;
+                            }
+                            // remove currentValue from the current transform
+                            parentCache.beatmapObject.SetTransform(
+                                type: parentCache.toType,
+                                axis: parentCache.toAxis,
+                                value: -(parentCache.beatmapObject.GetTransformOffset(parentCache.toType, parentCache.toAxis) - parentCache.currentValue));
+                        }
                         for (int i = 0; i < parentCount; i++)
                         {
+                            if (i == 0)
+                            {
+                                delay += delayOffset;
+                                continue;
+                            }
+
                             var currentParentCache = cache.parents.GetAtOrDefault(i, null);
                             if (!currentParentCache)
                                 continue;
 
                             var currentParent = currentParentCache.beatmapObject;
-
-                            if (i == 0)
-                            {
-                                delay += delayOffset;
-                                if (cache.tickCount <= 0)
-                                    continue;
-
-                                for (int j = 0; j < cache.parents.Count; j++)
-                                {
-                                    var parentCache = cache.parents[j];
-                                    // account for other modifiers that have affected transform offsets
-                                    parentCache.currentValue = -(parentCache.GetTransformOffset(fromType, fromAxis) - parentCache.beatmapObject.GetTransformOffset(fromType, fromAxis));
-                                }
-                                continue;
-                            }
-
                             var currentValue = 0f;
                             for (int j = 0; j < RTMath.Clamp(cache.parents.Count, 0, i + 1); j++)
                             {
@@ -401,19 +408,23 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                     continue;
 
                                 currentValue += ModifiersHelper.GetAnimation(parent, fromType, fromAxis, min, max, offset, multiply, t, loop, axisSource, 1);
-                                if (axisSource == AxisSource.Offset || axisSource == AxisSource.SequenceOffset)
-                                {
-                                    currentValue -= parent.GetTransformCache(fromType).At(fromAxis);
-                                    currentValue += parentCache.currentValue;
-                                }
-                                //currentValue -= parent.GetTransformCache(fromType).At(fromAxis); // remove previous copy axis chain application
+                                //if (i < j && (axisSource == AxisSource.Offset || axisSource == AxisSource.SequenceOffset))
+                                //    currentValue -= parentCache.beatmapObject.GetTransformOffset(fromType, fromAxis);
                             }
-                            currentParent.SetTransformCache(toType, toAxis, currentValue);
-                            currentParent.SetTransform(toType, toAxis, currentValue);
+                            //currentParent.SetTransform(toType, toAxis, currentValue);
                             currentParentCache.positionOffset = currentParent.PositionOffset;
                             currentParentCache.scaleOffset = currentParent.ScaleOffset;
                             currentParentCache.rotationOffset = currentParent.RotationOffset;
+                            currentParentCache.currentValue = currentValue;
                             delay += delayOffset;
+                        }
+                        for (int i = 0; i < parentCount; i++)
+                        {
+                            if (i == 0)
+                                continue;
+                            var currentParentCache = cache.parents.GetAtOrDefault(i, null);
+                            if (currentParentCache)
+                                currentParentCache.beatmapObject?.SetTransform(toType, toAxis, currentParentCache.currentValue);
                         }
                         cache.tickCount++;
                         break;
@@ -651,7 +662,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 public Vector3 positionOffset;
                 public Vector3 scaleOffset;
                 public Vector3 rotationOffset;
+
                 public float currentValue;
+                public int toType;
+                public int toAxis;
 
                 public float GetTransformOffset(int fromType, int fromAxis) => fromType switch
                 {
