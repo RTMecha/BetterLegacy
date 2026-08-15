@@ -1321,8 +1321,12 @@ namespace BetterLegacy.Editor.Managers
 
             prefabHolder.ContentPopup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Content Popup");
             prefabHolder.DoubleContentPopup = EditorManager.inst.GetDialog(EditorPopup.PREFAB_POPUP).Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Double Content Popup");
-            prefabHolder.DoubleContentPopup.transform.Find("internal prefabs").name = "internal";
+            var internalContentPopup = prefabHolder.DoubleContentPopup.transform.Find("internal prefabs");
+            internalContentPopup.name = "internal";
             prefabHolder.DoubleContentPopup.transform.Find("external prefabs").name = "external";
+            CoreHelper.Delete(internalContentPopup.Find("select_prefab"));
+            RectValues.FullAnchored.AnchoredPosition(0f, -16f).SizeDelta(0f, -32f).AssignToRectTransform(internalContentPopup.Find("mask").AsRT());
+            internalContentPopup.Find("mask/content").GetComponent<GridLayoutGroup>().padding.bottom = 8;
 
             prefabHolder.LevelPanel = EditorManager.inst.folderButtonPrefab.Duplicate(prefabHolder.PrefabParent, "Level Panel");
             CoreHelper.Destroy(true, prefabHolder.LevelPanel.GetComponent<FunctionButtonStorage>());
@@ -2529,6 +2533,11 @@ namespace BetterLegacy.Editor.Managers
         /// Opens the prefab list folder in the file browser.
         /// </summary>
         public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
+        
+        /// <summary>
+        /// Opens the player list folder in the file browser.
+        /// </summary>
+        public void OpenPlayerListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PlayersPath));
 
         /// <summary>
         /// Opens the level collection list folder in the file browser.
@@ -3213,6 +3222,48 @@ namespace BetterLegacy.Editor.Managers
 
             if (update)
                 RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
+        }
+
+        public void LoadInternalPlayerModelPanelUI(bool update = true)
+        {
+            if (!AssetPack.TryReadFromFile("editor/ui/elements/internal_player_model_panel.json", out string internalPrefabPanelFile))
+                return;
+
+            var jn = JSON.Parse(internalPrefabPanelFile);
+
+            PlayerModelPanel.internalIconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+
+            PlayerModelPanel.internalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+            PlayerModelPanel.internalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+            PlayerModelPanel.internalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+            PlayerModelPanel.internalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+            PlayerModelPanel.internalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+            PlayerModelPanel.internalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+
+            if (update)
+                PlayerEditor.inst.Reload();
+        }
+
+        public void LoadExternalPlayerModelPanelUI(bool update = true)
+        {
+            if (!AssetPack.TryReadFromFile("editor/ui/elements/external_player_model_panel.json", out string externalPrefabPanelFile))
+                return;
+
+            var jn = JSON.Parse(externalPrefabPanelFile);
+
+            PlayerModelPanel.externalIconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+
+            PlayerModelPanel.externalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+            PlayerModelPanel.externalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+            PlayerModelPanel.externalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+            PlayerModelPanel.externalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+            PlayerModelPanel.externalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+            PlayerModelPanel.externalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+
+            if (update)
+                PlayerEditor.inst.Reload();
         }
 
         public void LoadEditorLayers(bool update = true)

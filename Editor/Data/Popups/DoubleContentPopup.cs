@@ -35,6 +35,13 @@ namespace BetterLegacy.Editor.Data.Popups
         public string externalTitle;
         public bool closeAll = true;
 
+        public override void SetActive(bool active)
+        {
+            base.SetActive(active);
+            Internal?.SetActive(active);
+            External?.SetActive(active);
+        }
+
         /// <summary>
         /// Gets the internal / external popup.
         /// </summary>

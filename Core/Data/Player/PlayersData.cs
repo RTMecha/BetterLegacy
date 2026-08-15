@@ -220,15 +220,13 @@ namespace BetterLegacy.Core.Data.Player
             {
                 var file = RTFile.ReplaceSlash(files[i]);
                 var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
+                model.path = file;
                 var id = model.basePart.id;
 
                 if (PlayerModel.DefaultModels.Has(x => x.basePart.id == id))
                     continue;
 
                 externalPlayerModels[id] = model;
-
-                if (Current && ProjectArrhythmia.State.InEditor)
-                    Current.playerModels[id] = model;
             }
         }
 
@@ -252,7 +250,10 @@ namespace BetterLegacy.Core.Data.Player
 
                 try
                 {
-                    RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.basePart.name)}{FileFormat.LSPL.Dot()}"), model.ToJSON().ToString(3));
+                    var path = !string.IsNullOrEmpty(model.path) ? model.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.basePart.name)}{FileFormat.LSPL.Dot()}");
+                    if (string.IsNullOrEmpty(model.path))
+                        model.path = path;
+                    RTFile.WriteToFile(path, model.ToJSON().ToString(3));
                 }
                 catch (Exception ex)
                 {

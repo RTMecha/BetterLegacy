@@ -270,6 +270,8 @@ namespace BetterLegacy.Core.Data.Player
         public Version Version { get; set; } = LegacyPlugin.ModVersion;
         public bool needsUpdate;
 
+        public string path;
+
         public string creator;
 
         public bool IsDefault { get; set; }

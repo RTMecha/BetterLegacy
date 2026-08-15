@@ -49,7 +49,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Player Models content popup.
         /// </summary>
-        public ContentPopup ModelsPopup { get; set; }
+        public DoubleContentPopup ModelsPopup { get; set; }
 
         /// <summary>
         /// Custom objects content popup.
@@ -145,6 +145,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public List<PlayerModelPanel> ModelPanels { get; set; } = new List<PlayerModelPanel>();
 
+        public string copiedPlayerModelPath;
+
+        public bool shouldCutPlayerModel;
+
+        GameObject playerModelExternalUpAFolderButton;
+
         #endregion
 
         #region Functions
@@ -170,41 +176,126 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
 
-            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Select a Player Model", Vector2.zero, new Vector2(600f, 450f), _val => RenderModelsPopup());
-            ModelsPopup.InitTopElementsParent();
-            ModelsPopup.InitReload(Reload);
+            ModelsPopup = new DoubleContentPopup(EditorPopup.PLAYER_MODELS_POPUP);
+            ModelsPopup.Init();
+            RTEditor.inst.editorPopups.Add(ModelsPopup);
+            ModelsPopup.External.InitTopElementsParent();
+            ModelsPopup.External.InitReload(() =>
+            {
+                RTEditor.inst.LoadInternalPlayerModelPanelUI(false);
+                RTEditor.inst.LoadExternalPrefabPanelUI(false);
+                Reload();
+            });
+            ModelsPopup.External.InitPath(
+                getValue: () => RTEditor.inst.PlayersPath,
+                setValue: _val => RTEditor.inst.PlayersPath = _val,
+                onEndEdit: _val => Reload());
+
+            ModelsPopup.Internal.SetTitle("Internal Player Models");
+            ModelsPopup.External.SetTitle("External Player Models");
+
+            TooltipHelper.AssignTooltip(ModelsPopup.External.PathField.gameObject, "Player Path");
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.External.GameObject,
+                    new ButtonElement("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), () => { Reload(); RTEditor.inst.HideNameEditor(); });
+                    }),
+                    //new ButtonElement("Create Player Model", () =>
+                    //{
+
+                    //}),
+                    new SpacerElement(),
+                    new ButtonElement("Paste", PastePlayerModel));
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.Internal.GameObject,
+                new ButtonElement("Create Player Model", CreateNewModel));
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.External.PathField.gameObject,
+                new ButtonElement("Set folder", () =>
+                {
+                    RTFileBrowser.inst.Popup.Open();
+                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                    {
+                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                        {
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        ModelsPopup.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                        EditorManager.inst.DisplayNotification($"Set Player Model path to {RTEditor.inst.PlayersPath}!", 2f, EditorManager.NotificationType.Success);
+                        RTFileBrowser.inst.Popup.Close();
+                        Reload();
+                    });
+                }),
+                new ButtonElement("Open in File Explorer", RTEditor.inst.OpenPlayerListFolder),
+                new ButtonElement("Set as Default for Level", () =>
+                {
+                    RTEditor.inst.editorInfo.playerModelPath = RTEditor.inst.PlayersPath;
+                    EditorManager.inst.DisplayNotification($"Set current player folder [ {RTEditor.inst.PlayersPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                }, "Player Default Path"),
+                new ButtonElement("Remove Default", () =>
+                {
+                    RTEditor.inst.editorInfo.playerModelPath = null;
+                    EditorManager.inst.DisplayNotification($"Removed default player folder.", 5f, EditorManager.NotificationType.Success);
+                }, "Player Default Path"));
+
+            EditorHelper.SetComplexity(ModelsPopup.External.PathField.gameObject, "player_model/path", Complexity.Normal);
+
             ModelsPopup.onRender = () =>
             {
                 if (AssetPack.TryReadFromFile("editor/ui/popups/player_models_popup.json", out string uiFile))
                 {
                     var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(ModelsPopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ModelsPopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("Scrollbar").AsRT());
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(920f, 450f)).AssignToRectTransform(ModelsPopup.GameObject.transform.AsRT());
 
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(ModelsPopup.Grid ? ModelsPopup.Grid : ModelsPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+                    RectValues.TryParse(jn["internal"]["base"]["rect"], new RectValues(new Vector2(-80f, -16f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(ModelsPopup.Internal.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["external"]["base"]["rect"], new RectValues(new Vector2(60f, -16f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(ModelsPopup.External.GameObject.transform.AsRT());
 
-                    if (jn["title"] != null)
+                    var internalLayoutValues = LayoutValues.Parse(jn["internal"]["layout"]);
+                    if (internalLayoutValues is GridLayoutValues internalGrid)
+                        internalGrid.AssignToLayout(ModelsPopup.Internal.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    var externalLayoutValues = LayoutValues.Parse(jn["external"]["layout"]);
+                    if (externalLayoutValues is GridLayoutValues externalGrid)
+                        externalGrid.AssignToLayout(ModelsPopup.External.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    ModelsPopup.Internal.GameObject.GetComponent<ScrollRect>().horizontal = jn["internal"]["scroll"]["horizontal"].AsBool;
+                    ModelsPopup.External.GameObject.GetComponent<ScrollRect>().horizontal = jn["external"]["scroll"]["horizontal"].AsBool;
+
+                    if (jn["internal"]["title"] != null)
                     {
-                        ModelsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Player Model";
+                        ModelsPopup.Internal.title = jn["internal"]["title"]["text"];
 
-                        var title = ModelsPopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        var title = ModelsPopup.Internal.Title;
+                        RectValues.TryParse(jn["internal"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = (TextAnchor)jn["internal"]["title"]["alignment"].AsInt;
+                        title.fontSize = jn["internal"]["title"]["font_size"].AsInt;
+                        title.fontStyle = (FontStyle)jn["internal"]["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
+                        title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
+                    }
+                    if (jn["external"]["title"] != null)
+                    {
+                        ModelsPopup.External.title = jn["external"]["title"]["text"];
+
+                        var title = ModelsPopup.External.Title;
+                        RectValues.TryParse(jn["external"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = (TextAnchor)jn["external"]["title"]["alignment"].AsInt;
+                        title.fontSize = jn["external"]["title"]["font_size"].AsInt;
+                        title.fontStyle = (FontStyle)jn["external"]["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
+                        title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
                     }
 
                     if (jn["anim"] != null)
                         ModelsPopup.ReadAnimationJSON(jn["anim"]);
 
-                    if (jn["drag_mode"] != null && ModelsPopup.Dragger)
-                        ModelsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    if (jn["internal"]["drag_mode"] != null && ModelsPopup.Internal.Dragger)
+                        ModelsPopup.Internal.Dragger.mode = (DraggableUI.DragMode)jn["internal"]["drag_mode"].AsInt;
+                    if (jn["external"]["drag_mode"] != null && ModelsPopup.External.Dragger)
+                        ModelsPopup.External.Dragger.mode = (DraggableUI.DragMode)jn["external"]["drag_mode"].AsInt;
                 }
             };
 
@@ -243,6 +334,8 @@ namespace BetterLegacy.Editor.Managers
                         CustomObjectsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                 }
             };
+
+            ModelsPopup.SetActive(false);
         }
 
         /// <summary>
@@ -287,7 +380,10 @@ namespace BetterLegacy.Editor.Managers
             if (Dialog.IsCurrent)
                 RenderDialog();
             if (ModelsPopup.IsOpen)
-                RenderModelsPopup();
+            {
+                RenderInternalPlayerModelsPopup(onSelectModel);
+                RenderExternalPlayerModelsPopup();
+            }
             CustomObjectsPopup.Close();
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
@@ -2764,6 +2860,68 @@ namespace BetterLegacy.Editor.Managers
             player.RuntimePlayer.animationController.Play(runtimeAnimation);
         }
 
+        public void PastePlayerModel()
+        {
+            if (string.IsNullOrEmpty(copiedPlayerModelPath))
+            {
+                EditorManager.inst.DisplayNotification("No player model has been copied yet!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (!RTFile.FileExists(copiedPlayerModelPath))
+            {
+                EditorManager.inst.DisplayNotification("Copied player model no longer exists.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var copiedPlayerModelsFolder = RTFile.GetDirectory(copiedPlayerModelPath);
+            CoreHelper.Log($"Copied Folder: {copiedPlayerModelsFolder}");
+
+            var playerModelsPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath);
+            if (copiedPlayerModelsFolder == playerModelsPath)
+            {
+                EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var destination = copiedPlayerModelPath.Replace(copiedPlayerModelsFolder, playerModelsPath);
+            CoreHelper.Log($"Destination: {destination}");
+            if (RTFile.FileExists(destination))
+            {
+                EditorManager.inst.DisplayNotification("File already exists.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            if (shouldCutPlayerModel)
+            {
+                if (RTFile.MoveFile(copiedPlayerModelPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+            }
+            else
+            {
+                if (RTFile.CopyFile(copiedPlayerModelPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+            }
+
+            Reload();
+        }
+
+        public void ImportPlayerModel(PlayerModel playerModel)
+        {
+            if (!PlayersData.Current.playerModels.TryAdd(playerModel.basePart.id, playerModel))
+                return;
+            RenderInternalPlayerModelsPopup(onSelectModel);
+        }
+
+        public void ExportPlayerModel(PlayerModel playerModel)
+        {
+            PlayersData.externalPlayerModels[playerModel.basePart.id] = playerModel;
+            var path = !string.IsNullOrEmpty(playerModel.path) ? playerModel.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(playerModel.basePart.name)}{FileFormat.LSPL.Dot()}");
+            if (string.IsNullOrEmpty(playerModel.path))
+                playerModel.path = path;
+            RTFile.WriteToFile(path, playerModel.ToJSON().ToString(3));
+        }
+
         /// <summary>
         /// Opens the models popup.
         /// </summary>
@@ -2771,38 +2929,109 @@ namespace BetterLegacy.Editor.Managers
         public void OpenModelsPopup(Action<PlayerModel> onSelect = null)
         {
             ModelsPopup.Open();
-            RenderModelsPopup(onSelect);
+            RenderInternalPlayerModelsPopup(onSelect);
+            RenderExternalPlayerModelsPopup();
         }
 
-        /// <summary>
-        /// Renders the models popup.
-        /// </summary>
-        /// <param name="onSelect">Function to run on select.</param>
-        public void RenderModelsPopup(Action<PlayerModel> onSelect = null)
+        public void RenderInternalPlayerModelsPopup(Action<PlayerModel> onSelect = null)
         {
             onSelectModel = onSelect;
-            ModelsPopup.ClearContent();
-            ModelsPopup.SearchField.onValueChanged.NewListener(_val => RenderModelsPopup(onSelect));
+            ModelsPopup.Internal.ClearContent();
+            ModelsPopup.Internal.SearchField.onValueChanged.NewListener(_val => RenderInternalPlayerModelsPopup(onSelect));
 
-            ModelPanels.Clear();
+            ModelPanels.RemoveAll(x => x.Source == ObjectSource.Internal);
 
             int num = 0;
-            foreach (var playerModel in PlayersData.externalPlayerModels)
+            foreach (var playerModel in PlayersData.Current.playerModels)
             {
                 int index = num;
                 var name = playerModel.Value.basePart.name;
-                if (!RTString.SearchString(ModelsPopup.SearchTerm, name))
+                if (!RTString.SearchString(ModelsPopup.Internal.SearchTerm, name))
                 {
                     num++;
                     continue;
                 }
 
-                var playerModelPanel = new PlayerModelPanel(index);
+                var playerModelPanel = new PlayerModelPanel(ObjectSource.Internal, index);
                 playerModelPanel.Init(playerModel.Value);
                 if (onSelect != null)
                     playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModel.Value);
                 ModelPanels.Add(playerModelPanel);
                 num++;
+            }
+        }
+
+        public void RenderExternalPlayerModelsPopup()
+        {
+            ModelsPopup.External.ClearContent();
+            ModelsPopup.External.SearchField.onValueChanged.NewListener(_val => RenderExternalPlayerModelsPopup());
+
+            ModelPanels.RemoveAll(x => x.Source == ObjectSource.External);
+
+            // Back
+            if (!playerModelExternalUpAFolderButton)
+            {
+                playerModelExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.External.Content, "back");
+                PrefabPanel.externalBaseRect.AssignToRectTransform(playerModelExternalUpAFolderButton.transform.AsRT());
+                var folderButtonStorageFolder = playerModelExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = playerModelExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = playerModelExternalUpAFolderButton.AddComponent<HoverUI>();
+                hoverUIFolder.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.Text = "< Up a folder";
+
+                folderButtonStorageFolder.OnClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), () => { Reload(); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonElement("Paste Player Model", PastePlayerModel));
+
+                        return;
+                    }
+
+                    if (ModelsPopup.External.PathField.text == RTEditor.inst.PlayersPath)
+                    {
+                        ModelsPopup.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
+                        Reload();
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
+            }
+
+            playerModelExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath)) != RTEditor.inst.BeatmapsPath);
+
+            var directories = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), "*", SearchOption.TopDirectoryOnly);
+            int index = 0;
+            for (int i = 0; i < directories.Length; i++)
+            {
+                var directory = directories[i];
+                var playerModelPanel = new PlayerModelPanel(index);
+                playerModelPanel.Init(directory);
+                ModelPanels.Add(playerModelPanel);
+                index++;
+            }
+
+            foreach (var playerModel in PlayersData.externalPlayerModels)
+            {
+                var name = playerModel.Value.basePart.name;
+                if (!RTString.SearchString(ModelsPopup.External.SearchTerm, name))
+                {
+                    index++;
+                    continue;
+                }
+
+                var playerModelPanel = new PlayerModelPanel(ObjectSource.External, index);
+                playerModelPanel.Init(playerModel.Value);
+                ModelPanels.Add(playerModelPanel);
+                index++;
             }
         }
 

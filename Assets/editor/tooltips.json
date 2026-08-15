@@ -652,6 +652,26 @@
         ]
       }, // Prefab Default Path
       {
+        "name": "Player Path",
+        "tooltips": [
+          {
+            "desc": "The players directory in your beatmaps folder.",
+            "hint": "Type in the field to change where your player models are loaded from. Right click the field to open a quick folder selection.",
+            "lang": 0
+          }
+        ]
+      }, // Player Path
+      {
+        "name": "Player Default Path",
+        "tooltips": [
+          {
+            "desc": "The player folder that gets loaded whenever you enter this level.",
+            "hint": "If the levels' default players folder was not set, then it'll keep the currently set folder. This is for QOL changing of player model lists for different levels.",
+            "lang": 0
+          }
+        ]
+      }, // Player Default Path
+      {
         "name": "Theme Path",
         "tooltips": [
           {

@@ -340,7 +340,7 @@ namespace BetterLegacy.Editor.Data.Popups
         /// Sets the editor popup active state.
         /// </summary>
         /// <param name="active">Active state to set.</param>
-        public void SetActive(bool active)
+        public virtual void SetActive(bool active)
         {
             if (GameObject)
                 GameObject.SetActive(active);
