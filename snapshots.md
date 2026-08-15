@@ -1,4 +1,14 @@
-﻿# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
+﻿# ???
+## Changes
+### Editor
+- The Player Model popup list has been changed to work similarly to the Prefab list popups, where you can view internal / external models separately and import external models.
+
+## Fixes
+- Fixed the setPlayerVelocity modifiers having the incorrect name.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
 ## Features
 ### Companion
 - Added a "tick" command. This has parameters that can control the state of the runtime ticking, good for debugging issues that occur per-tick. Only usable when in the editor and not in an online lobby.
