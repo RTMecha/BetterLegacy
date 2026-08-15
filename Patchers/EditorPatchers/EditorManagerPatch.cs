@@ -378,6 +378,15 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(EditorManager.ClearPopups))]
+        [HarmonyPrefix]
+        static bool ClearPopupsPrefix()
+        {
+            for (int i = 0; i < RTEditor.inst.editorPopups.Count; i++)
+                RTEditor.inst.editorPopups[i].Close();
+            return false;
+        }
+
         [HarmonyPatch(nameof(EditorManager.TogglePlayingSong))]
         [HarmonyPrefix]
         static bool TogglePlayingSongPrefix()
