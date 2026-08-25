@@ -6834,7 +6834,17 @@
             "lang": 0
           }
         ]
-      } // Disabled Preview Selection Indicator
+      }, // Disabled Preview Selection Indicator
+      {
+        "name": "BPM Snap Indicator",
+        "tooltips": [
+          {
+            "desc": "BPM Snap Indicator",
+            "hint": "Indicates that BPM snap is enabled. All objects that align to song time and can be dragged will snap to the current BPM.",
+            "lang": 0
+          }
+        ]
+      } // BPM Snap Indicator
     ],
 
     // Misc
