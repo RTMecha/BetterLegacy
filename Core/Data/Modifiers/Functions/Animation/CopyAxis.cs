@@ -32,6 +32,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 Type.Chain => CreateModifier(Name, 1, new string[] { "1", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "0", "True", "0.1", "True", "", "False" }),
                 _ => null,
             };
+            IsGroup = type != Type.Chain;
         }
 
         #endregion
@@ -500,7 +501,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                             var groupName = modifierCard.StringGenerator(modifier, reference, "Name", i).transform.Find("Input").GetComponent<InputField>();
                             EditorContextMenu.AddContextMenu(groupName.gameObject, EditorContextMenu.GetNameFunctions(groupName));
-                            modifierCard.StringGenerator(modifier, reference, "Object Group", i + 1).transform.Find("Input").GetComponent<InputField>();
+                            modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", i + 1);
                             modifierCard.DropdownGenerator(modifier, reference, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             modifierCard.DropdownGenerator(modifier, reference, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
                             modifierCard.SingleGenerator(modifier, reference, "Delay", i + 4, 0f);

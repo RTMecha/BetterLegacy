@@ -64,7 +64,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             if (modifier.Name == "setColorHexOther" && modifier.version == 0)
             {
-                modifier.values.Move(2, 1);
+                if (modifier.values.Count > 2)
+                    modifier.values.Move(2, 1);
                 modifier.version++;
             }
         }

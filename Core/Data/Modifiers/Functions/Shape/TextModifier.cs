@@ -21,6 +21,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 Modifier.values.Add("Replace");
             if (isGroup)
                 Modifier.values.Add("Object Group");
+            IsGroup = isGroup;
         }
 
         #endregion

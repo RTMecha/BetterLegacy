@@ -84,13 +84,12 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                 modifierCard.DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
-                var groupField = modifierCard.StringGenerator(modifier, reference, "Object Group", i, _val =>
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", i, _val =>
                 {
                     var value = modifierCard.DialogScrollbarValue;
                     modifierCard.RenderModifier(reference);
                     CoroutineHelper.PerformAtNextFrame(() => modifierCard.DialogScrollbarValue = value);
-                }).transform.Find("Input").GetComponent<InputField>();
-                EditorContextMenu.AddContextMenu(groupField.gameObject, EditorContextMenu.GetNameFunctions(groupField));
+                });
 
                 a++;
             }

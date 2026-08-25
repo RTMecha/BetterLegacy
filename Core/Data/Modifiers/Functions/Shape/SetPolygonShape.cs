@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             SetupModifier("0.5", "3", "0", "1", "3", "0", "0", "1", "1", "0", "0", "1");
             if (isGroup)
                 Modifier.values.Insert(0, "Object Group");
-            IsGroup = IsGroup;
+            IsGroup = isGroup;
         }
 
         #endregion
