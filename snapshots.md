@@ -1,10 +1,16 @@
 ﻿# ???
+## Features
+### Editor
+- Added a BPM snap indicator.
+
 ## Changes
 ### Editor
 - The Player Model popup list has been changed to work similarly to the Prefab list popups, where you can view internal / external models separately and import external models.
 
 ## Fixes
 - Fixed the setPlayerVelocity modifiers having the incorrect name.
+- Fixed some modifiers that have group values not counting as group modifiers.
+- Fixed loadLevelInternal modifier not working.
 
 -------------------------------------------------------------------
 
