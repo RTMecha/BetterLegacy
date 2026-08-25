@@ -832,7 +832,8 @@ namespace BetterLegacy.Editor.Data.Elements
             }, onEndEdit);
             if (renderVariables)
                 values.Add(new StringValue(type, editorElement.inputField));
-            EditorContextMenu.AddContextMenu(editorElement.GameObject, EditorContextMenu.GetNameFunctions(editorElement.inputField));
+            EditorContextMenu.AddContextMenu(editorElement.inputField.gameObject, EditorContextMenu.GetNameFunctions(editorElement.inputField));
+            editorElement.inputField.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(editorElement.inputField, InputFieldSwapper.Type.String);
             return editorElement;
         }
 
