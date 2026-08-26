@@ -752,6 +752,7 @@ namespace BetterLegacy.Companion.Data
                 new FreezeParameter(),
                 new UnfreezeParameter(),
                 new TickStepParameter(),
+                new TickWaitParameter(),
                 new TickLog(),
             };
 
@@ -815,6 +816,23 @@ namespace BetterLegacy.Companion.Data
                 {
                     if (RTLevel.Current)
                         RTLevel.Current.TickStepCount = RTMath.Clamp(Parser.TryParse(parameters[0], 1), 0, int.MaxValue);
+                }
+            }
+
+            public class TickWaitParameter : TickActionParameter
+            {
+                public override string Name => "wait";
+
+                public override int ParameterCount => 1;
+
+                public override string AddToAutocomplete => "wait 10";
+
+                public override string Description => "How many ticks occur between each actual tick.";
+
+                public override void ConsumeInput(string[] parameters)
+                {
+                    if (RTLevel.Current)
+                        RTLevel.Current.TickWaitCount = RTMath.Clamp(Parser.TryParse(parameters[0], 10), 0, int.MaxValue);
                 }
             }
 

@@ -121,6 +121,23 @@ namespace BetterLegacy.Core.Runtime
         public int TickStepCount { get; set; }
 
         /// <summary>
+        /// How many ticks occur between each actual tick.
+        /// </summary>
+        public int TickWaitCount
+        {
+            get => tickWaitCount;
+            set
+            {
+                tickWaitCount = value;
+                tickWait = value;
+            }
+        }
+
+        int tickWaitCount;
+
+        int tickWait;
+
+        /// <summary>
         /// Initializes the runtime level.
         /// </summary>
         public static void Init()
@@ -269,6 +286,15 @@ namespace BetterLegacy.Core.Runtime
                 if (TickStepCount <= 0)
                     return;
                 TickStepCount--;
+            }
+            if (TickWaitCount > 0)
+            {
+                if (tickWait > 0)
+                {
+                    tickWait--;
+                    return;
+                }
+                tickWait = TickWaitCount;
             }
 
             var logTick = LogTick;
