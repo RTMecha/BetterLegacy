@@ -335,6 +335,52 @@ namespace BetterLegacy.Editor.Managers
                 }
             };
 
+            #region External
+
+            EditorThemeManager.ApplyGraphic(ModelsPopup.External.GameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+
+            var externalPanel = ModelsPopup.External.GameObject.transform.Find("Panel");
+            externalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
+            EditorThemeManager.ApplyGraphic(externalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+            var externalClose = externalPanel.Find("x").GetComponent<Button>();
+            Destroy(externalClose.GetComponent<Animator>());
+            externalClose.transition = Selectable.Transition.ColorTint;
+            externalClose.image.rectTransform.anchoredPosition = Vector2.zero;
+            EditorThemeManager.ApplySelectable(externalClose, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(externalClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+            EditorThemeManager.ApplyLightText(externalPanel.Find("Text").GetComponent<Text>());
+
+            EditorThemeManager.ApplyScrollbar(ModelsPopup.External.GameObject.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+
+            EditorThemeManager.ApplyInputField(ModelsPopup.External.SearchField, ThemeGroup.Search_Field_2);
+
+            #endregion
+
+            #region Internal
+
+            EditorThemeManager.ApplyGraphic(ModelsPopup.Internal.GameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+
+            var internalPanel = ModelsPopup.Internal.GameObject.transform.Find("Panel");
+            internalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
+            EditorThemeManager.ApplyGraphic(internalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+            var internalClose = internalPanel.Find("x").GetComponent<Button>();
+            Destroy(internalClose.GetComponent<Animator>());
+            internalClose.transition = Selectable.Transition.ColorTint;
+            internalClose.image.rectTransform.anchoredPosition = Vector2.zero;
+            EditorThemeManager.ApplySelectable(internalClose, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(internalClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+            EditorThemeManager.ApplyLightText(internalPanel.Find("Text").GetComponent<Text>());
+
+            EditorThemeManager.ApplyScrollbar(ModelsPopup.Internal.GameObject.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+
+            EditorThemeManager.ApplyInputField(ModelsPopup.Internal.SearchField, ThemeGroup.Search_Field_2);
+
+            #endregion
+
             ModelsPopup.SetActive(false);
         }
 
