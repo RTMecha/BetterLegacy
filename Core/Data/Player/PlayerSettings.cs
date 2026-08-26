@@ -1,11 +1,13 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Data.Network;
+
 namespace BetterLegacy.Core.Data.Player
 {
     /// <summary>
     /// Represents custom player data.
     /// </summary>
-    public class PlayerSettings : PAObject<PlayerSettings>
+    public class PlayerSettings : PAObject<PlayerSettings>, IPacket
     {
         // TODO: USE THIS INSTEAD OF THE PLAYER CONFIG AND HAVE THIS SYNC ACROSS CLIENTS SOMEHOW!
 
@@ -26,6 +28,20 @@ namespace BetterLegacy.Core.Data.Player
         #endregion
 
         #region Functions
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            index = reader.ReadInt32();
+            playerModelID = reader.ReadString();
+            colorSlot = reader.ReadInt32();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(index);
+            writer.Write(playerModelID);
+            writer.Write(colorSlot);
+        }
 
         public override void CopyData(PlayerSettings orig, bool newID = true)
         {

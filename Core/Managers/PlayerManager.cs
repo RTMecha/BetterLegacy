@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using InControl;
+using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
@@ -66,6 +67,8 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public const string PLAYERS_PATH = "beatmaps/players";
 
+        public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
+
         #endregion
 
         #region Functions
@@ -74,6 +77,7 @@ namespace BetterLegacy.Core.Managers
         {
             // destroy players on pre load scene
             SceneHelper.OnPreLoadScene += scene => DestroyPlayers();
+            LoadPlayerSettings();
         }
 
         public override void OnTick()
@@ -442,12 +446,12 @@ namespace BetterLegacy.Core.Managers
             var runtimePlayer = gameObject.GetOrAddComponent<RTPlayer>();
 
             runtimePlayer.Core = player;
-            runtimePlayer.Model = player.PlayerModel;
+            runtimePlayer.Model = player.Model;
             runtimePlayer.index = player.index;
-            if (SteamLobbyManager.inst && SteamLobbyManager.inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
+            if (inst && inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
                 runtimePlayer.colorSlot = playerSettings.colorSlot;
-            else if (player.PlayerModel)
-                runtimePlayer.colorSlot = player.PlayerModel.basePart.colorSlot;
+            else if (player.Model)
+                runtimePlayer.colorSlot = player.Model.basePart.colorSlot;
             runtimePlayer.initialHealthCount = player.Health;
             player.RuntimePlayer = runtimePlayer;
 
@@ -655,7 +659,7 @@ namespace BetterLegacy.Core.Managers
 
             var player = Players[index];
             player.RuntimePlayer?.Clear();
-            player.CurrentModel = PlayersData.Current.GetPlayerModel(index).basePart.id;
+            player.ModelID = PlayersData.Current.GetPlayerModel(index).basePart.id;
 
             SpawnPlayers(pos);
         }
@@ -674,7 +678,7 @@ namespace BetterLegacy.Core.Managers
         public static void RespawnPlayer(PAPlayer player, Vector2 pos)
         {
             player.RuntimePlayer?.Clear();
-            player.CurrentModel = PlayersData.Current.GetPlayerModel(player.index).basePart.id;
+            player.ModelID = PlayersData.Current.GetPlayerModel(player.index).basePart.id;
 
             SpawnPlayers(pos);
         }
@@ -739,6 +743,36 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        #region Settings
+
+        public void LoadPlayerSettings()
+        {
+            try
+            {
+                playerSettings.Clear();
+                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot());
+                if (!RTFile.TryReadFromFile(path, out string file))
+                    return;
+                var jn = JSON.Parse(file);
+                for (int i = 0; i < jn["settings"].Count; i++)
+                    playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
+
+        public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
+        {
+            playerSettings = GetPlayerSettings(index);
+            return playerSettings;
+        }
+
+        #endregion
+
         #region Models
 
         /// <summary>
@@ -758,7 +792,7 @@ namespace BetterLegacy.Core.Managers
             var players = Players;
             if (!players.IsEmpty())
                 for (int i = 0; i < players.Count; i++)
-                    players[i].CurrentModel = PlayersData.Current.GetPlayerModel(i).basePart.id;
+                    players[i].ModelID = PlayersData.Current.GetPlayerModel(i).basePart.id;
         }
 
         #endregion

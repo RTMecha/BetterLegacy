@@ -101,6 +101,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int SEND_CLIENT_PLAYER_DATA = 5932573;
         public const int SEND_SERVER_PLAYER_DATA = 74362567;
         public const int SEND_MULTI_PLAYER_DATA = 476256437;
+        public const int SEND_PLAYER_SETTINGS = 8734345;
 
         public const int UPDATE_PLAYER_DATA = 83553876;
 
@@ -269,6 +270,8 @@ namespace BetterLegacy.Core.Data.Network
                     new ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new StringParameter(id),
                     new IntParameter(health));
+
+        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(SEND_PLAYER_SETTINGS, new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
 
         #endregion
 

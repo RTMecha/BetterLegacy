@@ -187,11 +187,11 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The current player model ID.
         /// </summary>
-        public string currentPlayerModel = PlayerModel.DEFAULT_ID;
+        string currentPlayerModel = PlayerModel.DEFAULT_ID;
         /// <summary>
         /// The current player model ID.
         /// </summary>
-        public string CurrentModel
+        public string ModelID
         {
             get => !ProjectArrhythmia.State.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
             set
@@ -204,7 +204,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The current player model cache.
         /// </summary>
-        public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;
+        public PlayerModel Model { get; set; } = PlayerModel.DefaultPlayer;
 
         /// <summary>
         /// Player device input.
@@ -250,7 +250,7 @@ namespace BetterLegacy.Core.Data.Player
             var hasSteamID = reader.ReadBoolean();
             if (hasSteamID)
                 ID = reader.ReadUInt64();
-            PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
+            Model = Packet.CreateFromPacket<PlayerModel>(reader);
             DisplayName = reader.ReadString();
         }
 
@@ -269,7 +269,7 @@ namespace BetterLegacy.Core.Data.Player
             }
             else
                 writer.Write(false);
-            PlayerModel.WritePacket(writer);
+            Model.WritePacket(writer);
             writer.Write(DisplayName);
         }
 
@@ -284,9 +284,9 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public void UpdatePlayerModel()
         {
-            PlayerModel = PlayersData.GetPlayerModel(CurrentModel);
+            Model = PlayersData.GetPlayerModel(ModelID);
             if (RuntimePlayer)
-                RuntimePlayer.Model = PlayerModel;
+                RuntimePlayer.Model = Model;
         }
 
         /// <summary>
@@ -305,7 +305,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the players' properties.
         /// </summary>
         /// <returns>Returns the player model converted to player properties if <see cref="LevelData.allowPlayerModelControls"/> is true, otherwise returns <see cref="GetCustomProperties"/>.</returns>
-        public PlayerProperties GetProperties() => GameData.Current.data.level.allowPlayerModelControls ? PlayerModel.ToPlayerControl() : GetCustomProperties();
+        public PlayerProperties GetProperties() => GameData.Current.data.level.allowPlayerModelControls ? Model.ToPlayerControl() : GetCustomProperties();
 
         /// <summary>
         /// Gets the player properties.

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Data.Player;
+
 namespace BetterLegacy.Core.Data.Network
 {
     /// <summary>
@@ -26,5 +28,7 @@ namespace BetterLegacy.Core.Data.Network
         public static bool SteamLevelAscend { get; set; }
 
         public static Dictionary<string, bool> HostJSONFileTriggers { get; set; } = new Dictionary<string, bool>();
+
+        public static List<PlayerSettings> PlayerSettings { get; set; } = new List<PlayerSettings>();
     }
 }

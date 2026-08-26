@@ -4,7 +4,6 @@ using System.Linq;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
-using SimpleJSON;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -81,7 +80,6 @@ namespace BetterLegacy.Core.Managers
             SteamMatchmaking.OnChatMessage += OnChatMessage;
 
             LoadLobbySettings();
-            LoadPlayerSettings();
         }
 
         public override void OnTick()
@@ -111,24 +109,6 @@ namespace BetterLegacy.Core.Managers
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
         }
 
-        public void LoadPlayerSettings()
-        {
-            try
-            {
-                playerSettings.Clear();
-                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot());
-                if (!RTFile.TryReadFromFile(path, out string file))
-                    return;
-                var jn = JSON.Parse(file);
-                for (int i = 0; i < jn["settings"].Count; i++)
-                    playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
-            }
-            catch (System.Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-        }
-
         public void SyncPlayersToServer()
         {
             localPlayers = new List<PAPlayer>(PlayerManager.Players);
@@ -141,14 +121,6 @@ namespace BetterLegacy.Core.Managers
         }
 
         public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
-
-        public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
-
-        public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
-        {
-            playerSettings = GetPlayerSettings(index);
-            return playerSettings;
-        }
 
         #region Lobby
 
