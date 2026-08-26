@@ -1,4 +1,15 @@
-﻿# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
+﻿# ???
+## Features
+### Companion
+- Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
+
+## Changes
+### Core
+- animateObject modifiers constant value are now off by default.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
 ## Features
 ### Editor
 - Added a BPM snap indicator.
