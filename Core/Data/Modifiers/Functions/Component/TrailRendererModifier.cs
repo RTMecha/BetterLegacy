@@ -106,7 +106,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override void Inactive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.TryGetResult(out TrailRenderer trailRenderer))
+            if (modifier.TryGetResult(out TrailRenderer trailRenderer) && trailRenderer)
                 trailRenderer.emitting = false;
         }
 
