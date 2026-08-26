@@ -1,14 +1,14 @@
-# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
+# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
 ## Features
-### Companion
-- Added a "tick" command. This has parameters that can control the state of the runtime ticking, good for debugging issues that occur per-tick. Only usable when in the editor and not in an online lobby.
-- Added "reinit_runtime" command. This restarts the level runtime.
+### Editor
+- Added a BPM snap indicator.
 
 ## Changes
-### Core
-- Color related modifiers should all now have gradient support.
+### Editor
+- The Player Model popup list has been changed to work similarly to the Prefab list popups, where you can view internal / external models separately and import external models.
 
 ## Fixes
-- Fixed Multi Object Editor hex colors not having context menus.
-- Fixed setImage modifiers setting the wrong value in the editor.
-- Attempted to fix copyAxisChain not working with axis source SequenceOffset, but unfortunately this might not be possible.
+- Fixed the setPlayerVelocity modifiers having the incorrect name.
+- Fixed some modifiers that have group values not counting as group modifiers.
+- Fixed loadLevelInternal modifier not working.
+- Fixed actorFrameTexture modifier breaking the level when restarting runtime.
