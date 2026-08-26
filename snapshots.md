@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
 ## Features
 ### Editor
 - Added a BPM snap indicator.
@@ -11,6 +11,7 @@
 - Fixed the setPlayerVelocity modifiers having the incorrect name.
 - Fixed some modifiers that have group values not counting as group modifiers.
 - Fixed loadLevelInternal modifier not working.
+- Fixed actorFrameTexture modifier breaking the level when restarting runtime.
 
 -------------------------------------------------------------------
 
