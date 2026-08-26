@@ -495,57 +495,37 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #endregion
 
-        #region Component
+        #region Events
 
-        public static ParticleSystemModifier particleSystem = new ParticleSystemModifier(false);
+        public static GetEventValue getEventValue = new GetEventValue();
 
-        public static ParticleSystemModifier particleSystemHex = new ParticleSystemModifier(true);
+        public static EventCompare eventEquals = new EventCompare(NumberComparison.Equals);
 
-        public static TrailRendererModifier trailRenderer = new TrailRendererModifier(false);
+        public static EventCompare eventLesserEquals = new EventCompare(NumberComparison.LesserEquals);
 
-        public static TrailRendererModifier trailRendererHex = new TrailRendererModifier(true);
+        public static EventCompare eventGreaterEquals = new EventCompare(NumberComparison.GreaterEquals);
 
-        public static RigidbodyModifier rigidbody = new RigidbodyModifier(false);
+        public static EventCompare eventLesser = new EventCompare(NumberComparison.Lesser);
 
-        public static RigidbodyModifier rigidbodyOther = new RigidbodyModifier(true);
+        public static EventCompare eventGreater = new EventCompare(NumberComparison.Greater);
 
-        #endregion
+        public static EventOffset eventOffset = new EventOffset(EventOffset.Type.Normal);
 
-        #region Rendering
+        public static EventOffset eventOffsetVariable = new EventOffset(EventOffset.Type.Variable);
 
-        public static Blur blur = new Blur(Blur.Type.None, false);
+        public static EventOffset eventOffsetMath = new EventOffset(EventOffset.Type.Math);
 
-        public static Blur blurOther = new Blur(Blur.Type.None, true);
+        public static EventOffsetAnimate eventOffsetAnimate = new EventOffsetAnimate();
 
-        public static Blur blurVariable = new Blur(Blur.Type.Variable, false);
+        public static EventOffsetCopyAxis eventOffsetCopyAxis = new EventOffsetCopyAxis();
 
-        public static Blur blurVariableOther = new Blur(Blur.Type.Variable, true);
+        public static VignetteTracksPlayer vignetteTracksPlayer = new VignetteTracksPlayer();
 
-        public static Blur blurColored = new Blur(Blur.Type.Colored, false);
+        public static LensTracksPlayer lensTracksPlayer = new LensTracksPlayer();
 
-        public static Blur blurColoredOther = new Blur(Blur.Type.Colored, true);
+        public static DatamoshFunction datamoshGlitch = new DatamoshFunction(DatamoshFunction.Function.Glitch);
 
-        public static DoubleSided doubleSided = new DoubleSided();
-
-        public static SetRenderType setRenderType = new SetRenderType(false);
-
-        public static SetRenderType setRenderTypeOther = new SetRenderType(true);
-
-        public static SetRendering setRendering = new SetRendering();
-
-        public static SetOutline setOutline = new SetOutline(false, false);
-
-        public static SetOutline setOutlineOther = new SetOutline(false, true);
-
-        public static SetOutline setOutlineHex = new SetOutline(true, false);
-
-        public static SetOutline setOutlineHexOther = new SetOutline(true, true);
-
-        public static SetDepthOffset setDepthOffset = new SetDepthOffset();
-
-        public static SetMask setMask = new SetMask(false);
-
-        public static SetMask setMaskOther = new SetMask(true);
+        public static DatamoshFunction datamoshReset = new DatamoshFunction(DatamoshFunction.Function.Reset);
 
         #endregion
 
@@ -895,6 +875,62 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #endregion
 
+        #region Component
+
+        public static ParticleSystemModifier particleSystem = new ParticleSystemModifier(false);
+
+        public static ParticleSystemModifier particleSystemHex = new ParticleSystemModifier(true);
+
+        public static TrailRendererModifier trailRenderer = new TrailRendererModifier(false);
+
+        public static TrailRendererModifier trailRendererHex = new TrailRendererModifier(true);
+
+        public static RigidbodyModifier rigidbody = new RigidbodyModifier(false);
+
+        public static RigidbodyModifier rigidbodyOther = new RigidbodyModifier(true);
+
+        #endregion
+
+        #region Rendering
+
+        public static Blur blur = new Blur(Blur.Type.None, false);
+
+        public static Blur blurOther = new Blur(Blur.Type.None, true);
+
+        public static Blur blurVariable = new Blur(Blur.Type.Variable, false);
+
+        public static Blur blurVariableOther = new Blur(Blur.Type.Variable, true);
+
+        public static Blur blurColored = new Blur(Blur.Type.Colored, false);
+
+        public static Blur blurColoredOther = new Blur(Blur.Type.Colored, true);
+
+        public static DoubleSided doubleSided = new DoubleSided();
+
+        public static SetRenderType setRenderType = new SetRenderType(false);
+
+        public static SetRenderType setRenderTypeOther = new SetRenderType(true);
+
+        public static SetRendering setRendering = new SetRendering();
+
+        public static SetOutline setOutline = new SetOutline(false, false);
+
+        public static SetOutline setOutlineOther = new SetOutline(false, true);
+
+        public static SetOutline setOutlineHex = new SetOutline(true, false);
+
+        public static SetOutline setOutlineHexOther = new SetOutline(true, true);
+
+        public static SetDepthOffset setDepthOffset = new SetDepthOffset();
+
+        public static SetMask setMask = new SetMask(false);
+
+        public static SetMask setMaskOther = new SetMask(true);
+
+        public static ActorFrameTexture actorFrameTexture = new ActorFrameTexture();
+
+        #endregion
+
         #region Enable
 
         public static ObjectActive objectActive = new ObjectActive();
@@ -914,64 +950,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static EnableObject enableObjectTreeOther = new EnableObject(true, true);
 
         public static EnableObjectGroup enableObjectGroup = new EnableObjectGroup();
-
-        #endregion
-
-        #region JSON
-
-        public static GetJSON getJSONString = new GetJSON(GetJSON.Type.String);
-
-        public static GetJSON getJSONFloat = new GetJSON(GetJSON.Type.Float);
-
-        public static GetJSON getJSON = new GetJSON(GetJSON.Type.Object);
-
-        public static LoadJSONCompare loadJSONEquals = new LoadJSONCompare(NumberComparison.Equals);
-
-        public static LoadJSONCompare loadJSONLesserEquals = new LoadJSONCompare(NumberComparison.LesserEquals);
-
-        public static LoadJSONCompare loadJSONGreaterEquals = new LoadJSONCompare(NumberComparison.GreaterEquals);
-
-        public static LoadJSONCompare loadJSONLesser = new LoadJSONCompare(NumberComparison.Lesser);
-
-        public static LoadJSONCompare loadJSONGreater = new LoadJSONCompare(NumberComparison.Greater);
-
-        public static LoadJSONExists loadJSONExists = new LoadJSONExists();
-
-        public static SaveJSON saveJSON = new SaveJSON();
-
-        #endregion
-
-        #region Events
-
-        public static GetEventValue getEventValue = new GetEventValue();
-
-        public static EventCompare eventEquals = new EventCompare(NumberComparison.Equals);
-
-        public static EventCompare eventLesserEquals = new EventCompare(NumberComparison.LesserEquals);
-
-        public static EventCompare eventGreaterEquals = new EventCompare(NumberComparison.GreaterEquals);
-
-        public static EventCompare eventLesser = new EventCompare(NumberComparison.Lesser);
-
-        public static EventCompare eventGreater = new EventCompare(NumberComparison.Greater);
-
-        public static EventOffset eventOffset = new EventOffset(EventOffset.Type.Normal);
-
-        public static EventOffset eventOffsetVariable = new EventOffset(EventOffset.Type.Variable);
-
-        public static EventOffset eventOffsetMath = new EventOffset(EventOffset.Type.Math);
-
-        public static EventOffsetAnimate eventOffsetAnimate = new EventOffsetAnimate();
-
-        public static EventOffsetCopyAxis eventOffsetCopyAxis = new EventOffsetCopyAxis();
-
-        public static VignetteTracksPlayer vignetteTracksPlayer = new VignetteTracksPlayer();
-
-        public static LensTracksPlayer lensTracksPlayer = new LensTracksPlayer();
-
-        public static DatamoshFunction datamoshGlitch = new DatamoshFunction(DatamoshFunction.Function.Glitch);
-
-        public static DatamoshFunction datamoshReset = new DatamoshFunction(DatamoshFunction.Function.Reset);
 
         #endregion
 
@@ -1094,8 +1072,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static FormatText formatText = new FormatText();
 
         public static TextSequence textSequence = new TextSequence();
-
-        public static ActorFrameTexture actorFrameTexture = new ActorFrameTexture();
 
         public static SetImage setImage = new SetImage(false);
 
@@ -1302,6 +1278,30 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static QuitToMenu quitToMenu = new QuitToMenu();
 
         public static QuitToArcade quitToArcade = new QuitToArcade();
+
+        #endregion
+
+        #region JSON
+
+        public static GetJSON getJSONString = new GetJSON(GetJSON.Type.String);
+
+        public static GetJSON getJSONFloat = new GetJSON(GetJSON.Type.Float);
+
+        public static GetJSON getJSON = new GetJSON(GetJSON.Type.Object);
+
+        public static LoadJSONCompare loadJSONEquals = new LoadJSONCompare(NumberComparison.Equals);
+
+        public static LoadJSONCompare loadJSONLesserEquals = new LoadJSONCompare(NumberComparison.LesserEquals);
+
+        public static LoadJSONCompare loadJSONGreaterEquals = new LoadJSONCompare(NumberComparison.GreaterEquals);
+
+        public static LoadJSONCompare loadJSONLesser = new LoadJSONCompare(NumberComparison.Lesser);
+
+        public static LoadJSONCompare loadJSONGreater = new LoadJSONCompare(NumberComparison.Greater);
+
+        public static LoadJSONExists loadJSONExists = new LoadJSONExists();
+
+        public static SaveJSON saveJSON = new SaveJSON();
 
         #endregion
 
