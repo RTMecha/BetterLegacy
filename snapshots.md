@@ -7,6 +7,10 @@
 ### Core
 - animateObject modifiers constant value are now off by default.
 
+## Fixes
+- Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
+- Fixed some Example Companion JSON issues.
+
 -------------------------------------------------------------------
 
 # snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
