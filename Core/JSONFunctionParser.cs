@@ -2749,19 +2749,38 @@ namespace BetterLegacy.Core
 
             return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) ? chapter.Count : ParseVarFunction(parameters.Get(2, "default"), thisElement, customVariables);
         }
-        
+
         #endregion
 
         #endregion
+
+        /// <summary>
+        /// Checks if a function name is valid.
+        /// </summary>
+        /// <param name="name">Function name.</param>
+        /// <returns>Returns true if a function with a matching name is found, otherwise returns false.</returns>
+        public virtual bool HasIfFunction(string name) => !string.IsNullOrEmpty(name) && (predicates.ContainsKey(name) || customJSONFunctions.ContainsKey(name));
+
+        /// <summary>
+        /// Checks if a function name is valid.
+        /// </summary>
+        /// <param name="name">Function name.</param>
+        /// <returns>Returns true if a function with a matching name is found, otherwise returns false.</returns>
+        public virtual bool HasFunction(string name) => !string.IsNullOrEmpty(name) && (actions.ContainsKey(name) || customJSONFunctions.ContainsKey(name));
+
+        /// <summary>
+        /// Checks if a function name is valid.
+        /// </summary>
+        /// <param name="name">Function name.</param>
+        /// <returns>Returns true if a function with a matching name is found, otherwise returns false.</returns>
+        public virtual bool HasVarFunction(string name) => !string.IsNullOrEmpty(name) && (variables.ContainsKey(name) || customJSONFunctions.ContainsKey(name));
 
         public virtual bool IfFunction(JSONNode jn, string name, JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
         {
             if (string.IsNullOrEmpty(name))
                 return false;
-
             if (predicates.TryGetValue(name, out var predicate))
                 return predicate.Invoke(parameters, thisElement, customVariables);
-
             if (customJSONFunctions.TryGetValue(name, out JSONNode customJSONFunction))
                 return ParseIfFunction(customJSONFunction, thisElement, customVariables);
             return false;
@@ -2786,7 +2805,6 @@ namespace BetterLegacy.Core
         {
             if (string.IsNullOrEmpty(name))
                 return jn;
-
             if (variables.TryGetValue(name, out var variable))
                 return variable.Invoke(parameters, thisElement, customVariables) ?? jn;
             if (customJSONFunctions.TryGetValue(name, out JSONNode customJSONFunction))
