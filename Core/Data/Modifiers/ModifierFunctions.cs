@@ -545,6 +545,8 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static GetPlayerProperty getPlayerRot = new GetPlayerProperty(GetPlayerProperty.Property.Rot);
 
+        public static GetPlayerVariable getPlayerVariable = new GetPlayerVariable();
+
         public static PlayerCollide playerCollide = new PlayerCollide(PlayerTriggerBase.Requirement.Nearest, false);
 
         public static PlayerCollide playerCollideIndex = new PlayerCollide(PlayerTriggerBase.Requirement.Index, false);
@@ -824,6 +826,18 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static SetPlayerMask setPlayerMaskIndex = new SetPlayerMask(PlayerActionBase.Selector.Index);
 
         public static SetPlayerMask setPlayerMaskAll = new SetPlayerMask(PlayerActionBase.Selector.All);
+
+        public static SetPlayerVariable setPlayerVariable = new SetPlayerVariable(PlayerActionBase.Selector.Nearest);
+
+        public static SetPlayerVariable setPlayerVariableIndex = new SetPlayerVariable(PlayerActionBase.Selector.Index);
+
+        public static SetPlayerVariable setPlayerVariableAll = new SetPlayerVariable(PlayerActionBase.Selector.All);
+        
+        public static RemovePlayerVariable removePlayerVariable = new RemovePlayerVariable(PlayerActionBase.Selector.Nearest);
+
+        public static RemovePlayerVariable removePlayerVariableIndex = new RemovePlayerVariable(PlayerActionBase.Selector.Index);
+
+        public static RemovePlayerVariable removePlayerVariableAll = new RemovePlayerVariable(PlayerActionBase.Selector.All);
 
         public static SetPlayerModel setPlayerModel = new SetPlayerModel();
 

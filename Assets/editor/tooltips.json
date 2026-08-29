@@ -2965,6 +2965,16 @@
             ]
           }, // getPlayerHealth
           {
+            "name": "Object Modifier - getPlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getPlayerVariable (Action)",
+                "hint": "Gets a variable of a player at an index and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getPlayerVariable
+          {
             "name": "Object Modifier - getPlayerLives (Action)",
             "tooltips": [
               {
@@ -4298,6 +4308,99 @@
               }
             ]
           }, // setPlayerMaskAll
+
+          {
+            "name": "Object Modifier - setPlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariable (Action)",
+                "hint": "Sets a variable of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariable
+          {
+            "name": "Object Modifier - setPlayerVariableIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariableIndex (Action)",
+                "hint": "Sets a variable of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariableIndex
+          {
+            "name": "Object Modifier - setPlayerVariableAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariableAll (Action)",
+                "hint": "Sets a variable of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariableAll
+
+          {
+            "name": "Object Modifier - removePlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariable (Action)",
+                "hint": "Removes a variable from the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariable
+          {
+            "name": "Object Modifier - removePlayerVariableIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariableIndex (Action)",
+                "hint": "Removes a variable from the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariableIndex
+          {
+            "name": "Object Modifier - removePlayerVariableAll (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariableAll (Action)",
+                "hint": "Removes a variable from all players.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariableAll
+
+          {
+            "name": "Object Modifier - clearPlayerVariables (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariables (Action)",
+                "hint": "Clears all variables from the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariables
+          {
+            "name": "Object Modifier - clearPlayerVariablesIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariablesIndex (Action)",
+                "hint": "Clears all variables from the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariablesIndex
+          {
+            "name": "Object Modifier - clearPlayerVariablesAll (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariablesAll (Action)",
+                "hint": "Clears all variables from all players.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariablesAll
 
           {
             "name": "Object Modifier - setGameMode (Action)",

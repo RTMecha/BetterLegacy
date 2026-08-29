@@ -72,6 +72,8 @@ namespace BetterLegacy.Core.Managers
 
         public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
 
+        public Dictionary<int, Dictionary<string, string>> playerVariables = new Dictionary<int, Dictionary<string, string>>();
+
         #endregion
 
         #region Functions
@@ -81,6 +83,7 @@ namespace BetterLegacy.Core.Managers
             // destroy players on pre load scene
             SceneHelper.OnPreLoadScene += scene => DestroyPlayers();
             LoadPlayerSettings();
+            LoadPlayerVariables();
         }
 
         public override void OnTick()
@@ -453,20 +456,22 @@ namespace BetterLegacy.Core.Managers
             gameObject.transform.localRotation = Quaternion.identity;
 
             var runtimePlayer = gameObject.GetOrAddComponent<RTPlayer>();
-
+            player.RuntimePlayer = runtimePlayer;
             runtimePlayer.Core = player;
             runtimePlayer.Model = player.Model;
             runtimePlayer.index = player.index;
-            if (inst && inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
-                runtimePlayer.colorSlot = playerSettings.colorSlot;
+            if (!player.IsLocalPlayer)
+                runtimePlayer.colorSlot = player.colorSlot;
+            else if (inst && inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
+                player.ColorSlot = playerSettings.colorSlot;
             else if (player.Model)
-                runtimePlayer.colorSlot = player.Model.basePart.colorSlot;
+                player.ColorSlot = player.Model.basePart.colorSlot;
             runtimePlayer.initialHealthCount = player.Health;
-            player.RuntimePlayer = runtimePlayer;
 
             runtimePlayer.Init();
             runtimePlayer.UpdateTail(player.Health, pos);
 
+            // spawn should only occur when the player is activated.
             if (GameManager.inst.players.activeSelf)
             {
                 runtimePlayer.UpdateModel();
@@ -867,6 +872,48 @@ namespace BetterLegacy.Core.Managers
                 LobbyPopup.Instance.Render();
             if (Players.TryFindIndex(x => x.IsLocalPlayer && x.localIndex == index, out int playerIndex))
                 RespawnPlayer(playerIndex);
+        }
+
+        #endregion
+
+        #region Variables
+
+        public void SavePlayerVariables()
+        {
+            var jn = Parser.NewJSONObject();
+            var playerVariableSetIndex = 0;
+            foreach (var playerVariableSet in playerVariables)
+            {
+                var jnSet = Parser.NewJSONObject();
+                jnSet["index"] = playerVariableSet.Key;
+                int variableIndex = 0;
+                foreach (var variable in playerVariableSet.Value)
+                {
+                    jnSet["vars"][variableIndex]["n"] = variable.Key;
+                    jnSet["vars"][variableIndex]["v"] = variable.Value;
+                    variableIndex++;
+                }
+                jn["players"][playerVariableSetIndex] = jnSet;
+                playerVariableSetIndex++;
+            }
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "player_variables" + FileFormat.LSS.Dot()), jn.ToString());
+        }
+
+        public void LoadPlayerVariables()
+        {
+            if (!RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "player_variables" + FileFormat.LSS.Dot()), out string file))
+                return;
+            playerVariables.Clear();
+            var jn = JSON.Parse(file);
+            for (int i = 0; i < jn["players"].Count; i++)
+            {
+                var jnSet = jn["players"][i];
+                var index = jnSet["index"];
+                var variables = new Dictionary<string, string>();
+                for (int j = 0; j < jnSet["vars"].Count; j++)
+                    variables[jnSet["vars"][j]["n"]] = jnSet["vars"][j]["v"];
+                playerVariables[index] = variables;
+            }
         }
 
         #endregion

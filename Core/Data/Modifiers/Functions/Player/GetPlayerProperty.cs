@@ -4,7 +4,7 @@ using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
-    public class GetPlayerProperty : ModifierActionBase
+    public class GetPlayerProperty : ModifierVariableBase
     {
         #region Constructors
 
@@ -29,10 +29,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         #region Functions
 
-        public override void Run(Modifier modifier, ModifierLoop modifierLoop)
+        public override string GetValue(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (!PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player))
-                return;
+                return null;
             var value = property switch
             {
                 Property.Health => player.Health.ToString(),
@@ -41,9 +41,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 Property.PosY => player.RuntimePlayer?.rb?.transform?.position.y.ToString(),
                 Property.Rot => player.RuntimePlayer?.rb?.transform?.eulerAngles.z.ToString(),
                 _ => string.Empty,
-            }; ;
-            if (!string.IsNullOrEmpty(value))
-                modifierLoop.variables[FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = value;
+            };
+            return !string.IsNullOrEmpty(value) ? value : null;
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
