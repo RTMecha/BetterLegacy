@@ -2,6 +2,8 @@
 ## Features
 ### Core
 - Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
+- Added Player Variables and modifiers related to it.
+- Individual players can now have their display name modified using the lobby manager settings tab.
 
 ### Companion
 - Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
@@ -14,6 +16,7 @@
 ## Fixes
 - Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
 - Fixed some Example Companion JSON issues.
+- Fixed level and level collection variables not saving correctly.
 
 -------------------------------------------------------------------
 
