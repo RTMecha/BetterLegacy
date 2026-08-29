@@ -1,11 +1,15 @@
 ﻿# ???
 ## Features
+### Core
+- Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
+
 ### Companion
 - Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
 
 ## Changes
 ### Core
 - animateObject modifiers constant value are now off by default.
+- Users joining a host can now use their own player model to represent themselves.
 
 ## Fixes
 - Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
