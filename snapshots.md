@@ -13,6 +13,9 @@
 - animateObject modifiers constant value are now off by default.
 - Users joining a host can now use their own player model to represent themselves.
 
+### Editor
+- Shortened the name of some modifier values.
+
 ## Fixes
 - Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
 - Fixed some Example Companion JSON issues.
