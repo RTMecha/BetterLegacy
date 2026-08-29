@@ -283,12 +283,12 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         modifierCard.ColorGenerator(modifier, reference, "Color", 1, (ThemeSource)modifier.GetInt(5, 4));
 
                         modifierCard.SingleGenerator(modifier, reference, "Start Hue", 2, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Sat", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Val", 4, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "End Hue", 6, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 7, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Value", 8, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Sat", 7, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Val", 8, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Add Amount", 0, 1f);
                         break;
@@ -306,14 +306,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         modifierCard.ColorGenerator(modifier, reference, "Start Color", 2, colorSource);
 
                         modifierCard.SingleGenerator(modifier, reference, "Start Hue", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 4, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 5, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Sat", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Val", 5, 0f);
 
                         modifierCard.ColorGenerator(modifier, reference, "End Color", 7, colorSource);
 
                         modifierCard.SingleGenerator(modifier, reference, "End Hue", 8, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 9, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Value", 10, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Sat", 9, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Val", 10, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Multiply", 0, 1f);
                         break;
@@ -329,15 +329,15 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                         modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 5, 1f);
                         modifierCard.SingleGenerator(modifier, reference, "Start Hue", 2, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Sat", 3, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Val", 4, 0f);
 
                         modifierCard.ColorGenerator(modifier, reference, "End Color", 7, colorSource);
 
                         modifierCard.SingleGenerator(modifier, reference, "End Opacity", 11, 1f);
                         modifierCard.SingleGenerator(modifier, reference, "End Hue", 8, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 9, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Value", 10, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Sat", 9, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Val", 10, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
                         break;
@@ -356,15 +356,15 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                         modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 6, 1f);
                         modifierCard.SingleGenerator(modifier, reference, "Start Hue", 3, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Saturation", 4, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "Start Value", 5, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Sat", 4, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "Start Val", 5, 0f);
 
                         modifierCard.ColorGenerator(modifier, reference, "End Color", 8, colorSource);
 
                         modifierCard.SingleGenerator(modifier, reference, "End Opacity", 12, 1f);
                         modifierCard.SingleGenerator(modifier, reference, "End Hue", 9, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Saturation", 10, 0f);
-                        modifierCard.SingleGenerator(modifier, reference, "End Value", 11, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Sat", 10, 0f);
+                        modifierCard.SingleGenerator(modifier, reference, "End Val", 11, 0f);
 
                         modifierCard.SingleGenerator(modifier, reference, "Interpolate", 0, 1f);
                         break;
