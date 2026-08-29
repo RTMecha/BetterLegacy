@@ -140,6 +140,7 @@ namespace BetterLegacy.Core.Data.Level
                 {
                     jn["vars"][index]["n"] = variable.Key;
                     jn["vars"][index]["v"] = variable.Value;
+                    index++;
                 }
             }
 
