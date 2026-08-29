@@ -3484,11 +3484,13 @@ namespace BetterLegacy.Core.Components.Player
         /// <param name="pos">Position the player was updated at.</param>
         public void UpdateTail(int health, Vector3 pos)
         {
+            if (Model && Model.tailBase && !Model.tailBase.usesHealth)
+                health = Model.tailParts.Count;
+
             // increase tail length if tailGrows is true
             if (health > initialHealthCount)
             {
                 initialHealthCount = health;
-
                 if (tailGrows || tailParts.Count < Model.tailParts.Count)
                     GrowTail(tailGrows ? initialHealthCount : Model.tailParts.Count);
             }

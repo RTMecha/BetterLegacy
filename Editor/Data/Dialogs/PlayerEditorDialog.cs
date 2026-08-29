@@ -371,6 +371,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             TailTab.BaseMode = SetupDropdown("Tail Base Mode", CoreHelper.StringToOptionData("Legacy", "Dev+"), PlayerEditor.Tab.Tail, editorTab: TailTab);
             TailTab.BaseGrows = SetupBool("Tail Base Grows", PlayerEditor.Tab.Tail, editorTab: TailTab);
             TailTab.BaseTime = SetupNumber("Tail Base Time", PlayerEditor.Tab.Tail, editorTab: TailTab);
+            TailTab.BaseUsesHealth = SetupBool("Tail Base Uses Health", PlayerEditor.Tab.Tail, editorTab: TailTab);
 
             SetupObjectTab(TailTab.BoostPart, "Tail Boost", PlayerEditor.Tab.Tail);
 
@@ -506,7 +507,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var setToGlobalStorage = setToGlobal.GetComponent<FunctionButtonStorage>();
                 setToGlobalStorage.label.fontSize = 16;
                 setToGlobalStorage.Text = "Set to Global";
-                setToGlobalStorage.OnClick.NewListener(() => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerIndex].Value = PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerIndex]);
+                setToGlobalStorage.OnClick.NewListener(() => PlayerManager.inst.SetCustomModel(PlayerEditor.inst.playerIndex, PlayersData.Current.playerModelsIndex[PlayerEditor.inst.playerIndex]));
 
                 EditorThemeManager.ApplySelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(setToGlobalStorage.label, ThemeGroup.Function_2_Text);
@@ -1223,6 +1224,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorDropdown BaseMode { get; set; }
         public PlayerEditorToggle BaseGrows { get; set; }
         public PlayerEditorNumber BaseTime { get; set; }
+        public PlayerEditorToggle BaseUsesHealth { get; set; }
 
         public PlayerEditorObjectTab BoostPart { get; set; } = new PlayerEditorObjectTab();
 
