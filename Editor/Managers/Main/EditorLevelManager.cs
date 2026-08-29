@@ -1128,6 +1128,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (ProjectArrhythmia.State.IsInLobby)
             {
+                RTEditor.inst.InfoPopup.SetInfo($"Waiting for players to load...");
                 NetworkFunction.SetClientLoaded();
                 NetworkFunction.LoadClientEditorLevel(level);
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
@@ -1352,6 +1353,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (ProjectArrhythmia.State.IsInLobby)
             {
+                RTEditor.inst.InfoPopup.SetInfo($"Waiting for players to load...");
                 NetworkFunction.SetClientLoaded();
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
                     yield return new WaitForEndOfFrame();
