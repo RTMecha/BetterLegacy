@@ -20,6 +20,7 @@
 - Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
 - Fixed some Example Companion JSON issues.
 - Fixed level and level collection variables not saving correctly.
+- Fixed some name editing not updating the timeline object mark area.
 
 -------------------------------------------------------------------
 
