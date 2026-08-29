@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -56,6 +57,9 @@ namespace BetterLegacy.Core.Data.Player
             IsLocalPlayer = true;
             if (RTSteamManager.inst && RTSteamManager.inst.Initialized)
                 ID = RTSteamManager.inst.steamUser.steamID;
+            var settings = GetPlayerSettings();
+            if (settings && !string.IsNullOrEmpty(settings.displayName))
+                DisplayName = settings.displayName;
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -133,6 +137,20 @@ namespace BetterLegacy.Core.Data.Player
         /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
         /// </summary>
         public int colorSlot = -1;
+
+        /// <summary>
+        /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
+        /// </summary>
+        public int ColorSlot
+        {
+            get => colorSlot;
+            set
+            {
+                colorSlot = value;
+                if (RuntimePlayer)
+                    RuntimePlayer.colorSlot = value;
+            }
+        }
 
         /// <summary>
         /// Controller device name.
@@ -218,9 +236,6 @@ namespace BetterLegacy.Core.Data.Player
         /// Name to display for the player.
         /// </summary>
         public string DisplayName { get; set; } = CoreConfig.Instance.DisplayName.Value;
-
-        // might not go with this? (change this to player variables)
-        public PlayerInventory inventory = new PlayerInventory();
 
         public RTLevelBase ParentRuntime { get; set; }
 
@@ -321,6 +336,61 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         /// <returns>Returns the player properties associated with this player.</returns>
         public PlayerProperties GetCustomProperties() => PlayersData.Current && PlayersData.Current.playersProperties.TryGetAt(index, out PlayerProperties playerProperties) ? playerProperties : new PlayerProperties();
+
+        /// <summary>
+        /// Gets the player settings.
+        /// </summary>
+        /// <returns>Returns the player settings associated with this player.</returns>
+        public PlayerSettings GetPlayerSettings() => IsLocalPlayer ? PlayerManager.inst.GetPlayerSettings(localIndex) : null;
+
+        /// <summary>
+        /// Gets the player variables.
+        /// </summary>
+        /// <returns>Returns the player variables associated with this player.</returns>
+        public Dictionary<string, string> GetPlayerVariables() => PlayerManager.inst.playerVariables.TryGetValue(index, out var variables) ? variables : null;
+
+        /// <summary>
+        /// Sets a player variable.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        /// <param name="value">Value of the variable.</param>
+        public void SetVariable(string name, string value)
+        {
+            if (string.IsNullOrEmpty(name) || value == null)
+                return;
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables[name] = value;
+            PlayerManager.inst.SavePlayerVariables();
+        }
+
+        /// <summary>
+        /// Removes a player variable.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        public void RemoveVariable(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables.Remove(name);
+            PlayerManager.inst.SavePlayerVariables();
+        }
+
+        /// <summary>
+        /// Clears the player variables.
+        /// </summary>
+        public void ClearVariables()
+        {
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables.Clear();
+            PlayerManager.inst.SavePlayerVariables();
+        }
 
         /// <summary>
         /// Gets the <see cref="PlayerIndex"/> value for the player.

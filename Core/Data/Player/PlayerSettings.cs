@@ -1,4 +1,6 @@
-﻿using SimpleJSON;
+﻿using System.Collections.Generic;
+
+using SimpleJSON;
 
 using BetterLegacy.Core.Data.Network;
 
@@ -25,6 +27,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public int colorSlot = -1;
 
+        public string displayName;
+
         #endregion
 
         #region Functions
@@ -34,6 +38,7 @@ namespace BetterLegacy.Core.Data.Player
             index = reader.ReadInt32();
             playerModelID = reader.ReadString();
             colorSlot = reader.ReadInt32();
+            displayName = reader.ReadString();
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -41,6 +46,7 @@ namespace BetterLegacy.Core.Data.Player
             writer.Write(index);
             writer.Write(playerModelID);
             writer.Write(colorSlot);
+            writer.Write(displayName);
         }
 
         public override void CopyData(PlayerSettings orig, bool newID = true)
@@ -48,13 +54,17 @@ namespace BetterLegacy.Core.Data.Player
             index = orig.index;
             playerModelID = orig.playerModelID;
             colorSlot = orig.colorSlot;
+            displayName = orig.displayName;
         }
 
         public override void ReadJSON(JSONNode jn)
         {
             index = jn["index"].AsInt;
             playerModelID = jn["model_id"];
-            colorSlot = jn["col"].AsInt;
+            if (jn["col"] != null)
+                colorSlot = jn["col"].AsInt;
+            if (jn["name"] != null)
+                displayName = jn["name"];
         }
 
         public override JSONNode ToJSON()
@@ -66,6 +76,8 @@ namespace BetterLegacy.Core.Data.Player
                 jn["model_id"] = playerModelID;
             if (colorSlot != -1)
                 jn["col"] = colorSlot;
+            if (displayName != null)
+                jn["name"] = displayName;
 
             return jn;
         }

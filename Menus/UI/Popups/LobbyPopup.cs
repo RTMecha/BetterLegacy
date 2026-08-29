@@ -582,6 +582,30 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 #endregion
 
+                #region Display Name
+
+                var displayNameLabel = GenerateText(gameObject.transform, "Display Name", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
+                EditorThemeManager.ApplyLightText(displayNameLabel);
+
+                var displayName = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform);
+                displayName.SetActive(true);
+                RectValues.Default.AnchoredPosition(0f, 300f).SizeDelta(400f, 32f).AssignToRectTransform(displayName.transform.AsRT());
+                var displayNameField = displayName.GetComponent<InputField>();
+                displayNameField.textComponent.alignment = TextAnchor.MiddleLeft;
+                displayNameField.SetTextWithoutNotify(playerSettings.displayName);
+                displayNameField.onValueChanged.ClearAll();
+                displayNameField.onEndEdit.NewListener(_val =>
+                {
+                    playerSettings.displayName = _val;
+                    SteamLobbyManager.inst.SaveLobbySettings();
+                    if (PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                        PlayerManager.RespawnPlayer(player);
+                });
+                displayNameField.GetPlaceholderText().text = "Set name...";
+                EditorThemeManager.ApplyInputField(displayNameField, ThemeGroup.Search_Field_1);
+
+                #endregion
+
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gameObject.transform.AsRT());
             }
 
