@@ -133,7 +133,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Function to run when a player model is selected.
         /// </summary>
-        public Action<PlayerModel> onSelectModel;
+        public Action<PlayerModelPanel> onSelectModel;
 
         /// <summary>
         /// Copied custom object.
@@ -389,8 +389,14 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void CreateNewModel()
         {
-            var playerModel = PlayersData.Current.CreateNewPlayerModel();
-            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
+            var playerModel = new PlayerModel();
+            playerModel.Name = "New Model";
+            playerModel.ID = LSText.randomNumString(16);
+            playerModel.creator = CoreConfig.Instance.DisplayName.Value; // set creator name
+
+            PlayersData.Current.OverwritePlayerModel(playerModel);
+
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.ID);
             PlayerManager.RespawnPlayers();
             RenderDialog();
             EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
@@ -434,6 +440,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }
+
+        #region Dialog
 
         /// <summary>
         /// Gets the current tab of the dialog.
@@ -1632,17 +1640,17 @@ namespace BetterLegacy.Editor.Managers
             var text = Dialog.BaseTab.ID.GameObject.transform.GetChild(0).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(text.rectTransform);
             text.alignment = TextAnchor.MiddleRight;
-            text.text = currentModel.basePart.id.ToString() + " (Click to copy)";
+            text.text = currentModel.ID + " (Click to copy)";
             Dialog.BaseTab.ID.Button.onClick.NewListener(() =>
             {
-                LSText.CopyToClipboard(currentModel.basePart.id.ToString());
-                EditorManager.inst.DisplayNotification($"Copied ID \"{currentModel.basePart.id}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(currentModel.ID);
+                EditorManager.inst.DisplayNotification($"Copied ID \"{currentModel.ID}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
             });
 
-            Dialog.BaseTab.Name.Field.SetTextWithoutNotify(currentModel.basePart.name);
+            Dialog.BaseTab.Name.Field.SetTextWithoutNotify(currentModel.Name);
             Dialog.BaseTab.Name.Field.onValueChanged.NewListener(_val =>
             {
-                currentModel.basePart.name = _val;
+                currentModel.Name = _val;
                 PlayerManager.UpdatePlayerModels();
             });
             
@@ -2650,6 +2658,13 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
+            Dialog.TailTab.BaseUsesHealth.Toggle.SetIsOnWithoutNotify(currentModel.tailBase.usesHealth);
+            Dialog.TailTab.BaseUsesHealth.Toggle.onValueChanged.NewListener(_val =>
+            {
+                currentModel.tailBase.usesHealth = _val;
+                PlayerManager.UpdatePlayerModels();
+            });
+
             RenderObject(Dialog.TailTab.BoostPart, currentModel.boostTailPart);
 
             CoroutineHelper.StartCoroutine(IRenderTails(currentModel));
@@ -2891,6 +2906,8 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
 
+        #endregion
+
         /// <summary>
         /// Plays an animation on a player.
         /// </summary>
@@ -2954,32 +2971,62 @@ namespace BetterLegacy.Editor.Managers
 
         public void ImportPlayerModel(PlayerModel playerModel)
         {
-            if (!PlayersData.Current.playerModels.TryAdd(playerModel.basePart.id, playerModel))
+            if (!playerModel)
                 return;
+            if (PlayersData.Current.playerModels.Has(x => x.ID == playerModel.ID))
+                return;
+            PlayersData.Current.playerModels.Add(playerModel);
             RenderInternalPlayerModelsPopup(onSelectModel);
         }
 
         public void ExportPlayerModel(PlayerModel playerModel)
         {
-            PlayersData.externalPlayerModels[playerModel.basePart.id] = playerModel;
-            var path = !string.IsNullOrEmpty(playerModel.path) ? playerModel.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(playerModel.basePart.name)}{FileFormat.LSPL.Dot()}");
+            if (!playerModel)
+                return;
+            PlayersData.OverwriteExternalPlayerModel(playerModel);
+            var path = !string.IsNullOrEmpty(playerModel.path) ? playerModel.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(playerModel.Name)}{FileFormat.LSPL.Dot()}");
             if (string.IsNullOrEmpty(playerModel.path))
                 playerModel.path = path;
             RTFile.WriteToFile(path, playerModel.ToJSON().ToString(3));
+        }
+
+        public void DeletePlayerModel(PlayerModelPanel playerModelPanel)
+        {
+            if (playerModelPanel.Item && playerModelPanel.Item.IsDefault)
+            {
+                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
+            {
+                PlayersData.Current.SetPlayerModel(playerIndex, PlayerModel.DEFAULT_ID);
+                if (playerModelPanel.IsExternal)
+                {
+                    PlayersData.externalPlayerModels.Remove(playerModelPanel.Item);
+                    RTFile.DeleteFile(playerModelPanel.Path);
+                }
+                else
+                    PlayersData.Current.playerModels.Remove(playerModelPanel.Item);
+                PlayerManager.RespawnPlayers();
+                RenderDialog();
+                RenderInternalPlayerModelsPopup(onSelectModel);
+                RenderExternalPlayerModelsPopup();
+            });
         }
 
         /// <summary>
         /// Opens the models popup.
         /// </summary>
         /// <param name="onSelect">Function to run on select.</param>
-        public void OpenModelsPopup(Action<PlayerModel> onSelect = null)
+        public void OpenModelsPopup(Action<PlayerModelPanel> onSelect = null)
         {
             ModelsPopup.Open();
             RenderInternalPlayerModelsPopup(onSelect);
             RenderExternalPlayerModelsPopup();
         }
 
-        public void RenderInternalPlayerModelsPopup(Action<PlayerModel> onSelect = null)
+        public void RenderInternalPlayerModelsPopup(Action<PlayerModelPanel> onSelect = null)
         {
             onSelectModel = onSelect;
             ModelsPopup.Internal.ClearContent();
@@ -2991,7 +3038,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var playerModel in PlayersData.Current.playerModels)
             {
                 int index = num;
-                var name = playerModel.Value.basePart.name;
+                var name = playerModel.Name;
                 if (!RTString.SearchString(ModelsPopup.Internal.SearchTerm, name))
                 {
                     num++;
@@ -2999,9 +3046,9 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 var playerModelPanel = new PlayerModelPanel(ObjectSource.Internal, index);
-                playerModelPanel.Init(playerModel.Value);
+                playerModelPanel.Init(playerModel);
                 if (onSelect != null)
-                    playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModel.Value);
+                    playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModelPanel);
                 ModelPanels.Add(playerModelPanel);
                 num++;
             }
@@ -3067,7 +3114,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var playerModel in PlayersData.externalPlayerModels)
             {
-                var name = playerModel.Value.basePart.name;
+                var name = playerModel.Name;
                 if (!RTString.SearchString(ModelsPopup.External.SearchTerm, name))
                 {
                     index++;
@@ -3075,7 +3122,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 var playerModelPanel = new PlayerModelPanel(ObjectSource.External, index);
-                playerModelPanel.Init(playerModel.Value);
+                playerModelPanel.Init(playerModel);
                 ModelPanels.Add(playerModelPanel);
                 index++;
             }
@@ -3100,7 +3147,7 @@ namespace BetterLegacy.Editor.Managers
 
             var currentModel = PlayersData.Current.GetPlayerModel(playerIndex);
 
-            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
+            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.ID == x.ID);
 
             if (isDefault)
                 return;
@@ -3254,8 +3301,7 @@ namespace BetterLegacy.Editor.Managers
             if (!playerModel)
                 return;
 
-            PlayersData.Current.playerModels[playerModel.basePart.id] = playerModel;
-            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.ID);
             PlayerManager.RespawnPlayers();
             RenderDialog();
         }

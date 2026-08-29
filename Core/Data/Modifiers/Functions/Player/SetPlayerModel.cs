@@ -34,19 +34,12 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var id = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var index = modifier.GetInt(1, 0, modifierLoop.variables);
 
-            if (!PlayersData.Current.playerModels.ContainsKey(id))
+            if (!PlayersData.Current.playerModels.TryFind(x => x.ID == id, out PlayerModel playerModel) || !PlayerManager.Players.TryGetAt(index, out PAPlayer player))
                 return;
 
-            PlayersData.Current.SetPlayerModel(index, id);
-            PlayerManager.AssignPlayerModels();
-
-            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer)
-                return;
-
-            player.UpdatePlayerModel();
-
-            player.RuntimePlayer.playerNeedsUpdating = true;
-            player.RuntimePlayer.UpdateModel();
+            if (player.RuntimePlayer)
+                player.RuntimePlayer.playerNeedsUpdating = true;
+            player.SetModel(playerModel);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
@@ -54,7 +47,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
             var modelID = modifierCard.StringGenerator(modifier, reference, "Model ID", 0);
             EditorContextMenu.AddContextMenu(modelID.transform.Find("Input").gameObject,
-                new ButtonElement("Select model", () => PlayerEditor.inst.OpenModelsPopup(model => modifierCard.SetValue(0, model.basePart.id, reference))));
+                new ButtonElement("Select model", () => PlayerEditor.inst.OpenModelsPopup(model =>
+                {
+                    if (!model.IsExternal && model.Item)
+                        modifierCard.SetValue(0, model.Item.ID, reference);
+                })));
         }
 
         #endregion

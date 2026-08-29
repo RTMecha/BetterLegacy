@@ -3387,7 +3387,7 @@ namespace BetterLegacy.Companion.Data
                 if (selectable is ThemePanel themePanel)
                     return themePanel.isFolder ? themePanel.Name : themePanel.Item.name;
                 if (selectable is PlayerModelPanel playerModelPanel)
-                    return playerModelPanel.isFolder ? playerModelPanel.Name : playerModelPanel.Item.basePart.name;
+                    return playerModelPanel.isFolder ? playerModelPanel.Name : playerModelPanel.Item.Name;
                 if (selectable is FolderPlanner folderPlanner)
                     return folderPlanner.Name;
                 if (selectable is DocumentPlanner documentPlanner)
@@ -3454,7 +3454,7 @@ namespace BetterLegacy.Companion.Data
                 }
                 if (selectable is PlayerModelPanel playerModelPanel && playerModelPanel.Item)
                 {
-                    playerModelPanel.Item.basePart.name = name;
+                    playerModelPanel.Item.Name = name;
                     playerModelPanel.Render();
                     return;
                 }
@@ -3512,7 +3512,7 @@ namespace BetterLegacy.Companion.Data
                 if (selectable is PrefabPanel prefabPanel)
                     return prefabPanel.Item?.description;
                 if (selectable is PlayerModelPanel playerModelPanel)
-                    return playerModelPanel.Item?.basePart?.name;
+                    return playerModelPanel.Item?.basePart?.description;
                 if (selectable is DocumentPlanner documentPlanner)
                     return documentPlanner.Text;
                 if (selectable is CharacterPlanner characterPlanner)

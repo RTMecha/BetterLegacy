@@ -81,8 +81,8 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     defaultPlayer = new PlayerModel();
                     defaultPlayer.IsDefault = true;
-                    defaultPlayer.basePart.id = DEFAULT_ID;
-                    defaultPlayer.basePart.name = "Regular";
+                    defaultPlayer.ID = DEFAULT_ID;
+                    defaultPlayer.Name = "Regular";
                 }
 
                 return defaultPlayer;
@@ -100,8 +100,8 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     circlePlayer = new PlayerModel();
                     circlePlayer.IsDefault = true;
-                    circlePlayer.basePart.id = CIRCLE_ID;
-                    circlePlayer.basePart.name = "Circle";
+                    circlePlayer.ID = CIRCLE_ID;
+                    circlePlayer.Name = "Circle";
                     circlePlayer.headPart.shape = 1;
                     circlePlayer.boostPart.shape = 1;
                     circlePlayer.pulsePart.shape = 1;
@@ -127,8 +127,8 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     alphaPlayer = new PlayerModel();
                     alphaPlayer.IsDefault = true;
-                    alphaPlayer.basePart.id = ALPHA_ID;
-                    alphaPlayer.basePart.name = "Alpha";
+                    alphaPlayer.ID = ALPHA_ID;
+                    alphaPlayer.Name = "Alpha";
                     alphaPlayer.basePart.canBoost = false;
                     alphaPlayer.guiPart.active = true;
                     alphaPlayer.guiPart.mode = GUI.GUIHealthMode.Images;
@@ -160,8 +160,8 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     betaPlayer = new PlayerModel();
                     betaPlayer.IsDefault = true;
-                    betaPlayer.basePart.id = BETA_ID;
-                    betaPlayer.basePart.name = "Beta";
+                    betaPlayer.ID = BETA_ID;
+                    betaPlayer.Name = "Beta";
                     betaPlayer.basePart.moveSpeed = 28f;
                     betaPlayer.basePart.boostSpeed = 95f;
                     betaPlayer.basePart.boostCooldown = 0.11f;
@@ -192,8 +192,8 @@ namespace BetterLegacy.Core.Data.Player
                 {
                     devPlayer = new PlayerModel();
                     devPlayer.IsDefault = true;
-                    devPlayer.basePart.id = DEV_ID;
-                    devPlayer.basePart.name = "DevPlus";
+                    devPlayer.ID = DEV_ID;
+                    devPlayer.Name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
                     devPlayer.basePart.moveSpeed = 22f;
                     devPlayer.basePart.boostSpeed = 87f; // changed from 80 to 87 to account for boost decay in modern PA
@@ -266,6 +266,45 @@ namespace BetterLegacy.Core.Data.Player
         #endregion
 
         #endregion
+
+        /// <summary>
+        /// Identification of the player model.
+        /// </summary>
+        public string ID
+        {
+            get => basePart?.id ?? string.Empty;
+            set
+            {
+                if (basePart)
+                    basePart.id = value;
+            }
+        }
+
+        /// <summary>
+        /// Name of the player model.
+        /// </summary>
+        public string Name
+        {
+            get => basePart?.name;
+            set
+            {
+                if (basePart)
+                    basePart.name = value;
+            }
+        }
+
+        /// <summary>
+        /// Description of the player model.
+        /// </summary>
+        public string Description
+        {
+            get => basePart?.description;
+            set
+            {
+                if (basePart)
+                    basePart.description = value;
+            }
+        }
 
         public Version Version { get; set; } = LegacyPlugin.ModVersion;
         public bool needsUpdate;
@@ -682,6 +721,8 @@ namespace BetterLegacy.Core.Data.Player
 
             public string name;
 
+            public string description;
+
             #region Visual
 
             public int colorSlot = -1;
@@ -763,6 +804,7 @@ namespace BetterLegacy.Core.Data.Player
             public override void CopyData(Base orig, bool newID = true)
             {
                 name = orig.name;
+                description = orig.description;
                 id = newID ? GetNumberID() : orig.id;
                 health = orig.health;
                 lives = orig.lives;
@@ -799,6 +841,8 @@ namespace BetterLegacy.Core.Data.Player
                 id = !string.IsNullOrEmpty(jn["id"]) ? jn["id"] : GetNumberID();
                 if (!string.IsNullOrEmpty(jn["name"]))
                     name = jn["name"];
+                if (!string.IsNullOrEmpty(jn["desc"]))
+                    description = jn["desc"];
 
                 if (jn["health"] != null)
                     health = jn["health"].AsInt;
@@ -863,6 +907,8 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (!string.IsNullOrEmpty(name))
                     jn["name"] = name;
+                if (!string.IsNullOrEmpty(description))
+                    jn["desc"] = description;
                 if (string.IsNullOrEmpty(id))
                     id = GetNumberID();
                 jn["id"] = id;
@@ -951,6 +997,7 @@ namespace BetterLegacy.Core.Data.Player
             {
                 id = reader.ReadString();
                 name = reader.ReadString();
+                description = reader.ReadString();
 
                 #region Visual
 
@@ -1007,6 +1054,7 @@ namespace BetterLegacy.Core.Data.Player
             {
                 writer.Write(id);
                 writer.Write(name);
+                writer.Write(description);
 
                 #region Visual
 
@@ -2010,6 +2058,8 @@ namespace BetterLegacy.Core.Data.Player
 
             public float time = 200f;
 
+            public bool usesHealth = true;
+
             public enum TailMode
             {
                 Legacy,
@@ -2026,6 +2076,7 @@ namespace BetterLegacy.Core.Data.Player
                 mode = orig.mode;
                 grows = orig.grows;
                 time = orig.time;
+                usesHealth = orig.usesHealth;
             }
 
             public override void ReadJSON(JSONNode jn)
@@ -2046,6 +2097,8 @@ namespace BetterLegacy.Core.Data.Player
                     time = jn["time"].AsFloat;
                 if (time == 0f)
                     time = 200f;
+                if (jn["uses_health"] != null)
+                    usesHealth = jn["uses_health"].AsBool;
             }
 
             public override JSONNode ToJSON()
@@ -2060,6 +2113,8 @@ namespace BetterLegacy.Core.Data.Player
                     jn["grows"] = grows;
                 if (time != 200f)
                     jn["time"] = time;
+                if (!usesHealth)
+                    jn["uses_health"] = usesHealth;
 
                 return jn;
             }
@@ -2070,6 +2125,7 @@ namespace BetterLegacy.Core.Data.Player
                 mode = (TailMode)reader.ReadByte();
                 grows = reader.ReadBoolean();
                 time = reader.ReadSingle();
+                usesHealth = reader.ReadBoolean();
             }
 
             public void WritePacket(NetworkWriter writer)
@@ -2078,6 +2134,7 @@ namespace BetterLegacy.Core.Data.Player
                 writer.Write((byte)mode);
                 writer.Write(grows);
                 writer.Write(time);
+                writer.Write(usesHealth);
             }
 
             #endregion

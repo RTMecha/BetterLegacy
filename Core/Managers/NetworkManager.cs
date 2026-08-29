@@ -117,7 +117,7 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (SteamLobbyManager.inst.localPlayers != null && SteamLobbyManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
+                    if (PlayerManager.inst.localPlayers != null && PlayerManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
                     {
                         origPlayer.index = i;
                         PlayerManager.Players.Add(origPlayer);
@@ -160,7 +160,7 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (SteamLobbyManager.inst.localPlayers != null && SteamLobbyManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
+                    if (PlayerManager.inst.localPlayers != null && PlayerManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
                     {
                         origPlayer.index = i;
                         PlayerManager.Players.Add(origPlayer);
@@ -286,6 +286,17 @@ namespace BetterLegacy.Core.Managers
                 var health = reader.ReadInt32();
                 if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player))
                     player.Health = health;
+            }),
+            new NetworkFunction(NetworkFunction.SET_PLAYER_MODEL, 3, reader =>
+            {
+                var steamID = reader.ReadUInt64();
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
+
+                var id = reader.ReadString();
+                var model = Packet.CreateFromPacket<PlayerModel>(reader);
+                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player))
+                    player.SetModel(model);
             }),
         };
 

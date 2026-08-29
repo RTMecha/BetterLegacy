@@ -489,9 +489,9 @@ namespace BetterLegacy.Menus.UI.Popups
         void RenderPlayerSettings()
         {
             LSHelpers.DeleteChildren(playerSettingsContent);
-            for (int i = 0; i < SteamLobbyManager.inst.playerSettings.Count; i++)
+            for (int i = 0; i < PlayerManager.inst.playerSettings.Count; i++)
             {
-                var playerSettings = SteamLobbyManager.inst.playerSettings[i];
+                var playerSettings = PlayerManager.inst.playerSettings[i];
                 var gameObject = Creator.NewUIObject("Settings", playerSettingsContent);
                 gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 100f);
 
@@ -516,6 +516,9 @@ namespace BetterLegacy.Menus.UI.Popups
                         return;
                     playerSettings.index = num;
                     SteamLobbyManager.inst.SaveLobbySettings();
+                    if (!ProjectArrhythmia.State.InEditor)
+                        return;
+                    PlayerManager.RespawnPlayers();
                 });
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(playerIndexField, max: int.MaxValue);
@@ -541,6 +544,8 @@ namespace BetterLegacy.Menus.UI.Popups
                 {
                     playerSettings.playerModelID = _val;
                     SteamLobbyManager.inst.SaveLobbySettings();
+                    if (PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                        PlayerManager.RespawnPlayer(player);
                 });
                 modelIDField.GetPlaceholderText().text = "Set ID...";
                 EditorThemeManager.ApplyInputField(modelIDField, ThemeGroup.Search_Field_1);
@@ -562,10 +567,16 @@ namespace BetterLegacy.Menus.UI.Popups
                         return;
                     playerSettings.colorSlot = num;
                     SteamLobbyManager.inst.SaveLobbySettings();
+                    if (!PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                        return;
+
+                    player.colorSlot = num;
+                    if (player.RuntimePlayer)
+                        player.RuntimePlayer.colorSlot = num;
                 });
 
-                TriggerHelper.IncreaseDecreaseButtonsInt(colorSlotField, max: int.MaxValue);
-                TriggerHelper.AddEventTriggers(colorSlotField.gameObject, TriggerHelper.ScrollDeltaInt(colorSlotField.inputField, max: int.MaxValue));
+                TriggerHelper.IncreaseDecreaseButtonsInt(colorSlotField, min: -1, max: int.MaxValue);
+                TriggerHelper.AddEventTriggers(colorSlotField.gameObject, TriggerHelper.ScrollDeltaInt(colorSlotField.inputField, min: -1, max: int.MaxValue));
 
                 EditorThemeManager.ApplyInputField(colorSlotField);
 
@@ -582,11 +593,11 @@ namespace BetterLegacy.Menus.UI.Popups
             button.image = image;
             button.onClick.NewListener(() =>
             {
-                SteamLobbyManager.inst.playerSettings.Add(new Core.Data.Player.PlayerSettings
+                PlayerManager.inst.playerSettings.Add(new Core.Data.Player.PlayerSettings
                 {
-                    index = SteamLobbyManager.inst.playerSettings.Count,
+                    index = PlayerManager.inst.playerSettings.Count,
                 });
-                SteamLobbyManager.inst.SaveLobbySettings();
+                PlayerManager.inst.SavePlayerSettings();
                 RenderPlayerSettings();
             });
 

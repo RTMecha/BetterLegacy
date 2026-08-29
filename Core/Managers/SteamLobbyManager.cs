@@ -38,11 +38,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public string LobbyChannel { get; set; } = string.Empty;
 
-        public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
-
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
-
-        public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
         public const string SCENE_LOADED = "SceneLoaded";
         public const string SONG_LOADED = "SongLoaded";
@@ -91,11 +87,7 @@ namespace BetterLegacy.Core.Managers
         public void SaveLobbySettings()
         {
             LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
-
-            var jn = Parser.NewJSONObject();
-            for (int i = 0; i < playerSettings.Count; i++)
-                jn["settings"][i] = playerSettings[i].ToJSON();
-            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot()), jn.ToString(3));
+            Log("Saved lobby settings!");
         }
 
         public void LoadLobbySettings()
@@ -107,11 +99,13 @@ namespace BetterLegacy.Core.Managers
             LobbyPopup.Instance.nameField?.SetTextWithoutNotify(LobbySettings.Name);
             LobbyPopup.Instance.playerCountField?.SetTextWithoutNotify(LobbySettings.PlayerCount.ToString());
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
+            Log("Loaded lobby settings!");
         }
 
         public void SyncPlayersToServer()
         {
-            localPlayers = new List<PAPlayer>(PlayerManager.Players);
+            PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.Players);
+            PlayerManager.inst.SetLocalIndexes();
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
         }
 

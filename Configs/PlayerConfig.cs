@@ -157,11 +157,6 @@ namespace BetterLegacy.Configs
             AssetsGlobal = Bind(this, LOADING, "Assets Global Source", false, "Assets will use BepInEx/plugins/Assets as the folder instead of the local level folder.");
             LoadFromGlobalPlayersInArcade = Bind(this, "Loading", "Always use global source", false, "Makes the player models always load from beatmaps/players for entering an arcade level. If disabled, players will be loaded from the local players.lspl file.");
 
-            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 1 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 2 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 3 Model", "0", "The player uses this specific model ID."));
-            PlayerManager.PlayerIndexes.Add(Bind(this, LOADING, "Player 4 Model", "0", "The player uses this specific model ID."));
-
             #endregion
 
             #region Sounds

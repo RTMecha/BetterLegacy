@@ -120,6 +120,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int PLAYER_KILL = 593762876;
         public const int PLAYER_JUMP = 8538582;
         public const int PLAYER_RESET_HEALTH = 5396969;
+        public const int SET_PLAYER_MODEL = 723578;
 
         #endregion
 

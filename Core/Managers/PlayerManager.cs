@@ -15,6 +15,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -27,14 +28,14 @@ namespace BetterLegacy.Core.Managers
         #region Values
 
         /// <summary>
-        /// Player model custom IDs.
-        /// </summary>
-        public static List<Setting<string>> PlayerIndexes { get; set; } = new List<Setting<string>>();
-
-        /// <summary>
-        /// Wrapped players list.
+        /// List of all players.
         /// </summary>
         public static List<PAPlayer> Players { get; set; } = new List<PAPlayer>();
+
+        /// <summary>
+        /// List of local players.
+        /// </summary>
+        public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
         /// <summary>
         /// If the game is currently in single player.
@@ -66,6 +67,8 @@ namespace BetterLegacy.Core.Managers
         /// Path to the global player models folder.
         /// </summary>
         public const string PLAYERS_PATH = "beatmaps/players";
+
+        public const string PLAYER_SETTINGS_FILE_NAME = "player_settings.lss";
 
         public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
 
@@ -113,6 +116,12 @@ namespace BetterLegacy.Core.Managers
 
             gm.transform.SetParent(null);
             healthParent = health;
+        }
+
+        public void SetLocalIndexes()
+        {
+            for (int i = 0; i < localPlayers.Count; i++)
+                localPlayers[i].localIndex = i;
         }
 
         #region Player Search
@@ -659,9 +668,22 @@ namespace BetterLegacy.Core.Managers
 
             var player = Players[index];
             player.RuntimePlayer?.Clear();
-            player.ModelID = PlayersData.Current.GetPlayerModel(index).basePart.id;
+            if (player.IsLocalPlayer)
+                player.SetModel(PlayersData.Current.GetPlayerModel(player.index));
 
-            SpawnPlayers(pos);
+            // no lives? too bad.
+            if (player.OutOfLives)
+            {
+                CoreHelper.Log($"Player {player.index} is out of lives.");
+                return;
+            }
+
+            if (!player.RuntimePlayer)
+            {
+                SpawnPlayer(player, pos);
+                if (RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+                    SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
+            }
         }
 
         /// <summary>
@@ -678,7 +700,7 @@ namespace BetterLegacy.Core.Managers
         public static void RespawnPlayer(PAPlayer player, Vector2 pos)
         {
             player.RuntimePlayer?.Clear();
-            player.ModelID = PlayersData.Current.GetPlayerModel(player.index).basePart.id;
+            player.SetModel(PlayersData.Current.GetPlayerModel(player.index));
 
             SpawnPlayers(pos);
         }
@@ -745,17 +767,33 @@ namespace BetterLegacy.Core.Managers
 
         #region Settings
 
+        /// <summary>
+        /// Saves the player settings file.
+        /// </summary>
+        public void SavePlayerSettings()
+        {
+            var jn = Parser.NewJSONObject();
+            for (int i = 0; i < playerSettings.Count; i++)
+                jn["settings"][i] = playerSettings[i].ToJSON();
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", PLAYER_SETTINGS_FILE_NAME), jn.ToString(3));
+            Log("Saved player settings!");
+        }
+
+        /// <summary>
+        /// Loads the player settings file.
+        /// </summary>
         public void LoadPlayerSettings()
         {
             try
             {
                 playerSettings.Clear();
-                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot());
+                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", PLAYER_SETTINGS_FILE_NAME);
                 if (!RTFile.TryReadFromFile(path, out string file))
                     return;
                 var jn = JSON.Parse(file);
                 for (int i = 0; i < jn["settings"].Count; i++)
                     playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
+                Log("Loaded player settings!");
             }
             catch (System.Exception ex)
             {
@@ -763,8 +801,19 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Gets player settings at an index.
+        /// </summary>
+        /// <param name="index">Index match.</param>
+        /// <returns>Returns a found <see cref="PlayerSettings"/>.</returns>
         public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
 
+        /// <summary>
+        /// Tries to get player settings at an index.
+        /// </summary>
+        /// <param name="index">Index match.</param>
+        /// <param name="playerSettings">Result player settings.</param>
+        /// <returns>Returns <see langword="true"/> if a player settings was found, otherwise returns <see langword="false"/>.</returns>
         public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
         {
             playerSettings = GetPlayerSettings(index);
@@ -781,18 +830,43 @@ namespace BetterLegacy.Core.Managers
         public static void UpdatePlayerModels()
         {
             foreach (var player in Players)
-            {
-                player.UpdatePlayerModel();
                 player.RuntimePlayer?.UpdateModel();
-            }
         }
 
+        /// <summary>
+        /// Updates all player models.
+        /// </summary>
         public static void AssignPlayerModels()
         {
             var players = Players;
             if (!players.IsEmpty())
                 for (int i = 0; i < players.Count; i++)
-                    players[i].ModelID = PlayersData.Current.GetPlayerModel(i).basePart.id;
+                {
+                    var player = players[i];
+                    if (player.IsLocalPlayer)
+                        player.SetModel(PlayersData.Current.GetPlayerModel(i));
+                }
+        }
+
+        /// <summary>
+        /// Sets the custom player model.
+        /// </summary>
+        /// <param name="index">Index of the player that should use the custom player model.</param>
+        /// <param name="playerModelID">The player model ID.</param>
+        public void SetCustomModel(int index, string playerModelID)
+        {
+            if (playerSettings.TryFind(x => x.index == index, out PlayerSettings playerSetting))
+                playerSetting.playerModelID = playerModelID;
+            else
+                playerSettings.Add(new PlayerSettings
+                {
+                    index = index,
+                    playerModelID = playerModelID,
+                });
+            if (LobbyPopup.Instance && LobbyPopup.Instance.Active && LobbyPopup.Instance.CurrentTab == LobbyPopup.LobbyTab.Settings)
+                LobbyPopup.Instance.Render();
+            if (Players.TryFindIndex(x => x.IsLocalPlayer && x.localIndex == index, out int playerIndex))
+                RespawnPlayer(playerIndex);
         }
 
         #endregion

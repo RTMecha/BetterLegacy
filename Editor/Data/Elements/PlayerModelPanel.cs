@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -47,7 +49,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Data
 
-        public override string DisplayName => Item.basePart.name;
+        public override string DisplayName => Item.Name;
 
         /// <summary>
         /// What dialog this player model panel is located in.
@@ -66,8 +68,6 @@ namespace BetterLegacy.Editor.Data.Elements
         #endregion
 
         #region Asset Pack
-
-        #region Asset Packs
 
         //public static string labelFormat = "{0}";
 
@@ -116,8 +116,6 @@ namespace BetterLegacy.Editor.Data.Elements
         public static int externalNameLabelFontSize = 20;
 
         public static RectValues externalDeleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
-
-        #endregion
 
         #endregion
 
@@ -255,6 +253,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
                     PlayerEditor.inst.Reload();
                 };
+                return;
             }
 
             Button.onClick = pointerEventData =>
@@ -267,41 +266,25 @@ namespace BetterLegacy.Editor.Data.Elements
                                 EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonElement("Open & Use", () =>
                                     {
-                                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.basePart.id);
+                                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.ID);
                                         PlayerManager.RespawnPlayers();
                                         PlayerEditor.inst.RenderDialog();
                                     }),
-                                    new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerIndex].Value = Item.basePart.id),
+                                    new ButtonElement("Export", () => PlayerEditor.inst.ExportPlayerModel(Item)),
                                     new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
                                     new ButtonElement("Save", PlayerEditor.inst.Save),
                                     new ButtonElement("Reload", PlayerEditor.inst.Reload),
                                     new SpacerElement(),
                                     new ButtonElement("Duplicate", () =>
                                     {
-                                        var dup = PlayersData.Current.DuplicatePlayerModel(Item.basePart.id);
-                                        PlayersData.externalPlayerModels[dup.basePart.id] = dup;
-                                        if (dup)
-                                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, dup.basePart.id);
-                                    }),
-                                    new ButtonElement("Delete", () =>
-                                    {
-                                        if (index < 5)
-                                        {
-                                            EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
-                                            return;
-                                        }
+                                        var model = Item.Copy();
+                                        model.Name += " Clone";
+                                        model.ID = LSText.randomNumString(16);
 
-                                        RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                                        {
-                                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
-                                            PlayersData.externalPlayerModels.Remove(Item.basePart.id);
-                                            PlayersData.Current.playerModels.Remove(Item.basePart.id);
-                                            PlayerManager.RespawnPlayers();
-                                            PlayerEditor.inst.RenderDialog();
-                                            PlayerEditor.inst.RenderInternalPlayerModelsPopup(PlayerEditor.inst.onSelectModel);
-                                            PlayerEditor.inst.RenderExternalPlayerModelsPopup();
-                                        });
-                                    }));
+                                        PlayersData.Current.OverwritePlayerModel(model);
+                                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, model.ID);
+                                    }),
+                                    new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
                                 return;
                             }
 
@@ -317,7 +300,22 @@ namespace BetterLegacy.Editor.Data.Elements
                     case ObjectSource.External: {
                             if (pointerEventData.button == PointerEventData.InputButton.Right)
                             {
-                                //TODO: ADD CONTEXT MENU
+                                EditorContextMenu.inst.ShowContextMenu(
+                                    new ButtonElement("Import", () => PlayerEditor.inst.ImportPlayerModel(Item)),
+                                    new ButtonElement("Set to Global", () => PlayerManager.inst.SetCustomModel(PlayerEditor.inst.playerIndex, Item.ID)),
+                                    //new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                                    new ButtonElement("Save", PlayerEditor.inst.Save),
+                                    new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                                    new SpacerElement(),
+                                    new ButtonElement("Duplicate", () =>
+                                    {
+                                        var model = Item.Copy();
+                                        model.Name += " Clone";
+                                        model.ID = LSText.randomNumString(16);
+
+                                        PlayersData.OverwriteExternalPlayerModel(model);
+                                    }),
+                                    new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
                                 return;
                             }
 
@@ -334,21 +332,7 @@ namespace BetterLegacy.Editor.Data.Elements
         public void UpdateDeleteFunction()
         {
             if (DeleteButton)
-                DeleteButton.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                {
-                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
-                    if (IsExternal)
-                    {
-                        PlayersData.externalPlayerModels.Remove(Item.basePart.id);
-                        RTFile.DeleteFile(Path);
-                    }
-                    else
-                        PlayersData.Current.playerModels.Remove(Item.basePart.id);
-                    PlayerManager.RespawnPlayers();
-                    PlayerEditor.inst.RenderDialog();
-                    PlayerEditor.inst.RenderInternalPlayerModelsPopup(PlayerEditor.inst.onSelectModel);
-                    PlayerEditor.inst.RenderExternalPlayerModelsPopup();
-                }));
+                DeleteButton.OnClick.NewListener(() => PlayerEditor.inst.DeletePlayerModel(this));
         }
 
         public override string ToString() => isFolder ? Name : Item?.ToString();

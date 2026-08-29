@@ -98,12 +98,12 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Health the player has.
         /// </summary>
-        public int health = 3;
+        public int health = DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// The maximum amount of health the players have.
         /// </summary>
-        public static int MaxHealth { get; set; } = 3;
+        public static int MaxHealth { get; set; } = DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Health the player has. If it reaches 0, the player dies.
@@ -123,6 +123,11 @@ namespace BetterLegacy.Core.Data.Player
         /// Index of the player in <see cref="PlayerManager.Players"/>.
         /// </summary>
         public int index;
+
+        /// <summary>
+        /// Index of the player in <see cref="PlayerManager.localPlayers"/>.
+        /// </summary>
+        public int localIndex;
 
         /// <summary>
         /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
@@ -187,19 +192,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The current player model ID.
         /// </summary>
-        string currentPlayerModel = PlayerModel.DEFAULT_ID;
-        /// <summary>
-        /// The current player model ID.
-        /// </summary>
-        public string ModelID
-        {
-            get => !ProjectArrhythmia.State.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
-            set
-            {
-                currentPlayerModel = value;
-                UpdatePlayerModel();
-            }
-        }
+        public string ModelID => Model.ID;
 
         /// <summary>
         /// The current player model cache.
@@ -234,6 +227,8 @@ namespace BetterLegacy.Core.Data.Player
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
 
         public int IntVariable { get; set; }
+
+        public const int DEFAULT_MAX_HEALTH = 3;
 
         #endregion
 
@@ -280,20 +275,34 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
+        /// Sets the player's model and updates it.
+        /// </summary>
+        /// <param name="playerModel">Player model to set.</param>
+        public void SetModel(PlayerModel playerModel)
+        {
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && IsLocalPlayer)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SET_PLAYER_MODEL,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(id),
+                    playerModel);
+
+            Model = playerModel;
+            if (!RuntimePlayer)
+                return;
+            RuntimePlayer.Model = playerModel;
+            RuntimePlayer.UpdateModel();
+        }
+
+        /// <summary>
         /// Updates player model data.
         /// </summary>
-        public void UpdatePlayerModel()
-        {
-            Model = PlayersData.GetPlayerModel(ModelID);
-            if (RuntimePlayer)
-                RuntimePlayer.Model = Model;
-        }
+        public void UpdateModel() => RuntimePlayer?.UpdateModel();
 
         /// <summary>
         /// Gets the players' maximum amount of health.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? 3;
+        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Gets the players' maximum amount of lives.
@@ -417,7 +426,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the default health for this player.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the user is not editing and the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? 3;
+        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Initializes the player input.
