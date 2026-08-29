@@ -98,7 +98,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 modifierCard.StringGenerator(modifier, reference, "ID", index);
                 index++;
             }
-            modifierCard.StringGenerator(modifier, reference, $"{type} Variable Name", index);
+            modifierCard.StringGenerator(modifier, reference, $"{type} Var Name", index);
             index++;
             modifierCard.StringGenerator(modifier, reference, "Value", index);
         }
