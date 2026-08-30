@@ -36,8 +36,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public float Radius
         {
-            get => Mathf.Clamp(radius, 0.1f, 10f);
-            set => radius = Mathf.Clamp(value, 0.1f, 10f);
+            get => Mathf.Clamp(radius, MIN_RADIUS, MAX_RADIUS);
+            set => radius = Mathf.Clamp(value, MIN_RADIUS, MAX_RADIUS);
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public int Sides
         {
-            get => RTMath.Clamp(sides, 3, 32);
-            set => sides = RTMath.Clamp(value, 3, 32);
+            get => RTMath.Clamp(sides, MIN_SIDES, MAX_SIDES);
+            set => sides = RTMath.Clamp(value, MIN_SIDES, MAX_SIDES);
         }
 
         /// <summary>
@@ -141,6 +141,26 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// The normal radius.
         /// </summary>
         public const float NORMAL_RADIUS = 0.5f;
+
+        /// <summary>
+        /// The minimum radius.
+        /// </summary>
+        public const float MIN_RADIUS = 0.1f;
+
+        /// <summary>
+        /// The maximum radius.
+        /// </summary>
+        public const float MAX_RADIUS = 10f;
+
+        /// <summary>
+        /// The minimum side count.
+        /// </summary>
+        public const int MIN_SIDES = 3;
+
+        /// <summary>
+        /// The maximum side count.
+        /// </summary>
+        public const int MAX_SIDES = 32;
 
         float radius = NORMAL_RADIUS;
         int sides = 3;
