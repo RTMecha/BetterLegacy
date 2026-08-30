@@ -8,6 +8,9 @@
 ### Companion
 - Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
 
+### Editor
+- Added Unity Explorer support for Background Objects.
+
 ## Changes
 ### Core
 - animateObject modifiers constant value are now off by default.
@@ -21,6 +24,7 @@
 - Fixed some Example Companion JSON issues.
 - Fixed level and level collection variables not saving correctly.
 - Fixed some name editing not updating the timeline object mark area.
+- Fixed player objects not using the Alternate value for the polygon shape type.
 
 -------------------------------------------------------------------
 
