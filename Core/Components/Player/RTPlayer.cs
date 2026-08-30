@@ -3235,16 +3235,16 @@ namespace BetterLegacy.Core.Components.Player
                             break;
                         }
                     case ShapeType.Polygon: {
-                            var sides = reference.polygonShape.Sides;
-                            var roundness = reference.polygonShape.Roundness;
-                            var thickness = reference.polygonShape.Thickness;
-                            var slices = reference.polygonShape.Slices;
-                            var thicknessOffset = reference.polygonShape.ThicknessOffset;
-                            var thicknessScale = reference.polygonShape.ThicknessScale;
-                            var thicknessRotation = reference.polygonShape.ThicknessRotation;
-                            var angle = reference.polygonShape.Angle;
-
-                            VGShapes.RoundedRingMesh(customObj.visualObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle, thicknessRotation);
+                            VGShapes.RoundedRingMesh(customObj.visualObject.GetComponent<MeshFilter>(), customObj.visualObject.GetComponent<PolygonCollider2D>(),
+                                radius: reference.polygonShape.Radius,
+                                sides: reference.polygonShape.Sides,
+                                roundness: reference.polygonShape.Roundness,
+                                thickness: reference.polygonShape.Thickness,
+                                slices: reference.polygonShape.Slices,
+                                thicknessOffset: reference.polygonShape.ThicknessOffset,
+                                thicknessScale: reference.polygonShape.ThicknessScale,
+                                angle: reference.polygonShape.Angle,
+                                thicknessRotation: reference.polygonShape.Alternate);
 
                             break;
                         }
