@@ -407,6 +407,7 @@ namespace BetterLegacy.Editor.Managers
             RenderGroup(backgroundObject);
             RenderEditorColors(backgroundObject);
             RenderPrefabReference(backgroundObject);
+            RenderGameObjectInspector(backgroundObject);
 
             #endregion
 
@@ -1065,6 +1066,31 @@ namespace BetterLegacy.Editor.Managers
         }
 
         public void RenderPrefabReference(BackgroundObject backgroundObject) => RTEditor.inst.RenderPrefabable(backgroundObject, Dialog);
+
+        public void RenderGameObjectInspector(BackgroundObject backgroundObject)
+        {
+            if (!ModCompatibility.UnityExplorerInstalled)
+                return;
+
+            if (Dialog.UnityExplorerLabel)
+                EditorHelper.SetComplexity(Dialog.UnityExplorerLabel.transform.parent.gameObject, "ue_inspect", Complexity.Advanced);
+
+            if (Dialog.InspectBackgroundObjectButton)
+            {
+                EditorHelper.SetComplexity(Dialog.InspectBackgroundObjectButton.gameObject, "ue_inspect", Complexity.Advanced);
+                Dialog.InspectBackgroundObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(backgroundObject));
+            }
+            if (Dialog.InspectRuntimeObjectButton)
+            {
+                EditorHelper.SetComplexity(Dialog.InspectRuntimeObjectButton.gameObject, "ue_inspect", Complexity.Advanced, visible: () => backgroundObject.runtimeObject);
+                Dialog.InspectRuntimeObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(backgroundObject.runtimeObject));
+            }
+            if (Dialog.InspectTimelineObjectButton)
+            {
+                EditorHelper.SetComplexity(Dialog.InspectTimelineObjectButton.gameObject, "ue_inspect", Complexity.Advanced);
+                Dialog.InspectTimelineObjectButton.OnClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(backgroundObject)));
+            }
+        }
 
         #endregion
 
