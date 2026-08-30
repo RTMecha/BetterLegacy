@@ -267,7 +267,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonElement("Open & Use", () =>
                                     {
                                         PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.ID);
-                                        PlayerManager.RespawnPlayers();
+                                        PlayerManager.inst.RespawnPlayers();
                                         PlayerEditor.inst.RenderDialog();
                                     }),
                                     new ButtonElement("Export", () => PlayerEditor.inst.ExportPlayerModel(Item)),

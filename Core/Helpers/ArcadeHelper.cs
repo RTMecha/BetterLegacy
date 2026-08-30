@@ -200,7 +200,7 @@ namespace BetterLegacy.Core.Helpers
             RTBeatmap.Current.hits.Clear();
             RTBeatmap.Current.deaths.Clear();
 
-            PlayerManager.SpawnPlayersOnStart();
+            PlayerManager.inst.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
             if (CoreConfig.Instance.ReplayIntro.Value)

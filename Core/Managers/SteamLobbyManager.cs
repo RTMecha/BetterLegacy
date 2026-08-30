@@ -104,14 +104,14 @@ namespace BetterLegacy.Core.Managers
 
         public void SyncPlayersToServer()
         {
-            PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.Players);
+            PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.inst.players);
             PlayerManager.inst.SetLocalIndexes();
-            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
         public void SyncPlayersToClients()
         {
-            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
         public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
@@ -128,8 +128,8 @@ namespace BetterLegacy.Core.Managers
                 LogError($"Cannot create a lobby because you're already in a lobby.");
                 return;
             }
-            if (PlayerManager.NoPlayers)
-                PlayerManager.ValidatePlayers();
+            if (PlayerManager.inst.NoPlayers)
+                PlayerManager.inst.ValidatePlayers();
             if (string.IsNullOrEmpty(LobbySettings.Name))
             {
                 LogError($"Cannot create a lobby with an empty name!");
@@ -208,7 +208,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="lobby">Lobby reference.</param>
         public void JoinLobby(Lobby lobby)
         {
-            if (PlayerManager.NoPlayers)
+            if (PlayerManager.inst.NoPlayers)
                 SceneHelper.LoadInputSelect(() => CoroutineHelper.StartCoroutine(IJoinLobby(lobby)));
             else
                 CoroutineHelper.StartCoroutine(IJoinLobby(lobby));
@@ -375,12 +375,12 @@ namespace BetterLegacy.Core.Managers
 
             }
 
-            PlayerManager.Players.ForLoopReverse((player, index) =>
+            PlayerManager.inst.players.ForLoopReverse((player, index) =>
             {
                 if (player.ID == friend.Id)
-                    PlayerManager.RemovePlayer(player);
+                    PlayerManager.inst.RemovePlayer(player);
             });
-            PlayerManager.Players.ForLoop((player, index) => player.index = index);
+            PlayerManager.inst.players.ForLoop((player, index) => player.index = index);
 
             if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(friend.Id, out int id))
                 NetworkManager.inst.KickClient(id);

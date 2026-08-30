@@ -50,30 +50,60 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Main
 
+        /// <summary>
+        /// Active state of the object.
+        /// </summary>
         public bool Active { get; set; }
 
+        /// <summary>
+        /// Position of the object.
+        /// </summary>
         public Vector2 Position { get; set; }
 
+        /// <summary>
+        /// Scale of the object.
+        /// </summary>
         public Vector2 Scale { get; set; }
 
+        /// <summary>
+        /// Rotation of the object.
+        /// </summary>
         public float Rotation { get; set; }
 
+        /// <summary>
+        /// Color slot of the object.
+        /// </summary>
         public int Color { get; set; }
 
+        /// <summary>
+        /// Custom hex color of the object.
+        /// </summary>
         public string CustomColor { get; set; }
 
+        /// <summary>
+        /// Opacity of the object.
+        /// </summary>
         public float Opacity { get; set; }
 
+        /// <summary>
+        /// Depth of the object.
+        /// </summary>
         public float Depth { get; set; }
 
         #endregion
 
         #region Extra
 
+        /// <summary>
+        /// Handles <see cref="TrailRenderer"/> properties.
+        /// </summary>
         public PlayerTrail Trail { get; set; }
+
+        /// <summary>
+        /// Handles <see cref="ParticleSystem"/> properties.
+        /// </summary>
         public PlayerParticles Particles { get; set; }
 
         #endregion
     }
-
 }

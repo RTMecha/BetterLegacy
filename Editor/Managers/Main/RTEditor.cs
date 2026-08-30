@@ -6942,7 +6942,7 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.UpdateTimeline();
             EditorManager.inst.UpdatePlayButton();
 
-            if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.Players.IsEmpty())
+            if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.inst.players.IsEmpty())
                 return;
 
             if (!EditorManager.inst.hasLoadedLevel)
@@ -6954,9 +6954,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 UpdatePlayers(false);
                 if (RTBeatmap.Current.ActiveCheckpoint)
-                    PlayerManager.SpawnPlayers(RTBeatmap.Current.ActiveCheckpoint);
+                    PlayerManager.inst.SpawnPlayers(RTBeatmap.Current.ActiveCheckpoint);
                 else
-                    PlayerManager.SpawnPlayers(EventManager.inst.cam.transform.position);
+                    PlayerManager.inst.SpawnPlayers(EventManager.inst.cam.transform.position);
             }
             catch (Exception ex)
             {
@@ -6972,10 +6972,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="considerChallengeMode">If challenge mode should be accounted for.</param>
         public void UpdatePlayers(bool considerChallengeMode = true)
         {
-            if (PlayerManager.NoPlayers)
+            if (PlayerManager.inst.NoPlayers)
                 return;
 
-            foreach (var player in PlayerManager.Players)
+            foreach (var player in PlayerManager.inst.players)
             {
                 if (!player.IsLocalPlayer)
                     return;

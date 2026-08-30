@@ -336,10 +336,10 @@ namespace BetterLegacy.Menus.UI.Popups
                 else
                 {
                     RTSteamManager.inst.EndClient();
-                    PlayerManager.Players.ForLoopReverse(player =>
+                    PlayerManager.inst.players.ForLoopReverse(player =>
                     {
                         if (player.ID != RTSteamManager.inst.steamUser.steamID)
-                            PlayerManager.RemovePlayer(player);
+                            PlayerManager.inst.RemovePlayer(player);
                     });
                 }
             });
@@ -518,7 +518,7 @@ namespace BetterLegacy.Menus.UI.Popups
                     SteamLobbyManager.inst.SaveLobbySettings();
                     if (!ProjectArrhythmia.State.InEditor)
                         return;
-                    PlayerManager.RespawnPlayers();
+                    PlayerManager.inst.RespawnPlayers();
                 });
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(playerIndexField, max: int.MaxValue);
@@ -544,8 +544,8 @@ namespace BetterLegacy.Menus.UI.Popups
                 {
                     playerSettings.playerModelID = _val;
                     SteamLobbyManager.inst.SaveLobbySettings();
-                    if (PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
-                        PlayerManager.RespawnPlayer(player);
+                    if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                        PlayerManager.inst.RespawnPlayer(player);
                 });
                 modelIDField.GetPlaceholderText().text = "Set ID...";
                 EditorThemeManager.ApplyInputField(modelIDField, ThemeGroup.Search_Field_1);
@@ -567,7 +567,7 @@ namespace BetterLegacy.Menus.UI.Popups
                         return;
                     playerSettings.colorSlot = num;
                     SteamLobbyManager.inst.SaveLobbySettings();
-                    if (!PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                    if (!PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
                         return;
 
                     player.colorSlot = num;
@@ -598,8 +598,8 @@ namespace BetterLegacy.Menus.UI.Popups
                 {
                     playerSettings.displayName = _val;
                     SteamLobbyManager.inst.SaveLobbySettings();
-                    if (PlayerManager.Players.TryFind(x => x.localIndex == playerSettings.index, out var player))
-                        PlayerManager.RespawnPlayer(player);
+                    if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
+                        PlayerManager.inst.RespawnPlayer(player);
                 });
                 displayNameField.GetPlaceholderText().text = "Set name...";
                 EditorThemeManager.ApplyInputField(displayNameField, ThemeGroup.Search_Field_1);

@@ -444,8 +444,8 @@ namespace BetterLegacy.Core.Managers
             else
                 PlayersData.LoadJSON(!string.IsNullOrEmpty(storyLevel.jsonPlayers) ? JSON.Parse(storyLevel.jsonPlayers) : new JSONNull());
 
-            PlayerManager.ValidatePlayers();
-            PlayerManager.AssignPlayerModels();
+            PlayerManager.inst.ValidatePlayers();
+            PlayerManager.inst.AssignPlayerModels();
 
             RTPlayer.GameMode = GameMode.Regular;
 
@@ -491,7 +491,7 @@ namespace BetterLegacy.Core.Managers
             else
                 SoundManager.inst.FadeIn(AudioManager.inst.CurrentAudioSource, songFadeTransition, SoundManager.inst.MusicVolume);
             RTGameManager.inst.PlayIntro();
-            PlayerManager.SpawnPlayersOnStart();
+            PlayerManager.inst.SpawnPlayersOnStart();
 
             LoadingFromHere = false;
 
@@ -725,8 +725,8 @@ namespace BetterLegacy.Core.Managers
 
             PlayersData.Current = playersData;
 
-            PlayerManager.ValidatePlayers();
-            PlayerManager.AssignPlayerModels();
+            PlayerManager.inst.ValidatePlayers();
+            PlayerManager.inst.AssignPlayerModels();
 
             RTPlayer.GameMode = GameMode.Regular;
 
@@ -764,7 +764,7 @@ namespace BetterLegacy.Core.Managers
                 AudioManager.inst.CurrentAudioSource.Play();
             SoundManager.inst.FadeTransition(AudioManager.inst.CurrentAudioSource, AudioManager.inst.musicSources[1 - AudioManager.inst.activeMusicSourceIndex], songFadeTransition, SoundManager.inst.MusicVolume);
             RTGameManager.inst.PlayIntro();
-            PlayerManager.SpawnPlayersOnStart();
+            PlayerManager.inst.SpawnPlayersOnStart();
 
             LoadingFromHere = false;
 

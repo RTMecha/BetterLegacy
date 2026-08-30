@@ -59,7 +59,10 @@ namespace BetterLegacy.Core.Data.Player
                 ID = RTSteamManager.inst.steamUser.steamID;
             var settings = GetPlayerSettings();
             if (settings && !string.IsNullOrEmpty(settings.displayName))
+            {
                 DisplayName = settings.displayName;
+                colorSlot = settings.colorSlot;
+            }
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -78,7 +81,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The main player.
         /// </summary>
-        public static PAPlayer Main => PlayerManager.Players[0];
+        public static PAPlayer Main => PlayerManager.inst.players[0];
 
         /// <summary>
         /// Identification string.
@@ -124,7 +127,7 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
-        /// Index of the player in <see cref="PlayerManager.Players"/>.
+        /// Index of the player in <see cref="PlayerManager.players"/>.
         /// </summary>
         public int index;
 
@@ -442,11 +445,11 @@ namespace BetterLegacy.Core.Data.Player
             {
                 InputManager.OnDeviceAttached -= ControllerConnected;
                 InputManager.OnDeviceDetached -= ControllerDisconnected;
-                PlayerManager.Players.RemoveAt(index);
-                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                PlayerManager.inst.players.RemoveAt(index);
+                for (int i = 0; i < PlayerManager.inst.players.Count; i++)
                 {
-                    PlayerManager.Players[i].index = i;
-                    PlayerManager.Players[i].playerIndex = GetPlayerIndex(i);
+                    PlayerManager.inst.players[i].index = i;
+                    PlayerManager.inst.players[i].playerIndex = GetPlayerIndex(i);
                 }
             }
 
@@ -505,7 +508,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             if (device == null)
             {
-                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && (PlayerManager.IsSingleplayer || PlayerManager.Players.Count(x => x.IsLocalPlayer) == 1) ?
+                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && (PlayerManager.inst.IsSingleplayer || PlayerManager.inst.players.Count(x => x.IsLocalPlayer) == 1) ?
                     PlayerInput.ControllerAndKeyboard :
                     PlayerInput.Keyboard;
                 return;

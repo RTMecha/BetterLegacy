@@ -506,7 +506,7 @@ namespace BetterLegacy.Companion.Data
                 public override void Run(string[] parameters)
                 {
                     var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                     {
                         if (player.RuntimePlayer && player.RuntimePlayer.rb)
                             player.RuntimePlayer.rb.position = pos;
@@ -522,7 +522,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Run(string[] parameters)
                 {
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                         player.RuntimePlayer?.Boost();
                 }
             }

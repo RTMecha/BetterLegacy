@@ -31,7 +31,7 @@ namespace BetterLegacy.Core.Components
             }
 
             if (tracker != null)
-                tracker.position = PlayerManager.CenterOfPlayers();
+                tracker.position = PlayerManager.inst.CenterOfPlayers();
 
             var t = (tracker.position + offset * tracker.transform.right) * anchor;
 
@@ -49,8 +49,8 @@ namespace BetterLegacy.Core.Components
 
             if (rotate)
             {
-                if (InHorizontalBounds && InVerticalBounds && !PlayerManager.Players.IsEmpty() && PlayerManager.Players[0].RuntimePlayer)
-                    quaternion = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, PlayerManager.Players[0].RuntimePlayer.rb.transform.eulerAngles.z), num);
+                if (InHorizontalBounds && InVerticalBounds && !PlayerManager.inst.players.IsEmpty() && PlayerManager.inst.players[0].RuntimePlayer)
+                    quaternion = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, PlayerManager.inst.players[0].RuntimePlayer.rb.transform.eulerAngles.z), num);
                 transform.localRotation = quaternion;
             }
             else
@@ -61,7 +61,7 @@ namespace BetterLegacy.Core.Components
         void UpdateCameraTrack()
         {
             prevPos = pos;
-            pos = PlayerManager.CenterOfPlayers() / 10f * 0.35f;
+            pos = PlayerManager.inst.CenterOfPlayers() / 10f * 0.35f;
             var t = Time.deltaTime * 10f;
 
             transform.localPosition = new Vector3(RTMath.Lerp(prevPos.x, pos.x, t), RTMath.Lerp(prevPos.y, pos.y, t));

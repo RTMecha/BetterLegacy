@@ -831,7 +831,7 @@ namespace BetterLegacy.Core
             if (parameters == null)
                 return false;
 
-            return PlayerManager.Players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+            return PlayerManager.inst.players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
         }
         
         public virtual bool PlayerCountLesserEquals(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
@@ -839,7 +839,7 @@ namespace BetterLegacy.Core
             if (parameters == null)
                 return false;
 
-            return PlayerManager.Players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+            return PlayerManager.inst.players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
         }
         
         public virtual bool PlayerCountGreaterEquals(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
@@ -847,7 +847,7 @@ namespace BetterLegacy.Core
             if (parameters == null)
                 return false;
 
-            return PlayerManager.Players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+            return PlayerManager.inst.players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
         }
         
         public virtual bool PlayerCountLesser(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
@@ -855,7 +855,7 @@ namespace BetterLegacy.Core
             if (parameters == null)
                 return false;
 
-            return PlayerManager.Players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+            return PlayerManager.inst.players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
         }
         
         public virtual bool PlayerCountGreater(JSONNode parameters, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
@@ -863,7 +863,7 @@ namespace BetterLegacy.Core
             if (parameters == null)
                 return false;
 
-            return PlayerManager.Players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+            return PlayerManager.inst.players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
         }
 
         #endregion

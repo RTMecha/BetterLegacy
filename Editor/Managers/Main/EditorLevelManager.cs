@@ -1109,7 +1109,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
-                PlayerManager.SpawnPlayersOnStart();
+                PlayerManager.inst.SpawnPlayersOnStart();
             }
             catch (Exception ex)
             {
@@ -1334,7 +1334,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 PlayersData.LoadJSON(new JSONNull());
                 PlayersData.Current = playersData;
-                PlayerManager.SpawnPlayersOnStart();
+                PlayerManager.inst.SpawnPlayersOnStart();
             }
             catch (Exception ex)
             {

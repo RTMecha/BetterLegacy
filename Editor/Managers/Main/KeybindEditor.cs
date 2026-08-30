@@ -1417,7 +1417,7 @@ namespace BetterLegacy.Editor.Managers
             }
             ModifiersEditor.inst.RecalculateModifiers(GameData.Current);
 
-            PlayerManager.RespawnPlayers();
+            PlayerManager.inst.RespawnPlayers();
 
             RTEventManager.inst?.datamosh?.Reset();
 

@@ -216,7 +216,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 endColor.a *= values.endOpacity;
                 if (isPlayerDistance)
                 {
-                    var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
+                    var player = PlayerManager.inst.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
                     if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                         return;
 

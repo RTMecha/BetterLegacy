@@ -105,7 +105,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public void Continue()
         {
-            if (PlayerManager.Players.Count == 0 || !PlayerManager.Players.Any(x => x.controllerConnected || x.deviceName == "keyboard"))
+            if (PlayerManager.inst.players.Count == 0 || !PlayerManager.inst.players.Any(x => x.controllerConnected || x.deviceName == "keyboard"))
             {
                 CoreHelper.Notify("There are no players, so the level cannot continue.", Color.red);
                 return;

@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string GetValue(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player))
+            if (!PlayerManager.inst.players.TryGetAt(modifier.GetInt(1, 0, modifierLoop.variables), out PAPlayer player))
                 return null;
             var variables = player.GetPlayerVariables();
             return variables != null && variables.TryGetValue(modifier.GetValue(2, modifierLoop.variables), out string value) ? value : null;

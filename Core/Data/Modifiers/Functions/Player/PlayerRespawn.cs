@@ -20,13 +20,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             if (selector == Selector.All)
             {
-                PlayerManager.RespawnPlayers();
+                PlayerManager.inst.RespawnPlayers();
                 return;
             }
             base.Run(modifier, modifierLoop);
         }
 
-        public override void RunOnPlayer(Modifier modifier, ModifierLoop modifierLoop, PAPlayer player) => PlayerManager.RespawnPlayer(player);
+        public override void RunOnPlayer(Modifier modifier, ModifierLoop modifierLoop, PAPlayer player) => PlayerManager.inst.RespawnPlayer(player);
 
         #endregion
     }

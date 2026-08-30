@@ -478,8 +478,8 @@ namespace BetterLegacy.Core
             if (str.Contains("playerHealth"))
                 RegexMatches(str, new Regex(@"<playerHealth=([0-9]+)>"), match =>
                 {
-                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
-                        str = str.Replace(match.Groups[0].ToString(), PlayerManager.Players[index].health.ToString());
+                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.inst.players.Count)
+                        str = str.Replace(match.Groups[0].ToString(), PlayerManager.inst.players[index].health.ToString());
                     else
                         str = str.Remove(match.Groups[0].ToString());
                 });
@@ -487,9 +487,9 @@ namespace BetterLegacy.Core
             if (str.Contains("playerHealthBar"))
                 RegexMatches(str, new Regex(@"<playerHealthBar=([0-9]+)>"), match =>
                 {
-                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
+                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.inst.players.Count)
                     {
-                        var player = PlayerManager.Players[index];
+                        var player = PlayerManager.inst.players[index];
                         str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.GetProperties()?.Health ?? 3));
                     }
                     else
@@ -500,8 +500,8 @@ namespace BetterLegacy.Core
             {
                 var ph = 0;
 
-                for (int j = 0; j < PlayerManager.Players.Count; j++)
-                    ph += PlayerManager.Players[j].health;
+                for (int j = 0; j < PlayerManager.inst.players.Count; j++)
+                    ph += PlayerManager.inst.players[j].health;
 
                 str = str.Replace("<playerHealthTotal>", ph.ToString());
             }

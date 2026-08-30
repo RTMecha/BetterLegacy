@@ -56,18 +56,18 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
                             var pos = beatmapObject.GetFullPosition();
-                            var player = PlayerManager.GetClosestPlayer(pos);
+                            var player = PlayerManager.inst.GetClosestPlayer(pos);
                             RunOnPlayer(modifier, modifierLoop, player);
                         });
                         break;
                     }
                 case Selector.Index: {
-                        if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player))
+                        if (PlayerManager.inst.players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player))
                             RunOnPlayer(modifier, modifierLoop, player);
                         break;
                     }
                 case Selector.All: {
-                        foreach (var player in PlayerManager.Players)
+                        foreach (var player in PlayerManager.inst.players)
                             RunOnPlayer(modifier, modifierLoop, player);
                         break;
                     }

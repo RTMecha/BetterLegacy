@@ -404,7 +404,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         return;
                     }
 
-                    if (metadata.beatmap && !metadata.beatmap.PlayersCanjoin(PlayerManager.Players.Count))
+                    if (metadata.beatmap && !metadata.beatmap.PlayersCanjoin(PlayerManager.inst.players.Count))
                     {
                         var count = metadata.beatmap.preferredPlayerCount;
                         SoundManager.inst.PlaySound(DefaultSounds.Block);

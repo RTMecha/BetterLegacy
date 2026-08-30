@@ -34,7 +34,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var id = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
             var index = modifier.GetInt(1, 0, modifierLoop.variables);
 
-            if (!PlayersData.Current.playerModels.TryFind(x => x.ID == id, out PlayerModel playerModel) || !PlayerManager.Players.TryGetAt(index, out PAPlayer player))
+            if (!PlayersData.Current.playerModels.TryFind(x => x.ID == id, out PlayerModel playerModel) || !PlayerManager.inst.players.TryGetAt(index, out PAPlayer player))
                 return;
 
             if (player.RuntimePlayer)

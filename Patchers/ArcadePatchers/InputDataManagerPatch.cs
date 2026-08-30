@@ -72,7 +72,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetControllerRumble(int __0, float __1, float __2, bool __3 = true)
         {
-            if (PlayerManager.Players.TryGetAt(__0, out PAPlayer player))
+            if (PlayerManager.inst.players.TryGetAt(__0, out PAPlayer player))
                 player.rumble = new Vector2(__0, __1);
 
             return false;
@@ -91,9 +91,9 @@ namespace BetterLegacy.Patchers
         static bool ClearInputsPrefix(bool __0)
         {
             Instance.ResetPlayers();
-            PlayerManager.Players.Clear();
+            PlayerManager.inst.players.Clear();
             if (__0)
-                PlayerManager.Players.Add(PlayerManager.CreateDefaultPlayer());
+                PlayerManager.inst.players.Add(PlayerManager.inst.CreateDefaultPlayer());
             return false;
         }
 
@@ -101,8 +101,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ResetPlayersPrefix()
         {
-            for (int i = 0; i < PlayerManager.Players.Count; i++)
-                PlayerManager.RemovePlayer(PlayerManager.Players[i]);
+            for (int i = 0; i < PlayerManager.inst.players.Count; i++)
+                PlayerManager.inst.RemovePlayer(PlayerManager.inst.players[i]);
             Instance.StopAllControllerRumble();
             return false;
         }

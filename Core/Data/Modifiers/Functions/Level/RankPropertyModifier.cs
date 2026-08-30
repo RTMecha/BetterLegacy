@@ -71,7 +71,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                 vector = beatmapObject.GetFullPosition();
                             else
                             {
-                                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+                                var player = PlayerManager.inst.GetClosestPlayer(beatmapObject.GetFullPosition());
                                 if (player && player.RuntimePlayer)
                                     vector = player.RuntimePlayer.rb.position;
                             }

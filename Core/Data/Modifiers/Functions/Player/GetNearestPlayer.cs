@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public override string GetValue(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is ITransformable transformable)
-                return PlayerManager.GetClosestPlayerIndex(transformable.GetFullPosition()).ToString();
+                return PlayerManager.inst.GetClosestPlayerIndex(transformable.GetFullPosition()).ToString();
             return null;
         }
 

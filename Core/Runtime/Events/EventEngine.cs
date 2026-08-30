@@ -984,7 +984,7 @@ namespace BetterLegacy.Core.Runtime.Events
 
             if (!playersCanMove)
             {
-                foreach (var customPlayer in PlayerManager.Players)
+                foreach (var customPlayer in PlayerManager.inst.players)
                 {
                     if (customPlayer.RuntimePlayer && customPlayer.RuntimePlayer.rb)
                     {

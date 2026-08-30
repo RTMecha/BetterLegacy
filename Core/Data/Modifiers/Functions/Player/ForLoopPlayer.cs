@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override int GetStartIndex(Modifier modifier, ModifierLoop modifierLoop) => 0;
 
-        public override int GetEndCount(Modifier modifier, ModifierLoop modifierLoop) => PlayerManager.Players.Count;
+        public override int GetEndCount(Modifier modifier, ModifierLoop modifierLoop) => PlayerManager.inst.players.Count;
 
         public override int GetIncrement(Modifier modifier, ModifierLoop modifierLoop) => modifier.GetInt(1, 1, modifierLoop.variables);
 

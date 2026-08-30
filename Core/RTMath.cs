@@ -165,12 +165,11 @@ namespace BetterLegacy.Core
                 if (RTBeatmap.Current && RTBeatmap.Current.ActiveCheckpoint)
                     context.RegisterVariable("activeCheckpointTime", RTBeatmap.Current.ActiveCheckpoint.time);
 
-                var players = PlayerManager.Players;
-                context.RegisterVariable("playerHealthTotal", players.IsEmpty() ? 0 : players.Sum(x => x.Health));
-                context.RegisterVariable("playerCount", players.Count);
-                for (int i = 0; i < players.Count; i++)
+                context.RegisterVariable("playerHealthTotal", PlayerManager.inst.players.IsEmpty() ? 0 : PlayerManager.inst.players.Sum(x => x.Health));
+                context.RegisterVariable("playerCount", PlayerManager.inst.players.Count);
+                for (int i = 0; i < PlayerManager.inst.players.Count; i++)
                 {
-                    var player = players[i];
+                    var player = PlayerManager.inst.players[i];
                     var isNull = !player.RuntimePlayer || !player.RuntimePlayer.rb;
                     float posX = isNull ? 0f : player.RuntimePlayer.rb.position.x;
                     float posY = isNull ? 0f : player.RuntimePlayer.rb.position.y;

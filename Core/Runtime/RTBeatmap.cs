@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Runtime
                 if (!ProjectArrhythmia.Input.IsUsingInputField && !ProjectArrhythmia.State.InEditor)
                 {
                     bool shouldPause = false;
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                         if (player.Input && player.Input.Pause.WasPressed)
                             shouldPause = true;
 
@@ -493,10 +493,10 @@ namespace BetterLegacy.Core.Runtime
             ActiveCheckpoint = checkpoint;
 
             if (checkpoint.heal)
-                PlayerManager.Players.ForLoop(customPlayer => customPlayer.ResetHealth());
+                PlayerManager.inst.players.ForLoop(customPlayer => customPlayer.ResetHealth());
 
             if (checkpoint.respawn)
-                PlayerManager.SpawnPlayers(ActiveCheckpoint);
+                PlayerManager.inst.SpawnPlayers(ActiveCheckpoint);
 
             CoroutineHelper.StartCoroutine(RTGameManager.inst.IPlayCheckpointAnimation());
         }
@@ -585,7 +585,7 @@ namespace BetterLegacy.Core.Runtime
             GameManager.inst.gameState = GameManager.State.Playing;
             GameManager.inst.isReversing = false;
 
-            PlayerManager.SpawnPlayers(checkpoint);
+            PlayerManager.inst.SpawnPlayers(checkpoint);
 
             checkpoint = null;
 
@@ -648,7 +648,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// If the player is out of lives.
         /// </summary>
-        public bool OutOfLives => lives == 0 || PlayerManager.Players.All(x => x is PAPlayer player && player.OutOfLives);
+        public bool OutOfLives => lives == 0 || PlayerManager.inst.players.All(x => x is PAPlayer player && player.OutOfLives);
 
         /// <summary>
         /// Data points representing the times the players got hit.
@@ -693,9 +693,9 @@ namespace BetterLegacy.Core.Runtime
         public void UpdateLives(int lives)
         {
             this.lives = lives;
-            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            for (int i = 0; i < PlayerManager.inst.players.Count; i++)
             {
-                var player = PlayerManager.Players[i];
+                var player = PlayerManager.inst.players[i];
                 player.lives = lives > 0 ? lives : player.GetProperties()?.lives ?? -1;
             }
         }

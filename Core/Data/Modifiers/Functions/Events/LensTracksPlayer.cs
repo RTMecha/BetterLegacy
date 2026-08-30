@@ -29,12 +29,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (!RTLevel.Current.eventEngine)
                 return;
 
-            var players = PlayerManager.Players;
-            if (players.IsEmpty())
+            if (PlayerManager.inst.players.IsEmpty())
                 return;
 
-            var player = players[0].RuntimePlayer;
-
+            var player = PlayerManager.inst.players[0].RuntimePlayer;
             if (!player || !player.rb)
                 return;
 

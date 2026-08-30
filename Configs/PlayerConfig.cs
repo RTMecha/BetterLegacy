@@ -191,7 +191,7 @@ namespace BetterLegacy.Configs
         void UpdateSettings()
         {
             SetConfigs();
-            PlayerManager.UpdatePlayerModels();
+            PlayerManager.inst.UpdatePlayerModels();
         }
 
         void SetConfigs()

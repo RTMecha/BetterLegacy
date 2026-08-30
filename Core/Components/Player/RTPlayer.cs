@@ -56,7 +56,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// If multiplayer nametags should display when there are more than one player on-screen.
         /// </summary>
-        public bool ShowNameTags => PlayerManager.Players.Count > 1 && Core &&
+        public bool ShowNameTags => PlayerManager.inst.players.Count > 1 && Core &&
             (ProjectArrhythmia.State.IsInLobby ? PlayerConfig.Instance.PlayerNameTagsInLobby.Value : PlayerConfig.Instance.PlayerNameTags.Value);
 
         /// <summary>
@@ -655,9 +655,9 @@ namespace BetterLegacy.Core.Components.Player
                 GlobalAllowWallSticking = levelData.allowWallSticking;
                 PAPlayer.MaxHealth = levelData.maxHealth;
 
-                if (ProjectArrhythmia.State.InEditor && !PlayerManager.NoPlayers)
+                if (ProjectArrhythmia.State.InEditor && !PlayerManager.inst.NoPlayers)
                 {
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                         player.ResetHealth();
                 }
             }

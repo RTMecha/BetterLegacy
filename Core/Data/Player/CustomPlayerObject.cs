@@ -91,25 +91,59 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Custom
 
+        /// <summary>
+        /// Name of the object.
+        /// </summary>
         public string name = string.Empty;
 
+        /// <summary>
+        /// Object to parent to.
+        /// </summary>
         public string customParent = string.Empty;
+
+        /// <summary>
+        /// Type of the parent.
+        /// </summary>
         public int parent;
 
+        /// <summary>
+        /// Position parent offset.
+        /// </summary>
         public float positionOffset = 1f;
 
+        /// <summary>
+        /// Scale parent offset.
+        /// </summary>
         public float scaleOffset = 1f;
 
+        /// <summary>
+        /// Rotation parent offset.
+        /// </summary>
         public float rotationOffset = 1f;
 
+        /// <summary>
+        /// If the object should use scale parenting.
+        /// </summary>
         public bool scaleParent = true;
 
+        /// <summary>
+        /// If the object should use rotation parenting.
+        /// </summary>
         public bool rotationParent = true;
 
+        /// <summary>
+        /// If all <see cref="visibilitySettings"/> should be active.
+        /// </summary>
         public bool requireAll;
 
+        /// <summary>
+        /// The visibility settings.
+        /// </summary>
         public List<Visibility> visibilitySettings = new List<Visibility>();
 
+        /// <summary>
+        /// List of animations for the object.
+        /// </summary>
         public List<PAAnimation> animations = new List<PAAnimation>();
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerObject;
@@ -510,8 +544,19 @@ namespace BetterLegacy.Core.Data.Player
 
             #region Values
 
+            /// <summary>
+            /// If the visibility should be treated as a not gate.
+            /// </summary>
             public bool not;
+
+            /// <summary>
+            /// Command name.
+            /// </summary>
             public string command = string.Empty;
+
+            /// <summary>
+            /// Value to use.
+            /// </summary>
             public float value;
 
             #endregion
