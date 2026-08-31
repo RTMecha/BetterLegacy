@@ -666,7 +666,7 @@ namespace BetterLegacy.Core.Managers
 
             player.RuntimePlayer?.Clear();
             if (player.IsLocalPlayer)
-                player.SetModel(PlayersData.Current.GetPlayerModel(player.index));
+                player.SetModel(PlayersData.Current.GetPlayerModel(player));
 
             // no lives? too bad.
             if (player.OutOfLives)
@@ -697,7 +697,7 @@ namespace BetterLegacy.Core.Managers
         public void RespawnPlayer(PAPlayer player, Vector2 pos)
         {
             player.RuntimePlayer?.Clear();
-            player.SetModel(PlayersData.Current.GetPlayerModel(player.index));
+            player.SetModel(PlayersData.Current.GetPlayerModel(player));
 
             SpawnPlayers(pos);
         }

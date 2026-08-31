@@ -13,6 +13,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
@@ -1487,7 +1488,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (animatable is BeatmapObject beatmapObject)
+                    {
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        if (ProjectArrhythmia.State.IsInLobby)
+                            NetworkFunction.EditBeatmapObject(beatmapObject);
+                    }
                 }
             });
             Field.OnEndEdit.NewListener(_val =>
@@ -1522,7 +1527,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (animatable is BeatmapObject beatmapObject)
+                        {
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBeatmapObject(beatmapObject);
+                        }
                     }
                     else
                     {
@@ -1550,7 +1559,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (animatable is BeatmapObject beatmapObject)
+                        {
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBeatmapObject(beatmapObject);
+                        }
                     }
                     else
                     {
@@ -1578,7 +1591,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (animatable is BeatmapObject beatmapObject)
+                        {
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBeatmapObject(beatmapObject);
+                        }
                     }
                     else
                     {
@@ -1838,7 +1855,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 firstKF.eventKeyframe.values[valueIndex] = getValue?.Invoke(_val) ?? 0f;
                 if (animatable is BeatmapObject beatmapObject)
+                {
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject);
+                }
             });
 
             TriggerHelper.AddEventTriggers(Dropdown.gameObject, TriggerHelper.ScrollDelta(Dropdown));
@@ -1853,7 +1874,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 foreach (var keyframe in selected)
                     keyframe.eventKeyframe.values[valueIndex] = value;
                 if (animatable is BeatmapObject beatmapObject)
+                {
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject);
+                }
             });
         }
 
@@ -2026,7 +2051,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 firstKF.eventKeyframe.values[valueIndex] = _val ? onValue : offValue;
                 if (animatable is BeatmapObject beatmapObject)
+                {
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject);
+                }
             });
 
             Apply.gameObject.SetActive(!isSingle);
@@ -2039,7 +2068,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 foreach (var keyframe in selected)
                     keyframe.eventKeyframe.values[valueIndex] = value;
                 if (animatable is BeatmapObject beatmapObject)
+                {
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject);
+                }
             });
         }
 

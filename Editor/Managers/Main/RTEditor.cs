@@ -2207,7 +2207,8 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.SortDropdown)
                 return;
 
-            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.SetValueWithoutNotify((int)levelSort);
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.SetValueWithoutNotify(ProjectArrhythmia.State.IsClient ? (int)LobbyInfo.EditorLevelSort : (int)levelSort);
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.interactable = !ProjectArrhythmia.State.IsClient;
             EditorLevelManager.inst.OpenLevelPopup.SortDropdown.onValueChanged.NewListener(_val =>
             {
                 levelSort = (LevelSort)_val;
@@ -2224,7 +2225,8 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.AscendToggle)
                 return;
 
-            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.SetIsOnWithoutNotify(levelAscend);
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.SetIsOnWithoutNotify(ProjectArrhythmia.State.IsClient ? LobbyInfo.EditorLevelAscend : levelAscend);
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.interactable = !ProjectArrhythmia.State.IsClient;
             EditorLevelManager.inst.OpenLevelPopup.AscendToggle.onValueChanged.NewListener(_val =>
             {
                 levelAscend = _val;

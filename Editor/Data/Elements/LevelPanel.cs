@@ -172,6 +172,7 @@ namespace BetterLegacy.Editor.Data.Elements
             {
                 case 0: {
                         Item = Packet.CreateFromPacket<Level>(reader);
+                        Path = reader.ReadString();
                         break;
                     }
                 case 1: {
@@ -193,6 +194,7 @@ namespace BetterLegacy.Editor.Data.Elements
             {
                 case 0: {
                         Item.WritePacket(writer);
+                        writer.Write(Path);
                         break;
                     }
                 case 1: {

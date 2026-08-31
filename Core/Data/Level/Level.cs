@@ -354,6 +354,7 @@ namespace BetterLegacy.Core.Data.Level
             texture.wrapMode = TextureWrapMode.Repeat;
             texture.filterMode = FilterMode.Point;
             texture.Resize(texture.width / SEND_ICON_DIVIDER, texture.height / SEND_ICON_DIVIDER);
+            texture.Apply();
             writer.Write(texture, true);
         }
 

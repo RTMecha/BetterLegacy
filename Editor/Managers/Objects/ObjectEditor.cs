@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,7 +11,6 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using SimpleJSON;
-using Crosstales.FB;
 
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
@@ -22,6 +20,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -486,6 +485,9 @@ namespace BetterLegacy.Editor.Managers
                                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                                 Dialog.Timeline.RenderMarkerPositions(beatmapObject);
                             }
+
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -899,6 +901,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
+
             if (openDialog)
                 OpenDialog(bm);
 
@@ -931,6 +941,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -967,6 +985,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
+
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
@@ -1001,6 +1027,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1048,6 +1082,14 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.IsAprilFools)
                 OpenDialog(bm);
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
+
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
@@ -1082,6 +1124,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1119,6 +1169,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
+
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
@@ -1153,6 +1211,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1189,6 +1255,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
+
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
             if (!setHistory)
@@ -1223,6 +1297,14 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.CreateBeatmapObject(bm);
+                else
+                    NetworkFunction.SubmitBeatmapObject(bm);
+            }
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1450,6 +1532,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 beatmapObject.LDM = _val;
                 RTLevel.Current?.UpdateObject(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject);
             });
 
             EditorContextMenu.AddContextMenu(Dialog.LDMToggle.gameObject,
@@ -1496,6 +1581,9 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since name has no effect on the physical object, we will only need to update the timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.EDITOR_UPDATE);
             });
         }
 
@@ -1544,24 +1632,30 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since locking has no effect on the physical object, we will only need to update the timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.EDITOR_UPDATE);
             });
 
-            startTimeField.inputField.SetTextWithoutNotify(beatmapObject.StartTime.ToString());
-            startTimeField.inputField.onValueChanged.NewListener(_val =>
+            startTimeField.SetTextWithoutNotify(beatmapObject.StartTime.ToString());
+            startTimeField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    if (EditorConfig.Instance.ClampedTimelineDrag.Value)
-                        num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    beatmapObject.StartTime = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
 
-                    // StartTime affects both physical object and timeline object.
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
-                    ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
-                    Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
-                    Dialog.Timeline.RenderMarkers(beatmapObject);
-                }
+                if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                    num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                beatmapObject.StartTime = num;
+
+                // StartTime affects both physical object and timeline object.
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
+                Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField));
@@ -1570,7 +1664,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 float moveTime = beatmapObject.StartTime - 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
+                startTimeField.Text = moveTime.ToString();
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1578,12 +1672,15 @@ namespace BetterLegacy.Editor.Managers
                 ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
             startTimeField.leftButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
+                startTimeField.Text = moveTime.ToString();
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1591,10 +1688,13 @@ namespace BetterLegacy.Editor.Managers
                 ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
             startTimeField.middleButton.onClick.NewListener(() =>
             {
-                startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
+                startTimeField.Text = EditorManager.inst.CurrentAudioPos.ToString();
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1602,12 +1702,15 @@ namespace BetterLegacy.Editor.Managers
                 ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
             startTimeField.rightButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 0.1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
+                startTimeField.Text = moveTime.ToString();
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1615,12 +1718,15 @@ namespace BetterLegacy.Editor.Managers
                 ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
             startTimeField.rightGreaterButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 1f;
                 moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
+                startTimeField.Text = moveTime.ToString();
 
                 // StartTime affects both physical object and timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -1628,6 +1734,9 @@ namespace BetterLegacy.Editor.Managers
                 ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
         }
 
@@ -1647,6 +1756,9 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 RenderAutokill(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.AUTOKILL);
             });
 
             if (beatmapObject.autoKillType == AutoKillType.FixedTime ||
@@ -1658,27 +1770,30 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.AutokillField.SetTextWithoutNotify(beatmapObject.autoKillOffset.ToString());
                 Dialog.AutokillField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    if (beatmapObject.autoKillType == AutoKillType.SongTime)
                     {
-                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
-                        {
-                            float startTime = beatmapObject.StartTime;
-                            if (num < startTime)
-                                num = startTime + 0.1f;
-                        }
-
-                        if (num < 0f)
-                            num = 0f;
-
-                        beatmapObject.autoKillOffset = num;
-
-                        // AutoKillType affects both physical object and timeline object.
-                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                        ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
-                        Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
-                        Dialog.Timeline.RenderMarkers(beatmapObject);
+                        float startTime = beatmapObject.StartTime;
+                        if (num < startTime)
+                            num = startTime + 0.1f;
                     }
+
+                    if (num < 0f)
+                        num = 0f;
+
+                    beatmapObject.autoKillOffset = num;
+
+                    // AutoKillType affects both physical object and timeline object.
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                    ModifiersEditor.inst.RecalculateModifiers(beatmapObject);
+                    Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                    Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.AUTOKILL);
                 });
 
                 Dialog.AutokillSetButton.gameObject.SetActive(true);
@@ -1714,6 +1829,9 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since autokill collapse has no affect on the physical object, we will only need to update the timeline object.
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.EDITOR_UPDATE);
             });
         }
 
@@ -2751,6 +2869,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (Dialog.IsCurrent)
                 RenderDialog(beatmapObject);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.OBJECT_TYPE);
         }
 
         #endregion

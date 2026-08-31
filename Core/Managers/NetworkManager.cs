@@ -14,6 +14,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -91,6 +92,11 @@ namespace BetterLegacy.Core.Managers
                     return;
                 }
                 CoreHelper.Notify(message, RTColors.InvertColor(ProjectArrhythmia.State.InGame ? ThemeManager.inst.Current.backgroundColor : InterfaceManager.inst.CurrentTheme.backgroundColor));
+            }),
+
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_HOST_LOBBY_SETTINGS, 1, reader =>
+            {
+                LobbyInfo.HostLobbySettings = Packet.CreateFromPacket<LobbySettings>(reader);
             }),
 
             new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_DOWN, 1, reader => ProjectArrhythmia.Input.keyPressDownOnline.Add((KeyCode)reader.ReadInt32())),
@@ -526,8 +532,19 @@ namespace BetterLegacy.Core.Managers
 
         public List<NetworkFunction> editorFunctions = new List<NetworkFunction>
         {
+            new NetworkFunction(Side.Client, NetworkFunction.SET_EDITOR_LEVEL_SORT, 2, reader =>
+            {
+                LobbyInfo.EditorLevelAscend = reader.ReadBoolean();
+                LobbyInfo.EditorLevelSort = (LevelSort)reader.ReadInt32();
+                if (RTEditor.inst)
+                {
+                    RTEditor.inst.UpdateAscendToggle();
+                    RTEditor.inst.UpdateOrderDropdown();
+                }
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.CLEAR_EDITOR_LEVELS, reader =>
             {
+                LobbyInfo.HostEditorLevels.Clear();
                 EditorLevelManager.inst.LevelPanels.Clear();
                 EditorLevelManager.inst.OpenLevelPopup.ClearContent();
             }),
@@ -535,6 +552,7 @@ namespace BetterLegacy.Core.Managers
             {
                 var levelPanel = Packet.CreateFromPacket<LevelPanel>(reader);
                 EditorLevelManager.inst.LevelPanels.Add(levelPanel);
+                LobbyInfo.HostEditorLevels.Add(levelPanel);
 
                 if (levelPanel.isFolder)
                 {
@@ -562,12 +580,69 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 GameData.Current.beatmapObjects.Add(beatmapObject);
+                RTLevel.Current?.UpdateObject(beatmapObject);
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                EditorTimeline.inst.UpdateTransformIndex();
                 NetworkFunction.CreateBeatmapObject(beatmapObject);
             }),
             new NetworkFunction(Side.Client, NetworkFunction.CREATE_BEATMAP_OBJECT, 1, reader =>
             {
                 var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
+                if (GameData.Current.beatmapObjects.Has(x => x.id == beatmapObject.id))
+                    return;
+
                 GameData.Current.beatmapObjects.Add(beatmapObject);
+                RTLevel.Current?.UpdateObject(beatmapObject);
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                EditorTimeline.inst.UpdateTransformIndex();
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 2, reader =>
+            {
+                var edit = Packet.CreateFromPacket<BeatmapObject>(reader);
+                var updateContext = reader.ReadString();
+                if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
+                    return;
+                var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
+                var modifiers = updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext) ?  new List<Modifier>(beatmapObject.modifiers) : null;
+                beatmapObject.CopyData(edit, false);
+                if (updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext))
+                    for (int i = 0; i < beatmapObject.modifiers.Count; i++)
+                    {
+                        var modifier = beatmapObject.modifiers[i];
+                        if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
+                        {
+                            var function = modifier.function;
+                            var trigger = modifier.trigger;
+                            var action = modifier.action;
+                            origModifier.CopyData(modifier, false);
+                            origModifier.function = function;
+                            origModifier.trigger = trigger;
+                            origModifier.action = action;
+                            beatmapObject.modifiers[i] = origModifier;
+                        }
+                    }
+                if (updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext))
+                    for (int i = 0; i < beatmapObject.events.Count; i++)
+                    {
+                        var keyframes = beatmapObject.events[i];
+                        for (int j = 0; j < keyframes.Count; j++)
+                        {
+                            var eventKeyframe = keyframes[j];
+                            if (events[i].TryFind(x => x.id == eventKeyframe.id, out EventKeyframe origKeyframe))
+                            {
+                                origKeyframe.CopyData(eventKeyframe, false);
+                                keyframes[j] = origKeyframe;
+                            }
+                        }
+                    }
+                if (updateContext != ObjectContext.EDITOR_UPDATE)
+                {
+                    if (string.IsNullOrEmpty(updateContext))
+                        RTLevel.Current?.UpdateObject(beatmapObject);
+                    else
+                        RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
+                }
+                beatmapObject.TimelineObject?.Render();
             }),
         };
 
@@ -614,6 +689,7 @@ namespace BetterLegacy.Core.Managers
             NetworkFunction.Group.Player => playerFunctions,
             NetworkFunction.Group.Interface => interfaceFunctions,
             NetworkFunction.Group.Game => gameFunctions,
+            NetworkFunction.Group.Editor => editorFunctions,
             _ => functions,
         };
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Network
 {
@@ -9,6 +9,12 @@ namespace BetterLegacy.Core.Data.Network
     /// </summary>
     public static class LobbyInfo
     {
+        public static LobbySettings HostLobbySettings { get; set; }
+
+        public static Dictionary<string, bool> HostJSONFileTriggers { get; set; } = new Dictionary<string, bool>();
+
+        #region Arcade
+
         public static OnlineLevelSort OnlineLevelSort { get; set; }
 
         public static bool OnlineLevelAscend { get; set; }
@@ -27,8 +33,16 @@ namespace BetterLegacy.Core.Data.Network
 
         public static bool SteamLevelAscend { get; set; }
 
-        public static Dictionary<string, bool> HostJSONFileTriggers { get; set; } = new Dictionary<string, bool>();
+        #endregion
 
-        public static List<PlayerSettings> PlayerSettings { get; set; } = new List<PlayerSettings>();
+        #region Editor
+
+        public static List<LevelPanel> HostEditorLevels { get; set; } = new List<LevelPanel>();
+
+        public static bool EditorLevelAscend { get; set; }
+
+        public static LevelSort EditorLevelSort { get; set; }
+
+        #endregion
     }
 }

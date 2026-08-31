@@ -241,14 +241,26 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
+        /// Gets the player model for a player to use.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <returns>Returns a player model from the dictionary.</returns>
+        public PlayerModel GetPlayerModel(PAPlayer player)
+        {
+            if (UseGlobal)
+                return externalPlayerModels.TryFind(x => x.ID == (PlayerManager.inst.GetPlayerSettings(player.localIndex)?.playerModelID ?? string.Empty), out PlayerModel customModel) ? customModel : PlayerModel.DefaultPlayer;
+            if (maxBehavior == MaxBehavior.Default && player.index >= playerModelsIndex.Count)
+                return PlayerModel.DefaultPlayer;
+            return playerModels.TryFind(x => x.ID == playerModelsIndex[GetMaxIndex(player.index)], out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+        }
+
+        /// <summary>
         /// Gets the player model at the index.
         /// </summary>
         /// <param name="index">Index of the player model.</param>
         /// <returns>Returns a player model from the dictionary.</returns>
         public PlayerModel GetPlayerModel(int index)
         {
-            if (UseGlobal)
-                return externalPlayerModels.TryFind(x => x.ID == (PlayerManager.inst.GetPlayerSettings(index)?.playerModelID ?? string.Empty), out PlayerModel customModel) ? customModel : PlayerModel.DefaultPlayer;
             if (maxBehavior == MaxBehavior.Default && index >= playerModelsIndex.Count)
                 return PlayerModel.DefaultPlayer;
             return playerModels.TryFind(x => x.ID == playerModelsIndex[GetMaxIndex(index)], out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;

@@ -581,8 +581,16 @@ namespace BetterLegacy.Editor.Managers
             if (ProjectArrhythmia.State.IsHosting)
                 NetworkFunction.ClearEditorLevels();
 
+            OpenLevelPopup.PathField.interactable = !ProjectArrhythmia.State.IsClient;
+            OpenLevelPopup.ReloadButton.interactable = !ProjectArrhythmia.State.IsClient;
+
             if (ProjectArrhythmia.State.IsClient)
+            {
+                foreach (var levelPanel in LobbyInfo.HostEditorLevels)
+                    LevelPanels.Add(levelPanel);
+                OpenLevelPopupOnFinish();
                 yield break;
+            }
 
             var list = new List<Coroutine>();
             var fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath);
@@ -804,31 +812,43 @@ namespace BetterLegacy.Editor.Managers
         {
             CoreHelper.Log($"Level Search: {EditorManager.inst.openFileSearch}\nLevel Sort: { RTEditor.inst.levelAscend} - { RTEditor.inst.levelSort}");
 
+            OpenLevelPopup.SearchField.interactable = !ProjectArrhythmia.State.IsClient;
+
+            RTEditor.inst.UpdateAscendToggle();
+            RTEditor.inst.UpdateOrderDropdown();
+
             var levelPanels = LevelPanels;
 
-            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
-            if (!currentLevelCollection)
+            try
             {
-                levelPanels = RTEditor.inst.levelSort switch
+                var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
+                if (!currentLevelCollection)
                 {
-                    LevelSort.Cover => LevelPanels.Order(x => x.Item && !x.Item.HasNoIcon, !RTEditor.inst.levelAscend),
-                    LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                    LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                    LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
-                    LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
-                    LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
-                    LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
-                    LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
-                    LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
-                    _ => LevelPanels,
-                };
+                    levelPanels = RTEditor.inst.levelSort switch
+                    {
+                        LevelSort.Cover => LevelPanels.Order(x => x.Item && !x.Item.HasNoIcon, !RTEditor.inst.levelAscend),
+                        LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
+                        LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
+                        LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
+                        _ => LevelPanels,
+                    };
 
-                levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+                    levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+                }
+                else
+                {
+                    levelPanels = levelPanels.Order(x => x.GetLevelInfo()?.index ?? 0, !RTEditor.inst.levelAscend);
+                    levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+                }
             }
-            else
+            catch (Exception ex)
             {
-                levelPanels = levelPanels.Order(x => x.GetLevelInfo()?.index ?? 0, !RTEditor.inst.levelAscend);
-                levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+                CoreHelper.LogError($"Failed to sort levels due to the exception: {ex}");
             }
 
             var content = OpenLevelPopup.Content;
@@ -869,7 +889,10 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (ProjectArrhythmia.State.IsHosting)
+            {
+                NetworkFunction.SetEditorLevelSort(RTEditor.inst.levelAscend, RTEditor.inst.levelSort);
                 NetworkFunction.RefreshEditorLevelList(EditorManager.inst.openFileSearch);
+            }
 
             yield break;
         }

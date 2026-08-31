@@ -14,6 +14,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -334,6 +335,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Keyframes affect both physical object and timeline object.
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkFunction.EditBeatmapObject(beatmapObject);
         }
 
         /// <summary>
@@ -434,6 +438,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject);
             }
 
             RenderKeyframes(animatable);
@@ -544,6 +551,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject);
             }
             return pastedKeyframes;
         }

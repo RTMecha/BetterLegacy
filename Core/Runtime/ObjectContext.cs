@@ -24,5 +24,6 @@ namespace BetterLegacy.Core.Runtime
         public const string MODIFIERS = "modifiers";
         public const string SELECTABLE = "selectable";
         public const string HIDE = "hide";
+        public const string EDITOR_UPDATE = "editorupdate";
     }
 }

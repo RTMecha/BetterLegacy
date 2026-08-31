@@ -111,6 +111,7 @@ namespace BetterLegacy.Core.Managers
 
         public void SyncPlayersToClients()
         {
+            NetworkFunction.SendHostLobbySettings();
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
@@ -227,6 +228,7 @@ namespace BetterLegacy.Core.Managers
             yield return CoroutineHelper.StartCoroutine(lobby.Join());
             Log($"Joined lobby! [{lobby.Id}]");
             RTSteamManager.inst.StartClient(lobby.Owner.Id);
+            LobbyPopup.Instance?.OnLobbyJoined();
         }
 
         /// <summary>
@@ -236,6 +238,7 @@ namespace BetterLegacy.Core.Managers
         {
             ProjectArrhythmia.State.IsInLobby = false;
             CurrentLobby.Leave();
+            ClearLoaded();
         }
 
         /// <summary>
@@ -311,6 +314,8 @@ namespace BetterLegacy.Core.Managers
         void RemovePlayerFromLoadList(SteamId id) => loadedPlayers.Remove(id);
 
         public void SetLoaded(SteamId id) => loadedPlayers[id] = true;
+
+        public void ClearLoaded() => loadedPlayers.Clear();
 
         #endregion
 
