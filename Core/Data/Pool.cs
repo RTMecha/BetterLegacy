@@ -157,7 +157,11 @@ namespace BetterLegacy.Core.Data
             /// </summary>
             public Pool poolReference;
 
-            void OnDestroy() => poolReference.prefab = null;
+            void OnDestroy()
+            {
+                if (poolReference)
+                    poolReference.prefab = null;
+            }
         }
 
         /// <summary>
