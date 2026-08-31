@@ -4,6 +4,13 @@
   // popups
   "popups.config.title": "Config Manager",
   "popups.lobby.title": "Lobby Manager",
+  "popups.lobby.current": "Current",
+  "popups.lobby.create": "Create",
+  "popups.lobby.list": "List",
+  "popups.lobby.random": "Random",
+  "popups.lobby.settings": "Settings",
+  "popups.lobby.close": "Close Lobby",
+  "popups.lobby.leave": "Leave Lobby",
 
   // arcade
   "arcade.steam.no_access": "<size=40><align=center><b>Steam could not be accessed.\nOpen Steam and relaunch the game to access the workshop.",
