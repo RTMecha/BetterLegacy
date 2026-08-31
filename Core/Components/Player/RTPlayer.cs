@@ -3517,6 +3517,7 @@ namespace BetterLegacy.Core.Components.Player
             var nametagBase = ObjectManager.inst.objectPrefabs[0].options[0].Duplicate(canvas.transform);
             nametagBase.transform.localScale = Vector3.one;
             nametagBase.transform.localRotation = Quaternion.identity;
+            nametagBase.SetActive(true);
 
             nametagBase.transform.GetChild(0).transform.localScale = new Vector3(6.5f, 1.5f, 1f);
             nametagBase.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
@@ -3531,6 +3532,7 @@ namespace BetterLegacy.Core.Components.Player
             var tae = ObjectManager.inst.objectPrefabs[4].options[0].Duplicate(canvas.transform);
             tae.transform.localScale = Vector3.one;
             tae.transform.localRotation = Quaternion.identity;
+            tae.SetActive(true);
 
             tae.transform.GetChild(0).transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             tae.transform.GetChild(0).transform.localPosition = new Vector3(0f, 2.5f, -0.3f);
