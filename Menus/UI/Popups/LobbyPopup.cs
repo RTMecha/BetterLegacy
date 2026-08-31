@@ -46,6 +46,10 @@ namespace BetterLegacy.Menus.UI.Popups
         public enum LobbyTab
         {
             /// <summary>
+            /// The current lobby view.
+            /// </summary>
+            Current,
+            /// <summary>
             /// Creates and hosts a lobby.
             /// </summary>
             Create,
@@ -79,8 +83,6 @@ namespace BetterLegacy.Menus.UI.Popups
         public Button createButton;
 
         public bool loadingLobbies;
-
-        public GameObject lobbyView;
 
         public Transform playersParent;
 
@@ -142,20 +144,20 @@ namespace BetterLegacy.Menus.UI.Popups
                 tabTitleText.alignment = TextAnchor.MiddleCenter;
                 tabTitleText.font = Font.GetDefault();
                 tabTitleText.fontSize = 15;
-                tabTitleText.text = value.ToString();
+                tabTitleText.text = Lang.Current.GetOrDefault("popups.lobby." + value.ToString().ToLower(), value.ToString());
 
                 var tabButton = tabBase.AddComponent<Button>();
                 tabButton.image = tabBaseImage;
                 tabButton.onClick.NewListener(() =>
                 {
-                    if (value == LobbyTab.Random)
+                    if (value != LobbyTab.Random)
                     {
-                        SteamLobbyManager.inst.JoinRandomLobby();
+                        SetTab(value);
                         return;
                     }
 
-                    CurrentTab = value;
-                    Render();
+                    if (!ProjectArrhythmia.State.IsInLobby)
+                        SteamLobbyManager.inst.JoinRandomLobby();
                 });
 
                 EditorThemeManager.ApplySelectable(tabButton, ThemeGroup.Function_2);
@@ -164,11 +166,50 @@ namespace BetterLegacy.Menus.UI.Popups
                 var tabObject = Creator.NewUIObject(value.ToString(), gameObject.transform);
                 tabObjects.Add(tabObject);
                 tabObject.SetActive(CurrentTab == value);
+                RectValues.FullAnchored.AssignToRectTransform(tabObject.transform.AsRT());
+
                 switch (value)
                 {
-                    case LobbyTab.Create: {
-                            RectValues.Default.SizeDelta(0f, 0f).AssignToRectTransform(tabObject.transform.AsRT());
+                    case LobbyTab.Current: {
+                            playersParent = Creator.NewUIObject("Players", tabObject.transform).transform;
+                            var playersParentVerticalLayoutGroup = playersParent.gameObject.AddComponent<VerticalLayoutGroup>();
+                            playersParentVerticalLayoutGroup.spacing = 8f;
+                            playersParentVerticalLayoutGroup.childControlHeight = false;
+                            playersParentVerticalLayoutGroup.childForceExpandHeight = false;
+                            RectValues.Default.AnchoredPosition(0f, 0f).SizeDelta(400f, 800f).AssignToRectTransform(playersParent.AsRT());
 
+                            var closeLobby = Creator.NewUIObject("Close Lobby", tabObject.transform);
+                            RectValues.Default.AnchoredPosition(0f, -300f).SizeDelta(400f, 32f).AssignToRectTransform(closeLobby.transform.AsRT());
+                            var closeLobbyImage = closeLobby.AddComponent<Image>();
+                            closeLobbyButton = closeLobby.AddComponent<Button>();
+                            closeLobbyButton.image = closeLobbyImage;
+                            closeLobbyButton.onClick.NewListener(() =>
+                            {
+                                if (ProjectArrhythmia.State.IsHosting)
+                                {
+                                    RTSteamManager.inst.EndServer();
+                                    SetTab(LobbyTab.Create);
+                                }
+                                else
+                                {
+                                    RTSteamManager.inst.EndClient();
+                                    PlayerManager.inst.players.ForLoopReverse(player =>
+                                    {
+                                        if (player.ID != RTSteamManager.inst.steamUser.steamID)
+                                            PlayerManager.inst.RemovePlayer(player);
+                                    });
+                                    SetTab(LobbyTab.List);
+                                }
+                                SteamLobbyManager.inst.ClearLoaded();
+                            });
+
+                            closeLobbyLabel = GenerateText(closeLobby.transform, "Close Lobby", RectValues.FullAnchored.SizeDelta(-12f, 0f), TextAnchor.MiddleCenter);
+
+                            EditorThemeManager.ApplyGraphic(closeLobbyImage, ThemeGroup.Delete, true);
+                            EditorThemeManager.ApplyGraphic(closeLobbyLabel, ThemeGroup.Delete_Text);
+                            break;
+                        }
+                    case LobbyTab.Create: {
                             #region Name
 
                             var nameLabel = GenerateText(tabObject.transform, "Lobby Name", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
@@ -193,6 +234,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                                 SteamLobbyManager.inst.LobbySettings.Name = _val;
                                 SteamLobbyManager.inst.SaveLobbySettings();
+                                LobbySettingsChanged();
                             });
                             nameField.GetPlaceholderText().text = "Set name...";
                             EditorThemeManager.ApplyInputField(nameField, ThemeGroup.Search_Field_1);
@@ -214,6 +256,7 @@ namespace BetterLegacy.Menus.UI.Popups
                                     return;
                                 SteamLobbyManager.inst.LobbySettings.PlayerCount = num;
                                 SteamLobbyManager.inst.SaveLobbySettings();
+                                LobbySettingsChanged();
                             });
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(playerCountField, min: LobbySettings.MIN_PLAYER_COUNT, max: LobbySettings.MAX_PLAYER_COUNT);
@@ -249,6 +292,7 @@ namespace BetterLegacy.Menus.UI.Popups
                             {
                                 SteamLobbyManager.inst.LobbySettings.Visibility = (LobbyVisibility)_val;
                                 SteamLobbyManager.inst.SaveLobbySettings();
+                                LobbySettingsChanged();
                             });
 
                             EditorThemeManager.ApplyDropdown(visibilityDropdown);
@@ -260,7 +304,11 @@ namespace BetterLegacy.Menus.UI.Popups
                             var createImage = create.AddComponent<Image>();
                             createButton = create.AddComponent<Button>();
                             createButton.image = createImage;
-                            createButton.onClick.NewListener(() => SteamLobbyManager.inst.CreateLobby());
+                            createButton.onClick.NewListener(() =>
+                            {
+                                SteamLobbyManager.inst.CreateLobby();
+                                SetTab(LobbyTab.Current);
+                            });
 
                             var labelText = GenerateText(create.transform, "Create Lobby", RectValues.FullAnchored.SizeDelta(-12f, 0f), TextAnchor.MiddleCenter);
 
@@ -269,7 +317,6 @@ namespace BetterLegacy.Menus.UI.Popups
                             break;
                         }
                     case LobbyTab.List: {
-                            RectValues.FullAnchored.AssignToRectTransform(tabObject.transform.AsRT());
                             var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(tabObject.transform);
                             searchField.SetActive(true);
                             RectValues.LeftAnchored.AnchoredPosition(134f, 0f).SizeDelta(856f, 32f).AssignToRectTransform(searchField.transform.AsRT());
@@ -298,8 +345,6 @@ namespace BetterLegacy.Menus.UI.Popups
                             break;
                         }
                     case LobbyTab.Settings: {
-                            RectValues.FullAnchored.AssignToRectTransform(tabObject.transform.AsRT());
-
                             playerSettingsContent = Creator.NewUIObject("Content", tabObject.transform).transform;
                             var contentVerticalLayoutGroup = playerSettingsContent.gameObject.AddComponent<VerticalLayoutGroup>();
                             contentVerticalLayoutGroup.spacing = 8f;
@@ -312,47 +357,6 @@ namespace BetterLegacy.Menus.UI.Popups
                 }
             }
 
-            #region Lobby View
-
-            lobbyView = Creator.NewUIObject("View", gameObject.transform);
-            RectValues.Default.SizeDelta(0f, 0f).AssignToRectTransform(lobbyView.transform.AsRT());
-
-            playersParent = Creator.NewUIObject("Players", lobbyView.transform).transform;
-            var playersParentVerticalLayoutGroup = playersParent.gameObject.AddComponent<VerticalLayoutGroup>();
-            playersParentVerticalLayoutGroup.spacing = 8f;
-            playersParentVerticalLayoutGroup.childControlHeight = false;
-            playersParentVerticalLayoutGroup.childForceExpandHeight = false;
-            RectValues.Default.AnchoredPosition(0f, 0f).SizeDelta(400f, 800f).AssignToRectTransform(playersParent.AsRT());
-
-            var closeLobby = Creator.NewUIObject("Close Lobby", lobbyView.transform);
-            RectValues.Default.AnchoredPosition(0f, -300f).SizeDelta(400f, 32f).AssignToRectTransform(closeLobby.transform.AsRT());
-            var closeLobbyImage = closeLobby.AddComponent<Image>();
-            closeLobbyButton = closeLobby.AddComponent<Button>();
-            closeLobbyButton.image = closeLobbyImage;
-            closeLobbyButton.onClick.NewListener(() =>
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    RTSteamManager.inst.EndServer();
-                else
-                {
-                    RTSteamManager.inst.EndClient();
-                    PlayerManager.inst.players.ForLoopReverse(player =>
-                    {
-                        if (player.ID != RTSteamManager.inst.steamUser.steamID)
-                            PlayerManager.inst.RemovePlayer(player);
-                    });
-                }
-            });
-
-            closeLobbyLabel = GenerateText(closeLobby.transform, "Close Lobby", RectValues.FullAnchored.SizeDelta(-12f, 0f), TextAnchor.MiddleCenter);
-
-            EditorThemeManager.ApplyGraphic(closeLobbyImage, ThemeGroup.Delete, true);
-            EditorThemeManager.ApplyGraphic(closeLobbyLabel, ThemeGroup.Delete_Text);
-
-            lobbyView.SetActive(false);
-
-            #endregion
-
             Close();
         }
 
@@ -364,62 +368,63 @@ namespace BetterLegacy.Menus.UI.Popups
             if (!closeSprite)
                 closeSprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/close.png"));
 
-            lobbyView.SetActive(ProjectArrhythmia.State.IsInLobby);
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                closeLobbyLabel.text = ProjectArrhythmia.State.IsHosting ? "Close Lobby" : "Leave Lobby";
-                tabObjects.ForLoop(gameObject => gameObject.SetActive(false));
-                LSHelpers.DeleteChildren(playersParent);
-                foreach (var member in SteamLobbyManager.inst.CurrentLobby.Members)
-                {
-                    var gameObject = Creator.NewUIObject("Member", playersParent);
-                    gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
-
-                    // add hover ui here
-
-                    var image = gameObject.AddComponent<Image>();
-                    var button = gameObject.AddComponent<Button>();
-                    button.image = image;
-                    button.onClick.NewListener(() =>
-                    {
-                        SteamLobbyManager.Log($"ID: {member.Id}\n" +
-                            $"Name: {member.Name}\n" +
-                            $"Nickname: {member.Nickname}");
-                        SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    });
-
-                    var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
-
-                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                    EditorThemeManager.ApplyLightText(label);
-
-                    // handle kicking
-                    //if (ProjectArrhythmia.State.IsHosting)
-                    //{
-                    //    var kickObj = Creator.NewUIObject("kick", gameObject.transform);
-                    //    RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
-                    //    var kickObjImage = kickObj.AddComponent<Image>();
-                    //    var kickObjX = Creator.NewUIObject("x", kickObj.transform);
-                    //    var kickObjXImage = kickObjX.AddComponent<Image>();
-                    //    kickObjXImage.sprite = closeSprite;
-
-                    //    EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
-                    //    EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
-
-                    //    kickObj.AddComponent<Button>().onClick.AddListener(() =>
-                    //    {
-                    //        SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
-                    //            $"Name: {member.Name}\n" +
-                    //            $"Nickname: {member.Nickname}");
-                    //    });
-                    //}
-                }
-                return;
-            }
-
             tabObjects.ForLoop((gameObject, index) => gameObject.SetActive(index == (int)CurrentTab));
             switch (CurrentTab)
             {
+                case LobbyTab.Current: {
+                        GetTab(LobbyTab.Current).SetActive(ProjectArrhythmia.State.IsInLobby);
+                        if (!ProjectArrhythmia.State.IsInLobby)
+                            break;
+
+                        closeLobbyLabel.text = ProjectArrhythmia.State.IsHosting ? "Close Lobby" : "Leave Lobby";
+                        closeLobbyLabel.text = ProjectArrhythmia.State.IsHosting ? Lang.Current.GetOrDefault("popups.lobby.close", "Close Lobby") : Lang.Current.GetOrDefault("popups.lobby.leave", "Leave Lobby");
+                        LSHelpers.DeleteChildren(playersParent);
+                        foreach (var member in SteamLobbyManager.inst.CurrentLobby.Members)
+                        {
+                            var gameObject = Creator.NewUIObject("Member", playersParent);
+                            gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
+
+                            // add hover ui here
+
+                            var image = gameObject.AddComponent<Image>();
+                            var button = gameObject.AddComponent<Button>();
+                            button.image = image;
+                            button.onClick.NewListener(() =>
+                            {
+                                SteamLobbyManager.Log($"ID: {member.Id}\n" +
+                                    $"Name: {member.Name}\n" +
+                                    $"Nickname: {member.Nickname}");
+                                SoundManager.inst.PlaySound(DefaultSounds.blip);
+                            });
+
+                            var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
+
+                            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                            EditorThemeManager.ApplyLightText(label);
+
+                            // handle kicking
+                            //if (ProjectArrhythmia.State.IsHosting)
+                            //{
+                            //    var kickObj = Creator.NewUIObject("kick", gameObject.transform);
+                            //    RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
+                            //    var kickObjImage = kickObj.AddComponent<Image>();
+                            //    var kickObjX = Creator.NewUIObject("x", kickObj.transform);
+                            //    var kickObjXImage = kickObjX.AddComponent<Image>();
+                            //    kickObjXImage.sprite = closeSprite;
+
+                            //    EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
+                            //    EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
+
+                            //    kickObj.AddComponent<Button>().onClick.AddListener(() =>
+                            //    {
+                            //        SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
+                            //            $"Name: {member.Name}\n" +
+                            //            $"Nickname: {member.Nickname}");
+                            //    });
+                            //}
+                        }
+                        break;
+                    }
                 case LobbyTab.Create: {
                         break;
                     }
@@ -439,6 +444,16 @@ namespace BetterLegacy.Menus.UI.Popups
 
         async void GetLobbies()
         {
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                LegacyPlugin.MainTick += () =>
+                {
+                    loadingLobbies = false;
+                    LSHelpers.DeleteChildren(lobbyContent);
+                };
+                return;
+            }
+
             if (loadingLobbies)
                 return;
             loadingLobbies = true;
@@ -631,6 +646,14 @@ namespace BetterLegacy.Menus.UI.Popups
             EditorThemeManager.ApplyLightText(label);
         }
 
+        void LobbySettingsChanged()
+        {
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkFunction.SendHostLobbySettings();
+        }
+
+        public void OnLobbyJoined() => SetTab(LobbyTab.Current);
+
         public override void Tick()
         {
             if ((!ConfigPopup.Instance || !ConfigPopup.Instance.watchingKeybind) && Input.GetKeyDown(CoreConfig.Instance.OpenLobbyKey.Value))
@@ -648,6 +671,14 @@ namespace BetterLegacy.Menus.UI.Popups
             if (tickCount % 1000 != 0)
                 return;
 
+            Render();
+        }
+
+        public GameObject GetTab(LobbyTab lobbyTab) => tabObjects[(int)lobbyTab];
+
+        public void SetTab(LobbyTab lobbyTab)
+        {
+            CurrentTab = lobbyTab;
             Render();
         }
 
