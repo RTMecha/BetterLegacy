@@ -13,7 +13,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public const string MAIN_FILE_NAME = "lobby_settings.lss";
         public const int MIN_PLAYER_COUNT = 2;
-        public const int MAX_PLAYER_COUNT = 16; // maybe think about increasing the cap
+        public const int MAX_PLAYER_COUNT = 64;
 
         public FileFormat FileFormat => FileFormat.LSS;
 
