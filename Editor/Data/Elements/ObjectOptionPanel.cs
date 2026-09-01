@@ -8,11 +8,14 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
+using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Editor.Data.Elements
 {
     public class ObjectOptionPanel : EditorPanel<ObjectOption>
     {
+        #region Constructors
+
         public ObjectOptionPanel() { }
 
         public ObjectOptionPanel(bool isDefault, Transform parent)
@@ -20,6 +23,8 @@ namespace BetterLegacy.Editor.Data.Elements
             this.isDefault = isDefault;
             Parent = parent;
         }
+
+        #endregion
 
         #region Values
 
@@ -36,7 +41,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void Init(ObjectOption item)
         {
@@ -131,6 +136,8 @@ namespace BetterLegacy.Editor.Data.Elements
             if (Label)
                 Label.text = text;
         }
+
+        public override void OnClick(PointerEventData pointerEventData) { }
 
         #endregion
     }

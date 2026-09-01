@@ -217,113 +217,108 @@ namespace BetterLegacy.Editor.Data.Elements
         public override void RenderLabel(string text)
         {
             Label.text = text;
-
             Label.alignment = labelAlignment;
             Label.horizontalOverflow = labelHorizontalWrap;
             Label.verticalOverflow = labelVerticalWrap;
             Label.fontSize = labelFontSize;
         }
 
-        public void UpdateFunction()
+        public void UpdateFunction() => Button.onClick = OnClick;
+
+        public override void OnClick(PointerEventData pointerEventData)
         {
             if (isFolder)
             {
-                Button.onClick = pointerEventData =>
+                var path = Path;
+                if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                 {
-                    var path = Path;
-                    if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
-                    {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
+                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
 
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
-                            onOpenFolder: () =>
-                            {
-                                PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                                PlayerEditor.inst.Reload();
-                            },
-                            onFolderUpdate: () => PlayerEditor.inst.Reload(),
-                            paste: PlayerEditor.inst.PastePlayerModel));
-                        return;
-                    }
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
+                        onOpenFolder: () =>
+                        {
+                            PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                            PlayerEditor.inst.Reload();
+                        },
+                        onFolderUpdate: () => PlayerEditor.inst.Reload(),
+                        paste: PlayerEditor.inst.PastePlayerModel));
+                    return;
+                }
 
-                    PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                    PlayerEditor.inst.Reload();
-                };
+                PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                PlayerEditor.inst.Reload();
                 return;
             }
-
-            Button.onClick = pointerEventData =>
+            
+            switch (Source)
             {
-                switch (Source)
-                {
-                    case ObjectSource.Internal: {
-                            if (pointerEventData.button == PointerEventData.InputButton.Right)
-                            {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Open & Use", () =>
-                                    {
-                                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.ID);
-                                        PlayerManager.inst.RespawnPlayers();
-                                        PlayerEditor.inst.RenderDialog();
-                                    }),
-                                    new ButtonElement("Export", () => PlayerEditor.inst.ExportPlayerModel(Item)),
-                                    new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
-                                    new ButtonElement("Save", PlayerEditor.inst.Save),
-                                    new ButtonElement("Reload", PlayerEditor.inst.Reload),
-                                    new SpacerElement(),
-                                    new ButtonElement("Duplicate", () =>
-                                    {
-                                        var model = Item.Copy();
-                                        model.Name += " Clone";
-                                        model.ID = LSText.randomNumString(16);
+                case ObjectSource.Internal: {
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Open & Use", () =>
+                                {
+                                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.ID);
+                                    PlayerManager.inst.RespawnPlayers();
+                                    PlayerEditor.inst.RenderDialog();
+                                }),
+                                new ButtonElement("Export", () => PlayerEditor.inst.ExportPlayerModel(Item)),
+                                new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                                new ButtonElement("Save", PlayerEditor.inst.Save),
+                                new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                                new SpacerElement(),
+                                new ButtonElement("Duplicate", () =>
+                                {
+                                    var model = Item.Copy();
+                                    model.Name += " Clone";
+                                    model.ID = LSText.randomNumString(16);
 
-                                        PlayersData.Current.OverwritePlayerModel(model);
-                                        PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, model.ID);
-                                    }),
-                                    new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
-                                return;
-                            }
-
-                            if (onClick != null)
-                            {
-                                onClick.Invoke(pointerEventData);
-                                return;
-                            }
-
-                            PlayerEditor.inst.SetCurrentModel(Item);
-                            break;
+                                    PlayersData.Current.OverwritePlayerModel(model);
+                                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, model.ID);
+                                }),
+                                new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
+                            return;
                         }
-                    case ObjectSource.External: {
-                            if (pointerEventData.button == PointerEventData.InputButton.Right)
-                            {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Import", () => PlayerEditor.inst.ImportPlayerModel(Item)),
-                                    new ButtonElement("Set to Global", () => PlayerManager.inst.SetCustomModel(PlayerEditor.inst.playerIndex, Item.ID)),
-                                    //new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
-                                    new ButtonElement("Save", PlayerEditor.inst.Save),
-                                    new ButtonElement("Reload", PlayerEditor.inst.Reload),
-                                    new SpacerElement(),
-                                    new ButtonElement("Duplicate", () =>
-                                    {
-                                        var model = Item.Copy();
-                                        model.Name += " Clone";
-                                        model.ID = LSText.randomNumString(16);
 
-                                        PlayersData.OverwriteExternalPlayerModel(model);
-                                    }),
-                                    new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
-                                return;
-                            }
-
-                            PlayerEditor.inst.ImportPlayerModel(Item);
-                            break;
+                        if (onClick != null)
+                        {
+                            onClick.Invoke(pointerEventData);
+                            return;
                         }
-                }
-            };
+
+                        PlayerEditor.inst.SetCurrentModel(Item);
+                        break;
+                    }
+                case ObjectSource.External: {
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Import", () => PlayerEditor.inst.ImportPlayerModel(Item)),
+                                new ButtonElement("Set to Global", () => PlayerManager.inst.SetCustomModel(PlayerEditor.inst.playerIndex, Item.ID)),
+                                //new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                                new ButtonElement("Save", PlayerEditor.inst.Save),
+                                new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                                new SpacerElement(),
+                                new ButtonElement("Duplicate", () =>
+                                {
+                                    var model = Item.Copy();
+                                    model.Name += " Clone";
+                                    model.ID = LSText.randomNumString(16);
+
+                                    PlayersData.OverwriteExternalPlayerModel(model);
+                                }),
+                                new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
+                            return;
+                        }
+
+                        PlayerEditor.inst.ImportPlayerModel(Item);
+                        break;
+                    }
+            }
         }
 
         /// <summary>

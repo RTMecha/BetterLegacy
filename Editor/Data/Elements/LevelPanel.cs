@@ -13,14 +13,12 @@ using Crosstales.FB;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Elements
@@ -30,7 +28,11 @@ namespace BetterLegacy.Editor.Data.Elements
     /// </summary>
     public class LevelPanel : EditorPanel<Level>, IPacket, ISelectable
     {
+        #region Constructors
+
         public LevelPanel() { }
+
+        #endregion
 
         #region Values
 
@@ -172,6 +174,8 @@ namespace BetterLegacy.Editor.Data.Elements
             {
                 case 0: {
                         Item = Packet.CreateFromPacket<Level>(reader);
+                        if (reader.ReadBoolean())
+                            Item.collectionInfo = Packet.CreateFromPacket<LevelInfo>(reader);
                         Path = reader.ReadString();
                         break;
                     }
@@ -194,6 +198,10 @@ namespace BetterLegacy.Editor.Data.Elements
             {
                 case 0: {
                         Item.WritePacket(writer);
+                        var hasCollectionInfo = Item.collectionInfo != null;
+                        writer.Write(hasCollectionInfo);
+                        if (hasCollectionInfo)
+                            Item.collectionInfo.WritePacket(writer);
                         writer.Write(Path);
                         break;
                     }
@@ -241,6 +249,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
             levelPanelStorage.icon.sprite = EditorSprites.OpenSprite;
             IconImage = levelPanelStorage.icon;
+
+            SelectedUI = levelPanelStorage.selectedImage.gameObject;
+            SelectedUI.SetActive(false);
 
             Render();
         }
@@ -457,490 +468,483 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Updates the level panels' main function.
         /// </summary>
-        public void UpdateFunction()
+        public void UpdateFunction() => Button.onClick = OnClick;
+
+        public override void OnClick(PointerEventData pointerEventData)
         {
             if (isFolder)
             {
                 var path = Path;
-                Button.onClick = eventData =>
+                if (ProjectArrhythmia.State.IsClient)
                 {
-                    if (ProjectArrhythmia.State.IsClient)
-                    {
-                        NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the folder [{System.IO.Path.GetFileName(path)}]!");
-                        return;
-                    }
+                    NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the folder [{System.IO.Path.GetFileName(path)}]!");
+                    return;
+                }
 
-                    if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
-                    {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
+                if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
+                {
+                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
 
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonElement("Open folder", () =>
-                            {
-                                EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                                RTEditor.inst.UpdateEditorPath(false);
-                            }, "Level Panel Open Folder"),
-                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.GetDirectory(path), EndFolderCreation), "Level Panel Create Folder"),
-                            new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            new SpacerElement(),
-                            new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
-                            {
-                                RTFile.MoveDirectory(path, path.Replace(Name, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)).Replace("\\", "/"));
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonElement("Open folder", () =>
+                        {
+                            EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                            RTEditor.inst.UpdateEditorPath(false);
+                        }, "Level Panel Open Folder"),
+                        new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.GetDirectory(path), EndFolderCreation), "Level Panel Create Folder"),
+                        new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup),
+                        new SpacerElement(),
+                        new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                        {
+                            RTFile.MoveDirectory(path, path.Replace(Name, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)).Replace("\\", "/"));
 
-                                EditorLevelManager.inst.LoadLevels();
-                                RTEditor.inst.HideNameEditor();
-                            }), "Level Panel Rename Folder"),
-                            new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                            EditorLevelManager.inst.LoadLevels();
+                            RTEditor.inst.HideNameEditor();
+                        }), "Level Panel Rename Folder"),
+                        new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
+                        new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                        {
+                            RTFile.DeleteDirectory(path);
+                            RTEditor.inst.UpdateEditorPath(true);
+                            EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
+                        }), "Level Panel Delete"),
+                        new SpacerElement(),
+                        new ButtonElement("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
+                        new ButtonElement("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
+                        new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
+                        new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
+                        new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                        new SpacerElement(),
+                        new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
+                        {
+                            string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
+                            if (string.IsNullOrEmpty(imageFile))
+                                return;
+
+                            RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                            RenderIcon();
+                        }),
+                        new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
+                        {
+                            RTFileBrowser.inst.Popup.Open();
+                            RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
                             {
-                                RTFile.DeleteDirectory(path);
-                                RTEditor.inst.UpdateEditorPath(true);
-                                EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
-                            }), "Level Panel Delete"),
-                            new SpacerElement(),
-                            new ButtonElement("ZIP Folder", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
-                            new ButtonElement("Copy Path", () => LSText.CopyToClipboard(path), "Level Panel Copy Folder"),
-                            new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
-                            new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(path), "Level Panel Open Explorer"),
-                            new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
-                            new SpacerElement(),
-                            new ButtonElement($"Select Icon ({RTFileBrowser.SYSTEM_BROWSER})", () =>
-                            {
-                                string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
                                 if (string.IsNullOrEmpty(imageFile))
                                     return;
 
+                                RTFileBrowser.inst.Popup.Close();
+
                                 RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
                                 RenderIcon();
-                            }),
-                            new ButtonElement($"Select Icon ({RTFileBrowser.EDITOR_BROWSER})", () =>
+                            });
+                        }),
+                        new ButtonElement("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
+                        {
+                            RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
+                            RenderIcon();
+                            EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
+                        })),
+                        new SpacerElement(),
+                        new ButtonElement("Create Info File", () =>
+                        {
+                            var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
+                            if (RTFile.FileExists(filePath))
                             {
-                                RTFileBrowser.inst.Popup.Open();
-                                RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot() }, imageFile =>
-                                {
-                                    if (string.IsNullOrEmpty(imageFile))
-                                        return;
+                                EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                                    RTFileBrowser.inst.Popup.Close();
-
-                                    RTFile.CopyFile(imageFile, RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                    RenderIcon();
-                                });
-                            }),
-                            new ButtonElement("Clear Icon", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the folder icon? This will delete the icon file.", () =>
+                            RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
                             {
-                                RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_icon{FileFormat.PNG.Dot()}"));
-                                RenderIcon();
-                                EditorManager.inst.DisplayNotification("Deleted icon!", 1.5f, EditorManager.NotificationType.Success);
-                            })),
-                            new SpacerElement(),
-                            new ButtonElement("Create Info File", () =>
-                            {
-                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-                                if (RTFile.FileExists(filePath))
-                                {
-                                    EditorManager.inst.DisplayNotification($"Info file already exists!", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
-                                {
-                                    var jn = Parser.NewJSONObject();
-                                    jn["desc"] = RTTextEditor.inst.Text;
-                                    infoJN = jn;
-                                    RTFile.WriteToFile(filePath, jn.ToString());
-                                    RenderTooltip();
-                                    RTTextEditor.inst.Popup.Close();
-
-                                    EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
-                                });
-                            }),
-                            new ButtonElement("Edit Info File", () =>
-                            {
-                                var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
-
-                                if (!RTFile.FileExists(filePath))
-                                    return;
-
-                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
-                                {
-                                    var jn = JSON.Parse("{}");
-                                    jn["desc"] = RTTextEditor.inst.Text;
-                                    infoJN = jn;
-                                    RTFile.WriteToFile(filePath, jn.ToString());
-                                    RenderTooltip();
-                                    RTTextEditor.inst.Popup.Close();
-                                });
-                            }),
-                            new ButtonElement("Update Info", () =>
-                            {
-                                infoJN = null;
+                                var jn = Parser.NewJSONObject();
+                                jn["desc"] = RTTextEditor.inst.Text;
+                                infoJN = jn;
+                                RTFile.WriteToFile(filePath, jn.ToString());
                                 RenderTooltip();
-                                RenderIcon();
-                            }),
-                            new ButtonElement("Clear Info File", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
-                            {
-                                RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
-                                infoJN = null;
-                                RenderTooltip();
-                                EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
-                            })),
-                            new SpacerElement(),
-                            new ButtonElement("Create Collection", () =>
-                            {
-                                var levels = new List<Level>();
-                                var directories = System.IO.Directory.GetDirectories(path);
-                                for (int i = 0; i < directories.Length; i++)
-                                    if (Level.TryVerify(directories[i], true, out Level level))
-                                        levels.Add(level);
-                                if (!levels.IsEmpty())
-                                    EditorLevelManager.inst.CreateNewLevelCollection(EditorLevelManager.NEW_LEVEL_COLLECTION_NAME, path, levels);
-                            }));
-                        return;
-                    }
+                                RTTextEditor.inst.Popup.Close();
 
-                    EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                    RTEditor.inst.UpdateEditorPath(false);
-                };
+                                EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
+                            });
+                        }),
+                        new ButtonElement("Edit Info File", () =>
+                        {
+                            var filePath = RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}");
+
+                            if (!RTFile.FileExists(filePath))
+                                return;
+
+                            RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
+                            {
+                                var jn = JSON.Parse("{}");
+                                jn["desc"] = RTTextEditor.inst.Text;
+                                infoJN = jn;
+                                RTFile.WriteToFile(filePath, jn.ToString());
+                                RenderTooltip();
+                                RTTextEditor.inst.Popup.Close();
+                            });
+                        }),
+                        new ButtonElement("Update Info", () =>
+                        {
+                            infoJN = null;
+                            RenderTooltip();
+                            RenderIcon();
+                        }),
+                        new ButtonElement("Clear Info File", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the info file?", () =>
+                        {
+                            RTFile.DeleteFile(RTFile.CombinePaths(path, $"folder_info{FileFormat.JSON.Dot()}"));
+                            infoJN = null;
+                            RenderTooltip();
+                            EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
+                        })),
+                        new SpacerElement(),
+                        new ButtonElement("Create Collection", () =>
+                        {
+                            var levels = new List<Level>();
+                            var directories = System.IO.Directory.GetDirectories(path);
+                            for (int i = 0; i < directories.Length; i++)
+                                if (Level.TryVerify(directories[i], true, out Level level))
+                                    levels.Add(level);
+                            if (!levels.IsEmpty())
+                                EditorLevelManager.inst.CreateNewLevelCollection(EditorLevelManager.NEW_LEVEL_COLLECTION_NAME, path, levels);
+                        }));
+                    return;
+                }
+
+                EditorLevelManager.inst.OpenLevelPopup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                RTEditor.inst.UpdateEditorPath(false);
                 return;
             }
 
-            Button.onClick = eventData =>
+            if (ProjectArrhythmia.State.IsClient)
             {
-                if (ProjectArrhythmia.State.IsClient)
-                {
-                    NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the level [{System.IO.Path.GetFileName(Path)}]!");
-                    return;
-                }
+                NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the level [{System.IO.Path.GetFileName(Path)}]!");
+                return;
+            }
 
-                if (LevelTemplateEditor.inst.choosingLevelTemplate && Item)
-                {
-                    LevelTemplateEditor.inst.CreateTemplate(Item.path);
+            if (LevelTemplateEditor.inst.choosingLevelTemplate && Item)
+            {
+                LevelTemplateEditor.inst.CreateTemplate(Item.path);
+                return;
+            }
 
-                    return;
-                }
+            var selectedLevels = EditorLevelManager.inst.SelectedLevels;
+            var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
 
-                var selectedLevels = EditorLevelManager.inst.SelectedLevels;
-                var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
+            var info = GetLevelInfo();
 
-                var info = GetLevelInfo();
-
-                if (eventData.button == PointerEventData.InputButton.Right)
-                {
-                    var list = new List<EditorElement>();
-
-                    if (!selectedLevels.IsEmpty())
-                    {
-                        list = new List<EditorElement>()
-                        {
-                            new ButtonElement("Combine", () =>
-                            {
-                                RTEditor.inst.ShowNameEditor("Combiner", "Combined Level name", "Combine", () =>
-                                {
-                                    EditorLevelManager.inst.Combine(RTEditor.inst.folderCreatorName.text, EditorLevelManager.inst.SelectedLevels, EditorLevelManager.inst.LoadLevels);
-                                });
-                            }),
-                            new SpacerElement(),
-                            new ButtonElement("Create Collection", () =>
-                            {
-                                var collection = EditorLevelManager.inst.CreateNewLevelCollection(selectedLevels.SelectWhere(x => x.Item, x => x.Item).ToList());
-                                collection.Save();
-                                EditorLevelManager.inst.LoadLevelCollections();
-                            }),
-                            new ButtonElement("Add File to Collection", () =>
-                            {
-                                EditorLevelManager.inst.LevelCollectionPopup.Open();
-                                EditorLevelManager.inst.RenderLevelCollections();
-                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
-                                {
-                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
-                                        return;
-
-                                    foreach (var level in selectedLevels)
-                                        if (level.Item)
-                                            levelCollectionPanel.Item.AddLevelToFolder(level.Item);
-                                    levelCollectionPanel.Item.Save();
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
-                                };
-                            }),
-                            new ButtonElement("Add Ref to Collection", () =>
-                            {
-                                EditorLevelManager.inst.LevelCollectionPopup.Open();
-                                EditorLevelManager.inst.RenderLevelCollections();
-                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
-                                {
-                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
-                                        return;
-
-                                    foreach (var level in selectedLevels)
-                                        if (level.Item)
-                                            levelCollectionPanel.Item.AddLevel(level.Item);
-                                    levelCollectionPanel.Item.Save();
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
-                                };
-                            }),
-                        };
-
-                        if (currentLevelCollection && info)
-                            list.Add(new SpacerElement());
-                    }
-                    else if (Item)
-                    {
-                        list = new List<EditorElement>()
-                        {
-                            new ButtonElement("Open", () =>
-                            {
-                                EditorLevelManager.inst.LoadLevel(this);
-                                EditorLevelManager.inst.OpenLevelPopup.Close();
-                            }, "Level Panel Open"),
-                            new ButtonElement("Show Autosaves", () => EditorLevelManager.inst.OpenAutosaveList(this), "Level Panel Show Autosaves"),
-                            new ButtonElement("Convert to VG", () => EditorLevelManager.inst.ConvertLevel(this), "Convert Level VG"),
-                            new SpacerElement(),
-                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
-                            new ButtonElement("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Item.path), "Level Panel Create Template"),
-                            new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
-                            new ButtonElement("Create backup", () => EditorLevelManager.inst.SaveBackup(this), "Level Panel Create Backup"),
-                            new SpacerElement(),
-                            new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
-                            {
-                                var currentPath = Item.path;
-
-                                var destination = RTFile.ReplaceSlash(Item.path.Replace(Item.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
-                                RTFile.MoveDirectory(Item.path, destination);
-                                Item.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
-                                RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Item.metadata.ToJSON().ToString());
-
-                                if (currentPath == EditorLevelManager.inst.CurrentLevel.path)
-                                {
-                                    RTEditor.inst.SetCurrentPath(destination);
-                                    // set new path in case the current level is a separate instance.
-                                    EditorLevelManager.inst.CurrentLevel.path = destination;
-                                }
-
-                                Item.path = destination;
-
-                                EditorLevelManager.inst.LoadLevels();
-                                RTEditor.inst.HideNameEditor();
-                            }), "Level Panel Rename Level"),
-                            new ButtonElement("Cut", () =>
-                            {
-                                EditorLevelManager.inst.shouldCutLevel = true;
-                                EditorLevelManager.inst.copiedLevelPath = Item.path;
-                                EditorManager.inst.DisplayNotification($"Cut {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Cut level: {EditorLevelManager.inst.copiedLevelPath}");
-                            }, "Level Panel Cut"),
-                            new ButtonElement("Copy", () =>
-                            {
-                                EditorLevelManager.inst.shouldCutLevel = false;
-                                EditorLevelManager.inst.copiedLevelPath = Item.path;
-                                EditorManager.inst.DisplayNotification($"Copied {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
-                            }, "Level Panel Copy"),
-                            new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonElement("Delete", () => Delete()),
-                            new SpacerElement(),
-                            new ButtonElement("Copy Arcade ID", () =>
-                            {
-                                var metadata = Item.metadata;
-                                if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
-                                {
-                                    EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                LSText.CopyToClipboard(metadata.arcadeID);
-                                EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                            }, "Copy Arcade ID"),
-                            new ButtonElement("Copy Server ID", () =>
-                            {
-                                var metadata = Item.metadata;
-                                if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
-                                {
-                                    EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                LSText.CopyToClipboard(metadata.serverID);
-                                EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
-                            }, "Copy Server ID"),
-                            new SpacerElement(),
-                            new ButtonElement("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
-                            new ButtonElement("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
-                            new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(Item.path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
-                            new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
-                            new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
-                            new SpacerElement(),
-                            new ButtonElement("Add File to Collection", () =>
-                            {
-                                EditorLevelManager.inst.LevelCollectionPopup.Open();
-                                EditorLevelManager.inst.RenderLevelCollections();
-                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
-                                {
-                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
-                                        return;
-
-                                    levelCollectionPanel.Item.AddLevelToFolder(Item);
-                                    levelCollectionPanel.Item.Save();
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
-                                };
-                            }),
-                            new ButtonElement("Add Ref to Collection", () =>
-                            {
-                                EditorLevelManager.inst.LevelCollectionPopup.Open();
-                                EditorLevelManager.inst.RenderLevelCollections();
-                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
-                                {
-                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
-                                        return;
-
-                                    levelCollectionPanel.Item.AddLevel(Item);
-                                    levelCollectionPanel.Item.Save();
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
-                                };
-                            }),
-                        };
-
-                        if (currentLevelCollection && info)
-                            list.Add(new SpacerElement());
-                    }
-
-                    if (currentLevelCollection && info)
-                    {
-                        list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
-                        {
-                            EditorLevelManager.inst.LoadLevel(this);
-                            EditorLevelManager.inst.OpenLevelPopup.Close();
-                        } : null, Item ? "Open" : null)));
-                        list.Add(new ButtonElement("Remove from Collection", () =>
-                        {
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
-                            {
-                                if (Item)
-                                    currentLevelCollection.RemoveLevelFromFolder(Item);
-                                else
-                                    currentLevelCollection.Remove(info);
-                                currentLevelCollection.Save();
-
-                                EditorLevelManager.inst.LoadLevels();
-                            });
-                        }));
-                        list.Add(new ButtonElement("Move to Start", () =>
-                        {
-                            var info = GetLevelInfo();
-                            if (!info)
-                                return;
-
-                            if (info.index == 0)
-                            {
-                                EditorManager.inst.DisplayNotification($"The level is already at the start!", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            currentLevelCollection.Move(info.id, 0);
-                            currentLevelCollection.Save();
-                            EditorLevelManager.inst.LoadLevels();
-                        }));
-                        list.Add(new ButtonElement("Move Earlier", () =>
-                        {
-                            var info = GetLevelInfo();
-                            if (!info)
-                                return;
-
-                            if (info.index - 1 < 0)
-                            {
-                                EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            currentLevelCollection.Move(info.id, info.index - 1);
-                            currentLevelCollection.Save();
-                            EditorLevelManager.inst.LoadLevels();
-                        }));
-                        list.Add(new ButtonElement("Move Later", () =>
-                        {
-                            var info = GetLevelInfo();
-                            if (!info)
-                                return;
-
-                            var index = info.index;
-                            if (info.index + 1 >= currentLevelCollection.levelInformation.Count)
-                            {
-                                EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            currentLevelCollection.Move(info.id, info.index + 1);
-                            currentLevelCollection.Save();
-                            EditorLevelManager.inst.LoadLevels();
-                        }));
-                        list.Add(new ButtonElement("Move to End", () =>
-                        {
-                            var info = GetLevelInfo();
-                            if (!info)
-                                return;
-
-                            if (info.index == currentLevelCollection.Count - 1)
-                            {
-                                EditorManager.inst.DisplayNotification($"The level is already at the end!", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            currentLevelCollection.Move(info.id, currentLevelCollection.Count - 1);
-                            currentLevelCollection.Save();
-                            EditorLevelManager.inst.LoadLevels();
-                        }));
-                    }
-
-                    EditorContextMenu.inst.ShowContextMenu(list);
-
-                    return;
-                }
-
-                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
-                {
-                    Selected = !Selected;
-                    return;
-                }
+            if (pointerEventData.button == PointerEventData.InputButton.Right)
+            {
+                var list = new List<EditorElement>();
 
                 if (!selectedLevels.IsEmpty())
                 {
-                    Selected = false;
-                    return;
+                    list = new List<EditorElement>()
+                    {
+                        new ButtonElement("Combine", () => RTEditor.inst.ShowNameEditor("Combiner", "Combined Level name", "Combine", () =>
+                        {
+                            EditorLevelManager.inst.Combine(RTEditor.inst.folderCreatorName.text, EditorLevelManager.inst.SelectedLevels, EditorLevelManager.inst.LoadLevels);
+                        })),
+                        new SpacerElement(),
+                        new ButtonElement("Create Collection", () =>
+                        {
+                            var collection = EditorLevelManager.inst.CreateNewLevelCollection(selectedLevels.SelectWhere(x => x.Item, x => x.Item).ToList());
+                            collection.Save();
+                            EditorLevelManager.inst.LoadLevelCollections();
+                        }),
+                        new ButtonElement("Add File to Collection", () =>
+                        {
+                            EditorLevelManager.inst.LevelCollectionPopup.Open();
+                            EditorLevelManager.inst.RenderLevelCollections();
+                            EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                            {
+                                if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                    return;
+
+                                foreach (var level in selectedLevels)
+                                    if (level.Item)
+                                        levelCollectionPanel.Item.AddLevelToFolder(level.Item);
+                                levelCollectionPanel.Item.Save();
+                                EditorLevelManager.inst.LoadLevels();
+                                EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                            };
+                        }),
+                        new ButtonElement("Add Ref to Collection", () =>
+                        {
+                            EditorLevelManager.inst.LevelCollectionPopup.Open();
+                            EditorLevelManager.inst.RenderLevelCollections();
+                            EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                            {
+                                if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                    return;
+
+                                foreach (var level in selectedLevels)
+                                    if (level.Item)
+                                        levelCollectionPanel.Item.AddLevel(level.Item);
+                                levelCollectionPanel.Item.Save();
+                                EditorLevelManager.inst.LoadLevels();
+                                EditorManager.inst.DisplayNotification($"Added the selected levels to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                            };
+                        }),
+                    };
+
+                    if (currentLevelCollection && info)
+                        list.Add(new SpacerElement());
+                }
+                else if (Item)
+                {
+                    list = new List<EditorElement>
+                    {
+                        new ButtonElement("Open", () =>
+                        {
+                            EditorLevelManager.inst.LoadLevel(this);
+                            EditorLevelManager.inst.OpenLevelPopup.Close();
+                        }, "Level Panel Open"),
+                        new ButtonElement("Show Autosaves", () => EditorLevelManager.inst.OpenAutosaveList(this), "Level Panel Show Autosaves"),
+                        new ButtonElement("Convert to VG", () => EditorLevelManager.inst.ConvertLevel(this), "Convert Level VG"),
+                        new SpacerElement(),
+                        new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
+                        new ButtonElement("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Item.path), "Level Panel Create Template"),
+                        new ButtonElement("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
+                        new ButtonElement("Create backup", () => EditorLevelManager.inst.SaveBackup(this), "Level Panel Create Backup"),
+                        new SpacerElement(),
+                        new ButtonElement("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
+                        {
+                            var currentPath = Item.path;
+
+                            var destination = RTFile.ReplaceSlash(Item.path.Replace(Item.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
+                            RTFile.MoveDirectory(Item.path, destination);
+                            Item.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
+                            RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Item.metadata.ToJSON().ToString());
+
+                            if (currentPath == EditorLevelManager.inst.CurrentLevel.path)
+                            {
+                                RTEditor.inst.SetCurrentPath(destination);
+                                // set new path in case the current level is a separate instance.
+                                EditorLevelManager.inst.CurrentLevel.path = destination;
+                            }
+
+                            Item.path = destination;
+
+                            EditorLevelManager.inst.LoadLevels();
+                            RTEditor.inst.HideNameEditor();
+                        }), "Level Panel Rename Level"),
+                        new ButtonElement("Cut", () =>
+                        {
+                            EditorLevelManager.inst.shouldCutLevel = true;
+                            EditorLevelManager.inst.copiedLevelPath = Item.path;
+                            EditorManager.inst.DisplayNotification($"Cut {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                            CoreHelper.Log($"Cut level: {EditorLevelManager.inst.copiedLevelPath}");
+                        }, "Level Panel Cut"),
+                        new ButtonElement("Copy", () =>
+                        {
+                            EditorLevelManager.inst.shouldCutLevel = false;
+                            EditorLevelManager.inst.copiedLevelPath = Item.path;
+                            EditorManager.inst.DisplayNotification($"Copied {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                            CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
+                        }, "Level Panel Copy"),
+                        new ButtonElement("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
+                        new ButtonElement("Delete", () => Delete()),
+                        new SpacerElement(),
+                        new ButtonElement("Copy Arcade ID", () =>
+                        {
+                            var metadata = Item.metadata;
+                            if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
+                            {
+                                EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            LSText.CopyToClipboard(metadata.arcadeID);
+                            EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                        }, "Copy Arcade ID"),
+                        new ButtonElement("Copy Server ID", () =>
+                        {
+                            var metadata = Item.metadata;
+                            if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
+                            {
+                                EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            LSText.CopyToClipboard(metadata.serverID);
+                            EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                        }, "Copy Server ID"),
+                        new SpacerElement(),
+                        new ButtonElement("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
+                        new ButtonElement("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
+                        new ButtonElement("Copy Relative Path", () => LSText.CopyToClipboard(Item.path.Remove(RTEditor.inst.BeatmapsPath + "/")), "Level Panel Copy Folder"),
+                        new ButtonElement("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
+                        new ButtonElement("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                        new SpacerElement(),
+                        new ButtonElement("Add File to Collection", () =>
+                        {
+                            EditorLevelManager.inst.LevelCollectionPopup.Open();
+                            EditorLevelManager.inst.RenderLevelCollections();
+                            EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                            {
+                                if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                    return;
+
+                                levelCollectionPanel.Item.AddLevelToFolder(Item);
+                                levelCollectionPanel.Item.Save();
+                                EditorLevelManager.inst.LoadLevels();
+                                EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                            };
+                        }),
+                        new ButtonElement("Add Ref to Collection", () =>
+                        {
+                            EditorLevelManager.inst.LevelCollectionPopup.Open();
+                            EditorLevelManager.inst.RenderLevelCollections();
+                            EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                            {
+                                if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                    return;
+
+                                levelCollectionPanel.Item.AddLevel(Item);
+                                levelCollectionPanel.Item.Save();
+                                EditorLevelManager.inst.LoadLevels();
+                                EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                            };
+                        }),
+                    };
+
+                    if (currentLevelCollection && info)
+                        list.Add(new SpacerElement());
                 }
 
                 if (currentLevelCollection && info)
                 {
-                    if (EditorConfig.Instance.LoadCollectionLevelDirectly.Value && Item)
+                    list.Add(new ButtonElement("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
                     {
                         EditorLevelManager.inst.LoadLevel(this);
                         EditorLevelManager.inst.OpenLevelPopup.Close();
-                        return;
                     }
-                    EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
+                    : null, Item ? "Open" : null)));
+                    list.Add(new ButtonElement("Remove from Collection", () =>
                     {
-                        EditorLevelManager.inst.LoadLevel(this);
-                        EditorLevelManager.inst.OpenLevelPopup.Close();
-                    } : null, Item ? "Open" : null);
-                    return;
+                        RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
+                        {
+                            if (Item)
+                                currentLevelCollection.RemoveLevelFromFolder(Item);
+                            else
+                                currentLevelCollection.Remove(info);
+                            currentLevelCollection.Save();
+
+                            EditorLevelManager.inst.LoadLevels();
+                        });
+                    }));
+                    list.Add(new ButtonElement("Move to Start", () =>
+                    {
+                        var info = GetLevelInfo();
+                        if (!info)
+                            return;
+
+                        if (info.index == 0)
+                        {
+                            EditorManager.inst.DisplayNotification($"The level is already at the start!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        currentLevelCollection.Move(info.id, 0);
+                        currentLevelCollection.Save();
+                        EditorLevelManager.inst.LoadLevels();
+                    }));
+                    list.Add(new ButtonElement("Move Earlier", () =>
+                    {
+                        var info = GetLevelInfo();
+                        if (!info)
+                            return;
+
+                        if (info.index - 1 < 0)
+                        {
+                            EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        currentLevelCollection.Move(info.id, info.index - 1);
+                        currentLevelCollection.Save();
+                        EditorLevelManager.inst.LoadLevels();
+                    }));
+                    list.Add(new ButtonElement("Move Later", () =>
+                    {
+                        var info = GetLevelInfo();
+                        if (!info)
+                            return;
+
+                        var index = info.index;
+                        if (info.index + 1 >= currentLevelCollection.levelInformation.Count)
+                        {
+                            EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        currentLevelCollection.Move(info.id, info.index + 1);
+                        currentLevelCollection.Save();
+                        EditorLevelManager.inst.LoadLevels();
+                    }));
+                    list.Add(new ButtonElement("Move to End", () =>
+                    {
+                        var info = GetLevelInfo();
+                        if (!info)
+                            return;
+
+                        if (info.index == currentLevelCollection.Count - 1)
+                        {
+                            EditorManager.inst.DisplayNotification($"The level is already at the end!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        currentLevelCollection.Move(info.id, currentLevelCollection.Count - 1);
+                        currentLevelCollection.Save();
+                        EditorLevelManager.inst.LoadLevels();
+                    }));
                 }
 
-                if (!Item)
+                EditorContextMenu.inst.ShowContextMenu(list);
+                return;
+            }
+
+            if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+            {
+                Selected = !Selected;
+                return;
+            }
+
+            if (!selectedLevels.IsEmpty())
+            {
+                Selected = false;
+                return;
+            }
+
+            if (currentLevelCollection && info)
+            {
+                if (EditorConfig.Instance.LoadCollectionLevelDirectly.Value && Item)
                 {
-                    EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
+                    EditorLevelManager.inst.LoadLevel(this);
+                    EditorLevelManager.inst.OpenLevelPopup.Close();
                     return;
                 }
+                EditorLevelManager.inst.OpenLevelInfoEditor(info, Item ? () =>
+                {
+                    EditorLevelManager.inst.LoadLevel(this);
+                    EditorLevelManager.inst.OpenLevelPopup.Close();
+                }
+                : null, Item ? "Open" : null);
+                return;
+            }
 
-                EditorLevelManager.inst.LoadLevel(this);
-                EditorLevelManager.inst.OpenLevelPopup.Close();
-            };
+            if (!Item)
+            {
+                EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            EditorLevelManager.inst.LoadLevel(this);
+            EditorLevelManager.inst.OpenLevelPopup.Close();
         }
 
         /// <summary>
