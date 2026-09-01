@@ -264,6 +264,8 @@ namespace BetterLegacy.Editor.Managers
                 },
                 options: CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created"));
             OpenLevelPopup.TopElements.sizeDelta = new Vector2(90f, 32f);
+            OpenLevelPopup.PathField.interactable = !ProjectArrhythmia.State.IsClient;
+            OpenLevelPopup.ReloadButton.interactable = !ProjectArrhythmia.State.IsClient;
 
             TooltipHelper.RemoveTooltip(OpenLevelPopup.SortDropdown.gameObject);
             TooltipHelper.AssignTooltip(OpenLevelPopup.SortDropdown.gameObject, "Level Sort Dropdown");
@@ -581,8 +583,10 @@ namespace BetterLegacy.Editor.Managers
             if (ProjectArrhythmia.State.IsHosting)
                 NetworkFunction.ClearEditorLevels();
 
-            OpenLevelPopup.PathField.interactable = !ProjectArrhythmia.State.IsClient;
-            OpenLevelPopup.ReloadButton.interactable = !ProjectArrhythmia.State.IsClient;
+            if (OpenLevelPopup && OpenLevelPopup.PathField)
+                OpenLevelPopup.PathField.interactable = !ProjectArrhythmia.State.IsClient;
+            if (OpenLevelPopup && OpenLevelPopup.ReloadButton)
+                OpenLevelPopup.ReloadButton.interactable = !ProjectArrhythmia.State.IsClient;
 
             if (ProjectArrhythmia.State.IsClient)
             {
