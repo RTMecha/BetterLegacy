@@ -60,6 +60,8 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Main
 
+        public string ID { get => id; set => id = value; }
+
         public bool active = true;
         public bool Active { get => active; set => active = value; }
 

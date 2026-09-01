@@ -1531,35 +1531,32 @@ namespace BetterLegacy.Editor.Managers
             Dialog.LDMToggle.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.LDM = _val;
-                RTLevel.Current?.UpdateObject(beatmapObject);
-
-                if (ProjectArrhythmia.State.IsInLobby)
-                    NetworkFunction.EditBeatmapObject(beatmapObject);
+                UpdateObject(beatmapObject, string.Empty, false);
             });
 
             EditorContextMenu.AddContextMenu(Dialog.LDMToggle.gameObject,
                 ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.Normal, "Normal", () =>
                 {
                     beatmapObject.detailMode = DetailMode.Normal;
-                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    UpdateObject(beatmapObject, string.Empty, false);
                     RenderLDM(beatmapObject);
                 }, "Detail Mode Normal"),
                 ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.HighDetail, "High Detail Only", () =>
                 {
                     beatmapObject.detailMode = DetailMode.HighDetail;
-                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    UpdateObject(beatmapObject, string.Empty, false);
                     RenderLDM(beatmapObject);
                 }, "Detail Mode High Detail Only"),
                 ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.LowDetail, "Low Detail Only", () =>
                 {
                     beatmapObject.detailMode = DetailMode.LowDetail;
-                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    UpdateObject(beatmapObject, string.Empty, false);
                     RenderLDM(beatmapObject);
                 }, "Detail Mode Low Detail Only"),
                 ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.NoDetail, "No Spawn", () =>
                 {
                     beatmapObject.detailMode = DetailMode.NoDetail;
-                    RTLevel.Current?.UpdateObject(beatmapObject);
+                    UpdateObject(beatmapObject, string.Empty, false);
                     RenderLDM(beatmapObject);
                 }, "Detail Mode No Spawn"));
         }
@@ -1578,12 +1575,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.NameField.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.name = _val;
-
-                // Since name has no effect on the physical object, we will only need to update the timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-
-                if (ProjectArrhythmia.State.IsInLobby)
-                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.EDITOR_UPDATE);
+                UpdateObject(beatmapObject, ObjectContext.EDITOR_UPDATE, true);
             });
         }
 
@@ -1875,36 +1867,27 @@ namespace BetterLegacy.Editor.Managers
                     {
                         case 1: {
                                 beatmapObject.origin.x = -0.5f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                         case 2: {
                                 beatmapObject.origin.x = 0f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                         case 3: {
                                 beatmapObject.origin.x = 0.5f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                     }
                 });
 
                 var originContextMenu = toggle.gameObject.GetOrAddComponent<ContextClickable>();
-
                 originContextMenu.onClick = eventData =>
                 {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    OriginContextMenu(beatmapObject);
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                        OriginContextMenu(beatmapObject);
                 };
             }
             for (int i = 1; i <= 3; i++)
@@ -1921,61 +1904,48 @@ namespace BetterLegacy.Editor.Managers
                     {
                         case 1: {
                                 beatmapObject.origin.y = -0.5f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                         case 2: {
                                 beatmapObject.origin.y = 0f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                         case 3: {
                                 beatmapObject.origin.y = 0.5f;
-
-                                // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                                 break;
                             }
                     }
                 });
 
                 var originContextMenu = toggle.gameObject.GetOrAddComponent<ContextClickable>();
-
                 originContextMenu.onClick = eventData =>
                 {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    OriginContextMenu(beatmapObject);
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                        OriginContextMenu(beatmapObject);
                 };
             }
 
             Dialog.OriginXField.SetTextWithoutNotify(beatmapObject.origin.x.ToString());
             Dialog.OriginXField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    beatmapObject.origin.x = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
 
-                    // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
-                }
+                beatmapObject.origin.x = num;
+                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
             });
 
             Dialog.OriginYField.SetTextWithoutNotify(beatmapObject.origin.y.ToString());
             Dialog.OriginYField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    beatmapObject.origin.y = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
 
-                    // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
-                }
+                beatmapObject.origin.y = num;
+                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.OriginXField);
@@ -1985,23 +1955,17 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.OriginYField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.OriginYField.inputField, multi: true), TriggerHelper.ScrollDeltaVector2(Dialog.OriginXField.inputField, Dialog.OriginYField.inputField, 0.1f, 10f));
 
             var originXContextMenu = Dialog.OriginXField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-
             originXContextMenu.onClick = eventData =>
             {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                OriginContextMenu(beatmapObject);
+                if (eventData.button == PointerEventData.InputButton.Right)
+                    OriginContextMenu(beatmapObject);
             };
 
             var originYContextMenu = Dialog.OriginYField.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-
             originYContextMenu.onClick = eventData =>
             {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                OriginContextMenu(beatmapObject);
+                if (eventData.button == PointerEventData.InputButton.Right)
+                    OriginContextMenu(beatmapObject);
             };
         }
 
@@ -2012,57 +1976,57 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.origin = Vector2.zero;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Top", () =>
                 {
                     beatmapObject.origin.y = -0.5f;
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Bottom", () =>
                 {
                     beatmapObject.origin.y = 0.5f;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Left", () =>
                 {
                     beatmapObject.origin.x = -0.5f;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Right", () =>
                 {
                     beatmapObject.origin.x = 0.5f;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new SpacerElement(),
                 new ButtonElement("Top (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_TOP_OFFSET;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Bottom (Triangle)", () =>
                 {
                     beatmapObject.origin.y = BeatmapObject.TRIANGLE_BOTTOM_OFFSET;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Left (Triangle)", () =>
                 {
                     beatmapObject.origin.x = -BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonElement("Right (Triangle)", () =>
                 {
                     beatmapObject.origin.x = BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                    UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                     RenderOrigin(beatmapObject);
                 })
                 );
@@ -2091,8 +2055,7 @@ namespace BetterLegacy.Editor.Managers
                     RenderShape(beatmapObject);
                 }
 
-                // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
+                UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING, false);
             });
         }
 
@@ -2139,8 +2102,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.events[3][i].values[6] = 10f;
                     }
 
-                    // Since shape has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
+                    UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING, false);
 
                     RenderGradient(beatmapObject);
                     Dialog.Timeline.RenderDialog(beatmapObject);
@@ -2150,14 +2112,14 @@ namespace BetterLegacy.Editor.Managers
             Dialog.GradientScale.inputField.onValueChanged.ClearAll();
             if (gradientScaleActive)
             {
-                Dialog.GradientScale.inputField.text = beatmapObject.gradientScale.ToString();
-                Dialog.GradientScale.inputField.onValueChanged.AddListener(_val =>
+                Dialog.GradientScale.Text = beatmapObject.gradientScale.ToString();
+                Dialog.GradientScale.OnValueChanged.AddListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        beatmapObject.gradientScale = num;
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
-                    }
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    beatmapObject.gradientScale = num;
+                    UpdateObject(beatmapObject, ObjectContext.RENDERING, false);
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientScale);
@@ -2168,14 +2130,14 @@ namespace BetterLegacy.Editor.Managers
             Dialog.GradientRotation.inputField.onValueChanged.ClearAll();
             if (gradientRotationActive)
             {
-                Dialog.GradientRotation.inputField.text = beatmapObject.gradientRotation.ToString();
-                Dialog.GradientRotation.inputField.onValueChanged.AddListener(_val =>
+                Dialog.GradientRotation.Text = beatmapObject.gradientRotation.ToString();
+                Dialog.GradientRotation.OnValueChanged.AddListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        beatmapObject.gradientRotation = num;
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
-                    }
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    beatmapObject.gradientRotation = num;
+                    UpdateObject(beatmapObject, ObjectContext.RENDERING, false);
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientRotation, 15f, 3f);
@@ -2249,7 +2211,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!float.TryParse(_val, out float num))
                     return;
                 beatmapObject.particleSystemData.spawnRatePerSecond = RTMath.Clamp(num, 0f, float.MaxValue);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.ParticlesSpawnRatePerSecondField.gameObject,
@@ -2262,7 +2224,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!float.TryParse(_val, out float num))
                     return;
                 beatmapObject.particleSystemData.spawnRatePerUnit = RTMath.Clamp(num, 0f, float.MaxValue);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.ParticlesSpawnRatePerUnitField.gameObject,
@@ -2273,17 +2235,14 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ParticlesWorldSpaceToggle.OnValueChanged.NewListener(_val =>
             {
                 beatmapObject.particleSystemData.worldSpace = _val;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             Dialog.ParticlesAutokillDropdown.SetValueWithoutNotify((int)beatmapObject.particleSystemData.autoKillType);
             Dialog.ParticlesAutokillDropdown.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.particleSystemData.autoKillType = (AutoKillType)_val;
-                // AutoKillType affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                //RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, true);
                 Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 RenderParticles(beatmapObject);
                 Dialog.Timeline.RenderMarkers(beatmapObject);
@@ -2298,24 +2257,24 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.ParticlesAutokillField.SetTextWithoutNotify(beatmapObject.particleSystemData.autoKillOffset.ToString());
                 Dialog.ParticlesAutokillField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    if (beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime)
                     {
-                        if (beatmapObject.particleSystemData.autoKillType == AutoKillType.SongTime)
-                        {
-                            float startTime = beatmapObject.StartTime;
-                            if (num < startTime)
-                                num = startTime + 0.1f;
-                        }
-
-                        if (num < 0f)
-                            num = 0f;
-
-                        beatmapObject.particleSystemData.autoKillOffset = num;
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
-
-                        Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
-                        Dialog.Timeline.RenderMarkers(beatmapObject);
+                        float startTime = beatmapObject.StartTime;
+                        if (num < startTime)
+                            num = startTime + 0.1f;
                     }
+
+                    if (num < 0f)
+                        num = 0f;
+
+                    beatmapObject.particleSystemData.autoKillOffset = num;
+                    UpdateObject(beatmapObject, ObjectContext.PARTICLES, true);
+
+                    Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                    Dialog.Timeline.RenderMarkers(beatmapObject);
                 });
 
                 Dialog.ParticlesAutokillSetButton.gameObject.SetActive(true);
@@ -2353,7 +2312,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ParticlesEmitterShapeTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.particleSystemData.emitterShapeType = (ParticleSystemData.EmitterShapeType)_val;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
                 RenderParticles(beatmapObject);
             });
 
@@ -2363,7 +2322,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!float.TryParse(_val, out float num))
                     return;
                 beatmapObject.particleSystemData.emitterArc = RTMath.Clamp(num, 0f, 360f);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.ParticlesEmitterArcField.gameObject,
@@ -2376,7 +2335,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!float.TryParse(_val, out float num))
                     return;
                 beatmapObject.particleSystemData.emitterRadius = RTMath.Clamp(num, 0f, 1f);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.ParticlesEmitterRadiusField.gameObject,
@@ -2389,7 +2348,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!float.TryParse(_val, out float num))
                     return;
                 beatmapObject.particleSystemData.startSpeed = Mathf.Max(0f, num);
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARTICLES);
+                UpdateObject(beatmapObject, ObjectContext.PARTICLES, false);
             });
 
             TriggerHelper.AddEventTriggers(Dialog.ParticlesStartSpeedField.gameObject,
@@ -2409,8 +2368,7 @@ namespace BetterLegacy.Editor.Managers
             slider.SetValueWithoutNotify(value);
             slider.onValueChanged.NewListener(_val => SetDepthInputField(beatmapObject, ((int)_val).ToString(), inputField, slider));
 
-            // Since depth has no affect on the timeline object, we will only need to update the physical object.
-            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+            UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
         }
 
         void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
@@ -2432,8 +2390,7 @@ namespace BetterLegacy.Editor.Managers
                     SetDepthSlider(beatmapObject, num, inputField, slider);
             });
 
-            // Since depth has no affect on the timeline object, we will only need to update the physical object.
-            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+            UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
         }
 
         /// <summary>
@@ -2497,7 +2454,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.RenderTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.renderLayerType = (RenderLayerType)_val;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
+                UpdateObject(beatmapObject, ObjectContext.RENDERING, false);
             });
 
             EditorContextMenu.AddContextMenu(Dialog.DepthField.inputField.gameObject, GetRenderDepthContextMenuElements(beatmapObject));
@@ -2509,13 +2466,13 @@ namespace BetterLegacy.Editor.Managers
             new ButtonElement("Above Player", () =>
             {
                 beatmapObject.Depth = -60;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                 RenderDepth(beatmapObject);
             }),
             new ButtonElement("Reset Value", () =>
             {
                 beatmapObject.Depth = EditorConfig.Instance.CreateObjectRenderDepthDefault.Value;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET);
+                UpdateObject(beatmapObject, ObjectContext.VISUAL_OFFSET, false);
                 RenderDepth(beatmapObject);
             }),
             new SpacerElement(),
@@ -2594,9 +2551,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BinSlider.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.editorData.Bin = Mathf.Clamp((int)_val, 0, EditorTimeline.inst.BinCount);
-
-                // Since bin has no effect on the physical object, we will only need to update the timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                UpdateObject(beatmapObject, ObjectContext.EDITOR_UPDATE, true);
             });
         }
 
@@ -2737,7 +2692,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.EditorGroupField.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.EditorData.editorGroup = _val;
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                UpdateObject(beatmapObject, ObjectContext.EDITOR_UPDATE, true);
             });
         }
 
@@ -2857,21 +2812,21 @@ namespace BetterLegacy.Editor.Managers
             }
 
             beatmapObject.objectType = objectType;
-            // ObjectType affects both physical object and timeline object.
-            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-            if (changedToParticles)
-            {
-                RTLevel.Current?.UpdateObject(beatmapObject);
-                //RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-            }
-            else
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.OBJECT_TYPE);
-
             if (Dialog.IsCurrent)
                 RenderDialog(beatmapObject);
 
+            UpdateObject(beatmapObject, changedToParticles ? string.Empty : ObjectContext.OBJECT_TYPE);
+        }
+
+        public void UpdateObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineObject = true)
+        {
+            RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
+
+            if (updateTimelineObject)
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+
             if (ProjectArrhythmia.State.IsInLobby)
-                NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.OBJECT_TYPE);
+                NetworkFunction.EditBeatmapObject(beatmapObject, updateContext, updateTimelineObject);
         }
 
         #endregion

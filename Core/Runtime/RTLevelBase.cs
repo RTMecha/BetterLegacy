@@ -419,13 +419,17 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="sort">If the objects should be recalculated depending on the context.</param>
         public virtual void UpdateObject(BeatmapObject beatmapObject, string context, bool sort = true)
         {
-            if (!beatmapObject || string.IsNullOrEmpty(context))
+            if (!beatmapObject || context == null)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             context = context.ToLower().Remove(" ").Remove("_");
             switch (context)
             {
+                case "": {
+                        UpdateObject(beatmapObject);
+                        break;
+                    }
                 case ObjectContext.RENDERING: {
                         if (!runtimeObject)
                         {

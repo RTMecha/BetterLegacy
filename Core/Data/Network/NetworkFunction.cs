@@ -7,6 +7,7 @@ using SteamworksFacepunch.Data;
 
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -200,6 +201,12 @@ namespace BetterLegacy.Core.Data.Network
         public const int CREATE_BEATMAP_OBJECT = 8458634;
 
         public const int EDIT_BEATMAP_OBJECT = 3657883;
+
+        public const int ADD_TAG = 67423626;
+
+        public const int REMOVE_TAG = 75366454;
+
+        public const int CLEAR_TAGS = 34523467;
 
         #endregion
 
@@ -413,9 +420,23 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void CreateBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, CREATE_BEATMAP_OBJECT, beatmapObject);
 
-        public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "") => NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
+        public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true) => NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
             beatmapObject,
-            new StringParameter(updateContext));
+            new StringParameter(updateContext),
+            new BoolParameter(updateTimelineContext));
+
+        public static void AddTag(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
+        
+        public static void RemoveTag(string id, ModifierReferenceType modifierReferenceType, int index) => NetworkManager.inst.RunFunction(Group.Editor, REMOVE_TAG,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType),
+            new IntParameter(index));
+
+        public static void ClearTags(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
 
         #endregion
 

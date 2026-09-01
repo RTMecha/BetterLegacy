@@ -596,10 +596,11 @@ namespace BetterLegacy.Core.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 EditorTimeline.inst.UpdateTransformIndex();
             }),
-            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 2, reader =>
+            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 3, reader =>
             {
                 var edit = Packet.CreateFromPacket<BeatmapObject>(reader);
                 var updateContext = reader.ReadString();
+                var updateTimelineObject = reader.ReadBoolean();
                 if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
                     return;
                 var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
@@ -636,13 +637,88 @@ namespace BetterLegacy.Core.Managers
                         }
                     }
                 if (updateContext != ObjectContext.EDITOR_UPDATE)
+                    RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
+                if (updateTimelineObject)
+                    beatmapObject.TimelineObject?.Render();
+            }),
+            new NetworkFunction(NetworkFunction.ADD_TAG, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                switch (type)
                 {
-                    if (string.IsNullOrEmpty(updateContext))
-                        RTLevel.Current?.UpdateObject(beatmapObject);
-                    else
-                        RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.Add("New Tag");
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.Add("New Tag");
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.Add("New Tag");
+                            break;
+                        }
                 }
-                beatmapObject.TimelineObject?.Render();
+            }),
+            new NetworkFunction(NetworkFunction.REMOVE_TAG, 3, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                var index = reader.ReadInt32();
+                switch (type)
+                {
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                }
+            }),
+            new NetworkFunction(NetworkFunction.CLEAR_TAGS, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                switch (type)
+                {
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.Clear();
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.Clear();
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.Clear();
+                            break;
+                        }
+                }
             }),
         };
 

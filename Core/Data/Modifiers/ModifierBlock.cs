@@ -21,6 +21,8 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #region Values
 
+        public string ID { get => id; set => id = value; }
+
         public string Name { get; set; }
 
         public ModifierReferenceType ReferenceType { get; set; }

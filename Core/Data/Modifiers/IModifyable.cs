@@ -11,6 +11,11 @@ namespace BetterLegacy.Core.Data.Modifiers
     public interface IModifyable
     {
         /// <summary>
+        /// Identification of the modifyable.
+        /// </summary>
+        public string ID { get; set; }
+
+        /// <summary>
         /// The reference type of the modifyable.
         /// </summary>
         public ModifierReferenceType ReferenceType { get; }

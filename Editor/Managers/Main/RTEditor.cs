@@ -4727,6 +4727,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     modifyable.Tags.RemoveAt(index);
                     RenderTags(modifyable, dialog);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.RemoveTag(modifyable.ID, modifyable.ReferenceType, index);
                 });
 
                 TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
@@ -4796,6 +4798,8 @@ namespace BetterLegacy.Editor.Managers
                             var orig = new List<string>(modifyable.Tags);
                             modifyable.Tags.Clear();
                             RenderTags(modifyable, dialog);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.ClearTags(modifyable.ID, modifyable.ReferenceType);
                             EditorManager.inst.history.Add(new History.Command("Clear Tags",
                                 () =>
                                 {
@@ -4837,6 +4841,8 @@ namespace BetterLegacy.Editor.Managers
                 var tagIndex = modifyable.Tags.Count;
                 modifyable.Tags.Add("New Tag");
                 RenderTags(modifyable, dialog);
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.AddTag(modifyable.ID, modifyable.ReferenceType);
                 EditorManager.inst.history.Add(new History.Command("Add Tag",
                     () =>
                     {
@@ -4896,6 +4902,8 @@ namespace BetterLegacy.Editor.Managers
                     var orig = new List<string>(modifyable.Tags);
                     modifyable.Tags.Clear();
                     RenderTags(modifyable, dialog);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.ClearTags(modifyable.ID, modifyable.ReferenceType);
                     EditorManager.inst.history.Add(new History.Command("Clear Tags",
                         () =>
                         {
