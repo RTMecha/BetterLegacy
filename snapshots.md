@@ -25,6 +25,7 @@
 - Fixed level and level collection variables not saving correctly.
 - Fixed some name editing not updating the timeline object mark area.
 - Fixed player objects not using the Alternate value for the polygon shape type.
+- Fixed level progress displaying on level folders.
 
 -------------------------------------------------------------------
 
