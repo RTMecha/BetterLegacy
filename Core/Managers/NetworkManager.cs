@@ -276,7 +276,7 @@ namespace BetterLegacy.Core.Managers
                 var id = reader.ReadString();
                 var pos = reader.ReadVector2();
                 var rot = reader.ReadSingle();
-                if (steamID == RTSteamManager.inst.steamUser.steamID || !PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
+                if (steamID == RTSteamManager.inst.steamUser.steamID || !PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) || player.IsLocalPlayer || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
                 player.RuntimePlayer.rb.position = pos;
@@ -557,10 +557,6 @@ namespace BetterLegacy.Core.Managers
                 if (levelPanel.isFolder)
                 {
                     levelPanel.Init(levelPanel.Path);
-
-                    if (ProjectArrhythmia.State.IsHosting)
-                        NetworkFunction.SendEditorLevel(levelPanel);
-
                     return;
                 }
 
@@ -883,6 +879,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             using var writer = new NetworkWriter();
+            writer.Write(RTSteamManager.inst.steamUser.steamID);
+            writer.Write((byte)function.side);
+            writer.Write((byte)sendType);
             writer.Write((int)function.group);
             writer.Write(function.id);
             writer.Write(length);
@@ -908,6 +907,10 @@ namespace BetterLegacy.Core.Managers
             while (!chunks.IsEmpty())
             {
                 using var writer = new NetworkWriter();
+                var sendType = SendType.Reliable | SendType.NoNagle;
+                writer.Write(RTSteamManager.inst.steamUser.steamID);
+                writer.Write((byte)side);
+                writer.Write((byte)sendType);
                 writer.Write(group);
                 writer.Write(id);
                 writer.Write(position);
@@ -920,7 +923,7 @@ namespace BetterLegacy.Core.Managers
                 writer.Write(data.Length);
                 writer.Write(data);
                 chunks.RemoveAt(0);
-                Send(side, writer.GetData(), SendType.Reliable | SendType.NoNagle, steamId);
+                Send(side, writer.GetData(), sendType, steamId);
 
                 if (size > MAX_BUFFER_SIZE)
                 {
@@ -950,10 +953,9 @@ namespace BetterLegacy.Core.Managers
                     }
                 case NetworkFunction.Side.Multi: {
                         if (ProjectArrhythmia.State.IsHosting)
-                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, data);
+                            SendToAllClients(data, sendType);
                         else
                             SendToServer(data, sendType);
-                        SendToAllClients(data, sendType);
                         break;
                     }
             }
@@ -1068,6 +1070,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
+            var sender = reader.ReadUInt64();
+            var side = (NetworkFunction.Side)reader.ReadByte();
+            var sendType = (SendType)reader.ReadByte();
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
@@ -1158,6 +1163,11 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
+            var sender = reader.ReadUInt64();
+            var side = (NetworkFunction.Side)reader.ReadByte();
+            var sendType = (SendType)reader.ReadByte();
+            if (side == NetworkFunction.Side.Multi && RTSteamManager.inst.steamUser.steamID != sender)
+                SendToAllClients(data, sendType);
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);

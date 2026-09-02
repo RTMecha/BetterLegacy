@@ -123,6 +123,15 @@ namespace BetterLegacy.Editor.Data.Elements
         public static bool ShowProgressInComplexity { get; set; }
         public static bool ShowDeleteInComplexity { get; set; }
 
+        public Type type;
+
+        public enum Type
+        {
+            Level,
+            Folder,
+            LevelInfo,
+        }
+
         #endregion
 
         #region Asset Pack
@@ -169,21 +178,27 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public void ReadPacket(NetworkReader reader)
         {
-            var type = reader.ReadByte();
+            type = (Type)reader.ReadByte();
             switch (type)
             {
-                case 0: {
+                case Type.Level: {
+                        isFolder = reader.ReadBoolean();
                         Item = Packet.CreateFromPacket<Level>(reader);
                         if (reader.ReadBoolean())
                             Item.collectionInfo = Packet.CreateFromPacket<LevelInfo>(reader);
                         Path = reader.ReadString();
+                        Item.path = Path;
+                        if (reader.ReadBoolean())
+                            EditorInfo = Packet.CreateFromPacket<EditorInfo>(reader);
                         break;
                     }
-                case 1: {
+                case Type.Folder: {
+                        isFolder = reader.ReadBoolean();
                         Path = reader.ReadString();
                         break;
                     }
-                case 2: {
+                case Type.LevelInfo: {
+                        isFolder = reader.ReadBoolean();
                         Info = Packet.CreateFromPacket<LevelInfo>(reader);
                         break;
                     }
@@ -192,24 +207,30 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public void WritePacket(NetworkWriter writer)
         {
-            var type = isFolder ? 1 : !Item ? 2 : 0;
             writer.Write((byte)type);
             switch (type)
             {
-                case 0: {
+                case Type.Level: {
+                        writer.Write(isFolder);
                         Item.WritePacket(writer);
                         var hasCollectionInfo = Item.collectionInfo != null;
                         writer.Write(hasCollectionInfo);
                         if (hasCollectionInfo)
                             Item.collectionInfo.WritePacket(writer);
                         writer.Write(Path);
+                        var hasEditorInfo = EditorInfo != null;
+                        writer.Write(hasEditorInfo);
+                        if (hasEditorInfo)
+                            EditorInfo.WritePacket(writer);
                         break;
                     }
-                case 1: {
+                case Type.Folder: {
+                        writer.Write(isFolder);
                         writer.Write(Path);
                         break;
                     }
-                case 2: {
+                case Type.LevelInfo: {
+                        writer.Write(isFolder);
                         Info.WritePacket(writer);
                         break;
                     }
@@ -218,6 +239,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public override void Init(string directory)
         {
+            type = Type.Folder;
             Path = directory;
             isFolder = true;
 
@@ -258,6 +280,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public override void Init(Level level)
         {
+            type = Type.Level;
             Item = level;
             Path = level.path;
             Info = level.collectionInfo;
@@ -314,6 +337,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public void Init(LevelInfo levelInfo)
         {
+            type = Type.LevelInfo;
             Info = levelInfo;
             Path = levelInfo.path;
 

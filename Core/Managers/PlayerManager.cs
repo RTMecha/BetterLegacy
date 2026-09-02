@@ -353,6 +353,17 @@ namespace BetterLegacy.Core.Managers
             players.Remove(player);
         }
 
+        public void RemoveOnlinePlayers()
+        {
+            players.ForLoopReverse((player, index) =>
+            {
+                if (player.IsLocalPlayer)
+                    return;
+                player?.RuntimePlayer?.Clear();
+                players.RemoveAt(index);
+            });
+        }
+
         #endregion
         
         #region Spawning
@@ -457,7 +468,7 @@ namespace BetterLegacy.Core.Managers
             runtimePlayer.index = player.index;
             if (!player.IsLocalPlayer)
                 runtimePlayer.colorSlot = player.colorSlot;
-            else if (inst && inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
+            else if (TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
                 player.ColorSlot = playerSettings.colorSlot;
             else if (player.Model)
                 player.ColorSlot = player.Model.basePart.colorSlot;

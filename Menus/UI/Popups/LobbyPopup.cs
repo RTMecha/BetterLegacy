@@ -257,6 +257,11 @@ namespace BetterLegacy.Menus.UI.Popups
                                 SteamLobbyManager.inst.LobbySettings.PlayerCount = num;
                                 SteamLobbyManager.inst.SaveLobbySettings();
                                 LobbySettingsChanged();
+                                if (ProjectArrhythmia.State.IsInLobby)
+                                {
+                                    var lobby = SteamLobbyManager.inst.CurrentLobby;
+                                    lobby.MaxMembers = num;
+                                }
                             });
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(playerCountField, min: LobbySettings.MIN_PLAYER_COUNT, max: LobbySettings.MAX_PLAYER_COUNT);

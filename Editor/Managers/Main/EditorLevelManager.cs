@@ -709,9 +709,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelPanel.SetIcon(levelInfo.icon);
                             else
                                 levelPanel.SetDefaultIcon();
-                            LevelPanels.Add(levelPanel);
-                            if (ProjectArrhythmia.State.IsHosting)
-                                NetworkFunction.SendEditorLevel(levelPanel);
+                            AddLevel(levelPanel);
                         }
                         else
                         {
@@ -723,19 +721,18 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(levelInfo.level);
 
                             LevelPanels.Add(levelPanel);
-                            if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
-                                NetworkFunction.SendEditorLevel(levelPanel);
 
                             if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
-                                list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG));
+                                list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, SubmitLevel));
                             else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
-                                list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG));
+                                list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, SubmitLevel));
                             else
                             {
                                 if (levelInfo.icon)
                                     levelPanel.SetIcon(levelInfo.icon);
                                 else
                                     levelPanel.SetDefaultIcon();
+                                SubmitLevel(levelPanel);
                             }
                         }
                     }
@@ -764,10 +761,7 @@ namespace BetterLegacy.Editor.Managers
                             levelPanel.Init(path);
                             LevelPanels.Add(levelPanel);
 
-                            if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
-                                NetworkFunction.SendEditorLevel(levelPanel);
-
-                            list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
+                            list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}", SubmitLevel));
 
                             continue;
                         }
@@ -775,17 +769,14 @@ namespace BetterLegacy.Editor.Managers
                         levelPanel.Init(level);
 
                         if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, AddLevel));
                         else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
-                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, AddLevel));
                         else
                         {
                             levelPanel.SetDefaultIcon();
-                            LevelPanels.Add(levelPanel);
+                            AddLevel(levelPanel);
                         }
-
-                        if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
-                            NetworkFunction.SendEditorLevel(levelPanel);
                     }
                     catch (Exception ex)
                     {
@@ -803,7 +794,19 @@ namespace BetterLegacy.Editor.Managers
 
             yield break;
         }
+
+        void AddLevel(LevelPanel levelPanel)
+        {
+            LevelPanels.Add(levelPanel);
+            SubmitLevel(levelPanel);
+        }
         
+        void SubmitLevel(LevelPanel levelPanel)
+        {
+            if (ProjectArrhythmia.State.IsHosting && SteamLobbyManager.inst && SteamLobbyManager.inst.LobbySettings && SteamLobbyManager.inst.LobbySettings.CanViewEditorLevels)
+                NetworkFunction.SendEditorLevel(levelPanel);
+        }
+
         /// <summary>
         /// Refreshes the search and sort of the editor levels.
         /// </summary>
@@ -814,7 +817,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public IEnumerator IRenderLevels()
         {
-            CoreHelper.Log($"Level Search: {EditorManager.inst.openFileSearch}\nLevel Sort: { RTEditor.inst.levelAscend} - { RTEditor.inst.levelSort}");
+            var sort = ProjectArrhythmia.State.IsClient ? LobbyInfo.EditorLevelSort : RTEditor.inst.levelSort;
+            var ascend = ProjectArrhythmia.State.IsClient ? LobbyInfo.EditorLevelAscend : RTEditor.inst.levelAscend;
+            CoreHelper.Log($"Level Search: {EditorManager.inst.openFileSearch}\nLevel Sort: {ascend} - {sort}");
 
             OpenLevelPopup.SearchField.interactable = !ProjectArrhythmia.State.IsClient;
 
@@ -828,17 +833,17 @@ namespace BetterLegacy.Editor.Managers
                 var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
                 if (!currentLevelCollection)
                 {
-                    levelPanels = RTEditor.inst.levelSort switch
+                    levelPanels = sort switch
                     {
-                        LevelSort.Cover => LevelPanels.Order(x => x.Item && !x.Item.HasNoIcon, !RTEditor.inst.levelAscend),
-                        LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                        LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                        LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
-                        LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
-                        LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
-                        LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
-                        LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
-                        LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
+                        LevelSort.Cover => LevelPanels.Order(x => x.Item && !x.Item.HasNoIcon, !ascend),
+                        LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !ascend),
+                        LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !ascend),
+                        LevelSort.File => LevelPanels.Order(x => x.Path, !ascend),
+                        LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !ascend),
+                        LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !ascend),
+                        LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !ascend),
+                        LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !ascend),
+                        LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !ascend),
                         _ => LevelPanels,
                     };
 
@@ -846,7 +851,7 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                 {
-                    levelPanels = levelPanels.Order(x => x.GetLevelInfo()?.index ?? 0, !RTEditor.inst.levelAscend);
+                    levelPanels = levelPanels.Order(x => x.GetLevelInfo()?.index ?? 0, !ascend);
                     levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
                 }
             }

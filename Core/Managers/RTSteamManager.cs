@@ -273,6 +273,7 @@ namespace BetterLegacy.Core.Managers
             {
 
             }
+            PlayerManager.inst.RemoveOnlinePlayers();
         }
 
         public void StartServer()
@@ -298,6 +299,7 @@ namespace BetterLegacy.Core.Managers
             {
 
             }
+            PlayerManager.inst.RemoveOnlinePlayers();
         }
 
         #endregion
