@@ -10,6 +10,7 @@
 
 ### Editor
 - Added Unity Explorer support for Background Objects.
+- Beatmap Objects can now be created and edited by clients in a lobby. This marks the true beginning of editor multiplayer support.
 
 ## Changes
 ### Core
@@ -26,6 +27,7 @@
 - Fixed some name editing not updating the timeline object mark area.
 - Fixed player objects not using the Alternate value for the polygon shape type.
 - Fixed level progress displaying on level folders.
+- Fixed some multiplayer syncing issues (clients not communicating with each other, level icons not loading the icon properly, etc)
 
 -------------------------------------------------------------------
 
