@@ -8,6 +8,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Timeline;
@@ -18,7 +19,7 @@ namespace BetterLegacy.Editor.Data
     /// <summary>
     /// Helper struct for expanding prefabs.
     /// </summary>
-    public struct PrefabExpander
+    public struct PrefabExpander : IPacket
     {
         #region Constructors
 
@@ -157,6 +158,31 @@ namespace BetterLegacy.Editor.Data
         }
 
         #endregion
+
+        public void ReadPacket(NetworkReader reader)
+        {
+            if (reader.ReadBoolean())
+                prefabObject = Packet.CreateFromPacket<PrefabObject>(reader);
+            prefab = Packet.CreateFromPacket<Prefab>(reader);
+            select = reader.ReadBoolean();
+            offset = reader.ReadSingle();
+            offsetToCurrentTime = reader.ReadBoolean();
+            regen = reader.ReadBoolean();
+            retainID = reader.ReadBoolean();
+            addBin = reader.ReadBoolean();
+        }
+
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(prefabObject != null);
+            prefabObject?.WritePacket(writer);
+            writer.Write(select);
+            writer.Write(offset);
+            writer.Write(offsetToCurrentTime);
+            writer.Write(regen);
+            writer.Write(retainID);
+            writer.Write(addBin);
+        }
 
         /// <summary>
         /// Expands the current <see cref="prefab"/>.
@@ -472,8 +498,28 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Result of the <see cref="PrefabExpander"/>.
         /// </summary>
-        public class Expanded : Exists, IBeatmap
+        public class Expanded : Exists, IBeatmap, IPacket
         {
+            public void ReadPacket(NetworkReader reader)
+            {
+                BeatmapObjects = Packet.CreatePacketList<BeatmapObject>(reader);
+                PrefabObjects = Packet.CreatePacketList<PrefabObject>(reader);
+                Prefabs = Packet.CreatePacketList<Prefab>(reader);
+                BackgroundObjects = Packet.CreatePacketList<BackgroundObject>(reader);
+                BackgroundLayers = Packet.CreatePacketList<BackgroundLayer>(reader);
+                BeatmapThemes = Packet.CreatePacketList<BeatmapTheme>(reader);
+            }
+
+            public void WritePacket(NetworkWriter writer)
+            {
+                Packet.WritePacketList(BeatmapObjects, writer);
+                Packet.WritePacketList(PrefabObjects, writer);
+                Packet.WritePacketList(Prefabs, writer);
+                Packet.WritePacketList(BackgroundObjects, writer);
+                Packet.WritePacketList(BackgroundLayers, writer);
+                Packet.WritePacketList(BeatmapThemes, writer);
+            }
+
             public Assets GetAssets() => null;
 
             public List<BeatmapObject> BeatmapObjects { get; set; }
