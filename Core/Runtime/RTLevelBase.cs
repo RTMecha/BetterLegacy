@@ -149,6 +149,8 @@ namespace BetterLegacy.Core.Runtime
 
             PostTick();
             ScheduleTick();
+            if (sort)
+                ActualSort();
         }
 
         /// <summary>
@@ -1749,11 +1751,19 @@ namespace BetterLegacy.Core.Runtime
 
         #region Misc
 
+        public bool sort;
+
         /// <summary>
         /// Sorts all the spawnable objects by start and kill time.
         /// </summary>
-        public virtual void Sort()
+        public void Sort() => sort = true;
+
+        /// <summary>
+        /// Sorts all the spawnable objects by start and kill time.
+        /// </summary>
+        internal virtual void ActualSort()
         {
+            sort = false;
             objectEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
@@ -1791,6 +1801,9 @@ namespace BetterLegacy.Core.Runtime
                 backgroundObject.customShape = -1;
                 backgroundObject.customShapeOption = -1;
             }
+
+            foreach (var prefabObject in GameData.Current.prefabObjects)
+                prefabObject.ResetOffsets();
         }
 
         #endregion

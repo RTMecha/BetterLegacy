@@ -450,6 +450,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             PostTick();
             ScheduleTick();
+            if (sort)
+                ActualSort();
         }
 
         public override void Clear()

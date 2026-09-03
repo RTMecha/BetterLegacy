@@ -411,6 +411,9 @@ namespace BetterLegacy.Core.Runtime
 
             PostTick();
             ScheduleTick();
+            if (sort)
+                ActualSort();
+
             ProjectArrhythmia.Input.ClearLobbyInput();
             TickCount++;
         }
