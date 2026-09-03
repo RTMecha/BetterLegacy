@@ -2109,7 +2109,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            Dialog.GradientScale.inputField.onValueChanged.ClearAll();
+            Dialog.GradientScale.OnValueChanged.ClearAll();
             if (gradientScaleActive)
             {
                 Dialog.GradientScale.Text = beatmapObject.gradientScale.ToString();
@@ -2127,7 +2127,7 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(Dialog.GradientScale);
             }
 
-            Dialog.GradientRotation.inputField.onValueChanged.ClearAll();
+            Dialog.GradientRotation.OnValueChanged.ClearAll();
             if (gradientRotationActive)
             {
                 Dialog.GradientRotation.Text = beatmapObject.gradientRotation.ToString();
@@ -2571,10 +2571,10 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var currentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
-            Dialog.EditorIndexField.inputField.onEndEdit.ClearAll();
-            Dialog.EditorIndexField.inputField.onValueChanged.ClearAll();
-            Dialog.EditorIndexField.inputField.SetTextWithoutNotify(currentIndex.ToString());
-            Dialog.EditorIndexField.inputField.onEndEdit.NewListener(_val =>
+            Dialog.EditorIndexField.OnEndEdit.ClearAll();
+            Dialog.EditorIndexField.OnValueChanged.ClearAll();
+            Dialog.EditorIndexField.SetTextWithoutNotify(currentIndex.ToString());
+            Dialog.EditorIndexField.OnEndEdit.NewListener(_val =>
             {
                 if (currentIndex < 0)
                 {
@@ -2582,16 +2582,16 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (int.TryParse(_val, out int index))
-                {
-                    index = Mathf.Clamp(index, 0, GameData.Current.beatmapObjects.Count - 1);
-                    if (currentIndex == index)
-                        return;
+                if (!int.TryParse(_val, out int index))
+                    return;
 
-                    GameData.Current.beatmapObjects.Move(currentIndex, index);
-                    EditorTimeline.inst.UpdateTransformIndex();
-                    RenderIndex(beatmapObject);
-                }
+                index = Mathf.Clamp(index, 0, GameData.Current.beatmapObjects.Count - 1);
+                if (currentIndex == index)
+                    return;
+
+                GameData.Current.beatmapObjects.Move(currentIndex, index);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderIndex(beatmapObject);
             });
 
             Dialog.EditorIndexField.leftGreaterButton.onClick.NewListener(() =>

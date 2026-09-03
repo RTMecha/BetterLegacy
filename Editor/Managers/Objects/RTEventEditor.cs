@@ -727,7 +727,7 @@ namespace BetterLegacy.Editor.Managers
             var time = timeStorage.inputField;
             timeStorage.leftGreaterButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(time.text, out float num))
+                if (!float.TryParse(timeStorage.Text, out float num))
                     return;
 
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -743,7 +743,7 @@ namespace BetterLegacy.Editor.Managers
             });
             timeStorage.leftButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(time.text, out float num))
+                if (!float.TryParse(timeStorage.Text, out float num))
                     return;
 
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -759,7 +759,7 @@ namespace BetterLegacy.Editor.Managers
             });
             timeStorage.middleButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(time.text, out float num))
+                if (!float.TryParse(timeStorage.Text, out float num))
                     return;
 
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -772,7 +772,7 @@ namespace BetterLegacy.Editor.Managers
             });
             timeStorage.rightButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(time.text, out float num))
+                if (!float.TryParse(timeStorage.Text, out float num))
                     return;
 
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -788,7 +788,7 @@ namespace BetterLegacy.Editor.Managers
             });
             timeStorage.rightGreaterButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(time.text, out float num))
+                if (!float.TryParse(timeStorage.Text, out float num))
                     return;
 
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
@@ -819,74 +819,74 @@ namespace BetterLegacy.Editor.Managers
             valueIndexStorage.OnValueChanged.NewListener(_val =>
             {
                 if (!int.TryParse(_val, out int n))
-                    valueIndexStorage.inputField.text = "0";
+                    valueIndexStorage.Text = "0";
             });
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(valueIndexStorage.inputField, t: valueIndexStorage.transform);
+            TriggerHelper.IncreaseDecreaseButtonsInt(valueIndexStorage);
             TriggerHelper.AddEventTriggers(valueIndexStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(valueIndexStorage.inputField));
 
             var valueStorage = dialog.Find("value").GetComponent<InputFieldStorage>();
             valueStorage.leftGreaterButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(valueStorage.inputField.text, out float num))
+                if (!float.TryParse(valueStorage.Text, out float num))
                     return;
+
+                var index = Parser.TryParse(valueIndexStorage.Text, 0);
 
                 foreach (var kf in SelectedKeyframes)
                 {
-                    var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
-
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] -= num * 10f;
                 }
             });
             valueStorage.leftButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(valueStorage.inputField.text, out float num))
+                if (!float.TryParse(valueStorage.Text, out float num))
                     return;
+
+                var index = Parser.TryParse(valueIndexStorage.Text, 0);
 
                 foreach (var kf in SelectedKeyframes)
                 {
-                    var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
-
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] -= num;
                 }
             });
             valueStorage.middleButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(valueStorage.inputField.text, out float num))
+                if (!float.TryParse(valueStorage.Text, out float num))
                     return;
+
+                var index = Parser.TryParse(valueIndexStorage.Text, 0);
 
                 foreach (var kf in SelectedKeyframes)
                 {
-                    var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
-
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] = num;
                 }
             });
             valueStorage.rightButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(valueStorage.inputField.text, out float num))
+                if (!float.TryParse(valueStorage.Text, out float num))
                     return;
+
+                var index = Parser.TryParse(valueIndexStorage.Text, 0);
 
                 foreach (var kf in SelectedKeyframes)
                 {
-                    var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
-
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] += num;
                 }
             });
             valueStorage.rightGreaterButton.onClick.NewListener(() =>
             {
-                if (!float.TryParse(valueStorage.inputField.text, out float num))
+                if (!float.TryParse(valueStorage.Text, out float num))
                     return;
+
+                var index = Parser.TryParse(valueIndexStorage.Text, 0);
 
                 foreach (var kf in SelectedKeyframes)
                 {
-                    var index = Parser.TryParse(valueIndexStorage.inputField.text, 0);
-
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] += num * 10f;
                 }

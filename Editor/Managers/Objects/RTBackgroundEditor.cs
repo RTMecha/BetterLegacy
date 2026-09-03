@@ -474,73 +474,49 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
             });
 
-            startTimeField.inputField.SetTextWithoutNotify(backgroundObject.StartTime.ToString());
-            startTimeField.inputField.onValueChanged.NewListener(_val =>
+            startTimeField.Render(backgroundObject.StartTime, _val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    if (EditorConfig.Instance.ClampedTimelineDrag.Value)
-                        num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    backgroundObject.StartTime = num;
+                if (!float.TryParse(_val, out float num))
+                    return;
 
-                    // StartTime affects both physical object and timeline object.
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-                }
-            });
+                if (EditorConfig.Instance.ClampedTimelineDrag.Value)
+                    num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                backgroundObject.StartTime = num;
 
-            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                // StartTime affects both physical object and timeline object.
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+            }, setupButtons: false, max: EditorConfig.Instance.ClampedTimelineDrag.Value ? AudioManager.inst.CurrentAudioSource.clip.length : 0f);
 
             startTimeField.leftGreaterButton.interactable = (backgroundObject.StartTime > 0f);
-            startTimeField.leftGreaterButton.onClick.NewListener(() =>
-            {
-                float moveTime = backgroundObject.StartTime - 1f;
-                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
-
-                // StartTime affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
             startTimeField.leftButton.interactable = (backgroundObject.StartTime > 0f);
-            startTimeField.leftButton.onClick.NewListener(() =>
-            {
-                float moveTime = backgroundObject.StartTime - 0.1f;
-                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
 
-                // StartTime affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
-            startTimeField.middleButton.onClick.NewListener(() =>
-            {
-                startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
-
-                // StartTime affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
-            startTimeField.rightButton.onClick.NewListener(() =>
-            {
-                float moveTime = backgroundObject.StartTime + 0.1f;
-                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
-
-                // StartTime affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
-            startTimeField.rightGreaterButton.onClick.NewListener(() =>
-            {
-                float moveTime = backgroundObject.StartTime + 1f;
-                moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                startTimeField.inputField.text = moveTime.ToString();
-
-                // StartTime affects both physical object and timeline object.
-                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
+            startTimeField.SetupButtons(
+                leftGreater: () =>
+                {
+                    float moveTime = backgroundObject.StartTime - 1f;
+                    moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    startTimeField.Text = moveTime.ToString();
+                },
+                left: () =>
+                {
+                    float moveTime = backgroundObject.StartTime - 0.1f;
+                    moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    startTimeField.Text = moveTime.ToString();
+                },
+                middle: () => startTimeField.Text = EditorManager.inst.CurrentAudioPos.ToString(),
+                right: () =>
+                {
+                    float moveTime = backgroundObject.StartTime + 0.1f;
+                    moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    startTimeField.Text = moveTime.ToString();
+                },
+                rightGreater: () =>
+                {
+                    float moveTime = backgroundObject.StartTime + 1f;
+                    moveTime = Mathf.Clamp(moveTime, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    startTimeField.Text = moveTime.ToString();
+                });
         }
 
         public void RenderAutokill(BackgroundObject backgroundObject)
@@ -562,24 +538,24 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.AutokillField.SetTextWithoutNotify(backgroundObject.autoKillOffset.ToString());
                 Dialog.AutokillField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    if (backgroundObject.autoKillType == AutoKillType.SongTime)
                     {
-                        if (backgroundObject.autoKillType == AutoKillType.SongTime)
-                        {
-                            float startTime = backgroundObject.StartTime;
-                            if (num < startTime)
-                                num = startTime + 0.1f;
-                        }
-
-                        if (num < 0f)
-                            num = 0f;
-
-                        backgroundObject.autoKillOffset = num;
-
-                        // AutoKillType affects both physical object and timeline object.
-                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
-                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                        float startTime = backgroundObject.StartTime;
+                        if (num < startTime)
+                            num = startTime + 0.1f;
                     }
+
+                    if (num < 0f)
+                        num = 0f;
+
+                    backgroundObject.autoKillOffset = num;
+
+                    // AutoKillType affects both physical object and timeline object.
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 });
 
                 Dialog.AutokillSetButton.gameObject.SetActive(true);
@@ -886,8 +862,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var currentIndex = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
-            Dialog.EditorIndexField.inputField.SetTextWithoutNotify(currentIndex.ToString());
-            Dialog.EditorIndexField.inputField.onEndEdit.NewListener(_val =>
+            Dialog.EditorIndexField.SetTextWithoutNotify(currentIndex.ToString());
+            Dialog.EditorIndexField.OnEndEdit.NewListener(_val =>
             {
                 if (currentIndex < 0)
                 {
@@ -895,16 +871,16 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (int.TryParse(_val, out int index))
-                {
-                    index = Mathf.Clamp(index, 0, GameData.Current.backgroundObjects.Count - 1);
-                    if (currentIndex == index)
-                        return;
+                if (!int.TryParse(_val, out int index))
+                    return;
 
-                    GameData.Current.backgroundObjects.Move(currentIndex, index);
-                    RenderIndex(backgroundObject);
-                    EditorTimeline.inst.UpdateTransformIndex();
-                }
+                index = Mathf.Clamp(index, 0, GameData.Current.backgroundObjects.Count - 1);
+                if (currentIndex == index)
+                    return;
+
+                GameData.Current.backgroundObjects.Move(currentIndex, index);
+                RenderIndex(backgroundObject);
+                EditorTimeline.inst.UpdateTransformIndex();
             });
 
             Dialog.EditorIndexField.leftGreaterButton.onClick.NewListener(() =>
@@ -964,7 +940,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pointerEventData = (PointerEventData)eventData;
 
-                if (!int.TryParse(Dialog.EditorIndexField.inputField.text, out int index))
+                if (!int.TryParse(Dialog.EditorIndexField.Text, out int index))
                     return;
 
                 if (pointerEventData.scrollDelta.y < 0f)
@@ -1246,8 +1222,8 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(Dialog.ReactiveColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.reactiveCol, index, Dialog.ReactiveColorsParent, SetReactiveColor));
 
-            Dialog.ReactiveColorSampleField.inputField.SetTextWithoutNotify(backgroundObject.reactiveColSample.ToString());
-            Dialog.ReactiveColorSampleField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.ReactiveColorSampleField.SetTextWithoutNotify(backgroundObject.reactiveColSample.ToString());
+            Dialog.ReactiveColorSampleField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                     backgroundObject.reactiveColSample = num;
@@ -1255,8 +1231,8 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveColorSampleField, max: 255);
 
-            Dialog.ReactiveColorIntensityField.inputField.SetTextWithoutNotify(backgroundObject.reactiveColIntensity.ToString());
-            Dialog.ReactiveColorIntensityField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.ReactiveColorIntensityField.SetTextWithoutNotify(backgroundObject.reactiveColIntensity.ToString());
+            Dialog.ReactiveColorIntensityField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     backgroundObject.reactiveColIntensity = num;

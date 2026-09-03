@@ -375,8 +375,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CurvesLabel.gameObject.SetActive(isNotFirst);
             CurvesDropdown.gameObject.SetActive(isNotFirst);
 
-            EventTimeField.inputField.onValueChanged.ClearAll();
-            EventTimeField.inputField.text = currentKeyframe.time.ToString("f3");
+            EventTimeField.OnValueChanged.ClearAll();
+            EventTimeField.Text = currentKeyframe.time.ToString("f3");
 
             TriggerHelper.SetInteractable(isNotFirst,
                 EventTimeField.inputField,
@@ -408,7 +408,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 });
                 TriggerHelper.AddEventTriggers(CurvesDropdown.gameObject, TriggerHelper.ScrollDelta(CurvesDropdown));
 
-                EventTimeField.inputField.onValueChanged.AddListener(_val =>
+                EventTimeField.OnValueChanged.AddListener(_val =>
                 {
                     if (!float.TryParse(_val, out float num))
                         return;
@@ -875,39 +875,39 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(inputFieldStorage.Text, out float result))
-                    {
-                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(inputFieldStorage.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            inputFieldStorage.Text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        inputFieldStorage.Text = result.ToString();
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(inputFieldStorage.Text, out float result))
-                    {
-                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(inputFieldStorage.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            inputFieldStorage.Text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        inputFieldStorage.Text = result.ToString();
                 });
             }
 
@@ -945,39 +945,39 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(inputFieldStorage.Text, out float result))
-                    {
-                        result -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(inputFieldStorage.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            inputFieldStorage.Text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        inputFieldStorage.Text = result.ToString();
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(inputFieldStorage.Text, out float result))
-                    {
-                        result += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(inputFieldStorage.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            inputFieldStorage.Text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        inputFieldStorage.Text = result.ToString();
                 });
             }
 
@@ -993,9 +993,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public void SetVector2InputField(Vector2InputFieldStorage vector2Field, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
         {
             var currentKeyframe = RTEventEditor.inst.CurrentSelectedKeyframe;
-
-            var posX = vector2Field.x.inputField;
-            var posY = vector2Field.y.inputField;
 
             vector2Field.x.SetTextWithoutNotify(currentKeyframe.values[xindex].ToString());
             vector2Field.x.OnValueChanged.NewListener(_val =>
@@ -1018,7 +1015,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 };
 
                 if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[xindex], variables, out float calc))
-                    posX.text = calc.ToString();
+                    vector2Field.x.Text = calc.ToString();
             });
 
             vector2Field.y.SetTextWithoutNotify(currentKeyframe.values[yindex].ToString());
@@ -1042,7 +1039,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 };
 
                 if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[yindex], variables, out float calc))
-                    posY.text = calc.ToString();
+                    vector2Field.y.Text = calc.ToString();
             });
 
             if (vector2Field.x.leftButton && vector2Field.x.rightButton)
@@ -1050,39 +1047,39 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 float num = 1f;
                 vector2Field.x.leftButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(posX.text, out float result))
-                    {
-                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(vector2Field.x.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            posX.text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        vector2Field.x.Text = result.ToString();
                 });
                 vector2Field.x.rightButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(posX.text, out float result))
-                    {
-                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(vector2Field.x.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            posX.text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[xindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        vector2Field.x.Text = result.ToString();
                 });
             }
 
@@ -1091,60 +1088,60 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 float num = 1f;
                 vector2Field.y.leftButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(posY.text, out float result))
-                    {
-                        result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(vector2Field.y.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            posY.text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        vector2Field.y.Text = result.ToString();
                 });
                 vector2Field.y.rightButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(posY.text, out float result))
-                    {
-                        result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    if (!float.TryParse(vector2Field.y.Text, out float result))
+                        return;
 
-                        if (min != 0f || max != 0f)
-                            result = Mathf.Clamp(result, min, max);
+                    result += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
 
-                        var list = GetSelectedKeyframes();
+                    if (min != 0f || max != 0f)
+                        result = Mathf.Clamp(result, min, max);
 
-                        if (list.Count() > 1)
-                            foreach (var kf in list)
-                                kf.eventKeyframe.values[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                        else
-                            posY.text = result.ToString();
-                    }
+                    var list = GetSelectedKeyframes();
+
+                    if (list.Count() > 1)
+                        foreach (var kf in list)
+                            kf.eventKeyframe.values[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
+                    else
+                        vector2Field.y.Text = result.ToString();
                 });
             }
 
             var clampList = new List<float> { min, max };
-            TriggerHelper.AddEventTriggers(posX.gameObject,
-                TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true),
-                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
-            TriggerHelper.AddEventTriggers(posY.gameObject,
-                TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true),
-                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(vector2Field.x.inputField.gameObject,
+                TriggerHelper.ScrollDelta(vector2Field.x.inputField, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(vector2Field.x.inputField, vector2Field.y.inputField, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(vector2Field.y.inputField.gameObject,
+                TriggerHelper.ScrollDelta(vector2Field.y.inputField, 0.1f, 10f, min, max, true),
+                TriggerHelper.ScrollDeltaVector2(vector2Field.x.inputField, vector2Field.y.inputField, 0.1f, 10f, clampList));
 
             if (allowNegative)
             {
-                TriggerHelper.InversableField(posX);
-                TriggerHelper.InversableField(posY);
+                TriggerHelper.InversableField(vector2Field.x.inputField);
+                TriggerHelper.InversableField(vector2Field.y.inputField);
             }
 
-            EditorContextMenu.AddContextMenu(posX.gameObject,
-                new ButtonElement("Reset Value", () => posX.text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
-            EditorContextMenu.AddContextMenu(posY.gameObject,
-                new ButtonElement("Reset Value", () => posY.text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
+            EditorContextMenu.AddContextMenu(vector2Field.x.inputField.gameObject,
+                new ButtonElement("Reset Value", () => vector2Field.x.Text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[xindex].ToString()));
+            EditorContextMenu.AddContextMenu(vector2Field.y.inputField.gameObject,
+                new ButtonElement("Reset Value", () => vector2Field.y.Text = EventLibrary.cachedDefaultKeyframes[EventEditor.inst.currentEventType].values[yindex].ToString()));
         }
 
         public override string ToString() => GameObject?.name;

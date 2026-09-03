@@ -36,6 +36,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public List<List<Toggle>> ShapeOptionToggles { get; set; }
 
         /// <summary>
+        /// Represents the polygon shape settings.
+        /// </summary>
+        public PolygonShapeEditor PolygonShapeEditor { get; set; }
+
+        /// <summary>
         /// List of shapes the editor does not support yet.
         /// </summary>
         public List<int> UnsupportedShapes { get; set; }

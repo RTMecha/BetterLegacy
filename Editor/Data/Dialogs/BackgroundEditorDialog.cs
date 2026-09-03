@@ -88,6 +88,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public List<Toggle> ShapeToggles { get; set; } = new List<Toggle>();
         public List<List<Toggle>> ShapeOptionToggles { get; set; } = new List<List<Toggle>>();
 
+        public PolygonShapeEditor PolygonShapeEditor { get; set; } = new PolygonShapeEditor();
+
         public List<int> UnsupportedShapes { get; set; } = new List<int>
         {
             (int)ShapeType.Text,
@@ -435,6 +437,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ShapeOptionToggles.Add(list);
                 shapeType++;
             }
+
+            PolygonShapeEditor.Apply(ShapeOptionsParent.Find("10"));
 
             // Depth
             {

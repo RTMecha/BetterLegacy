@@ -235,13 +235,13 @@ namespace BetterLegacy.Core.Helpers
         {
             inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
+                if (float.TryParse(inputFieldStorage.Text, out float result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
             inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
+                if (float.TryParse(inputFieldStorage.Text, out float result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result + amount, min, max).ToString();
             });
 
             if (inputFieldStorage.leftGreaterButton == null || inputFieldStorage.rightGreaterButton == null)
@@ -249,27 +249,27 @@ namespace BetterLegacy.Core.Helpers
 
             inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
+                if (float.TryParse(inputFieldStorage.Text, out float result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
             inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
+                if (float.TryParse(inputFieldStorage.Text, out float result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
             });
         }
         
-        public static void IncreaseDecreaseButtonsInt(InputFieldStorage inputFieldStorage, int amount = 1, int multiply = 10, float min = 0f, float max = 0f)
+        public static void IncreaseDecreaseButtonsInt(InputFieldStorage inputFieldStorage, int amount = 1, int multiply = 10, int min = 0, int max = 0)
         {
             inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(inputFieldStorage.inputField.text, out int result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
+                if (int.TryParse(inputFieldStorage.Text, out int result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
             inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(inputFieldStorage.inputField.text, out int result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
+                if (int.TryParse(inputFieldStorage.Text, out int result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result + amount, min, max).ToString();
             });
 
             if (inputFieldStorage.leftGreaterButton == null || inputFieldStorage.rightGreaterButton == null)
@@ -277,13 +277,13 @@ namespace BetterLegacy.Core.Helpers
 
             inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(inputFieldStorage.inputField.text, out int result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
+                if (int.TryParse(inputFieldStorage.Text, out int result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
             inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(inputFieldStorage.inputField.text, out int result))
-                    inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
+                if (int.TryParse(inputFieldStorage.Text, out int result))
+                    inputFieldStorage.Text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
             });
         }
 

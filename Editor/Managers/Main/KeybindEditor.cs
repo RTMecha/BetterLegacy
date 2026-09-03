@@ -261,9 +261,9 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(SetLastKeyframeInType), SetLastKeyframeInType),
                     new KeybindFunction(nameof(SetNextKeyframeInType), SetNextKeyframeInType),
                     new KeybindFunction(nameof(SetPreviousKeyframeInType), SetPreviousKeyframeInType),
-                    new KeybindFunction(nameof(IncreaseKeyframeValue), IncreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
-                    new KeybindFunction(nameof(DecreaseKeyframeValue), DecreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
-                    new KeybindFunction(nameof(SetKeyframeValue), SetKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Int)),
+                    new KeybindFunction(nameof(IncreaseKeyframeValue), IncreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Float)),
+                    new KeybindFunction(nameof(DecreaseKeyframeValue), DecreaseKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Float)),
+                    new KeybindFunction(nameof(SetKeyframeValue), SetKeyframeValue, new Keybind.Setting("Type", "0", ValueType.Int), new Keybind.Setting("Index", "0", ValueType.Int), new Keybind.Setting("Value Index", "0", ValueType.Int), new Keybind.Setting("Amount", "0", ValueType.Float)),
 
                     #endregion
 
@@ -271,8 +271,8 @@ namespace BetterLegacy.Editor.Managers
                     
                     new KeybindFunction(nameof(ToggleZenMode), ToggleZenMode),
                     new KeybindFunction(nameof(CycleGameMode), CycleGameMode),
-                    new KeybindFunction(nameof(AddPitch), AddPitch, new Keybind.Setting("Pitch", "0.1", ValueType.Int)),
-                    new KeybindFunction(nameof(SetPitch), SetPitch, new Keybind.Setting("Pitch", "1", ValueType.Int)),
+                    new KeybindFunction(nameof(AddPitch), AddPitch, new Keybind.Setting("Pitch", "0.1", ValueType.Float)),
+                    new KeybindFunction(nameof(SetPitch), SetPitch, new Keybind.Setting("Pitch", "1", ValueType.Float)),
                     new KeybindFunction(nameof(UpdateSeed), UpdateSeed),
 
                     #endregion
@@ -689,12 +689,17 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearSettings();
 
+            var defaultKeybind = keybindFunctions.Find(x => x.name == keybind.Name);
+
             num = 0;
             foreach (var setting in keybind.settings)
             {
                 int index = num;
-
                 var key = setting.key;
+
+                if (defaultKeybind && defaultKeybind.settings.TryFind(x => x.key == key, out Keybind.Setting defaultSetting))
+                    setting.valueType = defaultSetting.valueType;
+
                 switch (setting.valueType)
                 {
                     case ValueType.Bool: {
@@ -777,32 +782,13 @@ namespace BetterLegacy.Editor.Managers
                             TooltipHelper.AddHoverTooltip(gameObject, setting.key, string.Empty);
 
                             inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                            inputFieldStorage.inputField.SetTextWithoutNotify(Parser.TryParse(setting.value, 0f).ToString());
-                            inputFieldStorage.inputField.onValueChanged.NewListener(_val =>
+                            inputFieldStorage.SetTextWithoutNotify(Parser.TryParse(setting.value, 0).ToString());
+                            inputFieldStorage.OnValueChanged.NewListener(_val =>
                             {
-                                switch (keybind.Name)
-                                {
-                                    case nameof(SetPitch):
-                                    case nameof(AddPitch):
-                                    case nameof(IncreaseKeyframeValue):
-                                    case nameof(DecreaseKeyframeValue):
-                                    case nameof(SetKeyframeValue): {
-                                            if (float.TryParse(_val, out float result))
-                                                setting.value = result.ToString();
-                                            break;
-                                        }
-                                    case nameof(SetLayer):
-                                    case nameof(AddLayer):
-                                    case nameof(SetTimelineBin):
-                                    case nameof(AddObjectLayer):
-                                    case nameof(SetObjectLayer): {
-                                            if (int.TryParse(_val, out int result))
-                                                setting.value = result.ToString();
-                                            break;
-                                        }
-                                }
+                                if (int.TryParse(_val, out int result))
+                                    setting.value = result.ToString();
                             });
-                            inputFieldStorage.inputField.onEndEdit.NewListener(_val => Save());
+                            inputFieldStorage.OnEndEdit.NewListener(_val => Save());
 
                             Destroy(inputFieldStorage.rightGreaterButton.gameObject);
                             Destroy(inputFieldStorage.middleButton.gameObject);
@@ -810,6 +796,39 @@ namespace BetterLegacy.Editor.Managers
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
                             TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                            EditorThemeManager.ApplyInputField(inputFieldStorage);
+
+                            break;
+                        }
+                    case ValueType.Float: {
+                            var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Dialog.SettingsContent, "input");
+                            var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
+
+                            var labels = EditorPrefabHolder.Instance.Labels.Duplicate(gameObject.transform, "label", 0);
+                            var labelText = labels.transform.GetChild(0).GetComponent<Text>();
+                            labelText.text = setting.key;
+                            labels.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
+
+                            gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.03f);
+
+                            TooltipHelper.AddHoverTooltip(gameObject, setting.key, string.Empty);
+
+                            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                            inputFieldStorage.SetTextWithoutNotify(Parser.TryParse(setting.value, 0f).ToString());
+                            inputFieldStorage.OnValueChanged.NewListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float result))
+                                    setting.value = result.ToString();
+                            });
+                            inputFieldStorage.OnEndEdit.NewListener(_val => Save());
+
+                            Destroy(inputFieldStorage.rightGreaterButton.gameObject);
+                            Destroy(inputFieldStorage.middleButton.gameObject);
+                            Destroy(inputFieldStorage.leftGreaterButton.gameObject);
+
+                            TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
+                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                             EditorThemeManager.ApplyInputField(inputFieldStorage);
 

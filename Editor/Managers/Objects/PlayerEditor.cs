@@ -515,27 +515,14 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        void RenderSingle(InputFieldStorage inputFieldStorage, float value, Action<string> onValueChanged, Action<string> onEndEdit = null)
-        {
-            inputFieldStorage.inputField.SetTextWithoutNotify(value.ToString());
-            inputFieldStorage.inputField.onValueChanged.NewListener(onValueChanged);
-            if (onEndEdit != null)
-                inputFieldStorage.inputField.onEndEdit.NewListener(onEndEdit);
-            else
-                inputFieldStorage.inputField.onEndEdit.ClearAll();
-
-            TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
-        }
-
         void RenderInteger(InputFieldStorage inputFieldStorage, int value, Action<string> onValueChanged, Action<string> onEndEdit = null)
         {
-            inputFieldStorage.inputField.SetTextWithoutNotify(value.ToString());
-            inputFieldStorage.inputField.onValueChanged.NewListener(onValueChanged);
+            inputFieldStorage.SetTextWithoutNotify(value.ToString());
+            inputFieldStorage.OnValueChanged.NewListener(onValueChanged);
             if (onEndEdit != null)
-                inputFieldStorage.inputField.onEndEdit.NewListener(onEndEdit);
+                inputFieldStorage.OnEndEdit.NewListener(onEndEdit);
             else
-                inputFieldStorage.inputField.onEndEdit.ClearAll();
+                inputFieldStorage.OnEndEdit.ClearAll();
 
             TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
             TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
@@ -543,19 +530,19 @@ namespace BetterLegacy.Editor.Managers
 
         void RenderVector2(InputFieldStorage xField, InputFieldStorage yField, Vector2 value, Action<string> onXValueChanged, Action<string> onYValueChanged, Action<string> onXEndEdit = null, Action<string> onYEndEdit = null)
         {
-            xField.inputField.SetTextWithoutNotify(value.x.ToString());
-            xField.inputField.onValueChanged.NewListener(onXValueChanged);
+            xField.SetTextWithoutNotify(value.x.ToString());
+            xField.OnValueChanged.NewListener(onXValueChanged);
             if (onXEndEdit != null)
-                xField.inputField.onEndEdit.NewListener(onXEndEdit);
+                xField.OnEndEdit.NewListener(onXEndEdit);
             else
-                xField.inputField.onEndEdit.ClearAll();
+                xField.OnEndEdit.ClearAll();
 
-            yField.inputField.SetTextWithoutNotify(value.y.ToString());
-            yField.inputField.onValueChanged.NewListener(onYValueChanged);
+            yField.SetTextWithoutNotify(value.y.ToString());
+            yField.OnValueChanged.NewListener(onYValueChanged);
             if (onYEndEdit != null)
-                yField.inputField.onEndEdit.NewListener(onYEndEdit);
+                yField.OnEndEdit.NewListener(onYEndEdit);
             else
-                yField.inputField.onEndEdit.ClearAll();
+                yField.OnEndEdit.ClearAll();
 
             TriggerHelper.IncreaseDecreaseButtons(xField);
             TriggerHelper.IncreaseDecreaseButtons(yField);
@@ -652,7 +639,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(tab.Rotation.Field, playerObject.Rotation,
+            tab.Rotation.Field.Render(playerObject.Rotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -676,7 +663,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(tab.Opacity.Field, playerObject.Opacity,
+            tab.Opacity.Field.Render(playerObject.Opacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -686,7 +673,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(tab.Depth.Field, playerObject.Depth,
+            tab.Depth.Field.Render(playerObject.Depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -705,7 +692,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailTime.Field, playerObject.Trail.time,
+                tab.TrailTime.Field.Render(playerObject.Trail.time,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -715,7 +702,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.TrailStartWidth.Field, playerObject.Trail.startWidth,
+                tab.TrailStartWidth.Field.Render(playerObject.Trail.startWidth,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -725,7 +712,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.TrailEndWidth.Field, playerObject.Trail.endWidth,
+                tab.TrailEndWidth.Field.Render(playerObject.Trail.endWidth,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -749,7 +736,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailStartOpacity.Field, playerObject.Trail.startOpacity,
+                tab.TrailStartOpacity.Field.Render(playerObject.Trail.startOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -773,7 +760,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailEndOpacity.Field, playerObject.Trail.endOpacity,
+                tab.TrailEndOpacity.Field.Render(playerObject.Trail.endOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -827,7 +814,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.ParticlesStartOpacity.Field, playerObject.Particles.startOpacity,
+                tab.ParticlesStartOpacity.Field.Render(playerObject.Particles.startOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -837,7 +824,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesEndOpacity.Field, playerObject.Particles.endOpacity,
+                tab.ParticlesEndOpacity.Field.Render(playerObject.Particles.endOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -847,7 +834,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesStartScale.Field, playerObject.Particles.startScale,
+                tab.ParticlesStartScale.Field.Render(playerObject.Particles.startScale,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -857,7 +844,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesEndScale.Field, playerObject.Particles.endScale,
+                tab.ParticlesEndScale.Field.Render(playerObject.Particles.endScale,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -867,7 +854,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesRotation.Field, playerObject.Particles.rotation,
+                tab.ParticlesRotation.Field.Render(playerObject.Particles.rotation,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -877,7 +864,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesLifetime.Field, playerObject.Particles.lifeTime,
+                tab.ParticlesLifetime.Field.Render(playerObject.Particles.lifeTime,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -887,7 +874,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesSpeed.Field, playerObject.Particles.speed,
+                tab.ParticlesSpeed.Field.Render(playerObject.Particles.speed,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -897,7 +884,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                RenderSingle(tab.ParticlesAmount.Field, playerObject.Particles.amount,
+                tab.ParticlesAmount.Field.Render(playerObject.Particles.amount,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
@@ -1391,7 +1378,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.GlobalTab.RespawnPlayers.Button.onClick.NewListener(PlayerManager.inst.RespawnPlayers);
             Dialog.GlobalTab.UpdateProperties.Button.onClick.NewListener(RTPlayer.SetGameDataProperties);
 
-            RenderSingle(Dialog.GlobalTab.Speed.Field, GameData.Current.data.level.speedMultiplier,
+            Dialog.GlobalTab.Speed.Field.Render(GameData.Current.data.level.speedMultiplier,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1464,7 +1451,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.GlobalTab.JumpGravity.Field, GameData.Current.data.level.jumpGravity,
+            Dialog.GlobalTab.JumpGravity.Field.Render(GameData.Current.data.level.jumpGravity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1474,7 +1461,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.GlobalTab.JumpIntensity.Field, GameData.Current.data.level.jumpIntensity,
+            Dialog.GlobalTab.JumpIntensity.Field.Render(GameData.Current.data.level.jumpIntensity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1484,7 +1471,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderInteger(Dialog.GlobalTab.MaxHealth.Field, GameData.Current.data.level.maxHealth,
+            Dialog.GlobalTab.MaxHealth.Field.Render(GameData.Current.data.level.maxHealth,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int result))
@@ -1694,7 +1681,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderDialog();
             });
 
-            RenderInteger(Dialog.BaseTab.Health.Field, editControls ? control.Health : currentModel.basePart.health,
+            Dialog.BaseTab.Health.Field.Render(editControls ? control.Health : currentModel.basePart.health,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1706,8 +1693,8 @@ namespace BetterLegacy.Editor.Managers
                         PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderInteger(Dialog.BaseTab.Lives.Field, editControls ? control.lives : currentModel.basePart.lives,
+
+            Dialog.BaseTab.Lives.Field.Render(editControls ? control.lives : currentModel.basePart.lives,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1720,7 +1707,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MoveSpeed.Field, editControls ? control.moveSpeed : currentModel.basePart.moveSpeed,
+            Dialog.BaseTab.MoveSpeed.Field.Render(editControls ? control.moveSpeed : currentModel.basePart.moveSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1733,7 +1720,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostSpeed.Field, editControls ? control.boostSpeed : currentModel.basePart.boostSpeed,
+            Dialog.BaseTab.BoostSpeed.Field.Render(editControls ? control.boostSpeed : currentModel.basePart.boostSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1746,7 +1733,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostCooldown.Field, editControls ? control.boostCooldown : currentModel.basePart.boostCooldown,
+            Dialog.BaseTab.BoostCooldown.Field.Render(editControls ? control.boostCooldown : currentModel.basePart.boostCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1759,7 +1746,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MinBoostTime.Field, editControls ? control.minBoostTime : currentModel.basePart.minBoostTime,
+            Dialog.BaseTab.MinBoostTime.Field.Render(editControls ? control.minBoostTime : currentModel.basePart.minBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1772,7 +1759,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MaxBoostTime.Field, editControls ? control.maxBoostTime : currentModel.basePart.maxBoostTime,
+            Dialog.BaseTab.MaxBoostTime.Field.Render(editControls ? control.maxBoostTime : currentModel.basePart.maxBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1785,7 +1772,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.HitCooldown.Field, editControls ? control.hitCooldown : currentModel.basePart.hitCooldown,
+            Dialog.BaseTab.HitCooldown.Field.Render(editControls ? control.hitCooldown : currentModel.basePart.hitCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1812,7 +1799,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.BaseTab.RotationSpeed.Field, currentModel.basePart.rotationSpeed,
+            Dialog.BaseTab.RotationSpeed.Field.Render(currentModel.basePart.rotationSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1842,7 +1829,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.SprintSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sprintSpeed,
+            Dialog.BaseTab.SprintSpeed.Field.Render(editControls ? control.sprintSpeed : currentModel.basePart.sprintSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1854,8 +1841,8 @@ namespace BetterLegacy.Editor.Managers
                         PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderSingle(Dialog.BaseTab.SneakSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sneakSpeed,
+
+            Dialog.BaseTab.SneakSpeed.Field.Render(editControls ? control.sprintSpeed : currentModel.basePart.sneakSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1878,7 +1865,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.JumpGravity.Field, editControls ? control.jumpGravity : currentModel.basePart.jumpGravity,
+            Dialog.BaseTab.JumpGravity.Field.Render(editControls ? control.jumpGravity : currentModel.basePart.jumpGravity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1891,7 +1878,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.JumpIntensity.Field, editControls ? control.jumpIntensity : currentModel.basePart.jumpIntensity,
+            Dialog.BaseTab.JumpIntensity.Field.Render(editControls ? control.jumpIntensity : currentModel.basePart.jumpIntensity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1904,7 +1891,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderInteger(Dialog.BaseTab.JumpCount.Field, editControls ? control.jumpCount : currentModel.basePart.jumpCount,
+            Dialog.BaseTab.JumpCount.Field.Render(editControls ? control.jumpCount : currentModel.basePart.jumpCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1916,8 +1903,8 @@ namespace BetterLegacy.Editor.Managers
                         PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderInteger(Dialog.BaseTab.JumpBoostCount.Field, editControls ? control.jumpBoostCount : currentModel.basePart.jumpBoostCount,
+
+            Dialog.BaseTab.JumpBoostCount.Field.Render(editControls ? control.jumpBoostCount : currentModel.basePart.jumpBoostCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1930,7 +1917,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.Bounciness.Field, editControls ? control.bounciness : currentModel.basePart.bounciness,
+            Dialog.BaseTab.Bounciness.Field.Render(editControls ? control.bounciness : currentModel.basePart.bounciness,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1950,7 +1937,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.StretchAmount.Field, currentModel.basePart.stretchAmount,
+            Dialog.BaseTab.StretchAmount.Field.Render(currentModel.basePart.stretchAmount,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2036,7 +2023,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.GUITab.HealthTopOpacity.Field, currentModel.guiPart.topOpacity,
+            Dialog.GUITab.HealthTopOpacity.Field.Render(currentModel.guiPart.topOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2060,7 +2047,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.GUITab.HealthBaseOpacity.Field, currentModel.guiPart.baseOpacity,
+            Dialog.GUITab.HealthBaseOpacity.Field.Render(currentModel.guiPart.baseOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2104,7 +2091,7 @@ namespace BetterLegacy.Editor.Managers
 
             RenderShape(Dialog.SpawnerTab.PulseShape, currentModel.pulsePart);
 
-            RenderSingle(Dialog.SpawnerTab.PulseDuration.Field, currentModel.pulsePart.duration,
+            Dialog.SpawnerTab.PulseDuration.Field.Render(currentModel.pulsePart.duration,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2128,7 +2115,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.PulseStartOpacity.Field, currentModel.pulsePart.startOpacity,
+            Dialog.SpawnerTab.PulseStartOpacity.Field.Render(currentModel.pulsePart.startOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2152,7 +2139,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.PulseEndOpacity.Field, currentModel.pulsePart.endOpacity,
+            Dialog.SpawnerTab.PulseEndOpacity.Field.Render(currentModel.pulsePart.endOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2176,7 +2163,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseDepth.Field, currentModel.pulsePart.depth,
+            Dialog.SpawnerTab.PulseDepth.Field.Render(currentModel.pulsePart.depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2272,7 +2259,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseStartRotation.Field, currentModel.pulsePart.startRotation,
+            Dialog.SpawnerTab.PulseStartRotation.Field.Render(currentModel.pulsePart.startRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2282,7 +2269,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseEndRotation.Field, currentModel.pulsePart.endRotation,
+            Dialog.SpawnerTab.PulseEndRotation.Field.Render(currentModel.pulsePart.endRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2317,7 +2304,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletLifetime.Field, currentModel.bulletPart.lifeTime,
+            Dialog.SpawnerTab.BulletLifetime.Field.Render(currentModel.bulletPart.lifeTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2341,7 +2328,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletSpeed.Field, currentModel.bulletPart.speed,
+            Dialog.SpawnerTab.BulletSpeed.Field.Render(currentModel.bulletPart.speed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2351,7 +2338,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletCooldown.Field, currentModel.bulletPart.cooldown,
+            Dialog.SpawnerTab.BulletCooldown.Field.Render(currentModel.bulletPart.cooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2395,7 +2382,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletStartOpacity.Field, currentModel.bulletPart.startOpacity,
+            Dialog.SpawnerTab.BulletStartOpacity.Field.Render(currentModel.bulletPart.startOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2419,7 +2406,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletEndOpacity.Field, currentModel.bulletPart.endOpacity,
+            Dialog.SpawnerTab.BulletEndOpacity.Field.Render(currentModel.bulletPart.endOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2429,7 +2416,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletColorDuration.Field, currentModel.bulletPart.durationColor,
+            Dialog.SpawnerTab.BulletColorDuration.Field.Render(currentModel.bulletPart.durationColor,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2446,7 +2433,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletOpacityDuration.Field, currentModel.bulletPart.durationOpacity,
+            Dialog.SpawnerTab.BulletOpacityDuration.Field.Render(currentModel.bulletPart.durationOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2463,7 +2450,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletDepth.Field, currentModel.bulletPart.depth,
+            Dialog.SpawnerTab.BulletDepth.Field.Render(currentModel.bulletPart.depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2509,7 +2496,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletPositionDuration.Field, currentModel.bulletPart.durationPosition,
+            Dialog.SpawnerTab.BulletPositionDuration.Field.Render(currentModel.bulletPart.durationPosition,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2562,7 +2549,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletScaleDuration.Field, currentModel.bulletPart.durationScale,
+            Dialog.SpawnerTab.BulletScaleDuration.Field.Render(currentModel.bulletPart.durationScale,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2579,7 +2566,7 @@ namespace BetterLegacy.Editor.Managers
                     PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletStartRotation.Field, currentModel.bulletPart.startRotation,
+            Dialog.SpawnerTab.BulletStartRotation.Field.Render(currentModel.bulletPart.startRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2589,7 +2576,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletEndRotation.Field, currentModel.bulletPart.endRotation,
+            Dialog.SpawnerTab.BulletEndRotation.Field.Render(currentModel.bulletPart.endRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2599,7 +2586,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletRotationDuration.Field, currentModel.bulletPart.durationRotation,
+            Dialog.SpawnerTab.BulletRotationDuration.Field.Render(currentModel.bulletPart.durationRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2624,7 +2611,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderTailTab(PlayerModel currentModel)
         {
-            RenderSingle(Dialog.TailTab.BaseDistance.Field, currentModel.tailBase.distance,
+            Dialog.TailTab.BaseDistance.Field.Render(currentModel.tailBase.distance,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2648,7 +2635,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.TailTab.BaseTime.Field, currentModel.tailBase.time,
+            Dialog.TailTab.BaseTime.Field.Render(currentModel.tailBase.time,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2749,7 +2736,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.CustomObjectTab.PositionOffset.Field, customObject.positionOffset,
+            Dialog.CustomObjectTab.PositionOffset.Field.Render(customObject.positionOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2759,7 +2746,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.CustomObjectTab.ScaleOffset.Field, customObject.scaleOffset,
+            Dialog.CustomObjectTab.ScaleOffset.Field.Render(customObject.scaleOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2776,7 +2763,7 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.CustomObjectTab.RotationOffset.Field, customObject.rotationOffset,
+            Dialog.CustomObjectTab.RotationOffset.Field.Render(customObject.rotationOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -2855,8 +2842,8 @@ namespace BetterLegacy.Editor.Managers
                     var value = EditorPrefabHolder.Instance.NumberInputField.Duplicate(bar.transform, "input");
                     var valueStorage = value.GetComponent<InputFieldStorage>();
 
-                    valueStorage.inputField.SetTextWithoutNotify(visibility.value.ToString());
-                    valueStorage.inputField.onValueChanged.NewListener(_val =>
+                    valueStorage.SetTextWithoutNotify(visibility.value.ToString());
+                    valueStorage.OnValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float result))
                             visibility.value = result;

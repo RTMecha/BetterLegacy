@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using BetterLegacy.Core.Data;
+
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
     /// Represents a default keybind function.
     /// </summary>
-    public class KeybindFunction
+    public class KeybindFunction : Exists
     {
         #region Constructors
 
-        public KeybindFunction()
-        {
-            settings = new List<Keybind.Setting>();
-        }
+        public KeybindFunction() => settings = new List<Keybind.Setting>();
 
         public KeybindFunction(string name, Action<Keybind> action)
         {

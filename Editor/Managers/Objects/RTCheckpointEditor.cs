@@ -280,15 +280,15 @@ namespace BetterLegacy.Editor.Managers
             Dialog.JumpToNextButton.onClick.NewListener(() => SetCurrentCheckpoint(index + 1));
             Dialog.JumpToLastButton.onClick.NewListener(() => SetCurrentCheckpoint(GameData.Current.data.checkpoints.Count - 1));
 
-            Dialog.TimeField.inputField.SetTextWithoutNotify(checkpoint.time.ToString());
-            Dialog.TimeField.inputField.onValueChanged.NewListener(_val =>
+            Dialog.TimeField.SetTextWithoutNotify(checkpoint.time.ToString());
+            Dialog.TimeField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    checkpoint.time = num;
-                    RenderCheckpoint(index);
-                    GameManager.inst.UpdateTimeline();
-                }
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                checkpoint.time = num;
+                RenderCheckpoint(index);
+                GameManager.inst.UpdateTimeline();
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.TimeField);
@@ -307,21 +307,21 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PositionFields.x.SetTextWithoutNotify(checkpoint.pos.x.ToString());
             Dialog.PositionFields.x.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    checkpoint.pos.x = num;
-                    RenderCheckpoint(index);
-                }
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                checkpoint.pos.x = num;
+                RenderCheckpoint(index);
             });
 
             Dialog.PositionFields.y.SetTextWithoutNotify(checkpoint.pos.y.ToString());
             Dialog.PositionFields.y.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    checkpoint.pos.y = num;
-                    RenderCheckpoint(index);
-                }
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                checkpoint.pos.y = num;
+                RenderCheckpoint(index);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.PositionFields.x, 5f);
@@ -593,7 +593,7 @@ namespace BetterLegacy.Editor.Managers
                 CurrentCheckpoint.RenderPosition();
 
                 if (Dialog.IsCurrent)
-                    Dialog.TimeField.inputField.text = time.ToString("f3");
+                    Dialog.TimeField.Text = time.ToString("f3");
             }
             //for (int i = 0; i < timelineCheckpoints.Count; i++)
             //{

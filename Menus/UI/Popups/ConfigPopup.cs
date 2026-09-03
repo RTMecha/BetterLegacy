@@ -399,13 +399,13 @@ namespace BetterLegacy.Menus.UI.Popups
                         integerStorage.SetTextWithoutNotify(intSetting.Value.ToString());
                         integerStorage.OnValueChanged.NewListener(_val =>
                         {
-                            if (int.TryParse(_val, out int value))
-                            {
-                                if (intSetting.MinValue != 0 || intSetting.MaxValue != 0)
-                                    value = Mathf.Clamp(value, intSetting.MinValue, intSetting.MaxValue);
+                            if (!int.TryParse(_val, out int value))
+                                return;
 
-                                setting.BoxedValue = value;
-                            }
+                            if (intSetting.MinValue != 0 || intSetting.MaxValue != 0)
+                                value = Mathf.Clamp(value, intSetting.MinValue, intSetting.MaxValue);
+
+                            setting.BoxedValue = value;
                         });
 
                         TriggerHelper.IncreaseDecreaseButtonsInt(integerStorage.inputField, min: intSetting.MinValue, max: intSetting.MaxValue, t: integer.transform);
@@ -426,13 +426,13 @@ namespace BetterLegacy.Menus.UI.Popups
                         floatingPointStorage.SetTextWithoutNotify(floatSetting.Value.ToString());
                         floatingPointStorage.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float value))
-                            {
-                                if (floatSetting.MinValue != 0 || floatSetting.MaxValue != 0)
-                                    value = Mathf.Clamp(value, floatSetting.MinValue, floatSetting.MaxValue);
+                            if (!float.TryParse(_val, out float value))
+                                return;
 
-                                setting.BoxedValue = value;
-                            }
+                            if (floatSetting.MinValue != 0 || floatSetting.MaxValue != 0)
+                                value = Mathf.Clamp(value, floatSetting.MinValue, floatSetting.MaxValue);
+
+                            setting.BoxedValue = value;
                         });
 
                         TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: floatSetting.MinValue, max: floatSetting.MaxValue, t: floatingPoint.transform);
@@ -716,11 +716,11 @@ namespace BetterLegacy.Menus.UI.Popups
             pageFieldStorage.SetTextWithoutNotify(currentSubTabPage.ToString());
             pageFieldStorage.OnValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int p))
-                {
-                    currentSubTabPage = p;
-                    RefreshSettings();
-                }
+                if (!int.TryParse(_val, out int p))
+                    return;
+
+                currentSubTabPage = p;
+                RefreshSettings();
             });
 
             if (num / MAX_SETTINGS_PER_PAGE != 0)
@@ -735,19 +735,19 @@ namespace BetterLegacy.Menus.UI.Popups
             });
             pageFieldStorage.leftButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
-                {
-                    currentSubTabPage = Mathf.Clamp(p - 1, 0, num / MAX_SETTINGS_PER_PAGE);
-                    RefreshSettings();
-                }
+                if (!int.TryParse(pageFieldStorage.Text, out int p))
+                    return;
+
+                currentSubTabPage = Mathf.Clamp(p - 1, 0, num / MAX_SETTINGS_PER_PAGE);
+                RefreshSettings();
             });
             pageFieldStorage.rightButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
-                {
-                    currentSubTabPage = Mathf.Clamp(p + 1, 0, num / MAX_SETTINGS_PER_PAGE);
-                    RefreshSettings();
-                }
+                if (!int.TryParse(pageFieldStorage.Text, out int p))
+                    return;
+
+                currentSubTabPage = Mathf.Clamp(p + 1, 0, num / MAX_SETTINGS_PER_PAGE);
+                RefreshSettings();
             });
             pageFieldStorage.rightGreaterButton.onClick.NewListener(() =>
             {

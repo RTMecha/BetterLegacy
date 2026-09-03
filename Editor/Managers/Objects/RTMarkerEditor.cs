@@ -415,17 +415,12 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderTime(Marker marker)
         {
-            Dialog.TimeField.SetTextWithoutNotify(marker.time.ToString());
-            Dialog.TimeField.OnValueChanged.NewListener(_val =>
+            Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.Text = AudioManager.inst.CurrentAudioSource.time.ToString());
+            Dialog.TimeField.Render(marker.time, _val =>
             {
                 if (float.TryParse(_val, out float num))
                     SetTime(num);
             });
-
-            TriggerHelper.AddEventTriggers(Dialog.TimeField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.TimeField.inputField));
-            TriggerHelper.IncreaseDecreaseButtons(Dialog.TimeField);
-
-            Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.Text = AudioManager.inst.CurrentAudioSource.time.ToString());
 
             EditorContextMenu.AddContextMenu(Dialog.TimeField.inputField.gameObject,
                 new ButtonElement("Snap to BPM", () => Dialog.TimeField.Text = RTEditor.SnapToBPM(marker.time).ToString()));
@@ -437,20 +432,15 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderDuration(Marker marker)
         {
-            Dialog.DurationField.SetTextWithoutNotify(marker.duration.ToString());
-            Dialog.DurationField.OnValueChanged.NewListener(_val =>
+            Dialog.DurationField.middleButton.onClick.NewListener(() => Dialog.DurationField.Text = (AudioManager.inst.CurrentAudioSource.time - marker.time).ToString());
+            Dialog.DurationField.Render(marker.duration, _val =>
             {
                 if (float.TryParse(_val, out float num))
                     SetDuration(num);
             });
 
-            TriggerHelper.AddEventTriggers(Dialog.DurationField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.DurationField.inputField));
-            TriggerHelper.IncreaseDecreaseButtons(Dialog.DurationField);
-
-            Dialog.DurationField.middleButton.onClick.NewListener(() => Dialog.DurationField.inputField.text = (AudioManager.inst.CurrentAudioSource.time - marker.time).ToString());
-
             EditorContextMenu.AddContextMenu(Dialog.DurationField.inputField.gameObject,
-                new ButtonElement("Snap to BPM", () => Dialog.DurationField.inputField.text = (RTEditor.SnapToBPM(marker.time + marker.duration) - marker.time).ToString()),
+                new ButtonElement("Snap to BPM", () => Dialog.DurationField.Text = (RTEditor.SnapToBPM(marker.time + marker.duration) - marker.time).ToString()),
                 new ButtonElement("Set to Next Marker", () =>
                 {
                     var timelineMarker = marker.timelineMarker;
@@ -532,26 +522,22 @@ namespace BetterLegacy.Editor.Managers
                 //CoreHelper.Destroy(numberField.GetComponent<EventTrigger>());
                 CoreHelper.Destroy(numberFieldStorage.eventTrigger);
 
-                numberFieldStorage.inputField.SetTextWithoutNotify(layer.ToString());
-                numberFieldStorage.inputField.onValueChanged.NewListener(_val =>
-                {
-                    if (int.TryParse(_val, out int num))
-                        marker.layers[index] = RTMath.Clamp(num, 0, int.MaxValue);
+                numberFieldStorage.middleButton.onClick.NewListener(() => numberFieldStorage.Text = EditorTimeline.inst.Layer.ToString());
 
-                    marker.timelineMarker?.Render();
-                });
-                numberFieldStorage.inputField.onEndEdit.NewListener(_val =>
-                {
-                    if (RTMath.TryParse(_val, 0f, out float num))
-                        marker.layers[index] = RTMath.Clamp((int)num, 0, int.MaxValue);
-
-                    marker.timelineMarker?.Render();
-                });
-
-                numberFieldStorage.middleButton.onClick.NewListener(() => numberFieldStorage.inputField.text = EditorTimeline.inst.Layer.ToString());
-
-                TriggerHelper.IncreaseDecreaseButtonsInt(numberFieldStorage);
-                TriggerHelper.AddEventTriggers(numberFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(numberFieldStorage.inputField, max: int.MaxValue));
+                numberFieldStorage.Render(layer,
+                    onValueChanged: _val =>
+                    {
+                        if (int.TryParse(_val, out int num))
+                            marker.layers[index] = RTMath.Clamp(num, 0, int.MaxValue);
+                        marker.timelineMarker?.Render();
+                    },
+                    onEndEdit: _val =>
+                    {
+                        if (RTMath.TryParse(_val, 0f, out float num))
+                            marker.layers[index] = RTMath.Clamp((int)num, 0, int.MaxValue);
+                        marker.timelineMarker?.Render();
+                    },
+                    max: int.MaxValue);
 
                 EditorThemeManager.ApplyInputField(numberFieldStorage);
 
