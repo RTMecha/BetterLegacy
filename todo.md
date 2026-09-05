@@ -97,6 +97,10 @@
   Update: 1.7.0  
 - Chapter 2.  
   Update: 1.11.0  
+- Add rank shines to levels and chapters.
+- Fix Slime Boy Color bullet overlap at 70%.
+- Add warning for when the camera zooms in in Slime Boy Color.
+- All borders should be treated as solid and mecha.
 
 ### Example
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)  
