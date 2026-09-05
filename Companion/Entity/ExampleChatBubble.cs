@@ -388,6 +388,8 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => "How are you going so far?"),
                 new ExampleDialogue((companion, parameters) => "How are you going so far? I hope you're doing okay.",
                     parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "...",
+                    parameters => reference.brain.Check(ExampleBrain.Checks.IS_SAD)),
                 new ExampleDialogue((companion, parameters) => $"Hey, {CoreConfig.Instance.DisplayName.Value}"),
                 new ExampleDialogue((companion, parameters) => "Hey! You should probably have a break...",
                     parameters => reference.brain.Check(ExampleBrain.Checks.TIME_LONGER_THAN_10_HOURS) && reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
@@ -426,6 +428,8 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) => ":)",
                     parameters => reference.brain.Check(ExampleBrain.Checks.USER_IS_TERA) && reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
                 new ExampleDialogue((companion, parameters) => "Nah, I'd win.",
+                    parameters => reference.brain.Check(ExampleBrain.Checks.USER_IS_TERA)),
+                new ExampleDialogue((companion, parameters) => "We have TNT.",
                     parameters => reference.brain.Check(ExampleBrain.Checks.USER_IS_TERA)),
                 new ExampleDialogue((companion, parameters) => $"Hey, you might want to set a username. Set it via pressing the ConfigManager toggle key ({CoreConfig.Instance.OpenConfigKey.Value}), going to the User section of the Core tab and then changing the name there.",
                     parameters => reference.brain.Check(ExampleBrain.Checks.USER_IS_DEFAULT)),
@@ -676,10 +680,15 @@ namespace BetterLegacy.Companion.Entity
             dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_HIT, new ExampleDialogue[]
             {
                 new ExampleDialogue((companion, parameters) => "Ouch."),
+                new ExampleDialogue((companion, parameters) => "Looked like that hurt."),
                 new ExampleDialogue((companion, parameters) => "Oh no.."),
             }));
             dialogues.Add(new ExampleDialogueGroup(Dialogues.PLAYER_DEATH, new ExampleDialogue[]
             {
+                new ExampleDialogue((companion, parameters) => "You got this!",
+                    parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
+                new ExampleDialogue((companion, parameters) => "Sucks to suck, I guess...",
+                    parameters => reference.brain.Check(ExampleBrain.Checks.IS_SAD)),
                 new ExampleDialogue((companion, parameters) => "lol you died",
                     parameters => RandomHelper.PercentChance(1) && reference.brain.Check(ExampleBrain.Checks.IS_SAD) || reference.brain.Check(ExampleBrain.Checks.APRIL_FOOLS)),
                 new ExampleDialogue((companion, parameters) => "death hd",
@@ -687,7 +696,7 @@ namespace BetterLegacy.Companion.Entity
                 new ExampleDialogue((companion, parameters) =>
                 {
                     if (parameters is PlayerDialogueParameters playerParameters && playerParameters.player)
-                        return $"Nooo player {playerParameters.player.index + 1}!!!";
+                        return $"Nooo player {(!string.IsNullOrEmpty(playerParameters.player.DisplayName) && playerParameters.player.DisplayName != CoreConfig.Instance.DisplayName.Value ? playerParameters.player.DisplayName : playerParameters.player.index + 1)}!!!";
 
                     return NULL_DIALOGUE;
                 }, parameters => parameters is PlayerDialogueParameters),
