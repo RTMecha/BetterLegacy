@@ -824,6 +824,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 marker = new Marker(string.Empty, string.Empty, Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
                 GameData.Current.data.markers.Add(marker);
+                if (EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value)
+                    marker.layers.Add(EditorTimeline.inst.Layer);
             }
 
             OrderMarkers();

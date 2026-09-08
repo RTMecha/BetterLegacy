@@ -3605,11 +3605,21 @@ namespace BetterLegacy.Editor.Managers
                         if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTMarkerEditor.inst.CreateNewMarker(EditorTimeline.inst.CurrentSelection.Time);
                     }),
+                    ButtonElement.ToggleButton("Current Layer Only", () => EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value, () =>
+                    {
+                        EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value = !EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value;
+                        EditorManager.inst.DisplayNotification(EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value ? "New Markers will now be created on the current layer." : "New Markers will now not have a set layer.", 1.5f, EditorManager.NotificationType.Success);
+                    }),
                     new SpacerElement(),
                     ButtonElement.ToggleButton("Show Markers", () => EditorConfig.Instance.ShowMarkers.Value, () =>
                     {
                         EditorConfig.Instance.ShowMarkers.Value = !EditorConfig.Instance.ShowMarkers.Value;
                         EditorManager.inst.DisplayNotification(EditorConfig.Instance.ShowMarkers.Value ? "Markers will now display." : "Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    ButtonElement.ToggleButton("Show Annotations", () => EditorConfig.Instance.ShowMarkerAnnotations.Value, () =>
+                    {
+                        EditorConfig.Instance.ShowMarkerAnnotations.Value = !EditorConfig.Instance.ShowMarkerAnnotations.Value;
+                        EditorManager.inst.DisplayNotification(EditorConfig.Instance.ShowMarkerAnnotations.Value ? "Annotations will now display." : "Annotations will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new SpacerElement(),
                     new ButtonElement("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
