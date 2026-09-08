@@ -1421,7 +1421,7 @@ namespace BetterLegacy.Core.Components.Player
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
             if (!OutOfBounds && !(RTEditor.inst && RTEditor.inst.editorInfo.freecamEnabled) && ProjectArrhythmia.State.Playing && Core && Core.IsLocalPlayer)
             {
-                if (Camera.main.orthographicSize <= 0f && includeNegativeZoom)
+                if (Camera.main.orthographicSize <= 0f && !includeNegativeZoom)
                     return;
 
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
