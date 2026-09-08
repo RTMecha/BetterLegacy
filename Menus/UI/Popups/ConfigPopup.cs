@@ -129,6 +129,15 @@ namespace BetterLegacy.Menus.UI.Popups
             searchFieldInput.SetTextWithoutNotify(string.Empty);
             searchFieldInput.onValueChanged.NewListener(_val =>
             {
+                if (TryParseTab(_val, out Vector3Int vector3))
+                {
+                    searchFieldInput.SetTextWithoutNotify(string.Empty);
+                    searchTerm = string.Empty;
+                    currentSubTabPage = vector3.z;
+                    SetTab(vector3.x, vector3.y);
+                    return;
+                }
+
                 searchTerm = _val;
                 currentSubTabPage = 0;
                 RefreshSettings();
@@ -267,7 +276,17 @@ namespace BetterLegacy.Menus.UI.Popups
                 currentSubTab = 0;
                 currentSubTabPage = 0;
             }
+            SetTab(tabIndex, currentSubTab);
+        }
 
+        /// <summary>
+        /// Sets the tab of the config popup.
+        /// </summary>
+        /// <param name="tabIndex">Tab index to set.</param>
+        /// <param name="subTabIndex">Sub tab index to set.</param>
+        public void SetTab(int tabIndex, int subTabIndex)
+        {
+            currentSubTab = subTabIndex;
             lastTab = currentTab;
             currentTab = tabIndex;
             LSHelpers.DeleteChildren(subTabs);
@@ -285,7 +304,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 int currentIndex = index;
 
-                var tab = Creator.NewUIObject($"Tab {i}", this.subTabs.transform);
+                var tab = Creator.NewUIObject($"Tab {i}", subTabs.transform);
                 tab.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
                 var tabBase = Creator.NewUIObject("Image", tab.transform);
@@ -757,20 +776,36 @@ namespace BetterLegacy.Menus.UI.Popups
         }
 
         /// <summary>
-        /// Parses tab coordinates from an input.
+        /// Tries to parse tab coordinates from an input.
         /// </summary>
         /// <param name="input">Input to parse.</param>
-        /// <returns>Returns the parsed tab coordinates.</returns>
-        public Vector2Int ParseTab(string input)
+        /// <param name="vector2">Coordinate result.</param>
+        /// <returns>Returns <see langword="true"/> if the coordinate was successfully parsed, otherwise returns <see langword="false"/>.</returns>
+        public bool TryParseTab(string input, out Vector3Int vector3)
         {
-            if (!RTString.RegexMatch(input, new System.Text.RegularExpressions.Regex(@"Config Manager > (.*?) > (.*?)"), out System.Text.RegularExpressions.Match match))
-                return Vector2Int.zero;
+            System.Text.RegularExpressions.Match match = null;
+            int page;
+            if (RTString.RegexMatch(input, new System.Text.RegularExpressions.Regex(@"Config Manager > (.*?) > (.*?) > ([0-9]+)"), out match))
+                page = Parser.TryParse(match.Groups[3].ToString(), 0);
+            else if (RTString.RegexMatch(input, new System.Text.RegularExpressions.Regex(@"Config Manager > (.*?) > (.*?)"), out match))
+                page = 0;
+            else
+                page = 0;
+
+            if (match == null)
+            {
+                vector3 = Vector3Int.zero;
+                return false;
+            }
 
             var matchTabName = match.Groups[1].ToString();
             var matchSubTabName = match.Groups[2].ToString();
             var configIndex = LegacyPlugin.configs.FindIndex(x => x.TabName == matchTabName);
             if (configIndex < 0)
-                return Vector2Int.zero;
+            {
+                vector3 = Vector3Int.zero;
+                return false;
+            }
             var config = LegacyPlugin.configs[configIndex];
             var subTabSections = new List<string>();
             var index = 0;
@@ -781,11 +816,22 @@ namespace BetterLegacy.Menus.UI.Popups
                     continue;
                 subTabSections.Add(setting.Section);
                 if (setting.Section == matchSubTabName)
-                    return new Vector2Int(configIndex, index);
+                {
+                    vector3 = new Vector3Int(configIndex, index, page);
+                    return true;
+                }
                 index++;
             }
-            return Vector2Int.zero;
+            vector3 = Vector3Int.zero;
+            return false;
         }
+
+        /// <summary>
+        /// Parses tab coordinates from an input.
+        /// </summary>
+        /// <param name="input">Input to parse.</param>
+        /// <returns>Returns the parsed tab coordinates.</returns>
+        public Vector3Int ParseTab(string input) => TryParseTab(input, out Vector3Int vector3) ? vector3 : Vector3Int.zero;
 
         #endregion
     }
