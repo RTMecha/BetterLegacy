@@ -4,6 +4,7 @@
 - Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
 - Added Player Variables and modifiers related to it.
 - Individual players can now have their display name modified using the lobby manager settings tab.
+- You can now type a config path into the search area to jump to that tab > sub tab > page. (e.g. Config Manager > Core > Settings > 0)
 
 ### Companion
 - Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
@@ -11,6 +12,7 @@
 ### Editor
 - Added Unity Explorer support for Background Objects.
 - Beatmap Objects can now be created and edited by clients in a lobby. This marks the true beginning of editor multiplayer support.
+- Added "Create Marker On Current Layer" to Config Manager > Editor > Creation.
 
 ## Changes
 ### Core
