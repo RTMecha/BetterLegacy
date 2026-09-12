@@ -1,14 +1,34 @@
-# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
+# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
 ## Features
+### Core
+- Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
+- Added Player Variables and modifiers related to it.
+- Individual players can now have their display name modified using the lobby manager settings tab.
+- You can now type a config path into the search area to jump to that tab > sub tab > page. (e.g. Config Manager > Core > Settings > 0)
+
+### Companion
+- Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
+
 ### Editor
-- Added a BPM snap indicator.
+- Added Unity Explorer support for Background Objects.
+- EDITOR MULTIPLAYER SUPPORT BEGINS (Keep in mind this is VERY experimental and will not work fully until the end of the snapshot cycle)
+  - Beatmap Objects can now be created and edited by clients in a lobby.
+  - Prefabs can be imported and Prefab Objects can be expanded.
+- Added "Create Marker On Current Layer" to Config Manager > Editor > Creation.
 
 ## Changes
+### Core
+- animateObject modifiers constant value are now off by default.
+- Users joining a host can now use their own player model to represent themselves.
+
 ### Editor
-- The Player Model popup list has been changed to work similarly to the Prefab list popups, where you can view internal / external models separately and import external models.
+- Shortened the name of some modifier values.
 
 ## Fixes
-- Fixed the setPlayerVelocity modifiers having the incorrect name.
-- Fixed some modifiers that have group values not counting as group modifiers.
-- Fixed loadLevelInternal modifier not working.
-- Fixed actorFrameTexture modifier breaking the level when restarting runtime.
+- Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
+- Fixed some Example Companion JSON issues.
+- Fixed level and level collection variables not saving correctly.
+- Fixed some name editing not updating the timeline object mark area.
+- Fixed player objects not using the Alternate value for the polygon shape type.
+- Fixed level progress displaying on level folders.
+- Fixed some multiplayer syncing issues (clients not communicating with each other, level icons not loading the icon properly, etc)
