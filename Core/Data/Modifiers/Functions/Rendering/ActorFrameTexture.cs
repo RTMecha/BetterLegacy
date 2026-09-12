@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override string Name => "actorFrameTexture";
 
-        public override ModifierCategoryType Category => ModifierCategoryType.Shape;
+        public override ModifierCategoryType Category => ModifierCategoryType.Rendering;
 
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
 
@@ -303,16 +303,18 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override void OnRemoveCache(Modifier modifier)
         {
-            if (modifier.TryGetResult(out Cache cache))
-                CoreHelper.Destroy(cache.renderTexture);
-                if (cache.obj && cache.obj.runtimeObject && cache.obj.runtimeObject.visualObject is SolidObject solidObject && solidObject.material)
-                    solidObject.UpdateRendering(
-                        gradientType: solidObject.gradientType,
-                        renderType: solidObject.renderType,
-                        doubleSided: solidObject.doubleSided,
-                        gradientScale: solidObject.gradientScale,
-                        gradientRotation: solidObject.gradientRotation,
-                        colorBlendMode: solidObject.colorBlendMode);
+            if (!modifier.TryGetResult(out Cache cache))
+                return;
+
+            CoreHelper.Destroy(cache.renderTexture);
+            if (cache.obj && cache.obj.runtimeObject && cache.obj.runtimeObject.visualObject is SolidObject solidObject && solidObject.material)
+                solidObject.UpdateRendering(
+                    gradientType: solidObject.gradientType,
+                    renderType: solidObject.renderType,
+                    doubleSided: solidObject.doubleSided,
+                    gradientScale: solidObject.gradientScale,
+                    gradientRotation: solidObject.gradientRotation,
+                    colorBlendMode: solidObject.colorBlendMode);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

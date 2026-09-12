@@ -11,14 +11,12 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
@@ -88,7 +86,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => detailMode = value ? DetailMode.HighDetail : DetailMode.Normal;
         }
 
+        /// <summary>
+        /// Detail mode.
+        /// </summary>
         public DetailMode detailMode;
+
+        #region Animation
 
         /// <summary>
         /// Animation events.
@@ -103,6 +106,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<List<EventKeyframe>> Events { get => events; set => events = value; }
 
         public float AnimLength => GetObjectLifeLength();
+
+        /// <summary>
+        /// Reference ID for animations.
+        /// </summary>
+        public string animID;
+
+        #endregion
 
         #region Parent
 
@@ -511,6 +521,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector3 ReactiveScaleOffset { get => reactiveScaleOffset; set => reactiveScaleOffset = value; }
         public float ReactiveRotationOffset { get => reactiveRotationOffset; set => reactiveRotationOffset = value; }
 
+        public Vector3 cachePositionOffset = Vector3.zero;
+
+        public Vector3 cacheScaleOffset = Vector3.zero;
+
+        public Vector3 cacheRotationOffset = Vector3.zero;
+
         /// <summary>
         /// Moves the objects' associated parent objects at this offset.
         /// </summary>
@@ -606,31 +622,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Runtime
 
-        /// <summary>
-        /// For object modifiers.
-        /// </summary>
-        public List<Component> components = new List<Component>();
-
-        /// <summary>
-        /// Rigidbody for modifiers.
-        /// </summary>
-        public Rigidbody2D rigidbody;
-
-        /// <summary>
-        /// ParticleSystem for modifiers.
-        /// </summary>
-        public ParticleSystem particleSystem;
-
-        /// <summary>
-        /// TrailRender for modifiers.
-        /// </summary>
-        public TrailRenderer trailRenderer;
-
-        /// <summary>
-        /// Used for editor optimization.
-        /// </summary>
-        public SelectObject selector;
-
         public RTLevelBase ParentRuntime { get; set; }
 
         /// <summary>
@@ -648,24 +639,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public RTModifiers runtimeModifiers;
 
+        public RTModifiers RuntimeModifiers { get => runtimeModifiers; set => runtimeModifiers = value; }
+
         /// <summary>
         /// Cached runtime particles.
         /// </summary>
         public RTParticles runtimeParticles;
 
-        /// <summary>
-        /// Use for object modifiers.
-        /// </summary>
-        public Detector detector;
-
         #endregion
 
         #region Editor
-
-        /// <summary>
-        /// Reference ID for animations.
-        /// </summary>
-        public string animID;
 
         /// <summary>
         /// Data for the object in the editor.
@@ -1845,6 +1828,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             PositionOffset = fullTransformOffset.position;
             ScaleOffset = fullTransformOffset.scale;
             RotationOffset = fullTransformOffset.rotation;
+            cachePositionOffset = Vector3.zero;
+            cacheScaleOffset = Vector3.zero;
+            cacheRotationOffset = Vector3.zero;
 
             PositionOperation = MathOperation.Addition;
             ScaleOperation = MathOperation.Addition;
@@ -1862,6 +1848,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             0 => positionOffset,
             1 => scaleOffset,
             _ => rotationOffset,
+        };
+
+        public float GetTransformOffset(int type, int axis) => GetTransformOffset(type).At(axis);
+
+        public Vector3 GetTransformCache(int type) => type switch
+        {
+            0 => cachePositionOffset,
+            1 => cacheScaleOffset,
+            _ => cacheRotationOffset,
         };
 
         public void SetTransform(int type, Vector3 value)
@@ -1897,6 +1892,25 @@ namespace BetterLegacy.Core.Data.Beatmap
                     }
                 case 2: {
                         rotationOffset[axis] = value;
+                        break;
+                    }
+            }
+        }
+
+        public void SetTransformCache(int type, int axis, float value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        cachePositionOffset[axis] = value;
+                        break;
+                    }
+                case 1: {
+                        cacheScaleOffset[axis] = value;
+                        break;
+                    }
+                case 2: {
+                        cacheRotationOffset[axis] = value;
                         break;
                     }
             }

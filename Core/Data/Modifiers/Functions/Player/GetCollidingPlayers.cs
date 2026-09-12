@@ -39,11 +39,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return;
 
             var collider = runtimeObject.visualObject.collider;
-
-            var players = PlayerManager.Players;
-            for (int i = 0; i < players.Count; i++)
+            for (int i = 0; i < PlayerManager.inst.players.Count; i++)
             {
-                var player = players[i];
+                var player = PlayerManager.inst.players[i];
                 modifierLoop.variables[FormatStringVariables(modifier.GetValue(0), modifierLoop.variables) + "_" + i] = (player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider)).ToString();
             }
         }

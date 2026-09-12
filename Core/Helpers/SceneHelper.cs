@@ -323,6 +323,8 @@ namespace BetterLegacy.Core.Helpers
 
         static void InvokeSceneLoad(string level)
         {
+            Runtime.RTLevel.TickFreeze = false;
+
             OnSceneLoad?.Invoke(level);
             OnSceneLoad = null;
 

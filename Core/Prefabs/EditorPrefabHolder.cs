@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -582,6 +583,56 @@ namespace BetterLegacy.Core.Prefabs
 
             if (!eventTrigger && gameObject.transform.childCount > 0)
                 eventTrigger = gameObject.transform.GetChild(0).GetComponent<EventTrigger>();
+        }
+
+        public void Render(float value, Action<string> onValueChanged, Action<string> onEndEdit = null, bool setupButtons = true, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
+        {
+            SetTextWithoutNotify(value.ToString());
+            OnValueChanged.NewListener(onValueChanged);
+            if (onEndEdit != null)
+                OnEndEdit.NewListener(onEndEdit);
+            else
+                OnEndEdit.ClearAll();
+
+            if (setupButtons)
+                TriggerHelper.IncreaseDecreaseButtons(this, amount, multiply, min, max);
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, amount, multiply, min, max));
+        }
+
+        public void Render(int value, Action<string> onValueChanged, Action<string> onEndEdit = null, bool setupButtons = true, int amount = 1, int min = 0, int max = 0)
+        {
+            SetTextWithoutNotify(value.ToString());
+            if (onValueChanged != null)
+                OnValueChanged.NewListener(onValueChanged);
+            else
+                OnValueChanged.ClearAll();
+            if (onEndEdit != null)
+                OnEndEdit.NewListener(onEndEdit);
+            else
+                OnEndEdit.ClearAll();
+
+            if (setupButtons)
+                TriggerHelper.IncreaseDecreaseButtonsInt(this, amount, min, max);
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, amount, min, max));
+        }
+
+        public void SetupButtons(Action leftGreater = null, Action left = null, Action middle = null, Action right = null, Action rightGreater = null, Action sub = null, Action add = null)
+        {
+            SetupButton(leftGreaterButton, leftGreater);
+            SetupButton(leftButton, left);
+            SetupButton(middleButton, middle);
+            SetupButton(rightButton, right);
+            SetupButton(rightGreaterButton, rightGreater);
+            SetupButton(subButton, sub);
+            SetupButton(addButton, add);
+        }
+
+        void SetupButton(Button button, Action action)
+        {
+            if (!button)
+                return;
+            button.gameObject.SetActive(action != null);
+            button.onClick.NewListener(action);
         }
     }
 

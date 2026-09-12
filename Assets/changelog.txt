@@ -1,49 +1,34 @@
-# snapshot-2026.7.2 - (Multiplayer Playtest) [Jul 6, 2026]
+# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
 ## Features
 ### Core
-- Added online lobbies. This allows you to play multiplayer online.  
-  DISCLAIMERS:
-  - This feature is in very early testing so it is bound to break or not work in a lot of cases. Use with caution.  
-  - Currently you can load regular arcade levels and levels in the editor, but there is not much syncing yet.  
-  - There's not much polish yet (as in no loading bars / indicators).
-Just in case, it's highly recommended you make a separate instance of Project Arrhythmia to test multiplayer.  
-Also, make sure you're always up to date on the latest version when playing online just in case changes are made.
+- Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
+- Added Player Variables and modifiers related to it.
+- Individual players can now have their display name modified using the lobby manager settings tab.
+- You can now type a config path into the search area to jump to that tab > sub tab > page. (e.g. Config Manager > Core > Settings > 0)
 
-## Changes
-### Core
-- Made setImageOther modifier consistent with setImage modifier behavior, allowing for texture changes and offset & scale changes.
-
-# snapshot-2026.7.3 - (Multiplayer Playtest) [Jul 7, 2026]
-## Changes
-### Core
-- Changed level syncing send type to unreliable.
-
-## Fixes
-- Fixed singleplayer being broken.
-- Fixed issues that occur when Steam isn't open.
-
-# snapshot-2026.7.4 - (Multiplayer Playtest) [Jul 9, 2026]
-## Features
-### Core
-- Added "Open Lobby Key" setting to Config Manager > Core > Game. Pressing the set key will open the Lobby Manager.
-- Added "Online Multiplayer NameTags" setting to Config Manager > Core > Game.
-- Added playerIsLocal trigger modifiers. These are used to detect if a specific player is a local one rather than from another client.
+### Companion
+- Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
 
 ### Editor
-- Added a layer range to Pinned Editor Layers.
+- Added Unity Explorer support for Background Objects.
+- EDITOR MULTIPLAYER SUPPORT BEGINS (Keep in mind this is VERY experimental and will not work fully until the end of the snapshot cycle)
+  - Beatmap Objects can now be created and edited by clients in a lobby.
+  - Prefabs can be imported and Prefab Objects can be expanded.
+- Added "Create Marker On Current Layer" to Config Manager > Editor > Creation.
 
 ## Changes
 ### Core
-- Changed particle object to not be based on the song playing state.
-- The Lobby Manager now closes when the scene is changed.
-- Tweaked player keyboard & controller binding.
+- animateObject modifiers constant value are now off by default.
+- Users joining a host can now use their own player model to represent themselves.
 
-### Interfaces
-- Moved the [ LOBBY ] button from the Extras Menu to the Main Menu for quick access.
+### Editor
+- Shortened the name of some modifier values.
 
 ## Fixes
-- Fixed more issues with single player that occur when there is no lobby.
-- Fixed Multi Object Editor parent search not working.
-- Fixed the cursor not accounting for the Lobby Manager.
-- Fixed some modifiers working for clients when they shouldn't.
-- Fixed the page field on the Config Manager not appearing.
+- Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
+- Fixed some Example Companion JSON issues.
+- Fixed level and level collection variables not saving correctly.
+- Fixed some name editing not updating the timeline object mark area.
+- Fixed player objects not using the Alternate value for the polygon shape type.
+- Fixed level progress displaying on level folders.
+- Fixed some multiplayer syncing issues (clients not communicating with each other, level icons not loading the icon properly, etc)

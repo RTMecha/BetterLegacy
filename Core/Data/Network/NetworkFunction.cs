@@ -7,6 +7,7 @@ using SteamworksFacepunch.Data;
 
 using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -76,6 +77,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int REQUEST_HOST = 10;
 
+        public const int SEND_HOST_LOBBY_SETTINGS = 7387458;
+
         public const int KEY_PRESS_DOWN = 3437654;
 
         public const int KEY_PRESS = 4326347;
@@ -101,6 +104,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int SEND_CLIENT_PLAYER_DATA = 5932573;
         public const int SEND_SERVER_PLAYER_DATA = 74362567;
         public const int SEND_MULTI_PLAYER_DATA = 476256437;
+        public const int SEND_PLAYER_SETTINGS = 8734345;
 
         public const int UPDATE_PLAYER_DATA = 83553876;
 
@@ -119,6 +123,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int PLAYER_KILL = 593762876;
         public const int PLAYER_JUMP = 8538582;
         public const int PLAYER_RESET_HEALTH = 5396969;
+        public const int SET_PLAYER_MODEL = 723578;
 
         #endregion
 
@@ -183,6 +188,8 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Editor
 
+        public const int SET_EDITOR_LEVEL_SORT = 7432262;
+
         public const int CLEAR_EDITOR_LEVELS = 7363268;
 
         public const int SEND_EDITOR_LEVEL = 345324;
@@ -192,6 +199,20 @@ namespace BetterLegacy.Core.Data.Network
         public const int SUBMIT_BEATMAP_OBJECT = 26465267;
 
         public const int CREATE_BEATMAP_OBJECT = 8458634;
+
+        public const int EDIT_BEATMAP_OBJECT = 3657883;
+
+        public const int ADD_TAG = 67423626;
+
+        public const int REMOVE_TAG = 75366454;
+
+        public const int CLEAR_TAGS = 34523467;
+
+        public const int EXPAND_PREFAB = 16213678;
+
+        public const int ADD_PREFAB_OBJECT = 46432637;
+
+        public const int IMPORT_PREFAB = 7456437;
 
         #endregion
 
@@ -243,6 +264,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void RequestHost(string message) => NetworkManager.inst.RunFunction(REQUEST_HOST, new StringParameter(message));
 
+        public static void SendHostLobbySettings() => NetworkManager.inst.RunFunction(SEND_HOST_LOBBY_SETTINGS, SteamLobbyManager.inst.LobbySettings);
+
         public static void KeyPressDown(KeyCode keyCode) => NetworkManager.inst.RunFunction(KEY_PRESS_DOWN, new IntParameter((int)keyCode));
         
         public static void KeyPress(KeyCode keyCode) => NetworkManager.inst.RunFunction(KEY_PRESS, SendType.Unreliable, new IntParameter((int)keyCode));
@@ -269,6 +292,8 @@ namespace BetterLegacy.Core.Data.Network
                     new ULongParameter(RTSteamManager.inst.steamUser.steamID),
                     new StringParameter(id),
                     new IntParameter(health));
+
+        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(SEND_PLAYER_SETTINGS, new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
 
         #endregion
 
@@ -386,6 +411,10 @@ namespace BetterLegacy.Core.Data.Network
 
         #region Editor
 
+        public static void SetEditorLevelSort(bool ascend, LevelSort sort) => NetworkManager.inst.RunFunction(Group.Editor, SET_EDITOR_LEVEL_SORT,
+            new BoolParameter(ascend),
+            new IntParameter((int)sort));
+
         public static void ClearEditorLevels() => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_EDITOR_LEVELS);
 
         public static void SendEditorLevel(LevelPanel levelPanel) => NetworkManager.inst.RunFunction(Group.Editor, SEND_EDITOR_LEVEL, levelPanel);
@@ -396,6 +425,24 @@ namespace BetterLegacy.Core.Data.Network
         public static void SubmitBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_BEATMAP_OBJECT, beatmapObject);
 
         public static void CreateBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, CREATE_BEATMAP_OBJECT, beatmapObject);
+
+        public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true) => NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
+            beatmapObject,
+            new StringParameter(updateContext),
+            new BoolParameter(updateTimelineContext));
+
+        public static void AddTag(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
+        
+        public static void RemoveTag(string id, ModifierReferenceType modifierReferenceType, int index) => NetworkManager.inst.RunFunction(Group.Editor, REMOVE_TAG,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType),
+            new IntParameter(index));
+
+        public static void ClearTags(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
 
         #endregion
 

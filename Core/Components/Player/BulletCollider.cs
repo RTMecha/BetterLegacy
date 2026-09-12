@@ -9,7 +9,7 @@ namespace BetterLegacy.Core.Components.Player
     /// </summary>
     public class BulletCollider : MonoBehaviour
     {
-        public RTPlayer.EmittedObject emit;
+        public EmittedObject emit;
         public RTPlayer player;
         public Rigidbody2D rb;
         public bool kill = false;

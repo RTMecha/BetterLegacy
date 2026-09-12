@@ -134,7 +134,7 @@ namespace BetterLegacy.Story
                         StoryMode.Init();
 
                         LevelManager.IsArcade = false;
-                        if (PlayerManager.InvalidPlayers)
+                        if (PlayerManager.inst.InvalidPlayers)
                             SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
                         else
                             SceneHelper.LoadInterfaceScene();

@@ -258,7 +258,7 @@ namespace BetterLegacy.Patchers
             Instance.SetDialogStatus("Timeline", true, true);
 
             CoreHelper.Log($"EDITOR START -> Check players");
-            PlayerManager.ValidatePlayers();
+            PlayerManager.inst.ValidatePlayers();
 
             CoreHelper.Log($"EDITOR START -> Can Edit?");
             Instance.GUI.SetActive(false);
@@ -375,6 +375,15 @@ namespace BetterLegacy.Patchers
             }
 
             Instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
+            return false;
+        }
+
+        [HarmonyPatch(nameof(EditorManager.ClearPopups))]
+        [HarmonyPrefix]
+        static bool ClearPopupsPrefix()
+        {
+            for (int i = 0; i < RTEditor.inst.editorPopups.Count; i++)
+                RTEditor.inst.editorPopups[i].Close();
             return false;
         }
 

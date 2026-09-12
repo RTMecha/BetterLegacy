@@ -13,8 +13,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public ClearSpawnedPrefabs()
         {
-            IsGroup = true;
             SetupModifier(false, "Object Group");
+            IsGroup = true;
         }
 
         #endregion

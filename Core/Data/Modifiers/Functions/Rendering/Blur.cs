@@ -132,8 +132,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 modifierCard.BoolGenerator(modifier, reference, "Use Opacity", 1, false);
             if (isGroup)
             {
-                var groupField = modifierCard.StringGenerator(modifier, reference, "Object Group", 1).transform.Find("Input").GetComponent<InputField>();
-                EditorContextMenu.AddContextMenu(groupField.gameObject, EditorContextMenu.GetNameFunctions(groupField));
+                modifierCard.PrefabGroupOnly(modifier, reference);
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", 1);
             }
             modifierCard.BoolGenerator(modifier, reference, "Set Back to Normal", type == Type.Variable && !isGroup ? 1 : 2, false);
         }

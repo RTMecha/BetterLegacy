@@ -1,4 +1,100 @@
-﻿# snapshot-2026.7.5 - (Multiplayer Playtest) [Jul ?, 2026]
+﻿# ???
+## Fixes
+- Fixed onPlayerBoosted modifier not working.
+- Fixed getObjectVariableOther modifier not having a group field and prefab group only toggles.
+- Fixed issues with spawnPrefab modifiers.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
+## Features
+### Core
+- Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
+- Added Player Variables and modifiers related to it.
+- Individual players can now have their display name modified using the lobby manager settings tab.
+- You can now type a config path into the search area to jump to that tab > sub tab > page. (e.g. Config Manager > Core > Settings > 0)
+
+### Companion
+- Added "wait" sub command to the tick command. This sets the amount of ticks to wait between each actual tick.
+
+### Editor
+- Added Unity Explorer support for Background Objects.
+- EDITOR MULTIPLAYER SUPPORT BEGINS (Keep in mind this is VERY experimental and will not work fully until the end of the snapshot cycle)
+  - Beatmap Objects can now be created and edited by clients in a lobby.
+  - Prefabs can be imported and Prefab Objects can be expanded.
+- Added "Create Marker On Current Layer" to Config Manager > Editor > Creation.
+
+## Changes
+### Core
+- animateObject modifiers constant value are now off by default.
+- Users joining a host can now use their own player model to represent themselves.
+
+### Editor
+- Shortened the name of some modifier values.
+
+## Fixes
+- Fixed the trailRenderer modifiers throwing an error when the modifier is inactive.
+- Fixed some Example Companion JSON issues.
+- Fixed level and level collection variables not saving correctly.
+- Fixed some name editing not updating the timeline object mark area.
+- Fixed player objects not using the Alternate value for the polygon shape type.
+- Fixed level progress displaying on level folders.
+- Fixed some multiplayer syncing issues (clients not communicating with each other, level icons not loading the icon properly, etc)
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.4 - (Multiplayer Playtest) [Aug 26, 2026]
+## Features
+### Editor
+- Added a BPM snap indicator.
+
+## Changes
+### Editor
+- The Player Model popup list has been changed to work similarly to the Prefab list popups, where you can view internal / external models separately and import external models.
+
+## Fixes
+- Fixed the setPlayerVelocity modifiers having the incorrect name.
+- Fixed some modifiers that have group values not counting as group modifiers.
+- Fixed loadLevelInternal modifier not working.
+- Fixed actorFrameTexture modifier breaking the level when restarting runtime.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.3 - (Multiplayer Playtest) [Aug 14, 2026]
+## Features
+### Companion
+- Added a "tick" command. This has parameters that can control the state of the runtime ticking, good for debugging issues that occur per-tick. Only usable when in the editor and not in an online lobby.
+- Added "reinit_runtime" command. This restarts the level runtime.
+
+## Changes
+### Core
+- Color related modifiers should all now have gradient support.
+
+## Fixes
+- Fixed Multi Object Editor hex colors not having context menus.
+- Fixed setImage modifiers setting the wrong value in the editor.
+- Attempted to fix copyAxisChain not working with axis source SequenceOffset, but unfortunately this might not be possible.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.2 - (Multiplayer Playtest) [Aug 13, 2026]
+## Features
+- Added Use 3D Axis toggle to scale keyframes.
+
+## Changes
+### Core
+- callModifierBlock modifier now allows for individual caches.
+- Levels shared over a lobby now have their resolutions scaled a quarter of the resolution.
+
+### Editor
+- Improved custom keyframe display.
+
+## Fixes
+- Account for the really old disableObject modifier.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.8.1 - (Multiplayer Playtest) [Aug 3, 2026]
 ## Features
 ### Core
 - Added "Physics Update Match Delta Time" setting to Config Manager > Core > Game.
@@ -21,6 +117,8 @@
   Please let me know if a modifier is not behaving as it should or appears where it shouldn't.  
   Plus, a few modifiers have been renamed so levels saved in this version will not work in older versions.  
 - Removed the Order Matters toggle and made the on state the default.
+- Attempted to make input select interface sync players in a lobby.
+- Cleaned up some player code.
 
 ### Editor
 - Levels in the level list now use object pooling, hopefully making level list load times faster.

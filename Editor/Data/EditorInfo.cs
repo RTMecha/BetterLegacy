@@ -193,6 +193,11 @@ namespace BetterLegacy.Editor.Data
         public string themePath;
 
         /// <summary>
+        /// Path to load player models from.
+        /// </summary>
+        public string playerModelPath;
+
+        /// <summary>
         /// Settings for the capture area.
         /// </summary>
         public CaptureSettings captureSettings = new CaptureSettings();

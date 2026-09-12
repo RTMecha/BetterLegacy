@@ -296,36 +296,11 @@ namespace BetterLegacy.Editor.Data.Elements
             RenderLabel();
             RenderTooltip();
 
+            Button.onClick = OnClick;
+
             if (isFolder)
             {
-                var directory = Path;
-                var path = RTFile.ReplaceSlash(directory);
-                Label.text = System.IO.Path.GetFileName(directory);
-                Button.onClick = eventData =>
-                {
-                    if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
-                    {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
-
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
-                            onOpenFolder: () =>
-                            {
-                                RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                                RTEditor.inst.UpdateThemePath(false);
-                            },
-                            onFolderUpdate: () => RTEditor.inst.UpdateThemePath(true),
-                            paste: RTThemeEditor.inst.PasteTheme));
-                        return;
-                    }
-
-                    RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
-                    RTEditor.inst.UpdateThemePath(false);
-                };
-
+                Label.text = System.IO.Path.GetFileName(Path);
                 return;
             }
 
@@ -334,129 +309,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
             if (UseButton)
                 UseButton.onClick.NewListener(Use);
-            Button.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    Use();
-                    return;
-                }
-
-                switch (Source)
-                {
-                    case ObjectSource.Internal: {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonElement("Use", Use),
-                            new ButtonElement("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
-                            new ButtonElement("Export", () => RTThemeEditor.inst.ExportTheme(Item), "Internal Theme Export"),
-                            new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
-                            new SpacerElement(),
-                            new ButtonElement("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                            new SpacerElement(),
-                            new ButtonElement("Delete", () =>
-                            {
-                                if (!isDefault)
-                                    RTThemeEditor.inst.DeleteTheme(this);
-                                else
-                                    EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
-                            }),
-                            new ButtonElement("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
-                            new ButtonElement("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
-                            new SpacerElement(),
-                            new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item)),
-                            new SpacerElement(),
-                            new ButtonElement("Add to Prefab", () =>
-                            {
-                                RTPrefabEditor.inst.OpenPopup();
-                                RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
-                                {
-                                    if (!Item || !prefabPanel.Item)
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Failed to add the theme to a prefab due to a null error.", 2f, EditorManager.NotificationType.Error);
-                                        CoreHelper.Log($"Theme is null: {!Item}\n" +
-                                            $"Prefab is null: {!prefabPanel.Item}");
-                                        return;
-                                    }
-
-                                    if (prefabPanel.Item.AddTheme(Item))
-                                    {
-                                        if (prefabPanel.IsExternal)
-                                            RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
-                                        EditorManager.inst.DisplayNotification($"Added theme {Item} to the prefab.", 2f, EditorManager.NotificationType.Success);
-                                    }
-                                    else
-                                    {
-                                        RTEditor.inst.ShowWarningPopup("Theme already exists in the Prefab! Do you wish to overwrite it?",
-                                            onConfirm: () =>
-                                            {
-                                                prefabPanel.Item.OverwriteTheme(Item);
-                                                if (prefabPanel.IsExternal)
-                                                    RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
-                                                EditorManager.inst.DisplayNotification($"Updated theme {Item} in the prefab.", 2f, EditorManager.NotificationType.Success);
-                                            },
-                                            confirm: "Overwrite",
-                                            cancel: "Cancel");
-                                    }
-                                };
-                            })
-                            );
-                            break;
-                        }
-                    case ObjectSource.External: {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonElement("Import", Use, "External Theme Import"),
-                            new ButtonElement("Update", () =>
-                            {
-                                if (!GameData.Current.UpdateTheme(Item))
-                                    EditorManager.inst.DisplayNotification($"No theme was found to update!", 2f, EditorManager.NotificationType.Warning);
-                                else
-                                    RTThemeEditor.inst.LoadInternalThemes();
-                            }, "External Theme Update"),
-                            new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
-                            new SpacerElement(),
-                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new SpacerElement(),
-                            new ButtonElement("Cut", () =>
-                            {
-                                if (isDefault)
-                                {
-                                    EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                RTThemeEditor.inst.shouldCutTheme = true;
-                                RTThemeEditor.inst.copiedThemePath = Item.filePath;
-                                EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
-                            }),
-                            new ButtonElement("Copy", () =>
-                            {
-                                if (isDefault)
-                                {
-                                    EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
-
-                                RTThemeEditor.inst.shouldCutTheme = false;
-                                RTThemeEditor.inst.copiedThemePath = Item.filePath;
-                                EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
-                                CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
-                            }),
-                            new ButtonElement("Paste", RTThemeEditor.inst.PasteTheme),
-                            new ButtonElement("Delete", () =>
-                            {
-                                if (!isDefault)
-                                    RTThemeEditor.inst.DeleteTheme(this);
-                                else
-                                    EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
-                            }),
-                            new SpacerElement(),
-                            new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
-                            );
-                            break;
-                        }
-                }
-            };
 
             if (Source == ObjectSource.External)
                 return;
@@ -563,6 +415,158 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <param name="i">Index of the color slot.</param>
         /// <returns>Returns an image representing a color slot.</returns>
         public Image GetColorSlot(int i) => Colors[Mathf.Clamp(i, 0, Colors.Count - 1)];
+
+        public override void OnClick(PointerEventData pointerEventData)
+        {
+            if (isFolder)
+            {
+                var directory = Path;
+                var path = RTFile.ReplaceSlash(directory);
+                if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
+                {
+                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
+                        onOpenFolder: () =>
+                        {
+                            RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                            RTEditor.inst.UpdateThemePath(false);
+                        },
+                        onFolderUpdate: () => RTEditor.inst.UpdateThemePath(true),
+                        paste: RTThemeEditor.inst.PasteTheme));
+                    return;
+                }
+
+                RTThemeEditor.inst.Popup.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                RTEditor.inst.UpdateThemePath(false);
+                return;
+            }
+
+            if (pointerEventData.button != PointerEventData.InputButton.Right)
+            {
+                Use();
+                return;
+            }
+
+            switch (Source)
+            {
+                case ObjectSource.Internal: {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonElement("Use", Use),
+                        new ButtonElement("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
+                        new ButtonElement("Export", () => RTThemeEditor.inst.ExportTheme(Item), "Internal Theme Export"),
+                        new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                        new SpacerElement(),
+                        new ButtonElement("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                        new SpacerElement(),
+                        new ButtonElement("Delete", () =>
+                        {
+                            if (!isDefault)
+                                RTThemeEditor.inst.DeleteTheme(this);
+                            else
+                                EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
+                        }),
+                        new ButtonElement("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                        new ButtonElement("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
+                        new SpacerElement(),
+                        new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item)),
+                        new SpacerElement(),
+                        new ButtonElement("Add to Prefab", () =>
+                        {
+                            RTPrefabEditor.inst.OpenPopup();
+                            RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                            {
+                                if (!Item || !prefabPanel.Item)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Failed to add the theme to a prefab due to a null error.", 2f, EditorManager.NotificationType.Error);
+                                    CoreHelper.Log($"Theme is null: {!Item}\n" +
+                                        $"Prefab is null: {!prefabPanel.Item}");
+                                    return;
+                                }
+
+                                if (prefabPanel.Item.AddTheme(Item))
+                                {
+                                    if (prefabPanel.IsExternal)
+                                        RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
+                                    EditorManager.inst.DisplayNotification($"Added theme {Item} to the prefab.", 2f, EditorManager.NotificationType.Success);
+                                }
+                                else
+                                {
+                                    RTEditor.inst.ShowWarningPopup("Theme already exists in the Prefab! Do you wish to overwrite it?",
+                                        onConfirm: () =>
+                                        {
+                                            prefabPanel.Item.OverwriteTheme(Item);
+                                            if (prefabPanel.IsExternal)
+                                                RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
+                                            EditorManager.inst.DisplayNotification($"Updated theme {Item} in the prefab.", 2f, EditorManager.NotificationType.Success);
+                                        },
+                                        confirm: "Overwrite",
+                                        cancel: "Cancel");
+                                }
+                            };
+                        })
+                        );
+                        break;
+                    }
+                case ObjectSource.External: {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonElement("Import", Use, "External Theme Import"),
+                        new ButtonElement("Update", () =>
+                        {
+                            if (!GameData.Current.UpdateTheme(Item))
+                                EditorManager.inst.DisplayNotification($"No theme was found to update!", 2f, EditorManager.NotificationType.Warning);
+                            else
+                                RTThemeEditor.inst.LoadInternalThemes();
+                        }, "External Theme Update"),
+                        new ButtonElement("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                        new SpacerElement(),
+                        new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                        new SpacerElement(),
+                        new ButtonElement("Cut", () =>
+                        {
+                            if (isDefault)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            RTThemeEditor.inst.shouldCutTheme = true;
+                            RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                            EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
+                            CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
+                        }),
+                        new ButtonElement("Copy", () =>
+                        {
+                            if (isDefault)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            RTThemeEditor.inst.shouldCutTheme = false;
+                            RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                            EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
+                            CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
+                        }),
+                        new ButtonElement("Paste", RTThemeEditor.inst.PasteTheme),
+                        new ButtonElement("Delete", () =>
+                        {
+                            if (!isDefault)
+                                RTThemeEditor.inst.DeleteTheme(this);
+                            else
+                                EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
+                        }),
+                        new SpacerElement(),
+                        new ButtonElement("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
+                        );
+                        break;
+                    }
+            }
+        }
 
         /// <summary>
         /// Uses the theme for the current selected theme keyframe.

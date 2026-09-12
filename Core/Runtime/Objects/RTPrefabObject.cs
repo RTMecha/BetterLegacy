@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// </summary>
     public class RTPrefabObject : RTLevelBase, IRTObject, ICustomActivatable, IParentChain
     {
+        #region Constructors
+
         public RTPrefabObject(Prefab prefab, PrefabObject prefabObject, RTLevelBase parentRuntime)
         {
             Prefab = prefab;
@@ -35,6 +37,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             UpdateActive();
         }
+
+        #endregion
 
         #region Values
 
@@ -161,6 +165,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         #endregion
 
         #endregion
+
+        #region Functions
 
         #region Main
 
@@ -444,12 +450,16 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             PostTick();
             ScheduleTick();
+            if (sort)
+                ActualSort();
         }
 
         public override void Clear()
         {
             //CoreHelper.Log($"Cleaning up runtime prefab {Prefab}");
             base.Clear();
+            this.ClearParentChain();
+            ParentObjects = null;
             CoreHelper.Delete(Parent);
             Spawner?.Clear();
             Spawner = null;
@@ -640,5 +650,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         #endregion
 
         public override string ToString() => PrefabObject?.ToString() ?? string.Empty;
+
+        #endregion
     }
 }

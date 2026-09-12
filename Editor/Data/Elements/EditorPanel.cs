@@ -1,6 +1,7 @@
 ﻿using System;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using SimpleJSON;
@@ -91,7 +92,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         /// <summary>
         /// Sets the editor panel active state.
@@ -179,6 +180,16 @@ namespace BetterLegacy.Editor.Data.Elements
                 infoJN = JSON.Parse(file);
         }
 
+        /// <summary>
+        /// Function to occur when the panel is clicked.
+        /// </summary>
+        /// <param name="pointerEventData">Pointer event data.</param>
+        public abstract void OnClick(PointerEventData pointerEventData);
+
+        /// <summary>
+        /// Gets the index of the panel.
+        /// </summary>
+        /// <returns>Returns the index of the panel.</returns>
         public virtual int GetIndex() => -1;
 
         #endregion

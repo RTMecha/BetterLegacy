@@ -6,9 +6,12 @@ using UnityEngine;
 
 using LSFunctions;
 
+using InControl;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Elements;
@@ -168,9 +171,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             for (int i = 0; i < nanobots.Count; i++)
             {
                 string text;
-                if (PlayerManager.Players.Count > i && PlayerManager.Players[i].active)
+                if (PlayerManager.inst.players.Count > i && PlayerManager.inst.players[i].active)
                 {
-                    var customPlayer = PlayerManager.Players[i];
+                    var customPlayer = PlayerManager.inst.players[i];
 
                     string textColor = "#" + RTColors.ColorToHex(playerColors[customPlayer.index % playerColors.Count]);
                     string device = customPlayer.deviceType.ToString();
@@ -241,10 +244,39 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (generating)
                 return;
 
+            if (PlayerManager.inst.players.Count < 8)
+            {
+                if (PlayerInput.controllerListener && PlayerInput.controllerListener.Join.WasPressed)
+                {
+                    var activeDevice = InputManager.ActiveDevice;
+                    if (PlayerManager.inst.DeviceNotConnected(activeDevice))
+                    {
+                        PlayerManager.inst.players.Add(new PAPlayer(PlayerManager.inst.players.Count, activeDevice));
+                        SyncPlayers();
+                    }
+                }
+
+                if (PlayerInput.keyboardListener && PlayerInput.keyboardListener.Join.WasPressed && PlayerManager.inst.KeyboardNotConnected())
+                {
+                    PlayerManager.inst.players.Add(new PAPlayer(PlayerManager.inst.players.Count, null));
+                    SyncPlayers();
+                }
+            }
+
             UpdateText();
 
-            if (!ProjectArrhythmia.Input.IsUsingInputField && !PlayerManager.Players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
+            if (!ProjectArrhythmia.Input.IsUsingInputField && !PlayerManager.inst.players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
                 Continue();
+        }
+
+        void SyncPlayers()
+        {
+            if (!ProjectArrhythmia.State.IsInLobby)
+                return;
+            if (ProjectArrhythmia.State.IsClient)
+                SteamLobbyManager.inst.SyncPlayersToServer();
+            else
+                SteamLobbyManager.inst.SyncPlayersToClients();
         }
 
         public override void Clear()

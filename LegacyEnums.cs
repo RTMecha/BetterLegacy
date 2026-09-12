@@ -1221,19 +1221,6 @@ namespace BetterLegacy
         HomingDynamic,
     }
 
-    public enum ModifierReferenceType
-    {
-        Null,
-        BeatmapObject,
-        BackgroundObject,
-        PrefabObject,
-        PAPlayer,
-        PlayerModel,
-        PlayerObject,
-        GameData,
-        ModifierBlock,
-    }
-
     public enum ModifierBehaviorType
     {
         AllTriggers,

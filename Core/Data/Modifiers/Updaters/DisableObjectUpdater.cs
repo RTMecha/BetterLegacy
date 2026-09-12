@@ -8,6 +8,11 @@
         {
             modifier.name = modifier.Name.Replace("disableObject", "enableObject");
             modifier.values.Add("False");
+            if (modifier.Name == "enableObject")
+            {
+                modifier.SetValue(0, "False");
+                modifier.version = 1;
+            }
         }
     }
 }

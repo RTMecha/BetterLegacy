@@ -298,6 +298,8 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 if (modifierFunction.Compatibility.StoryOnly ? !development : !modifierFunction.Compatibility.CompareType(referenceType))
                     continue;
+                if (!modifierFunction.IsCompatible(modifyable))
+                    continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
 
@@ -310,13 +312,6 @@ namespace BetterLegacy.Editor.Managers
                 spriteFunctionButton.OnClick.NewListener(() =>
                 {
                     var name = defaultModifier.Name;
-
-                    if (name.Contains("Text") && !name.Contains("Other") && shape != 4 && name != nameof(ModifierFunctions.actorFrameTexture))
-                    {
-                        EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be a Text Object.", 2f, EditorManager.NotificationType.Error);
-                        return;
-                    }
-
                     if ((defaultModifier.Name == nameof(ModifierFunctions.spawnClone) || defaultModifier.Name == nameof(ModifierFunctions.spawnCloneMath)) && modifyable.Modifiers.Has(x => x.Name == defaultModifier.Name))
                     {
                         EditorManager.inst.DisplayNotification($"Object cannot have multiple {defaultModifier.Name} modifiers, otherwise the game will crash.", 3f, EditorManager.NotificationType.Warning);

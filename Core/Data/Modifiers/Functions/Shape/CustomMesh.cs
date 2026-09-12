@@ -238,6 +238,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => modifyable is IShapeable shapeable && !shapeable.IsSpecialShape;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             var modifierLoop = reference.GetModifierLoop();

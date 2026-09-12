@@ -40,9 +40,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             var pos = transformable.GetFullPosition();
             float num = modifier.GetFloat(0, 0f, modifierLoop.variables);
-            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            for (int i = 0; i < PlayerManager.inst.players.Count; i++)
             {
-                var player = PlayerManager.Players[i];
+                var player = PlayerManager.inst.players[i];
                 if (player && player.RuntimePlayer && player.RuntimePlayer.rb && comparison.Compare(Vector2.Distance(player.RuntimePlayer.rb.position, pos), num))
                     return true;
             }

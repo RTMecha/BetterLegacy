@@ -98,8 +98,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.PrefabGroupOnly(modifier, reference);
-            var groupField = modifierCard.StringGenerator(modifier, reference, "Object Group", 0).transform.Find("Input").GetComponent<InputField>();
-            EditorContextMenu.AddContextMenu(groupField.gameObject, EditorContextMenu.GetNameFunctions(groupField));
+            modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", 0);
 
             modifierCard.DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
             modifierCard.DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using InControl;
+using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
@@ -14,6 +15,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -26,29 +28,29 @@ namespace BetterLegacy.Core.Managers
         #region Values
 
         /// <summary>
-        /// Player model custom IDs.
+        /// List of all players.
         /// </summary>
-        public static List<Setting<string>> PlayerIndexes { get; set; } = new List<Setting<string>>();
+        public List<PAPlayer> players = new List<PAPlayer>();
 
         /// <summary>
-        /// Wrapped players list.
+        /// List of local players.
         /// </summary>
-        public static List<PAPlayer> Players { get; set; } = new List<PAPlayer>();
+        public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
         /// <summary>
         /// If the game is currently in single player.
         /// </summary>
-        public static bool IsSingleplayer => Players.Count == 1;
+        public bool IsSingleplayer => players.Count == 1;
 
         /// <summary>
         /// If the game has no players loaded.
         /// </summary>
-        public static bool NoPlayers => Players == null || Players.IsEmpty();
+        public bool NoPlayers => players == null || players.IsEmpty();
 
         /// <summary>
         /// If any of the players are not the modded versions.
         /// </summary>
-        public static bool InvalidPlayers => NoPlayers || Players.Any(x => x is not PAPlayer);
+        public bool InvalidPlayers => NoPlayers || players.Any(x => x is not PAPlayer);
 
         /// <summary>
         /// If other players should be considered in the level ranking.
@@ -66,6 +68,12 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public const string PLAYERS_PATH = "beatmaps/players";
 
+        public const string PLAYER_SETTINGS_FILE_NAME = "player_settings.lss";
+
+        public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
+
+        public Dictionary<int, Dictionary<string, string>> playerVariables = new Dictionary<int, Dictionary<string, string>>();
+
         #endregion
 
         #region Functions
@@ -74,13 +82,15 @@ namespace BetterLegacy.Core.Managers
         {
             // destroy players on pre load scene
             SceneHelper.OnPreLoadScene += scene => DestroyPlayers();
+            LoadPlayerSettings();
+            LoadPlayerVariables();
         }
 
         public override void OnTick()
         {
-            foreach (var player in Players)
+            foreach (var player in players)
             {
-                var shake = !CoreConfig.Instance.ControllerRumble.Value ? Vector2.zero : ControllerRumble + player.rumble;
+                var shake = !CoreConfig.Instance.ControllerRumble.Value || !player.Alive ? Vector2.zero : ControllerRumble + player.rumble;
                 player.device?.Vibrate(Mathf.Clamp(shake.x, 0f, 0.5f), Mathf.Clamp(shake.y, 0f, 0.5f));
             }
         }
@@ -111,6 +121,12 @@ namespace BetterLegacy.Core.Managers
             healthParent = health;
         }
 
+        public void SetLocalIndexes()
+        {
+            for (int i = 0; i < localPlayers.Count; i++)
+                localPlayers[i].localIndex = i;
+        }
+
         #region Player Search
 
         /// <summary>
@@ -120,7 +136,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position vector for position-based priorities.</param>
         /// <param name="index">Index of the player for index-based priorities.</param>
         /// <returns>Returns the found <see cref="PAPlayer"/>.</returns>
-        public static PAPlayer GetPlayer(HomingPriority priority, Vector2 pos, int index) => Players.GetAtOrDefault(GetPlayerIndex(priority, pos, index), null);
+        public PAPlayer GetPlayer(HomingPriority priority, Vector2 pos, int index) => players.GetAtOrDefault(GetPlayerIndex(priority, pos, index), null);
 
         /// <summary>
         /// Gets the player with a specified priority.
@@ -129,7 +145,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="pos">Position vector for position-based priorities.</param>
         /// <param name="index">Index of the player for index-based priorities.</param>
         /// <returns>Returns the index of the found <see cref="PAPlayer"/>.</returns>
-        public static int GetPlayerIndex(HomingPriority priority, Vector2 pos, int index) => priority switch
+        public int GetPlayerIndex(HomingPriority priority, Vector2 pos, int index) => priority switch
         {
             HomingPriority.Closest => GetClosestPlayerIndex(pos),
             HomingPriority.Furthest => GetFurthestPlayerIndex(pos),
@@ -144,16 +160,15 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="pos">Position to check closeness to.</param>
         /// <returns>Returns a <see cref="PAPlayer"/> closest to the Vector2 parameter.</returns>
-        public static PAPlayer GetClosestPlayer(Vector2 pos) => Players.GetAtOrDefault(GetClosestPlayerIndex(pos), null);
+        public PAPlayer GetClosestPlayer(Vector2 pos) => players.GetAtOrDefault(GetClosestPlayerIndex(pos), null);
 
         /// <summary>
         /// Gets the player closest to a vector.
         /// </summary>
         /// <param name="pos">Position to check closeness to.</param>
         /// <returns>Returns an index of the <see cref="PAPlayer"/> closest to the Vector2 parameter.</returns>
-        public static int GetClosestPlayerIndex(Vector2 pos)
+        public int GetClosestPlayerIndex(Vector2 pos)
         {
-            var players = Players;
             if (IsSingleplayer)
             {
                 var singleplayer = players[0];
@@ -178,16 +193,15 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="pos">Position to check furthness from.</param>
         /// <returns>Returns a <see cref="PAPlayer"/> furthest from the Vector2 parameter.</returns>
-        public static PAPlayer GetFurthestPlayer(Vector2 pos) => Players.GetAtOrDefault(GetFurthestPlayerIndex(pos), null);
+        public PAPlayer GetFurthestPlayer(Vector2 pos) => players.GetAtOrDefault(GetFurthestPlayerIndex(pos), null);
 
         /// <summary>
         /// Gets the player furthest from a vector.
         /// </summary>
         /// <param name="pos">Position to check furthness from.</param>
         /// <returns>Returns an index of the <see cref="PAPlayer"/> furthest to the Vector2 parameter.</returns>
-        public static int GetFurthestPlayerIndex(Vector2 pos)
+        public int GetFurthestPlayerIndex(Vector2 pos)
         {
-            var players = Players;
             if (IsSingleplayer)
             {
                 var singlePlayer = players[0];
@@ -211,15 +225,14 @@ namespace BetterLegacy.Core.Managers
         /// Gets the player with the highest amount of health.
         /// </summary>
         /// <returns>Returns a <see cref="PAPlayer"/> with the highest amount of health.</returns>
-        public static PAPlayer GetHighestHealthPlayer() => Players.GetAtOrDefault(GetHighestHealthPlayerIndex(), null);
+        public PAPlayer GetHighestHealthPlayer() => players.GetAtOrDefault(GetHighestHealthPlayerIndex(), null);
 
         /// <summary>
         /// Gets the player with the highest amount of health.
         /// </summary>
         /// <returns>Returns an index of the <see cref="PAPlayer"/> with the highest amount of health.</returns>
-        public static int GetHighestHealthPlayerIndex()
+        public int GetHighestHealthPlayerIndex()
         {
-            var players = Players;
             if (IsSingleplayer)
             {
                 var singlePlayer = players[0];
@@ -242,15 +255,14 @@ namespace BetterLegacy.Core.Managers
         /// Gets the player with the highest amount of health.
         /// </summary>
         /// <returns>Returns a <see cref="PAPlayer"/> with the highest amount of health.</returns>
-        public static PAPlayer GetLowestHealthPlayer() => Players.GetAtOrDefault(GetLowestHealthPlayerIndex(), null);
+        public PAPlayer GetLowestHealthPlayer() => players.GetAtOrDefault(GetLowestHealthPlayerIndex(), null);
 
         /// <summary>
         /// Gets the player with the lowest amount of health.
         /// </summary>
         /// <returns>Returns an index of the <see cref="PAPlayer"/> with the lowest amount of health.</returns>
-        public static int GetLowestHealthPlayerIndex()
+        public int GetLowestHealthPlayerIndex()
         {
-            var players = Players;
             if (IsSingleplayer)
             {
                 var singlePlayer = players[0];
@@ -273,9 +285,8 @@ namespace BetterLegacy.Core.Managers
         /// Calculates the center of all players positions.
         /// </summary>
         /// <returns>Returns a center vector of all players.</returns>
-        public static Vector2 CenterOfPlayers()
+        public Vector2 CenterOfPlayers()
         {
-            var players = Players;
             if (IsSingleplayer)
             {
                 var customPlayer = players[0];
@@ -308,38 +319,49 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Checks if there are any players loaded and if there are none, adds a default player.
         /// </summary>
-        public static void ValidatePlayers()
+        public void ValidatePlayers()
         {
             var invalid = InvalidPlayers;
 
             if (!invalid)
                 return;
 
-            Players.Clear();
-            Players.Add(CreateDefaultPlayer());
+            players.Clear();
+            players.Add(CreateDefaultPlayer());
         }
 
         /// <summary>
         /// Creates the default player that uses a keyboard.
         /// </summary>
         /// <returns>Returns a <see cref="PAPlayer"/> with the default values.</returns>
-        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(0, null);
+        public PAPlayer CreateDefaultPlayer() => new PAPlayer(0, null);
 
-        public static PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => Players.Find(x => x.device == inputDevice);
+        public PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => players.Find(x => x.device == inputDevice);
 
-        public static bool DeviceNotConnected(InputDevice inputDevice) => !Players.Has(x => x.device == inputDevice);
+        public bool DeviceNotConnected(InputDevice inputDevice) => !players.Has(x => !x.IsLocalPlayer || x.device == inputDevice);
 
-        public static PAPlayer FindPlayerUsingKeyboard() => Players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+        public PAPlayer FindPlayerUsingKeyboard() => players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
-        public static bool KeyboardNotConnected() => !Players.Has(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+        public bool KeyboardNotConnected() => !players.Has(x => !x.IsLocalPlayer || x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
-        public static void RemovePlayer(PAPlayer player)
+        public void RemovePlayer(PAPlayer player)
         {
             if (player.RuntimePlayer)
                 CoreHelper.Delete(player.RuntimePlayer);
             player.Input = null;
             player.RuntimePlayer = null;
-            Players.Remove(player);
+            players.Remove(player);
+        }
+
+        public void RemoveOnlinePlayers()
+        {
+            players.ForLoopReverse((player, index) =>
+            {
+                if (player.IsLocalPlayer)
+                    return;
+                player?.RuntimePlayer?.Clear();
+                players.RemoveAt(index);
+            });
         }
 
         #endregion
@@ -350,7 +372,7 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a checkpoint.
         /// </summary>
         /// <param name="checkpoint">Checkpoint to spawn at.</param>
-        public static void SpawnPlayers(Checkpoint checkpoint, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
+        public void SpawnPlayers(Checkpoint checkpoint, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
         {
             if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
                 return;
@@ -360,7 +382,7 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
             var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
-            foreach (var player in Players)
+            foreach (var player in players)
             {
                 // no lives? too bad.
                 if (player.OutOfLives)
@@ -387,7 +409,7 @@ namespace BetterLegacy.Core.Managers
         /// Spawns all players at a position.
         /// </summary>
         /// <param name="pos">Position to spawn at.</param>
-        public static void SpawnPlayers(Vector2 pos, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
+        public void SpawnPlayers(Vector2 pos, bool forceOnlineSpawn = false, bool sendLobbySignal = true)
         {
             if (!forceOnlineSpawn && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
                 return;
@@ -397,7 +419,7 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
 
             bool spawned = false;
-            foreach (var player in Players)
+            foreach (var player in players)
             {
                 // no lives? too bad.
                 if (player.OutOfLives)
@@ -425,7 +447,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="customPlayer">Player to spawn.</param>
         /// <param name="pos">Position to spawn at.</param>
-        public static void SpawnPlayer(PAPlayer player, Vector3 pos)
+        public void SpawnPlayer(PAPlayer player, Vector3 pos)
         {
             player.ResetHealth();
 
@@ -440,20 +462,22 @@ namespace BetterLegacy.Core.Managers
             gameObject.transform.localRotation = Quaternion.identity;
 
             var runtimePlayer = gameObject.GetOrAddComponent<RTPlayer>();
-
-            runtimePlayer.Core = player;
-            runtimePlayer.Model = player.PlayerModel;
-            runtimePlayer.index = player.index;
-            if (SteamLobbyManager.inst && SteamLobbyManager.inst.TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
-                runtimePlayer.colorSlot = playerSettings.colorSlot;
-            else if (player.PlayerModel)
-                runtimePlayer.colorSlot = player.PlayerModel.basePart.colorSlot;
-            runtimePlayer.initialHealthCount = player.Health;
             player.RuntimePlayer = runtimePlayer;
+            runtimePlayer.Core = player;
+            runtimePlayer.Model = player.Model;
+            runtimePlayer.index = player.index;
+            if (!player.IsLocalPlayer)
+                runtimePlayer.colorSlot = player.colorSlot;
+            else if (TryGetPlayerSettings(player.index, out PlayerSettings playerSettings))
+                player.ColorSlot = playerSettings.colorSlot;
+            else if (player.Model)
+                player.ColorSlot = player.Model.basePart.colorSlot;
+            runtimePlayer.initialHealthCount = player.Health;
 
             runtimePlayer.Init();
             runtimePlayer.UpdateTail(player.Health, pos);
 
+            // spawn should only occur when the player is activated.
             if (GameManager.inst.players.activeSelf)
             {
                 runtimePlayer.UpdateModel();
@@ -477,7 +501,7 @@ namespace BetterLegacy.Core.Managers
                     return;
                 }
 
-                if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
+                if (players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
                 {
                     if (RTBeatmap.Current.challengeMode.Lives > 0)
                         RTBeatmap.Current.lives--;
@@ -520,7 +544,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="index">Index of the player.</param>
         /// <param name="pos">Position to spawn at.</param>
         /// <returns>Returns the spawned players' game object.</returns>
-        public static GameObject SpawnPlayer(PlayerModel playerModel, Transform transform, int index, Vector3 pos)
+        public GameObject SpawnPlayer(PlayerModel playerModel, Transform transform, int index, Vector3 pos)
         {
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(transform, "Player");
             gameObject.layer = 8;
@@ -555,15 +579,15 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Spawns all players at the start of the level. If <see cref="LevelData.spawnPlayers"/> is off, then don't spawn players.
         /// </summary>
-        public static void SpawnPlayersOnStart(bool sendLobbySignal = true)
+        public void SpawnPlayersOnStart(bool sendLobbySignal = true)
         {
             ValidatePlayers();
             DestroyPlayers();
 
-            for (int i = 0; i < Players.Count; i++)
+            for (int i = 0; i < players.Count; i++)
             {
-                var player = Players[i];
-                player.lives = RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : player.GetControl()?.lives ?? -1;
+                var player = players[i];
+                player.lives = RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : player.GetProperties()?.lives ?? -1;
             }
 
             if (GameData.Current && GameData.Current.data && (!GameData.Current.data.level || GameData.Current.data.level.spawnPlayers))
@@ -573,7 +597,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Destroys all player related game objects.
         /// </summary>
-        public static void DestroyPlayers(bool forceOnline = false, bool sendLobbySignal = true)
+        public void DestroyPlayers(bool forceOnline = false, bool sendLobbySignal = true)
         {
             if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
                 return;
@@ -581,7 +605,7 @@ namespace BetterLegacy.Core.Managers
             if (ProjectArrhythmia.State.IsHosting && sendLobbySignal)
                 NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.DESTROY_PLAYERS);
 
-            foreach (var player in Players)
+            foreach (var player in players)
                 DestroyPlayer(player);
         }
 
@@ -589,9 +613,8 @@ namespace BetterLegacy.Core.Managers
         /// Destroys a players' game objects.
         /// </summary>
         /// <param name="index">Index of a player to destroy.</param>
-        public static void DestroyPlayer(int index)
+        public void DestroyPlayer(int index)
         {
-            var players = Players;
             if (players.TryGetAt(index, out PAPlayer player))
                 DestroyPlayer(player);
         }
@@ -600,7 +623,7 @@ namespace BetterLegacy.Core.Managers
         /// Destroys a players' game objects.
         /// </summary>
         /// <param name="player">Player to destroy.</param>
-        public static void DestroyPlayer(PAPlayer player)
+        public void DestroyPlayer(PAPlayer player)
         {
             if (!player)
                 return;
@@ -613,17 +636,17 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Respawns all players at the default spawn position.
         /// </summary>
-        public static void RespawnPlayers() => RespawnPlayers(false);
+        public void RespawnPlayers() => RespawnPlayers(false);
 
         /// <summary>
         /// Respawns all players at the default spawn position.
         /// </summary>
-        public static void RespawnPlayers(bool forceOnline, bool sendLobbySignal = true) => RespawnPlayers(GetSpawnPosition(), forceOnline, sendLobbySignal);
+        public void RespawnPlayers(bool forceOnline, bool sendLobbySignal = true) => RespawnPlayers(GetSpawnPosition(), forceOnline, sendLobbySignal);
 
         /// <summary>
         /// Respawns all players at a set spawn position.
         /// </summary>
-        public static void RespawnPlayers(Vector2 pos, bool forceOnline, bool sendLobbySignal = true)
+        public void RespawnPlayers(Vector2 pos, bool forceOnline, bool sendLobbySignal = true)
         {
             if (!forceOnline && ProjectArrhythmia.State.IsOnlineMultiplayer && !ProjectArrhythmia.State.IsHosting)
                 return;
@@ -640,41 +663,52 @@ namespace BetterLegacy.Core.Managers
         /// Respawns a specific player at the default spawn position.
         /// </summary>
         /// <param name="index">Index of the player to respawn.</param>
-        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[index]);
+        public void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[index]);
 
         /// <summary>
         /// Respawns a specific player at a set spawn position.
         /// </summary>
         /// <param name="index">Index of the player to respawn.</param>
         /// <param name="pos">Position to spawn at.</param>
-        public static void RespawnPlayer(int index, Vector2 pos)
+        public void RespawnPlayer(int index, Vector2 pos)
         {
-            var players = Players;
-            if (!players.InRange(index))
+            if (!players.TryGetAt(index, out PAPlayer player))
                 return;
 
-            var player = Players[index];
             player.RuntimePlayer?.Clear();
-            player.CurrentModel = PlayersData.Current.GetPlayerModel(index).basePart.id;
+            if (player.IsLocalPlayer)
+                player.SetModel(PlayersData.Current.GetPlayerModel(player));
 
-            SpawnPlayers(pos);
+            // no lives? too bad.
+            if (player.OutOfLives)
+            {
+                CoreHelper.Log($"Player {player.index} is out of lives.");
+                return;
+            }
+
+            if (!player.RuntimePlayer)
+            {
+                SpawnPlayer(player, pos);
+                if (RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
+                    SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
+            }
         }
 
         /// <summary>
         /// Respawns a specific player at the default spawn position.
         /// </summary>
         /// <param name="player">The player to respawn.</param>
-        public static void RespawnPlayer(PAPlayer player) => RespawnPlayer(player, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[player.index]);
+        public void RespawnPlayer(PAPlayer player) => RespawnPlayer(player, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[player.index]);
 
         /// <summary>
         /// Respawns a specific player at a set spawn position.
         /// </summary>
         /// <param name="player">The player to respawn.</param>
         /// <param name="pos">Position to spawn at.</param>
-        public static void RespawnPlayer(PAPlayer player, Vector2 pos)
+        public void RespawnPlayer(PAPlayer player, Vector2 pos)
         {
             player.RuntimePlayer?.Clear();
-            player.CurrentModel = PlayersData.Current.GetPlayerModel(player.index).basePart.id;
+            player.SetModel(PlayersData.Current.GetPlayerModel(player));
 
             SpawnPlayers(pos);
         }
@@ -683,7 +717,7 @@ namespace BetterLegacy.Core.Managers
         /// Gets the last active checkpoint and its position.
         /// </summary>
         /// <returns>Returns the last active checkpoint position.</returns>
-        public static Vector2 GetSpawnPosition()
+        public Vector2 GetSpawnPosition()
         {
             var nextIndex = GameData.Current.data.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
             var prevIndex = nextIndex - 1;
@@ -699,9 +733,8 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="checkpoint">Checkpoint to get the position of.</param>
         /// <returns>Returns the checkpoint position.</returns>
-        public static Vector2[] GetSpawnPositions(Checkpoint checkpoint)
+        public Vector2[] GetSpawnPositions(Checkpoint checkpoint)
         {
-            var players = Players;
             //var hash = RandomHelper.GetHash(checkpoint.id ?? string.Empty, AudioManager.inst.CurrentAudioSource.time.ToString(), RandomHelper.CurrentSeed);
             //int randomIndex = !checkpoint ? -1 : RandomHelper.IntFromRange(hash, -1, checkpoint.positions.Count - 1);
             var randomIndex = !checkpoint ? -1 : UnityRandom.Range(-1, checkpoint.positions.Count);
@@ -739,26 +772,149 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        #region Settings
+
+        /// <summary>
+        /// Saves the player settings file.
+        /// </summary>
+        public void SavePlayerSettings()
+        {
+            var jn = Parser.NewJSONObject();
+            for (int i = 0; i < playerSettings.Count; i++)
+                jn["settings"][i] = playerSettings[i].ToJSON();
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", PLAYER_SETTINGS_FILE_NAME), jn.ToString(3));
+            Log("Saved player settings!");
+        }
+
+        /// <summary>
+        /// Loads the player settings file.
+        /// </summary>
+        public void LoadPlayerSettings()
+        {
+            try
+            {
+                playerSettings.Clear();
+                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", PLAYER_SETTINGS_FILE_NAME);
+                if (!RTFile.TryReadFromFile(path, out string file))
+                    return;
+                var jn = JSON.Parse(file);
+                for (int i = 0; i < jn["settings"].Count; i++)
+                    playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
+                Log("Loaded player settings!");
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets player settings at an index.
+        /// </summary>
+        /// <param name="index">Index match.</param>
+        /// <returns>Returns a found <see cref="PlayerSettings"/>.</returns>
+        public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
+
+        /// <summary>
+        /// Tries to get player settings at an index.
+        /// </summary>
+        /// <param name="index">Index match.</param>
+        /// <param name="playerSettings">Result player settings.</param>
+        /// <returns>Returns <see langword="true"/> if a player settings was found, otherwise returns <see langword="false"/>.</returns>
+        public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
+        {
+            playerSettings = GetPlayerSettings(index);
+            return playerSettings;
+        }
+
+        #endregion
+
         #region Models
 
         /// <summary>
         /// Updates all players.
         /// </summary>
-        public static void UpdatePlayerModels()
+        public void UpdatePlayerModels()
         {
-            foreach (var player in Players)
-            {
-                player.UpdatePlayerModel();
+            foreach (var player in players)
                 player.RuntimePlayer?.UpdateModel();
-            }
         }
 
-        public static void AssignPlayerModels()
+        /// <summary>
+        /// Updates all player models.
+        /// </summary>
+        public void AssignPlayerModels()
         {
-            var players = Players;
             if (!players.IsEmpty())
                 for (int i = 0; i < players.Count; i++)
-                    players[i].CurrentModel = PlayersData.Current.GetPlayerModel(i).basePart.id;
+                {
+                    var player = players[i];
+                    if (player.IsLocalPlayer)
+                        player.SetModel(PlayersData.Current.GetPlayerModel(i));
+                }
+        }
+
+        /// <summary>
+        /// Sets the custom player model.
+        /// </summary>
+        /// <param name="index">Index of the player that should use the custom player model.</param>
+        /// <param name="playerModelID">The player model ID.</param>
+        public void SetCustomModel(int index, string playerModelID)
+        {
+            if (playerSettings.TryFind(x => x.index == index, out PlayerSettings playerSetting))
+                playerSetting.playerModelID = playerModelID;
+            else
+                playerSettings.Add(new PlayerSettings
+                {
+                    index = index,
+                    playerModelID = playerModelID,
+                });
+            if (LobbyPopup.Instance && LobbyPopup.Instance.Active && LobbyPopup.Instance.CurrentTab == LobbyPopup.LobbyTab.Settings)
+                LobbyPopup.Instance.Render();
+            if (players.TryFindIndex(x => x.IsLocalPlayer && x.localIndex == index, out int playerIndex))
+                RespawnPlayer(playerIndex);
+        }
+
+        #endregion
+
+        #region Variables
+
+        public void SavePlayerVariables()
+        {
+            var jn = Parser.NewJSONObject();
+            var playerVariableSetIndex = 0;
+            foreach (var playerVariableSet in playerVariables)
+            {
+                var jnSet = Parser.NewJSONObject();
+                jnSet["index"] = playerVariableSet.Key;
+                int variableIndex = 0;
+                foreach (var variable in playerVariableSet.Value)
+                {
+                    jnSet["vars"][variableIndex]["n"] = variable.Key;
+                    jnSet["vars"][variableIndex]["v"] = variable.Value;
+                    variableIndex++;
+                }
+                jn["players"][playerVariableSetIndex] = jnSet;
+                playerVariableSetIndex++;
+            }
+            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "player_variables" + FileFormat.LSS.Dot()), jn.ToString());
+        }
+
+        public void LoadPlayerVariables()
+        {
+            if (!RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", "player_variables" + FileFormat.LSS.Dot()), out string file))
+                return;
+            playerVariables.Clear();
+            var jn = JSON.Parse(file);
+            for (int i = 0; i < jn["players"].Count; i++)
+            {
+                var jnSet = jn["players"][i];
+                var index = jnSet["index"];
+                var variables = new Dictionary<string, string>();
+                for (int j = 0; j < jnSet["vars"].Count; j++)
+                    variables[jnSet["vars"][j]["n"]] = jnSet["vars"][j]["v"];
+                playerVariables[index] = variables;
+            }
         }
 
         #endregion

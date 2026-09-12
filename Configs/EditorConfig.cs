@@ -407,6 +407,8 @@ namespace BetterLegacy.Configs
         public Setting<bool> CreateObjectRotationKFRelativeDefault { get; set; }
         public Setting<float> CreateObjectRenderDepthDefault { get; set; }
 
+        public Setting<bool> CreateMarkerOnCurrentLayer { get; set; }
+
         public Setting<bool> ApplyRandomToSingleBackgroundObject { get; set; }
 
         public Setting<Vector2> CreateBackgroundsPositionXRange { get; set; }
@@ -958,6 +960,8 @@ namespace BetterLegacy.Configs
             CreateObjectScaleKFRelativeDefault = Bind(this, CREATION, "Object Scale KF Relative Default", false, "The default value for new objects' scale keyframe relative toggle.");
             CreateObjectRotationKFRelativeDefault = Bind(this, CREATION, "Object Rotation KF Relative Default", true, "The default value for new objects' rotation keyframe relative toggle.");
             CreateObjectRenderDepthDefault = Bind(this, CREATION, "Object Render Depth Default", 15f, "The default value for new objects' render depth.");
+
+            CreateMarkerOnCurrentLayer = Bind(this, CREATION, "Create Marker On Current Layer", false, "If new markers should be created on the current layer.");
 
             ApplyRandomToSingleBackgroundObject = Bind(this, CREATION, "Apply Random to Single Background Object", false, "If randomization properties should be applied to the singular created background objects.");
 

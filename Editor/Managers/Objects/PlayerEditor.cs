@@ -35,7 +35,7 @@ using BetterLegacy.Editor.Data.Popups;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Manages editing <see cref="PlayerModel"/>s, <see cref="PlayerControl"/> and other misc player related things.
+    /// Manages editing <see cref="PlayerModel"/>s, <see cref="PlayerProperties"/> and other misc player related things.
     /// </summary>
     public class PlayerEditor : BaseManager<PlayerEditor, EditorManagerSettings>
     {
@@ -49,7 +49,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Player Models content popup.
         /// </summary>
-        public ContentPopup ModelsPopup { get; set; }
+        public DoubleContentPopup ModelsPopup { get; set; }
 
         /// <summary>
         /// Custom objects content popup.
@@ -69,7 +69,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// The currently selected player.
         /// </summary>
-        public PAPlayer CurrentPlayer => PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) ? player : null;
+        public PAPlayer CurrentPlayer => PlayerManager.inst.players.TryGetAt(playerIndex, out PAPlayer player) ? player : null;
 
         /// <summary>
         /// The currently selected player model.
@@ -133,7 +133,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Function to run when a player model is selected.
         /// </summary>
-        public Action<PlayerModel> onSelectModel;
+        public Action<PlayerModelPanel> onSelectModel;
 
         /// <summary>
         /// Copied custom object.
@@ -144,6 +144,12 @@ namespace BetterLegacy.Editor.Managers
         /// List of player models.
         /// </summary>
         public List<PlayerModelPanel> ModelPanels { get; set; } = new List<PlayerModelPanel>();
+
+        public string copiedPlayerModelPath;
+
+        public bool shouldCutPlayerModel;
+
+        GameObject playerModelExternalUpAFolderButton;
 
         #endregion
 
@@ -170,41 +176,126 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             } // init dialog
 
-            ModelsPopup = RTEditor.inst.GeneratePopup(EditorPopup.PLAYER_MODELS_POPUP, "Select a Player Model", Vector2.zero, new Vector2(600f, 450f), _val => RenderModelsPopup());
-            ModelsPopup.InitTopElementsParent();
-            ModelsPopup.InitReload(Reload);
+            ModelsPopup = new DoubleContentPopup(EditorPopup.PLAYER_MODELS_POPUP);
+            ModelsPopup.Init();
+            RTEditor.inst.editorPopups.Add(ModelsPopup);
+            ModelsPopup.External.InitTopElementsParent();
+            ModelsPopup.External.InitReload(() =>
+            {
+                RTEditor.inst.LoadInternalPlayerModelPanelUI(false);
+                RTEditor.inst.LoadExternalPrefabPanelUI(false);
+                Reload();
+            });
+            ModelsPopup.External.InitPath(
+                getValue: () => RTEditor.inst.PlayersPath,
+                setValue: _val => RTEditor.inst.PlayersPath = _val,
+                onEndEdit: _val => Reload());
+
+            ModelsPopup.Internal.SetTitle("Internal Player Models");
+            ModelsPopup.External.SetTitle("External Player Models");
+
+            TooltipHelper.AssignTooltip(ModelsPopup.External.PathField.gameObject, "Player Path");
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.External.GameObject,
+                    new ButtonElement("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), () => { Reload(); RTEditor.inst.HideNameEditor(); });
+                    }),
+                    //new ButtonElement("Create Player Model", () =>
+                    //{
+
+                    //}),
+                    new SpacerElement(),
+                    new ButtonElement("Paste", PastePlayerModel));
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.Internal.GameObject,
+                new ButtonElement("Create Player Model", CreateNewModel));
+
+            EditorContextMenu.AddContextMenu(ModelsPopup.External.PathField.gameObject,
+                new ButtonElement("Set folder", () =>
+                {
+                    RTFileBrowser.inst.Popup.Open();
+                    RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                    {
+                        if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                        {
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        ModelsPopup.External.PathField.text = _val.Replace("\\", "/").Remove(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/");
+                        EditorManager.inst.DisplayNotification($"Set Player Model path to {RTEditor.inst.PlayersPath}!", 2f, EditorManager.NotificationType.Success);
+                        RTFileBrowser.inst.Popup.Close();
+                        Reload();
+                    });
+                }),
+                new ButtonElement("Open in File Explorer", RTEditor.inst.OpenPlayerListFolder),
+                new ButtonElement("Set as Default for Level", () =>
+                {
+                    RTEditor.inst.editorInfo.playerModelPath = RTEditor.inst.PlayersPath;
+                    EditorManager.inst.DisplayNotification($"Set current player folder [ {RTEditor.inst.PlayersPath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
+                }, "Player Default Path"),
+                new ButtonElement("Remove Default", () =>
+                {
+                    RTEditor.inst.editorInfo.playerModelPath = null;
+                    EditorManager.inst.DisplayNotification($"Removed default player folder.", 5f, EditorManager.NotificationType.Success);
+                }, "Player Default Path"));
+
+            EditorHelper.SetComplexity(ModelsPopup.External.PathField.gameObject, "player_model/path", Complexity.Normal);
+
             ModelsPopup.onRender = () =>
             {
                 if (AssetPack.TryReadFromFile("editor/ui/popups/player_models_popup.json", out string uiFile))
                 {
                     var jn = JSON.Parse(uiFile);
-                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(600f, 450f)).AssignToRectTransform(ModelsPopup.GameObject.transform.AsRT());
-                    RectValues.TryParse(jn["top_panel"]["rect"], RectValues.FullAnchored.AnchorMin(0, 1).Pivot(0f, 0f).SizeDelta(32f, 32f)).AssignToRectTransform(ModelsPopup.TopPanel);
-                    RectValues.TryParse(jn["search"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 32f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("search-box").AsRT());
-                    RectValues.TryParse(jn["scrollbar"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f))).AssignToRectTransform(ModelsPopup.GameObject.transform.Find("Scrollbar").AsRT());
+                    RectValues.TryParse(jn["base"]["rect"], RectValues.Default.SizeDelta(920f, 450f)).AssignToRectTransform(ModelsPopup.GameObject.transform.AsRT());
 
-                    var layoutValues = LayoutValues.Parse(jn["layout"]);
-                    if (layoutValues is GridLayoutValues gridLayoutValues)
-                        gridLayoutValues.AssignToLayout(ModelsPopup.Grid ? ModelsPopup.Grid : ModelsPopup.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+                    RectValues.TryParse(jn["internal"]["base"]["rect"], new RectValues(new Vector2(-80f, -16f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(ModelsPopup.Internal.GameObject.transform.AsRT());
+                    RectValues.TryParse(jn["external"]["base"]["rect"], new RectValues(new Vector2(60f, -16f), Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(500f, -32f))).AssignToRectTransform(ModelsPopup.External.GameObject.transform.AsRT());
 
-                    if (jn["title"] != null)
+                    var internalLayoutValues = LayoutValues.Parse(jn["internal"]["layout"]);
+                    if (internalLayoutValues is GridLayoutValues internalGrid)
+                        internalGrid.AssignToLayout(ModelsPopup.Internal.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    var externalLayoutValues = LayoutValues.Parse(jn["external"]["layout"]);
+                    if (externalLayoutValues is GridLayoutValues externalGrid)
+                        externalGrid.AssignToLayout(ModelsPopup.External.GameObject.transform.Find("mask/content").GetComponent<GridLayoutGroup>());
+
+                    ModelsPopup.Internal.GameObject.GetComponent<ScrollRect>().horizontal = jn["internal"]["scroll"]["horizontal"].AsBool;
+                    ModelsPopup.External.GameObject.GetComponent<ScrollRect>().horizontal = jn["external"]["scroll"]["horizontal"].AsBool;
+
+                    if (jn["internal"]["title"] != null)
                     {
-                        ModelsPopup.title = jn["title"]["text"] != null ? jn["title"]["text"] : "Select a Player Model";
+                        ModelsPopup.Internal.title = jn["internal"]["title"]["text"];
 
-                        var title = ModelsPopup.Title;
-                        RectValues.TryParse(jn["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
-                        title.alignment = jn["title"]["alignment"] != null ? (TextAnchor)jn["title"]["alignment"].AsInt : TextAnchor.MiddleLeft;
-                        title.fontSize = jn["title"]["font_size"] != null ? jn["title"]["font_size"].AsInt : 20;
-                        title.fontStyle = (FontStyle)jn["title"]["font_style"].AsInt;
-                        title.horizontalOverflow = jn["title"]["horizontal_overflow"] != null ? (HorizontalWrapMode)jn["title"]["horizontal_overflow"].AsInt : HorizontalWrapMode.Wrap;
-                        title.verticalOverflow = jn["title"]["vertical_overflow"] != null ? (VerticalWrapMode)jn["title"]["vertical_overflow"].AsInt : VerticalWrapMode.Overflow;
+                        var title = ModelsPopup.Internal.Title;
+                        RectValues.TryParse(jn["internal"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = (TextAnchor)jn["internal"]["title"]["alignment"].AsInt;
+                        title.fontSize = jn["internal"]["title"]["font_size"].AsInt;
+                        title.fontStyle = (FontStyle)jn["internal"]["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = (HorizontalWrapMode)jn["internal"]["title"]["horizontal_overflow"].AsInt;
+                        title.verticalOverflow = (VerticalWrapMode)jn["internal"]["title"]["vertical_overflow"].AsInt;
+                    }
+                    if (jn["external"]["title"] != null)
+                    {
+                        ModelsPopup.External.title = jn["external"]["title"]["text"];
+
+                        var title = ModelsPopup.External.Title;
+                        RectValues.TryParse(jn["external"]["title"]["rect"], RectValues.FullAnchored.AnchoredPosition(2f, 0f).SizeDelta(-12f, -8f)).AssignToRectTransform(title.rectTransform);
+                        title.alignment = (TextAnchor)jn["external"]["title"]["alignment"].AsInt;
+                        title.fontSize = jn["external"]["title"]["font_size"].AsInt;
+                        title.fontStyle = (FontStyle)jn["external"]["title"]["font_style"].AsInt;
+                        title.horizontalOverflow = (HorizontalWrapMode)jn["external"]["title"]["horizontal_overflow"].AsInt;
+                        title.verticalOverflow = (VerticalWrapMode)jn["external"]["title"]["vertical_overflow"].AsInt;
                     }
 
                     if (jn["anim"] != null)
                         ModelsPopup.ReadAnimationJSON(jn["anim"]);
 
-                    if (jn["drag_mode"] != null && ModelsPopup.Dragger)
-                        ModelsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
+                    if (jn["internal"]["drag_mode"] != null && ModelsPopup.Internal.Dragger)
+                        ModelsPopup.Internal.Dragger.mode = (DraggableUI.DragMode)jn["internal"]["drag_mode"].AsInt;
+                    if (jn["external"]["drag_mode"] != null && ModelsPopup.External.Dragger)
+                        ModelsPopup.External.Dragger.mode = (DraggableUI.DragMode)jn["external"]["drag_mode"].AsInt;
                 }
             };
 
@@ -243,6 +334,54 @@ namespace BetterLegacy.Editor.Managers
                         CustomObjectsPopup.Dragger.mode = (DraggableUI.DragMode)jn["drag_mode"].AsInt;
                 }
             };
+
+            #region External
+
+            EditorThemeManager.ApplyGraphic(ModelsPopup.External.GameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+
+            var externalPanel = ModelsPopup.External.GameObject.transform.Find("Panel");
+            externalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
+            EditorThemeManager.ApplyGraphic(externalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+            var externalClose = externalPanel.Find("x").GetComponent<Button>();
+            Destroy(externalClose.GetComponent<Animator>());
+            externalClose.transition = Selectable.Transition.ColorTint;
+            externalClose.image.rectTransform.anchoredPosition = Vector2.zero;
+            EditorThemeManager.ApplySelectable(externalClose, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(externalClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+            EditorThemeManager.ApplyLightText(externalPanel.Find("Text").GetComponent<Text>());
+
+            EditorThemeManager.ApplyScrollbar(ModelsPopup.External.GameObject.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+
+            EditorThemeManager.ApplyInputField(ModelsPopup.External.SearchField, ThemeGroup.Search_Field_2);
+
+            #endregion
+
+            #region Internal
+
+            EditorThemeManager.ApplyGraphic(ModelsPopup.Internal.GameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+
+            var internalPanel = ModelsPopup.Internal.GameObject.transform.Find("Panel");
+            internalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
+            EditorThemeManager.ApplyGraphic(internalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+            var internalClose = internalPanel.Find("x").GetComponent<Button>();
+            Destroy(internalClose.GetComponent<Animator>());
+            internalClose.transition = Selectable.Transition.ColorTint;
+            internalClose.image.rectTransform.anchoredPosition = Vector2.zero;
+            EditorThemeManager.ApplySelectable(internalClose, ThemeGroup.Close);
+            EditorThemeManager.ApplyGraphic(internalClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+            EditorThemeManager.ApplyLightText(internalPanel.Find("Text").GetComponent<Text>());
+
+            EditorThemeManager.ApplyScrollbar(ModelsPopup.Internal.GameObject.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
+
+            EditorThemeManager.ApplyInputField(ModelsPopup.Internal.SearchField, ThemeGroup.Search_Field_2);
+
+            #endregion
+
+            ModelsPopup.SetActive(false);
         }
 
         /// <summary>
@@ -250,9 +389,15 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void CreateNewModel()
         {
-            var playerModel = PlayersData.Current.CreateNewPlayerModel();
-            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
-            PlayerManager.RespawnPlayers();
+            var playerModel = new PlayerModel();
+            playerModel.Name = "New Model";
+            playerModel.ID = LSText.randomNumString(16);
+            playerModel.creator = CoreConfig.Instance.DisplayName.Value; // set creator name
+
+            PlayersData.Current.OverwritePlayerModel(playerModel);
+
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.ID);
+            PlayerManager.inst.RespawnPlayers();
             RenderDialog();
             EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
         }
@@ -283,15 +428,20 @@ namespace BetterLegacy.Editor.Managers
         {
             if (EditorLevelManager.inst.CurrentLevel)
                 PlayersData.Load(EditorLevelManager.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
-            PlayerManager.RespawnPlayers();
+            PlayerManager.inst.RespawnPlayers();
             if (Dialog.IsCurrent)
                 RenderDialog();
             if (ModelsPopup.IsOpen)
-                RenderModelsPopup();
+            {
+                RenderInternalPlayerModelsPopup(onSelectModel);
+                RenderExternalPlayerModelsPopup();
+            }
             CustomObjectsPopup.Close();
 
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }
+
+        #region Dialog
 
         /// <summary>
         /// Gets the current tab of the dialog.
@@ -365,27 +515,14 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        void RenderSingle(InputFieldStorage inputFieldStorage, float value, Action<string> onValueChanged, Action<string> onEndEdit = null)
-        {
-            inputFieldStorage.inputField.SetTextWithoutNotify(value.ToString());
-            inputFieldStorage.inputField.onValueChanged.NewListener(onValueChanged);
-            if (onEndEdit != null)
-                inputFieldStorage.inputField.onEndEdit.NewListener(onEndEdit);
-            else
-                inputFieldStorage.inputField.onEndEdit.ClearAll();
-
-            TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
-        }
-
         void RenderInteger(InputFieldStorage inputFieldStorage, int value, Action<string> onValueChanged, Action<string> onEndEdit = null)
         {
-            inputFieldStorage.inputField.SetTextWithoutNotify(value.ToString());
-            inputFieldStorage.inputField.onValueChanged.NewListener(onValueChanged);
+            inputFieldStorage.SetTextWithoutNotify(value.ToString());
+            inputFieldStorage.OnValueChanged.NewListener(onValueChanged);
             if (onEndEdit != null)
-                inputFieldStorage.inputField.onEndEdit.NewListener(onEndEdit);
+                inputFieldStorage.OnEndEdit.NewListener(onEndEdit);
             else
-                inputFieldStorage.inputField.onEndEdit.ClearAll();
+                inputFieldStorage.OnEndEdit.ClearAll();
 
             TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
             TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
@@ -393,19 +530,19 @@ namespace BetterLegacy.Editor.Managers
 
         void RenderVector2(InputFieldStorage xField, InputFieldStorage yField, Vector2 value, Action<string> onXValueChanged, Action<string> onYValueChanged, Action<string> onXEndEdit = null, Action<string> onYEndEdit = null)
         {
-            xField.inputField.SetTextWithoutNotify(value.x.ToString());
-            xField.inputField.onValueChanged.NewListener(onXValueChanged);
+            xField.SetTextWithoutNotify(value.x.ToString());
+            xField.OnValueChanged.NewListener(onXValueChanged);
             if (onXEndEdit != null)
-                xField.inputField.onEndEdit.NewListener(onXEndEdit);
+                xField.OnEndEdit.NewListener(onXEndEdit);
             else
-                xField.inputField.onEndEdit.ClearAll();
+                xField.OnEndEdit.ClearAll();
 
-            yField.inputField.SetTextWithoutNotify(value.y.ToString());
-            yField.inputField.onValueChanged.NewListener(onYValueChanged);
+            yField.SetTextWithoutNotify(value.y.ToString());
+            yField.OnValueChanged.NewListener(onYValueChanged);
             if (onYEndEdit != null)
-                yField.inputField.onEndEdit.NewListener(onYEndEdit);
+                yField.OnEndEdit.NewListener(onYEndEdit);
             else
-                yField.inputField.onEndEdit.ClearAll();
+                yField.OnEndEdit.ClearAll();
 
             TriggerHelper.IncreaseDecreaseButtons(xField);
             TriggerHelper.IncreaseDecreaseButtons(yField);
@@ -456,7 +593,7 @@ namespace BetterLegacy.Editor.Managers
                 tab.Active.Toggle.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Active = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
             }
 
@@ -469,7 +606,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var y = playerObject.Position.y;
                         playerObject.Position = new Vector2(num, y);
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -478,7 +615,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var x = playerObject.Position.x;
                         playerObject.Position = new Vector2(x, num);
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -489,7 +626,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var y = playerObject.Scale.y;
                         playerObject.Scale = new Vector2(num, y);
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -498,17 +635,17 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var x = playerObject.Scale.x;
                         playerObject.Scale = new Vector2(x, num);
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(tab.Rotation.Field, playerObject.Rotation,
+            tab.Rotation.Field.Render(playerObject.Rotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         playerObject.Rotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -516,33 +653,33 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     playerObject.Color = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             tab.CustomColor.Field.SetTextWithoutNotify(playerObject.CustomColor);
             tab.CustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 playerObject.CustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(tab.Opacity.Field, playerObject.Opacity,
+            tab.Opacity.Field.Render(playerObject.Opacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         playerObject.Opacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(tab.Depth.Field, playerObject.Depth,
+            tab.Depth.Field.Render(playerObject.Depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         playerObject.Depth = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -552,36 +689,36 @@ namespace BetterLegacy.Editor.Managers
                 tab.TrailEmitting.Toggle.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Trail.emitting = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailTime.Field, playerObject.Trail.time,
+                tab.TrailTime.Field.Render(playerObject.Trail.time,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.time = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.TrailStartWidth.Field, playerObject.Trail.startWidth,
+                tab.TrailStartWidth.Field.Render(playerObject.Trail.startWidth,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.startWidth = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.TrailEndWidth.Field, playerObject.Trail.endWidth,
+                tab.TrailEndWidth.Field.Render(playerObject.Trail.endWidth,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.endWidth = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
@@ -589,23 +726,23 @@ namespace BetterLegacy.Editor.Managers
                     onValueChanged: _val =>
                     {
                         playerObject.Trail.startColor = _val;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     });
 
                 tab.TrailStartCustomColor.Field.SetTextWithoutNotify(playerObject.Trail.startCustomColor);
                 tab.TrailStartCustomColor.Field.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Trail.startCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailStartOpacity.Field, playerObject.Trail.startOpacity,
+                tab.TrailStartOpacity.Field.Render(playerObject.Trail.startOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.startOpacity = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
@@ -613,23 +750,23 @@ namespace BetterLegacy.Editor.Managers
                     onValueChanged: _val =>
                     {
                         playerObject.Trail.endColor = _val;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     });
 
                 tab.TrailEndCustomColor.Field.SetTextWithoutNotify(playerObject.Trail.endCustomColor);
                 tab.TrailEndCustomColor.Field.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Trail.endCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.TrailEndOpacity.Field, playerObject.Trail.endOpacity,
+                tab.TrailEndOpacity.Field.Render(playerObject.Trail.endOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.endOpacity = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
@@ -639,7 +776,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.positionOffset.x = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     },
                     onYValueChanged: _val =>
@@ -647,7 +784,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Trail.positionOffset.y = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
             }
@@ -658,7 +795,7 @@ namespace BetterLegacy.Editor.Managers
                 tab.ParticlesEmitting.Toggle.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Particles.emitting = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
                 RenderShape(tab.ParticlesShape, playerObject.Particles);
@@ -667,93 +804,93 @@ namespace BetterLegacy.Editor.Managers
                     onValueChanged: _val =>
                     {
                         playerObject.Particles.color = _val;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     });
 
                 tab.ParticlesCustomColor.Field.SetTextWithoutNotify(playerObject.Particles.customColor);
                 tab.ParticlesCustomColor.Field.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Particles.customColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-                RenderSingle(tab.ParticlesStartOpacity.Field, playerObject.Particles.startOpacity,
+                tab.ParticlesStartOpacity.Field.Render(playerObject.Particles.startOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.startOpacity = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesEndOpacity.Field, playerObject.Particles.endOpacity,
+                tab.ParticlesEndOpacity.Field.Render(playerObject.Particles.endOpacity,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.endOpacity = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesStartScale.Field, playerObject.Particles.startScale,
+                tab.ParticlesStartScale.Field.Render(playerObject.Particles.startScale,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.startScale = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesEndScale.Field, playerObject.Particles.endScale,
+                tab.ParticlesEndScale.Field.Render(playerObject.Particles.endScale,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.endScale = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesRotation.Field, playerObject.Particles.rotation,
+                tab.ParticlesRotation.Field.Render(playerObject.Particles.rotation,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.rotation = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesLifetime.Field, playerObject.Particles.lifeTime,
+                tab.ParticlesLifetime.Field.Render(playerObject.Particles.lifeTime,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.lifeTime = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesSpeed.Field, playerObject.Particles.speed,
+                tab.ParticlesSpeed.Field.Render(playerObject.Particles.speed,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.speed = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
-                RenderSingle(tab.ParticlesAmount.Field, playerObject.Particles.amount,
+                tab.ParticlesAmount.Field.Render(playerObject.Particles.amount,
                     onValueChanged: _val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.amount = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
@@ -763,7 +900,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.force.x = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     },
                     onYValueChanged: _val =>
@@ -771,7 +908,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             playerObject.Particles.force.y = num;
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         }
                     });
 
@@ -779,7 +916,7 @@ namespace BetterLegacy.Editor.Managers
                 tab.ParticlesTrailEmitting.Toggle.onValueChanged.NewListener(_val =>
                 {
                     playerObject.Particles.trailEmitting = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
             }
         }
@@ -816,7 +953,7 @@ namespace BetterLegacy.Editor.Managers
                     shapeable.ShapeOption = 0;
                 }
 
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
                 RenderShape(ui, shapeable);
                 return;
             }
@@ -842,7 +979,7 @@ namespace BetterLegacy.Editor.Managers
                     if (shapeable.Polygon && shapeable.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
                         shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
 
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                     RenderShape(ui, shapeable);
                     LayoutRebuilder.ForceRebuildLayoutImmediate(ui.GameObject.transform.parent.AsRT());
                 });
@@ -862,7 +999,7 @@ namespace BetterLegacy.Editor.Managers
                                 shapeable.ShapeOption = 0;
                             }
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                             RenderShape(ui, shapeable);
 
                             break;
@@ -883,7 +1020,7 @@ namespace BetterLegacy.Editor.Managers
                             CoreHelper.Log($"Set text to {_val}");
                             customObject.text = _val;
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         });
 
                         break;
@@ -898,7 +1035,7 @@ namespace BetterLegacy.Editor.Managers
                                 shapeable.ShapeOption = 0;
                             }
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                             RenderShape(ui, shapeable);
 
                             break;
@@ -916,7 +1053,7 @@ namespace BetterLegacy.Editor.Managers
                             CoreHelper.Log($"Set text to {_val}");
                             customObject.text = _val;
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                         });
                         var select = shapeSettings.Find("7/select").GetComponent<Button>();
                         select.onClick.NewListener(() => OpenImageSelector(ui, shapeable));
@@ -941,7 +1078,7 @@ namespace BetterLegacy.Editor.Managers
                                     customObject.text = string.Empty;
                             }
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
 
                             RenderShape(ui, shapeable);
                         });
@@ -955,7 +1092,7 @@ namespace BetterLegacy.Editor.Managers
                             shapeable.Shape = 0;
                             shapeable.ShapeOption = 0;
 
-                            PlayerManager.UpdatePlayerModels();
+                            PlayerManager.inst.UpdatePlayerModels();
                             RenderShape(ui, shapeable);
 
                             break;
@@ -978,7 +1115,7 @@ namespace BetterLegacy.Editor.Managers
                                     num = Mathf.Clamp(num, 0.1f, 10f);
                                     shapeable.Polygon.Radius = num;
 
-                                    PlayerManager.UpdatePlayerModels();
+                                    PlayerManager.inst.UpdatePlayerModels();
                                 }
                             });
 
@@ -1003,19 +1140,19 @@ namespace BetterLegacy.Editor.Managers
                                     {
                                         shapeable.Polygon.Radius = PolygonShape.TRIANGLE_RADIUS;
 
-                                        PlayerManager.UpdatePlayerModels();
+                                        PlayerManager.inst.UpdatePlayerModels();
                                     }));
                                     editorElements.Add(new ButtonElement("Set to Square Radius", () =>
                                     {
                                         shapeable.Polygon.Radius = PolygonShape.SQUARE_RADIUS;
 
-                                        PlayerManager.UpdatePlayerModels();
+                                        PlayerManager.inst.UpdatePlayerModels();
                                     }));
                                     editorElements.Add(new ButtonElement("Set to Normal Radius", () =>
                                     {
                                         shapeable.Polygon.Radius = PolygonShape.NORMAL_RADIUS;
 
-                                        PlayerManager.UpdatePlayerModels();
+                                        PlayerManager.inst.UpdatePlayerModels();
                                     }));
                                 }
                                 return editorElements;
@@ -1035,7 +1172,7 @@ namespace BetterLegacy.Editor.Managers
                                     RenderShape(ui, shapeable);
                                 }
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1051,7 +1188,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 shapeable.Polygon.Roundness = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1067,7 +1204,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 shapeable.Polygon.Thickness = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1082,7 +1219,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1097,7 +1234,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1112,7 +1249,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1127,7 +1264,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1142,7 +1279,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.ThicknessRotation = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1158,7 +1295,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 1, 32);
                                 shapeable.Polygon.Slices = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1173,7 +1310,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.Angle = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1188,7 +1325,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 shapeable.Polygon.Alternate = num;
 
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }
                         });
 
@@ -1220,7 +1357,7 @@ namespace BetterLegacy.Editor.Managers
                                         shapeable.ShapeOption = index;
                                     }
 
-                                    PlayerManager.UpdatePlayerModels();
+                                    PlayerManager.inst.UpdatePlayerModels();
                                     RenderShape(ui, shapeable);
                                 }
                             });
@@ -1238,10 +1375,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderGlobalTab()
         {
-            Dialog.GlobalTab.RespawnPlayers.Button.onClick.NewListener(PlayerManager.RespawnPlayers);
+            Dialog.GlobalTab.RespawnPlayers.Button.onClick.NewListener(PlayerManager.inst.RespawnPlayers);
             Dialog.GlobalTab.UpdateProperties.Button.onClick.NewListener(RTPlayer.SetGameDataProperties);
 
-            RenderSingle(Dialog.GlobalTab.Speed.Field, GameData.Current.data.level.speedMultiplier,
+            Dialog.GlobalTab.Speed.Field.Render(GameData.Current.data.level.speedMultiplier,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1314,7 +1451,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.GlobalTab.JumpGravity.Field, GameData.Current.data.level.jumpGravity,
+            Dialog.GlobalTab.JumpGravity.Field.Render(GameData.Current.data.level.jumpGravity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1324,7 +1461,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderSingle(Dialog.GlobalTab.JumpIntensity.Field, GameData.Current.data.level.jumpIntensity,
+            Dialog.GlobalTab.JumpIntensity.Field.Render(GameData.Current.data.level.jumpIntensity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float result))
@@ -1334,7 +1471,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            RenderInteger(Dialog.GlobalTab.MaxHealth.Field, GameData.Current.data.level.maxHealth,
+            Dialog.GlobalTab.MaxHealth.Field.Render(GameData.Current.data.level.maxHealth,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int result))
@@ -1485,37 +1622,37 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderBaseTab(PlayerModel currentModel)
         {
-            var control = PlayersData.Current.playerControls.GetAt(playerIndex);
+            var control = PlayersData.Current.playersProperties.GetAt(playerIndex);
 
             var text = Dialog.BaseTab.ID.GameObject.transform.GetChild(0).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(text.rectTransform);
             text.alignment = TextAnchor.MiddleRight;
-            text.text = currentModel.basePart.id.ToString() + " (Click to copy)";
+            text.text = currentModel.ID + " (Click to copy)";
             Dialog.BaseTab.ID.Button.onClick.NewListener(() =>
             {
-                LSText.CopyToClipboard(currentModel.basePart.id.ToString());
-                EditorManager.inst.DisplayNotification($"Copied ID \"{currentModel.basePart.id}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(currentModel.ID);
+                EditorManager.inst.DisplayNotification($"Copied ID \"{currentModel.ID}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
             });
 
-            Dialog.BaseTab.Name.Field.SetTextWithoutNotify(currentModel.basePart.name);
+            Dialog.BaseTab.Name.Field.SetTextWithoutNotify(currentModel.Name);
             Dialog.BaseTab.Name.Field.onValueChanged.NewListener(_val =>
             {
-                currentModel.basePart.name = _val;
-                PlayerManager.UpdatePlayerModels();
+                currentModel.Name = _val;
+                PlayerManager.inst.UpdatePlayerModels();
             });
             
             Dialog.BaseTab.Creator.Field.SetTextWithoutNotify(currentModel.creator);
             Dialog.BaseTab.Creator.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.creator = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
             
             Dialog.BaseTab.Version.Field.SetTextWithoutNotify(currentModel.ObjectVersion);
             Dialog.BaseTab.Version.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.ObjectVersion = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
             Dialog.BaseTab.Version.Field.onEndEdit.NewListener(_val => RenderBaseTab(currentModel));
             EditorContextMenu.AddContextMenu(Dialog.BaseTab.Version.Field.gameObject, EditorContextMenu.GetObjectVersionFunctions(currentModel, () => RenderBaseTab(currentModel)));
@@ -1544,7 +1681,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderDialog();
             });
 
-            RenderInteger(Dialog.BaseTab.Health.Field, editControls ? control.Health : currentModel.basePart.health,
+            Dialog.BaseTab.Health.Field.Render(editControls ? control.Health : currentModel.basePart.health,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1553,11 +1690,11 @@ namespace BetterLegacy.Editor.Managers
                             control.Health = num;
                         else
                             currentModel.basePart.health = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderInteger(Dialog.BaseTab.Lives.Field, editControls ? control.lives : currentModel.basePart.lives,
+
+            Dialog.BaseTab.Lives.Field.Render(editControls ? control.lives : currentModel.basePart.lives,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1566,11 +1703,11 @@ namespace BetterLegacy.Editor.Managers
                             control.lives = num;
                         else
                             currentModel.basePart.lives = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MoveSpeed.Field, editControls ? control.moveSpeed : currentModel.basePart.moveSpeed,
+            Dialog.BaseTab.MoveSpeed.Field.Render(editControls ? control.moveSpeed : currentModel.basePart.moveSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1579,11 +1716,11 @@ namespace BetterLegacy.Editor.Managers
                             control.moveSpeed = num;
                         else
                             currentModel.basePart.moveSpeed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostSpeed.Field, editControls ? control.boostSpeed : currentModel.basePart.boostSpeed,
+            Dialog.BaseTab.BoostSpeed.Field.Render(editControls ? control.boostSpeed : currentModel.basePart.boostSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1592,11 +1729,11 @@ namespace BetterLegacy.Editor.Managers
                             control.boostSpeed = num;
                         else
                             currentModel.basePart.boostSpeed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostCooldown.Field, editControls ? control.boostCooldown : currentModel.basePart.boostCooldown,
+            Dialog.BaseTab.BoostCooldown.Field.Render(editControls ? control.boostCooldown : currentModel.basePart.boostCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1605,11 +1742,11 @@ namespace BetterLegacy.Editor.Managers
                             control.boostCooldown = num;
                         else
                             currentModel.basePart.boostCooldown = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MinBoostTime.Field, editControls ? control.minBoostTime : currentModel.basePart.minBoostTime,
+            Dialog.BaseTab.MinBoostTime.Field.Render(editControls ? control.minBoostTime : currentModel.basePart.minBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1618,11 +1755,11 @@ namespace BetterLegacy.Editor.Managers
                             control.minBoostTime = num;
                         else
                             currentModel.basePart.minBoostTime = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MaxBoostTime.Field, editControls ? control.maxBoostTime : currentModel.basePart.maxBoostTime,
+            Dialog.BaseTab.MaxBoostTime.Field.Render(editControls ? control.maxBoostTime : currentModel.basePart.maxBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1631,11 +1768,11 @@ namespace BetterLegacy.Editor.Managers
                             control.maxBoostTime = num;
                         else
                             currentModel.basePart.maxBoostTime = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.HitCooldown.Field, editControls ? control.hitCooldown : currentModel.basePart.hitCooldown,
+            Dialog.BaseTab.HitCooldown.Field.Render(editControls ? control.hitCooldown : currentModel.basePart.hitCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1644,7 +1781,7 @@ namespace BetterLegacy.Editor.Managers
                             control.hitCooldown = num;
                         else
                             currentModel.basePart.hitCooldown = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1652,23 +1789,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.basePart.rotateMode = (PlayerRotateMode)_val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderEasing(Dialog.BaseTab.RotationCurve.Dropdown, (int)currentModel.basePart.rotationCurveType,
                 onValueChanged: _val =>
                 {
                     currentModel.basePart.rotationCurveType = (Easing)_val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.BaseTab.RotationSpeed.Field, currentModel.basePart.rotationSpeed,
+            Dialog.BaseTab.RotationSpeed.Field.Render(currentModel.basePart.rotationSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.basePart.rotationSpeed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1679,7 +1816,7 @@ namespace BetterLegacy.Editor.Managers
                     control.collisionAccurate = _val;
                 else
                     currentModel.basePart.collisionAccurate = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             Dialog.BaseTab.SprintSneakActive.Toggle.SetIsOnWithoutNotify(editControls ? control.sprintSneakActive : currentModel.basePart.sprintSneakActive);
@@ -1689,10 +1826,10 @@ namespace BetterLegacy.Editor.Managers
                     control.sprintSneakActive = _val;
                 else
                     currentModel.basePart.sprintSneakActive = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.SprintSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sprintSpeed,
+            Dialog.BaseTab.SprintSpeed.Field.Render(editControls ? control.sprintSpeed : currentModel.basePart.sprintSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1701,11 +1838,11 @@ namespace BetterLegacy.Editor.Managers
                             control.sprintSpeed = num;
                         else
                             currentModel.basePart.sprintSpeed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderSingle(Dialog.BaseTab.SneakSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sneakSpeed,
+
+            Dialog.BaseTab.SneakSpeed.Field.Render(editControls ? control.sprintSpeed : currentModel.basePart.sneakSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1714,7 +1851,7 @@ namespace BetterLegacy.Editor.Managers
                             control.sneakSpeed = num;
                         else
                             currentModel.basePart.sneakSpeed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1725,10 +1862,10 @@ namespace BetterLegacy.Editor.Managers
                     control.canBoost = _val;
                 else
                     currentModel.basePart.canBoost = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.JumpGravity.Field, editControls ? control.jumpGravity : currentModel.basePart.jumpGravity,
+            Dialog.BaseTab.JumpGravity.Field.Render(editControls ? control.jumpGravity : currentModel.basePart.jumpGravity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1737,11 +1874,11 @@ namespace BetterLegacy.Editor.Managers
                             control.jumpGravity = num;
                         else
                             currentModel.basePart.jumpGravity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.JumpIntensity.Field, editControls ? control.jumpIntensity : currentModel.basePart.jumpIntensity,
+            Dialog.BaseTab.JumpIntensity.Field.Render(editControls ? control.jumpIntensity : currentModel.basePart.jumpIntensity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1750,11 +1887,11 @@ namespace BetterLegacy.Editor.Managers
                             control.jumpIntensity = num;
                         else
                             currentModel.basePart.jumpIntensity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderInteger(Dialog.BaseTab.JumpCount.Field, editControls ? control.jumpCount : currentModel.basePart.jumpCount,
+            Dialog.BaseTab.JumpCount.Field.Render(editControls ? control.jumpCount : currentModel.basePart.jumpCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1763,11 +1900,11 @@ namespace BetterLegacy.Editor.Managers
                             control.jumpCount = num;
                         else
                             currentModel.basePart.jumpCount = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
-            
-            RenderInteger(Dialog.BaseTab.JumpBoostCount.Field, editControls ? control.jumpBoostCount : currentModel.basePart.jumpBoostCount,
+
+            Dialog.BaseTab.JumpBoostCount.Field.Render(editControls ? control.jumpBoostCount : currentModel.basePart.jumpBoostCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
@@ -1776,11 +1913,11 @@ namespace BetterLegacy.Editor.Managers
                             control.jumpBoostCount = num;
                         else
                             currentModel.basePart.jumpBoostCount = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.Bounciness.Field, editControls ? control.bounciness : currentModel.basePart.bounciness,
+            Dialog.BaseTab.Bounciness.Field.Render(editControls ? control.bounciness : currentModel.basePart.bounciness,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
@@ -1789,7 +1926,7 @@ namespace BetterLegacy.Editor.Managers
                             control.bounciness = num;
                         else
                             currentModel.basePart.bounciness = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1797,16 +1934,16 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BaseTab.StretchActive.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.basePart.stretchActive = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.StretchAmount.Field, currentModel.basePart.stretchAmount,
+            Dialog.BaseTab.StretchAmount.Field.Render(currentModel.basePart.stretchAmount,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.basePart.stretchAmount = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1814,7 +1951,7 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.basePart.stretchEasing = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderVector2(Dialog.BaseTab.FacePosition.XField, Dialog.BaseTab.FacePosition.YField, currentModel.facePosition,
@@ -1823,7 +1960,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.facePosition.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -1831,7 +1968,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.facePosition.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1839,12 +1976,12 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BaseTab.FaceControlActive.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.faceControlActive = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             try
             {
-                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerIndex).TickModifierBlock));
+                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playersProperties.GetAt(playerIndex).TickModifierBlock));
                 CoroutineHelper.StartCoroutine(Dialog.BaseTab.ModelModifiers.Modifiers.RenderModifiers(currentModel));
             }
             catch (Exception ex)
@@ -1862,37 +1999,37 @@ namespace BetterLegacy.Editor.Managers
             Dialog.GUITab.HealthActive.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.guiPart.active = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             RenderDropdown(Dialog.GUITab.HealthMode.Dropdown, (int)currentModel.guiPart.mode,
                 onValueChanged: _val =>
                 {
                     currentModel.guiPart.mode = (PlayerModel.GUI.GUIHealthMode)_val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderColors(Dialog.GUITab.HealthTopColor.ColorButtons, currentModel.guiPart.topColor,
                 onValueChanged: _val =>
                 {
                     currentModel.guiPart.topColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.GUITab.HealthTopCustomColor.Field.SetTextWithoutNotify(currentModel.guiPart.topCustomColor);
             Dialog.GUITab.HealthTopCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.guiPart.topCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : RTColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.GUITab.HealthTopOpacity.Field, currentModel.guiPart.topOpacity,
+            Dialog.GUITab.HealthTopOpacity.Field.Render(currentModel.guiPart.topOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.guiPart.topOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1900,23 +2037,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.guiPart.baseColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.GUITab.HealthBaseCustomColor.Field.SetTextWithoutNotify(currentModel.guiPart.baseCustomColor);
             Dialog.GUITab.HealthBaseCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.guiPart.baseCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : RTColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.GUITab.HealthBaseOpacity.Field, currentModel.guiPart.baseOpacity,
+            Dialog.GUITab.HealthBaseOpacity.Field.Render(currentModel.guiPart.baseOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.guiPart.baseOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
         }
@@ -1942,25 +2079,25 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SpawnerTab.PulseActive.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.pulsePart.active = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
             
             Dialog.SpawnerTab.PulseRotateToHead.Toggle.SetIsOnWithoutNotify(currentModel.pulsePart.rotateToHead);
             Dialog.SpawnerTab.PulseRotateToHead.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.pulsePart.rotateToHead = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             RenderShape(Dialog.SpawnerTab.PulseShape, currentModel.pulsePart);
 
-            RenderSingle(Dialog.SpawnerTab.PulseDuration.Field, currentModel.pulsePart.duration,
+            Dialog.SpawnerTab.PulseDuration.Field.Render(currentModel.pulsePart.duration,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.duration = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1968,23 +2105,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.startColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.SpawnerTab.PulseStartCustomColor.Field.SetTextWithoutNotify(currentModel.pulsePart.startCustomColor);
             Dialog.SpawnerTab.PulseStartCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.pulsePart.startCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.PulseStartOpacity.Field, currentModel.pulsePart.startOpacity,
+            Dialog.SpawnerTab.PulseStartOpacity.Field.Render(currentModel.pulsePart.startOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -1992,23 +2129,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.endColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.SpawnerTab.PulseEndCustomColor.Field.SetTextWithoutNotify(currentModel.pulsePart.endCustomColor);
             Dialog.SpawnerTab.PulseEndCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.pulsePart.endCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.PulseEndOpacity.Field, currentModel.pulsePart.endOpacity,
+            Dialog.SpawnerTab.PulseEndOpacity.Field.Render(currentModel.pulsePart.endOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2016,23 +2153,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderEasing(Dialog.SpawnerTab.PulseOpacityEasing.Dropdown, currentModel.pulsePart.easingOpacity,
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingOpacity = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseDepth.Field, currentModel.pulsePart.depth,
+            Dialog.SpawnerTab.PulseDepth.Field.Render(currentModel.pulsePart.depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.depth = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2042,7 +2179,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startPosition.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2050,7 +2187,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startPosition.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2060,7 +2197,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endPosition.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2068,7 +2205,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endPosition.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2076,7 +2213,7 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingPosition = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderVector2(Dialog.SpawnerTab.PulseStartScale.XField, Dialog.SpawnerTab.PulseStartScale.YField, currentModel.pulsePart.startScale,
@@ -2085,7 +2222,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startScale.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2093,7 +2230,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startScale.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2103,7 +2240,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endScale.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2111,7 +2248,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endScale.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2119,26 +2256,26 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingScale = (int)RTEditor.inst.GetEasing(_val);
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseStartRotation.Field, currentModel.pulsePart.startRotation,
+            Dialog.SpawnerTab.PulseStartRotation.Field.Render(currentModel.pulsePart.startRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.startRotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.PulseEndRotation.Field, currentModel.pulsePart.endRotation,
+            Dialog.SpawnerTab.PulseEndRotation.Field.Render(currentModel.pulsePart.endRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.pulsePart.endRotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2146,7 +2283,7 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.pulsePart.easingRotation = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             #endregion
@@ -2157,23 +2294,23 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SpawnerTab.BulletActive.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.active = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
             
             Dialog.SpawnerTab.BulletAutoKill.Toggle.SetIsOnWithoutNotify(currentModel.bulletPart.autoKill);
             Dialog.SpawnerTab.BulletAutoKill.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.autoKill = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletLifetime.Field, currentModel.bulletPart.lifeTime,
+            Dialog.SpawnerTab.BulletLifetime.Field.Render(currentModel.bulletPart.lifeTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.lifeTime = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2181,33 +2318,33 @@ namespace BetterLegacy.Editor.Managers
             Dialog.SpawnerTab.BulletConstant.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.constant = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             Dialog.SpawnerTab.BulletHurtPlayers.Toggle.SetIsOnWithoutNotify(currentModel.bulletPart.hurtPlayers);
             Dialog.SpawnerTab.BulletHurtPlayers.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.hurtPlayers = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletSpeed.Field, currentModel.bulletPart.speed,
+            Dialog.SpawnerTab.BulletSpeed.Field.Render(currentModel.bulletPart.speed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.speed = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletCooldown.Field, currentModel.bulletPart.cooldown,
+            Dialog.SpawnerTab.BulletCooldown.Field.Render(currentModel.bulletPart.cooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.cooldown = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2217,7 +2354,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.origin.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2225,7 +2362,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.origin.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2235,23 +2372,23 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.startColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.SpawnerTab.BulletStartCustomColor.Field.SetTextWithoutNotify(currentModel.bulletPart.startCustomColor);
             Dialog.SpawnerTab.BulletStartCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.startCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletStartOpacity.Field, currentModel.bulletPart.startOpacity,
+            Dialog.SpawnerTab.BulletStartOpacity.Field.Render(currentModel.bulletPart.startOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2259,33 +2396,33 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.endColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.SpawnerTab.BulletEndCustomColor.Field.SetTextWithoutNotify(currentModel.bulletPart.endCustomColor);
             Dialog.SpawnerTab.BulletEndCustomColor.Field.onValueChanged.NewListener(_val =>
             {
                 currentModel.bulletPart.endCustomColor = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(RTColors.errorColor); ;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.SpawnerTab.BulletEndOpacity.Field, currentModel.bulletPart.endOpacity,
+            Dialog.SpawnerTab.BulletEndOpacity.Field.Render(currentModel.bulletPart.endOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletColorDuration.Field, currentModel.bulletPart.durationColor,
+            Dialog.SpawnerTab.BulletColorDuration.Field.Render(currentModel.bulletPart.durationColor,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.durationColor = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2293,16 +2430,16 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingColor = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletOpacityDuration.Field, currentModel.bulletPart.durationOpacity,
+            Dialog.SpawnerTab.BulletOpacityDuration.Field.Render(currentModel.bulletPart.durationOpacity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.durationOpacity = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2310,16 +2447,16 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingOpacity = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletDepth.Field, currentModel.bulletPart.depth,
+            Dialog.SpawnerTab.BulletDepth.Field.Render(currentModel.bulletPart.depth,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.depth = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2329,7 +2466,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startPosition.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2337,7 +2474,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startPosition.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2347,7 +2484,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endPosition.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2355,17 +2492,17 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endPosition.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletPositionDuration.Field, currentModel.bulletPart.durationPosition,
+            Dialog.SpawnerTab.BulletPositionDuration.Field.Render(currentModel.bulletPart.durationPosition,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.durationPosition = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2373,7 +2510,7 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingPosition = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             RenderVector2(Dialog.SpawnerTab.BulletStartScale.XField, Dialog.SpawnerTab.BulletStartScale.YField, currentModel.bulletPart.startScale,
@@ -2382,7 +2519,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startScale.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2390,7 +2527,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startScale.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2400,7 +2537,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endScale.x = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 },
                 onYValueChanged: _val =>
@@ -2408,17 +2545,17 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endScale.y = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletScaleDuration.Field, currentModel.bulletPart.durationScale,
+            Dialog.SpawnerTab.BulletScaleDuration.Field.Render(currentModel.bulletPart.durationScale,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.durationScale = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2426,36 +2563,36 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingScale = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletStartRotation.Field, currentModel.bulletPart.startRotation,
+            Dialog.SpawnerTab.BulletStartRotation.Field.Render(currentModel.bulletPart.startRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.startRotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletEndRotation.Field, currentModel.bulletPart.endRotation,
+            Dialog.SpawnerTab.BulletEndRotation.Field.Render(currentModel.bulletPart.endRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.endRotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.SpawnerTab.BulletRotationDuration.Field, currentModel.bulletPart.durationRotation,
+            Dialog.SpawnerTab.BulletRotationDuration.Field.Render(currentModel.bulletPart.durationRotation,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.bulletPart.durationRotation = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2463,7 +2600,7 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.bulletPart.easingRotation = _val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             #endregion
@@ -2474,13 +2611,13 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderTailTab(PlayerModel currentModel)
         {
-            RenderSingle(Dialog.TailTab.BaseDistance.Field, currentModel.tailBase.distance,
+            Dialog.TailTab.BaseDistance.Field.Render(currentModel.tailBase.distance,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.tailBase.distance = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2488,25 +2625,32 @@ namespace BetterLegacy.Editor.Managers
                 onValueChanged: _val =>
                 {
                     currentModel.tailBase.mode = (PlayerModel.TailBase.TailMode)_val;
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
             Dialog.TailTab.BaseGrows.Toggle.SetIsOnWithoutNotify(currentModel.tailBase.grows);
             Dialog.TailTab.BaseGrows.Toggle.onValueChanged.NewListener(_val =>
             {
                 currentModel.tailBase.grows = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.TailTab.BaseTime.Field, currentModel.tailBase.time,
+            Dialog.TailTab.BaseTime.Field.Render(currentModel.tailBase.time,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentModel.tailBase.time = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
+
+            Dialog.TailTab.BaseUsesHealth.Toggle.SetIsOnWithoutNotify(currentModel.tailBase.usesHealth);
+            Dialog.TailTab.BaseUsesHealth.Toggle.onValueChanged.NewListener(_val =>
+            {
+                currentModel.tailBase.usesHealth = _val;
+                PlayerManager.inst.UpdatePlayerModels();
+            });
 
             RenderObject(Dialog.TailTab.BoostPart, currentModel.boostTailPart);
 
@@ -2516,7 +2660,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.TailTab.AddTail.Button.onClick.NewListener(() =>
             {
                 currentModel.AddTail();
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
                 RenderTailTab(currentModel);
             });
 
@@ -2539,7 +2683,7 @@ namespace BetterLegacy.Editor.Managers
                 tab.Remove.Button.onClick.NewListener(() =>
                 {
                     currentModel.RemoveTail(index);
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                     RenderTailTab(currentModel);
                 });
                 Dialog.TailTab.TailParts.Add(tab);
@@ -2582,33 +2726,33 @@ namespace BetterLegacy.Editor.Managers
             Dialog.CustomObjectTab.Parent.Dropdown.onValueChanged.NewListener(_val =>
             {
                 customObject.parent = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             Dialog.CustomObjectTab.CustomParent.Field.SetTextWithoutNotify(customObject.customParent);
             Dialog.CustomObjectTab.CustomParent.Field.onValueChanged.NewListener(_val =>
             {
                 customObject.customParent = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.CustomObjectTab.PositionOffset.Field, customObject.positionOffset,
+            Dialog.CustomObjectTab.PositionOffset.Field.Render(customObject.positionOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         customObject.positionOffset = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.CustomObjectTab.ScaleOffset.Field, customObject.scaleOffset,
+            Dialog.CustomObjectTab.ScaleOffset.Field.Render(customObject.scaleOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         customObject.scaleOffset = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2616,16 +2760,16 @@ namespace BetterLegacy.Editor.Managers
             Dialog.CustomObjectTab.ScaleParent.Toggle.onValueChanged.NewListener(_val =>
             {
                 customObject.scaleParent = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.CustomObjectTab.RotationOffset.Field, customObject.rotationOffset,
+            Dialog.CustomObjectTab.RotationOffset.Field.Render(customObject.rotationOffset,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         customObject.rotationOffset = num;
-                        PlayerManager.UpdatePlayerModels();
+                        PlayerManager.inst.UpdatePlayerModels();
                     }
                 });
 
@@ -2633,7 +2777,7 @@ namespace BetterLegacy.Editor.Managers
             Dialog.CustomObjectTab.RotationParent.Toggle.onValueChanged.NewListener(_val =>
             {
                 customObject.rotationParent = _val;
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             Dialog.CustomObjectTab.VisibilitySettings.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 32f * (customObject.visibilitySettings.Count + 1));
@@ -2698,8 +2842,8 @@ namespace BetterLegacy.Editor.Managers
                     var value = EditorPrefabHolder.Instance.NumberInputField.Duplicate(bar.transform, "input");
                     var valueStorage = value.GetComponent<InputFieldStorage>();
 
-                    valueStorage.inputField.SetTextWithoutNotify(visibility.value.ToString());
-                    valueStorage.inputField.onValueChanged.NewListener(_val =>
+                    valueStorage.SetTextWithoutNotify(visibility.value.ToString());
+                    valueStorage.OnValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float result))
                             visibility.value = result;
@@ -2749,13 +2893,15 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
 
+        #endregion
+
         /// <summary>
         /// Plays an animation on a player.
         /// </summary>
         /// <param name="animation">Animation to play.</param>
         public void PlayAnimation(PAAnimation animation)
         {
-            if (!PlayerManager.Players.TryGetAt(playerIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
+            if (!PlayerManager.inst.players.TryGetAt(playerIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTCustomPlayerObject customObject))
                 return;
 
             var runtimeAnimation = new RTAnimation("Custom Animation");
@@ -2764,45 +2910,208 @@ namespace BetterLegacy.Editor.Managers
             player.RuntimePlayer.animationController.Play(runtimeAnimation);
         }
 
+        public void PastePlayerModel()
+        {
+            if (string.IsNullOrEmpty(copiedPlayerModelPath))
+            {
+                EditorManager.inst.DisplayNotification("No player model has been copied yet!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (!RTFile.FileExists(copiedPlayerModelPath))
+            {
+                EditorManager.inst.DisplayNotification("Copied player model no longer exists.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var copiedPlayerModelsFolder = RTFile.GetDirectory(copiedPlayerModelPath);
+            CoreHelper.Log($"Copied Folder: {copiedPlayerModelsFolder}");
+
+            var playerModelsPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath);
+            if (copiedPlayerModelsFolder == playerModelsPath)
+            {
+                EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var destination = copiedPlayerModelPath.Replace(copiedPlayerModelsFolder, playerModelsPath);
+            CoreHelper.Log($"Destination: {destination}");
+            if (RTFile.FileExists(destination))
+            {
+                EditorManager.inst.DisplayNotification("File already exists.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            if (shouldCutPlayerModel)
+            {
+                if (RTFile.MoveFile(copiedPlayerModelPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully moved {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+            }
+            else
+            {
+                if (RTFile.CopyFile(copiedPlayerModelPath, destination))
+                    EditorManager.inst.DisplayNotification($"Succesfully pasted {Path.GetFileName(destination)}!", 2f, EditorManager.NotificationType.Success);
+            }
+
+            Reload();
+        }
+
+        public void ImportPlayerModel(PlayerModel playerModel)
+        {
+            if (!playerModel)
+                return;
+            if (PlayersData.Current.playerModels.Has(x => x.ID == playerModel.ID))
+                return;
+            PlayersData.Current.playerModels.Add(playerModel);
+            RenderInternalPlayerModelsPopup(onSelectModel);
+        }
+
+        public void ExportPlayerModel(PlayerModel playerModel)
+        {
+            if (!playerModel)
+                return;
+            PlayersData.OverwriteExternalPlayerModel(playerModel);
+            var path = !string.IsNullOrEmpty(playerModel.path) ? playerModel.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(playerModel.Name)}{FileFormat.LSPL.Dot()}");
+            if (string.IsNullOrEmpty(playerModel.path))
+                playerModel.path = path;
+            RTFile.WriteToFile(path, playerModel.ToJSON().ToString(3));
+        }
+
+        public void DeletePlayerModel(PlayerModelPanel playerModelPanel)
+        {
+            if (playerModelPanel.Item && playerModelPanel.Item.IsDefault)
+            {
+                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
+            {
+                PlayersData.Current.SetPlayerModel(playerIndex, PlayerModel.DEFAULT_ID);
+                if (playerModelPanel.IsExternal)
+                {
+                    PlayersData.externalPlayerModels.Remove(playerModelPanel.Item);
+                    RTFile.DeleteFile(playerModelPanel.Path);
+                }
+                else
+                    PlayersData.Current.playerModels.Remove(playerModelPanel.Item);
+                PlayerManager.inst.RespawnPlayers();
+                RenderDialog();
+                RenderInternalPlayerModelsPopup(onSelectModel);
+                RenderExternalPlayerModelsPopup();
+            });
+        }
+
         /// <summary>
         /// Opens the models popup.
         /// </summary>
         /// <param name="onSelect">Function to run on select.</param>
-        public void OpenModelsPopup(Action<PlayerModel> onSelect = null)
+        public void OpenModelsPopup(Action<PlayerModelPanel> onSelect = null)
         {
             ModelsPopup.Open();
-            RenderModelsPopup(onSelect);
+            RenderInternalPlayerModelsPopup(onSelect);
+            RenderExternalPlayerModelsPopup();
         }
 
-        /// <summary>
-        /// Renders the models popup.
-        /// </summary>
-        /// <param name="onSelect">Function to run on select.</param>
-        public void RenderModelsPopup(Action<PlayerModel> onSelect = null)
+        public void RenderInternalPlayerModelsPopup(Action<PlayerModelPanel> onSelect = null)
         {
             onSelectModel = onSelect;
-            ModelsPopup.ClearContent();
-            ModelsPopup.SearchField.onValueChanged.NewListener(_val => RenderModelsPopup(onSelect));
+            ModelsPopup.Internal.ClearContent();
+            ModelsPopup.Internal.SearchField.onValueChanged.NewListener(_val => RenderInternalPlayerModelsPopup(onSelect));
 
-            ModelPanels.Clear();
+            ModelPanels.RemoveAll(x => x.Source == ObjectSource.Internal);
 
             int num = 0;
-            foreach (var playerModel in PlayersData.externalPlayerModels)
+            foreach (var playerModel in PlayersData.Current.playerModels)
             {
                 int index = num;
-                var name = playerModel.Value.basePart.name;
-                if (!RTString.SearchString(ModelsPopup.SearchTerm, name))
+                var name = playerModel.Name;
+                if (!RTString.SearchString(ModelsPopup.Internal.SearchTerm, name))
                 {
                     num++;
                     continue;
                 }
 
-                var playerModelPanel = new PlayerModelPanel(index);
-                playerModelPanel.Init(playerModel.Value);
+                var playerModelPanel = new PlayerModelPanel(ObjectSource.Internal, index);
+                playerModelPanel.Init(playerModel);
                 if (onSelect != null)
-                    playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModel.Value);
+                    playerModelPanel.onClick = pointerEventData => onSelect.Invoke(playerModelPanel);
                 ModelPanels.Add(playerModelPanel);
                 num++;
+            }
+        }
+
+        public void RenderExternalPlayerModelsPopup()
+        {
+            ModelsPopup.External.ClearContent();
+            ModelsPopup.External.SearchField.onValueChanged.NewListener(_val => RenderExternalPlayerModelsPopup());
+
+            ModelPanels.RemoveAll(x => x.Source == ObjectSource.External);
+
+            // Back
+            if (!playerModelExternalUpAFolderButton)
+            {
+                playerModelExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.External.Content, "back");
+                PrefabPanel.externalBaseRect.AssignToRectTransform(playerModelExternalUpAFolderButton.transform.AsRT());
+                var folderButtonStorageFolder = playerModelExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = playerModelExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = playerModelExternalUpAFolderButton.AddComponent<HoverUI>();
+                hoverUIFolder.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.Text = "< Up a folder";
+
+                folderButtonStorageFolder.OnClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), () => { Reload(); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonElement("Paste Player Model", PastePlayerModel));
+
+                        return;
+                    }
+
+                    if (ModelsPopup.External.PathField.text == RTEditor.inst.PlayersPath)
+                    {
+                        ModelsPopup.External.PathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath)).Remove(RTEditor.inst.BeatmapsPath + "/");
+                        Reload();
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
+            }
+
+            playerModelExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath)) != RTEditor.inst.BeatmapsPath);
+
+            var directories = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath), "*", SearchOption.TopDirectoryOnly);
+            int index = 0;
+            for (int i = 0; i < directories.Length; i++)
+            {
+                var directory = directories[i];
+                var playerModelPanel = new PlayerModelPanel(index);
+                playerModelPanel.Init(directory);
+                ModelPanels.Add(playerModelPanel);
+                index++;
+            }
+
+            foreach (var playerModel in PlayersData.externalPlayerModels)
+            {
+                var name = playerModel.Name;
+                if (!RTString.SearchString(ModelsPopup.External.SearchTerm, name))
+                {
+                    index++;
+                    continue;
+                }
+
+                var playerModelPanel = new PlayerModelPanel(ObjectSource.External, index);
+                playerModelPanel.Init(playerModel);
+                ModelPanels.Add(playerModelPanel);
+                index++;
             }
         }
 
@@ -2825,7 +3134,7 @@ namespace BetterLegacy.Editor.Managers
 
             var currentModel = PlayersData.Current.GetPlayerModel(playerIndex);
 
-            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
+            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.ID == x.ID);
 
             if (isDefault)
                 return;
@@ -2843,7 +3152,7 @@ namespace BetterLegacy.Editor.Managers
 
                 RenderCustomObjectsPopup();
                 RenderDialog();
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
             });
 
             int num = 0;
@@ -2876,7 +3185,7 @@ namespace BetterLegacy.Editor.Managers
                                 currentModel.customObjects.RemoveAt(index);
                                 RenderCustomObjectsPopup();
                                 RenderDialog();
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                                 RTEditor.inst.HideWarningPopup();
                             })),
                             new ButtonElement("Duplicate", () =>
@@ -2892,7 +3201,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RenderCustomObjectsPopup();
                                 RenderDialog();
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                             }),
                             new ButtonElement("Copy", () =>
                             {
@@ -2918,7 +3227,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RenderCustomObjectsPopup();
                                 RenderDialog();
-                                PlayerManager.UpdatePlayerModels();
+                                PlayerManager.inst.UpdatePlayerModels();
                                 EditorManager.inst.DisplayNotification("Pasted custom player object!", 2f, EditorManager.NotificationType.Success);
                             })
                             );
@@ -2938,7 +3247,7 @@ namespace BetterLegacy.Editor.Managers
                     currentModel.customObjects.RemoveAt(index);
                     RenderCustomObjectsPopup();
                     RenderDialog();
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 }));
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
@@ -2958,7 +3267,7 @@ namespace BetterLegacy.Editor.Managers
 
                     RenderCustomObjectsPopup();
                     RenderDialog();
-                    PlayerManager.UpdatePlayerModels();
+                    PlayerManager.inst.UpdatePlayerModels();
                 });
 
                 duplicateStorage.Text = "Duplicate";
@@ -2979,9 +3288,8 @@ namespace BetterLegacy.Editor.Managers
             if (!playerModel)
                 return;
 
-            PlayersData.Current.playerModels[playerModel.basePart.id] = playerModel;
-            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.basePart.id);
-            PlayerManager.RespawnPlayers();
+            PlayersData.Current.SetPlayerModel(playerIndex, playerModel.ID);
+            PlayerManager.inst.RespawnPlayers();
             RenderDialog();
         }
 
@@ -3046,7 +3354,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since setting image has no affect on the timeline object, we will only need to update the physical object.
             if (updateObject)
-                PlayerManager.UpdatePlayerModels();
+                PlayerManager.inst.UpdatePlayerModels();
 
             if (renderEditor)
                 RenderShape(ui, shapeable);

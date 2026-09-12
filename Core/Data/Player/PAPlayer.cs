@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -56,6 +57,12 @@ namespace BetterLegacy.Core.Data.Player
             IsLocalPlayer = true;
             if (RTSteamManager.inst && RTSteamManager.inst.Initialized)
                 ID = RTSteamManager.inst.steamUser.steamID;
+            var settings = GetPlayerSettings();
+            if (settings && !string.IsNullOrEmpty(settings.displayName))
+            {
+                DisplayName = settings.displayName;
+                colorSlot = settings.colorSlot;
+            }
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
         }
 
@@ -74,7 +81,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The main player.
         /// </summary>
-        public static PAPlayer Main => PlayerManager.Players[0];
+        public static PAPlayer Main => PlayerManager.inst.players[0];
 
         /// <summary>
         /// Identification string.
@@ -98,12 +105,12 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Health the player has.
         /// </summary>
-        public int health = 3;
+        public int health = DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// The maximum amount of health the players have.
         /// </summary>
-        public static int MaxHealth { get; set; } = 3;
+        public static int MaxHealth { get; set; } = DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Health the player has. If it reaches 0, the player dies.
@@ -120,14 +127,33 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
-        /// Index of the player in <see cref="PlayerManager.Players"/>.
+        /// Index of the player in <see cref="PlayerManager.players"/>.
         /// </summary>
         public int index;
+
+        /// <summary>
+        /// Index of the player in <see cref="PlayerManager.localPlayers"/>.
+        /// </summary>
+        public int localIndex;
 
         /// <summary>
         /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
         /// </summary>
         public int colorSlot = -1;
+
+        /// <summary>
+        /// Custom color slot for the player. If the value is not in the range of the color list, then use <see cref="index"/>.
+        /// </summary>
+        public int ColorSlot
+        {
+            get => colorSlot;
+            set
+            {
+                colorSlot = value;
+                if (RuntimePlayer)
+                    RuntimePlayer.colorSlot = value;
+            }
+        }
 
         /// <summary>
         /// Controller device name.
@@ -187,24 +213,12 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// The current player model ID.
         /// </summary>
-        public string currentPlayerModel = PlayerModel.DEFAULT_ID;
-        /// <summary>
-        /// The current player model ID.
-        /// </summary>
-        public string CurrentModel
-        {
-            get => !ProjectArrhythmia.State.InEditor && PlayersData.AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? PlayerManager.PlayerIndexes[index].Value : currentPlayerModel;
-            set
-            {
-                currentPlayerModel = value;
-                UpdatePlayerModel();
-            }
-        }
+        public string ModelID => Model.ID;
 
         /// <summary>
         /// The current player model cache.
         /// </summary>
-        public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;
+        public PlayerModel Model { get; set; } = PlayerModel.DefaultPlayer;
 
         /// <summary>
         /// Player device input.
@@ -226,14 +240,13 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public string DisplayName { get; set; } = CoreConfig.Instance.DisplayName.Value;
 
-        // might not go with this? (change this to player variables)
-        public PlayerInventory inventory = new PlayerInventory();
-
         public RTLevelBase ParentRuntime { get; set; }
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
 
         public int IntVariable { get; set; }
+
+        public const int DEFAULT_MAX_HEALTH = 3;
 
         #endregion
 
@@ -250,7 +263,7 @@ namespace BetterLegacy.Core.Data.Player
             var hasSteamID = reader.ReadBoolean();
             if (hasSteamID)
                 ID = reader.ReadUInt64();
-            PlayerModel = Packet.CreateFromPacket<PlayerModel>(reader);
+            Model = Packet.CreateFromPacket<PlayerModel>(reader);
             DisplayName = reader.ReadString();
         }
 
@@ -269,7 +282,7 @@ namespace BetterLegacy.Core.Data.Player
             }
             else
                 writer.Write(false);
-            PlayerModel.WritePacket(writer);
+            Model.WritePacket(writer);
             writer.Write(DisplayName);
         }
 
@@ -280,38 +293,107 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         /// <summary>
+        /// Sets the player's model and updates it.
+        /// </summary>
+        /// <param name="playerModel">Player model to set.</param>
+        public void SetModel(PlayerModel playerModel)
+        {
+            if (ProjectArrhythmia.State.IsOnlineMultiplayer && IsLocalPlayer)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SET_PLAYER_MODEL,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    new NetworkFunction.StringParameter(id),
+                    playerModel);
+
+            Model = playerModel;
+            if (!RuntimePlayer)
+                return;
+            RuntimePlayer.Model = playerModel;
+            RuntimePlayer.UpdateModel();
+        }
+
+        /// <summary>
         /// Updates player model data.
         /// </summary>
-        public void UpdatePlayerModel()
-        {
-            PlayerModel = PlayersData.GetPlayerModel(CurrentModel);
-            if (RuntimePlayer)
-                RuntimePlayer.Model = PlayerModel;
-        }
+        public void UpdateModel() => RuntimePlayer?.UpdateModel();
 
         /// <summary>
         /// Gets the players' maximum amount of health.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+        public int GetMaxHealth() => RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Gets the players' maximum amount of lives.
         /// </summary>
         /// <returns>Returns the challenge mode lives count if the challenge mode lives count is greater than 0, otherwise returns the player controls' lives count.</returns>
-        public int GetMaxLives() => RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : GetControl()?.lives ?? -1;
+        public int GetMaxLives() => RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : GetProperties()?.lives ?? -1;
 
         /// <summary>
-        /// Gets the players' control data.
+        /// Gets the players' properties.
         /// </summary>
-        /// <returns>Returns the player model converted to a player control if <see cref="LevelData.allowPlayerModelControls"/> is true, otherwise returns <see cref="GetCustomControl"/>.</returns>
-        public PlayerControl GetControl() => GameData.Current.data.level.allowPlayerModelControls ? PlayerModel.ToPlayerControl() : GetCustomControl();
+        /// <returns>Returns the player model converted to player properties if <see cref="LevelData.allowPlayerModelControls"/> is true, otherwise returns <see cref="GetCustomProperties"/>.</returns>
+        public PlayerProperties GetProperties() => GameData.Current.data.level.allowPlayerModelControls ? Model.ToPlayerControl() : GetCustomProperties();
 
         /// <summary>
-        /// Gets the player control data.
+        /// Gets the player properties.
         /// </summary>
-        /// <returns>Returns the player control data associated with this player.</returns>
-        public PlayerControl GetCustomControl() => PlayersData.Current && PlayersData.Current.playerControls.TryGetAt(index, out PlayerControl playerControl) ? playerControl : new PlayerControl();
+        /// <returns>Returns the player properties associated with this player.</returns>
+        public PlayerProperties GetCustomProperties() => PlayersData.Current && PlayersData.Current.playersProperties.TryGetAt(index, out PlayerProperties playerProperties) ? playerProperties : new PlayerProperties();
+
+        /// <summary>
+        /// Gets the player settings.
+        /// </summary>
+        /// <returns>Returns the player settings associated with this player.</returns>
+        public PlayerSettings GetPlayerSettings() => IsLocalPlayer ? PlayerManager.inst.GetPlayerSettings(localIndex) : null;
+
+        /// <summary>
+        /// Gets the player variables.
+        /// </summary>
+        /// <returns>Returns the player variables associated with this player.</returns>
+        public Dictionary<string, string> GetPlayerVariables() => PlayerManager.inst.playerVariables.TryGetValue(index, out var variables) ? variables : null;
+
+        /// <summary>
+        /// Sets a player variable.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        /// <param name="value">Value of the variable.</param>
+        public void SetVariable(string name, string value)
+        {
+            if (string.IsNullOrEmpty(name) || value == null)
+                return;
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables[name] = value;
+            PlayerManager.inst.SavePlayerVariables();
+        }
+
+        /// <summary>
+        /// Removes a player variable.
+        /// </summary>
+        /// <param name="name">Name of the variable.</param>
+        public void RemoveVariable(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables.Remove(name);
+            PlayerManager.inst.SavePlayerVariables();
+        }
+
+        /// <summary>
+        /// Clears the player variables.
+        /// </summary>
+        public void ClearVariables()
+        {
+            var variables = GetPlayerVariables();
+            if (variables == null)
+                return;
+            variables.Clear();
+            PlayerManager.inst.SavePlayerVariables();
+        }
 
         /// <summary>
         /// Gets the <see cref="PlayerIndex"/> value for the player.
@@ -363,11 +445,11 @@ namespace BetterLegacy.Core.Data.Player
             {
                 InputManager.OnDeviceAttached -= ControllerConnected;
                 InputManager.OnDeviceDetached -= ControllerDisconnected;
-                PlayerManager.Players.RemoveAt(index);
-                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                PlayerManager.inst.players.RemoveAt(index);
+                for (int i = 0; i < PlayerManager.inst.players.Count; i++)
                 {
-                    PlayerManager.Players[i].index = i;
-                    PlayerManager.Players[i].playerIndex = GetPlayerIndex(i);
+                    PlayerManager.inst.players[i].index = i;
+                    PlayerManager.inst.players[i].playerIndex = GetPlayerIndex(i);
                 }
             }
 
@@ -417,7 +499,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Gets the default health for this player.
         /// </summary>
         /// <returns>Returns the challenge mode default health if the user is not editing and the challenge mode default health is greater than 0, otherwise returns the players' local health.</returns>
-        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetControl()?.Health ?? 3;
+        public int GetDefaultHealth() => !ProjectArrhythmia.State.IsEditing && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : GetProperties()?.Health ?? DEFAULT_MAX_HEALTH;
 
         /// <summary>
         /// Initializes the player input.
@@ -426,7 +508,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             if (device == null)
             {
-                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && (PlayerManager.IsSingleplayer || PlayerManager.Players.Count(x => x.IsLocalPlayer) == 1) ?
+                Input = (ProjectArrhythmia.State.InEditor || PlayerConfig.Instance.AllowControllerIfSinglePlayer.Value) && (PlayerManager.inst.IsSingleplayer || PlayerManager.inst.players.Count(x => x.IsLocalPlayer) == 1) ?
                     PlayerInput.ControllerAndKeyboard :
                     PlayerInput.Keyboard;
                 return;

@@ -47,7 +47,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 var pos = beatmapObject.GetFullPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                var player = PlayerManager.inst.GetClosestPlayer(pos);
                 if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 

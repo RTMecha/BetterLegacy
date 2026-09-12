@@ -88,6 +88,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public List<Toggle> ShapeToggles { get; set; } = new List<Toggle>();
         public List<List<Toggle>> ShapeOptionToggles { get; set; } = new List<List<Toggle>>();
 
+        public PolygonShapeEditor PolygonShapeEditor { get; set; } = new PolygonShapeEditor();
+
         public List<int> UnsupportedShapes { get; set; } = new List<int>
         {
             (int)ShapeType.Text,
@@ -158,6 +160,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public InputFieldStorage ReactiveZPositionSampleField { get; set; }
         
         public InputFieldStorage ReactiveZPositionIntensityField { get; set; }
+
+        #endregion
+
+        #region Unity Explorer
+
+        public Text UnityExplorerLabel { get; set; }
+
+        public FunctionButtonStorage InspectBackgroundObjectButton { get; set; }
+        public FunctionButtonStorage InspectRuntimeObjectButton { get; set; }
+        public FunctionButtonStorage InspectTimelineObjectButton { get; set; }
 
         #endregion
 
@@ -425,6 +437,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 ShapeOptionToggles.Add(list);
                 shapeType++;
             }
+
+            PolygonShapeEditor.Apply(ShapeOptionsParent.Find("10"));
 
             // Depth
             {
@@ -760,6 +774,51 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 scroll.viewport = tagViewport.transform.AsRT();
                 scroll.content = TagsContent;
             }
+
+            #region Unity Explorer
+
+            // Unity Explorer
+            try
+            {
+                if (ModCompatibility.UnityExplorerInstalled)
+                {
+                    // Setup label
+                    var label = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "unity explorer label");
+                    UnityExplorerLabel = label.transform.GetChild(0).GetComponent<Text>();
+                    UnityExplorerLabel.text = "Unity Explorer";
+                    EditorThemeManager.ApplyLightText(UnityExplorerLabel);
+
+                    // Inspect Beatmap Object
+                    var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspectbackgroundobject");
+                    InspectBackgroundObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
+                    InspectBackgroundObjectButton.Text = "Inspect Background Object";
+
+                    EditorThemeManager.ApplySelectable(InspectBackgroundObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(InspectBackgroundObjectButton.label, ThemeGroup.Function_2_Text);
+
+                    // Inspect Runtime Object
+                    var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspectlevelobject");
+                    InspectRuntimeObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
+                    InspectRuntimeObjectButton.Text = "Inspect Runtime Object";
+
+                    EditorThemeManager.ApplySelectable(InspectRuntimeObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(InspectRuntimeObjectButton.label, ThemeGroup.Function_2_Text);
+
+                    // Inspect Timeline Object
+                    var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspecttimelineobject");
+                    InspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
+                    InspectTimelineObjectButton.Text = "Inspect Timeline Object";
+
+                    EditorThemeManager.ApplySelectable(InspectTimelineObjectButton.button, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(InspectTimelineObjectButton.label, ThemeGroup.Function_2_Text);
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error in trying to setup Unity Explorer. Exception: {ex}");
+            }
+
+            #endregion
 
             // Modifiers
             {

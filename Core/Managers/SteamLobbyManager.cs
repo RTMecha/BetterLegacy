@@ -4,7 +4,6 @@ using System.Linq;
 
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
-using SimpleJSON;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -39,11 +38,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public string LobbyChannel { get; set; } = string.Empty;
 
-        public List<PlayerSettings> playerSettings = new List<PlayerSettings>();
-
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
-
-        public List<PAPlayer> localPlayers = new List<PAPlayer>();
 
         public const string SCENE_LOADED = "SceneLoaded";
         public const string SONG_LOADED = "SongLoaded";
@@ -81,7 +76,6 @@ namespace BetterLegacy.Core.Managers
             SteamMatchmaking.OnChatMessage += OnChatMessage;
 
             LoadLobbySettings();
-            LoadPlayerSettings();
         }
 
         public override void OnTick()
@@ -93,11 +87,7 @@ namespace BetterLegacy.Core.Managers
         public void SaveLobbySettings()
         {
             LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
-
-            var jn = Parser.NewJSONObject();
-            for (int i = 0; i < playerSettings.Count; i++)
-                jn["settings"][i] = playerSettings[i].ToJSON();
-            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot()), jn.ToString(3));
+            Log("Saved lobby settings!");
         }
 
         public void LoadLobbySettings()
@@ -109,46 +99,23 @@ namespace BetterLegacy.Core.Managers
             LobbyPopup.Instance.nameField?.SetTextWithoutNotify(LobbySettings.Name);
             LobbyPopup.Instance.playerCountField?.SetTextWithoutNotify(LobbySettings.PlayerCount.ToString());
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
-        }
-
-        public void LoadPlayerSettings()
-        {
-            try
-            {
-                playerSettings.Clear();
-                var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", "player_settings" + FileFormat.JSON.Dot());
-                if (!RTFile.TryReadFromFile(path, out string file))
-                    return;
-                var jn = JSON.Parse(file);
-                for (int i = 0; i < jn["settings"].Count; i++)
-                    playerSettings.Add(PlayerSettings.Parse(jn["settings"][i]));
-            }
-            catch (System.Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
+            Log("Loaded lobby settings!");
         }
 
         public void SyncPlayersToServer()
         {
-            localPlayers = new List<PAPlayer>(PlayerManager.Players);
-            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.inst.players);
+            PlayerManager.inst.SetLocalIndexes();
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
         public void SyncPlayersToClients()
         {
-            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.Players));
+            NetworkFunction.SendHostLobbySettings();
+            NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
         public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
-
-        public PlayerSettings GetPlayerSettings(int index) => playerSettings.Find(x => x.index == index);
-
-        public bool TryGetPlayerSettings(int index, out PlayerSettings playerSettings)
-        {
-            playerSettings = GetPlayerSettings(index);
-            return playerSettings;
-        }
 
         #region Lobby
 
@@ -162,8 +129,8 @@ namespace BetterLegacy.Core.Managers
                 LogError($"Cannot create a lobby because you're already in a lobby.");
                 return;
             }
-            if (PlayerManager.NoPlayers)
-                PlayerManager.ValidatePlayers();
+            if (PlayerManager.inst.NoPlayers)
+                PlayerManager.inst.ValidatePlayers();
             if (string.IsNullOrEmpty(LobbySettings.Name))
             {
                 LogError($"Cannot create a lobby with an empty name!");
@@ -242,7 +209,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="lobby">Lobby reference.</param>
         public void JoinLobby(Lobby lobby)
         {
-            if (PlayerManager.NoPlayers)
+            if (PlayerManager.inst.NoPlayers)
                 SceneHelper.LoadInputSelect(() => CoroutineHelper.StartCoroutine(IJoinLobby(lobby)));
             else
                 CoroutineHelper.StartCoroutine(IJoinLobby(lobby));
@@ -261,6 +228,7 @@ namespace BetterLegacy.Core.Managers
             yield return CoroutineHelper.StartCoroutine(lobby.Join());
             Log($"Joined lobby! [{lobby.Id}]");
             RTSteamManager.inst.StartClient(lobby.Owner.Id);
+            LobbyPopup.Instance?.OnLobbyJoined();
         }
 
         /// <summary>
@@ -270,6 +238,7 @@ namespace BetterLegacy.Core.Managers
         {
             ProjectArrhythmia.State.IsInLobby = false;
             CurrentLobby.Leave();
+            ClearLoaded();
         }
 
         /// <summary>
@@ -346,6 +315,8 @@ namespace BetterLegacy.Core.Managers
 
         public void SetLoaded(SteamId id) => loadedPlayers[id] = true;
 
+        public void ClearLoaded() => loadedPlayers.Clear();
+
         #endregion
 
         #region Events
@@ -409,12 +380,12 @@ namespace BetterLegacy.Core.Managers
 
             }
 
-            PlayerManager.Players.ForLoopReverse((player, index) =>
+            PlayerManager.inst.players.ForLoopReverse((player, index) =>
             {
                 if (player.ID == friend.Id)
-                    PlayerManager.RemovePlayer(player);
+                    PlayerManager.inst.RemovePlayer(player);
             });
-            PlayerManager.Players.ForLoop((player, index) => player.index = index);
+            PlayerManager.inst.players.ForLoop((player, index) => player.index = index);
 
             if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(friend.Id, out int id))
                 NetworkManager.inst.KickClient(id);

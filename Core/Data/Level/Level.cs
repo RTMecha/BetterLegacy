@@ -149,6 +149,8 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public const string ACHIEVEMENTS_LSA = "achievements.lsa";
 
+        const int SEND_ICON_DIVIDER = 4;
+
         #endregion
 
         /// <summary>
@@ -326,8 +328,8 @@ namespace BetterLegacy.Core.Data.Level
             var hasNoIcon = HasNoIcon;
             writer.Write(hasNoIcon);
             if (!hasNoIcon)
-                writer.Write(icon, true);
-            writer.Write(lockedIcon, true);
+                SendTexture(icon, writer);
+            SendTexture(lockedIcon, writer);
             metadata.WritePacket(writer);
             writer.Write(saveData != null);
             saveData?.WritePacket(writer);
@@ -337,6 +339,25 @@ namespace BetterLegacy.Core.Data.Level
             writer.Write(collectionInfo != null);
             collectionInfo?.WritePacket(writer);
             writer.Write(isInterface);
+        }
+
+        // resize the texture
+        void SendTexture(Sprite sprite, NetworkWriter writer)
+        {
+            if (!sprite)
+            {
+                writer.Write(sprite, true);
+                //CoreHelper.Log($"Icon was invalid, so couldn't send.");
+                return;
+            }
+            var texture = new Texture2D(sprite.texture.width, sprite.texture.height, sprite.texture.format, false);
+            texture.LoadImage(sprite.texture.EncodeToJPG());
+            texture.wrapMode = sprite.texture.wrapMode;
+            texture.filterMode = sprite.texture.filterMode;
+            texture.Resize(texture.width / SEND_ICON_DIVIDER, texture.height / SEND_ICON_DIVIDER);
+            texture.Apply();
+            writer.Write(texture, true);
+            //CoreHelper.Log($"Icon was valid [{sprite.texture.width} x {sprite.texture.height}] to [{texture.width} x {texture.height}]");
         }
 
         /// <summary>

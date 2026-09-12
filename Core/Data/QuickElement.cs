@@ -103,7 +103,6 @@ namespace BetterLegacy.Core.Data
         }
 
         #endregion
-
     }
 
     /// <summary>

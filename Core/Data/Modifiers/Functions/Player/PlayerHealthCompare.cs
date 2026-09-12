@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public override bool Run(Modifier modifier, ModifierLoop modifierLoop)
         {
             var health = modifier.GetInt(0, 0, modifierLoop.variables);
-            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => comparison.Compare(x.health, health));
+            return !PlayerManager.inst.players.IsEmpty() && PlayerManager.inst.players.Any(x => comparison.Compare(x.health, health));
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

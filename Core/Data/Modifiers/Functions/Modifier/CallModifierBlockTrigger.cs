@@ -28,18 +28,35 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var name = modifier.GetValue(0, modifierLoop.variables);
             var prefabable = modifierLoop.reference.AsPrefabable();
             var prefab = prefabable?.GetPrefab();
-            var modifierBlockLoop = modifier.GetResultOrDefault(() => new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = modifierLoop.reference.AsPrefabable();
+                var prefab = prefabable?.GetPrefab();
 
-            if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                return prefabModifierBlock.Run(modifierBlockLoop).result;
-            else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                return modifierBlock.Run(modifierBlockLoop).result;
-            return false;
+                var cache = new Cache();
+                cache.modifierLoop = new ModifierLoop(modifierLoop.reference, modifierLoop.variables);
+                if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
+                    cache.modifierBlock = prefabModifierBlock.Copy(false);
+                else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
+                    cache.modifierBlock = modifierBlock.Copy(false);
+                return cache;
+            });
+            return cache && cache.modifierBlock && cache.modifierLoop && cache.modifierBlock.Run(cache.modifierLoop).result;
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.StringGenerator(modifier, reference, "Function Name", 0);
+        }
+
+        #endregion
+
+        #region Sub Classes
+
+        public class Cache : Exists
+        {
+            public ModifierLoop modifierLoop;
+            public ModifierBlock modifierBlock;
         }
 
         #endregion

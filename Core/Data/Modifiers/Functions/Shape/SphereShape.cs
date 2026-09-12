@@ -49,6 +49,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => modifyable is IShapeable shapeable && !shapeable.IsSpecialShape;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.DropdownGenerator(modifier, reference, "Option", 0, CoreHelper.StringToOptionData("Full", "Half", "Quarter", "Eighth"));

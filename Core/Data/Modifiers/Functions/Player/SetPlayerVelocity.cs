@@ -7,7 +7,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
     public class SetPlayerVelocity : PlayerActionBase
     {
-        public SetPlayerVelocity(int axis, Selector selector) : base("setPlayerVelocity" + (axis == 1 ? "Y" : axis == 0 ? "X" : string.Empty, axis == -1 ? new string[] { "0", "10" } : new string[] { "10" }), selector) => this.axis = axis;
+        public SetPlayerVelocity(int axis, Selector selector) : base("setPlayerVelocity" + (axis == 1 ? "Y" : axis == 0 ? "X" : string.Empty), selector, axis == -1 ? new string[] { "0", "10" } : new string[] { "10" }) => this.axis = axis;
 
         readonly int axis;
 

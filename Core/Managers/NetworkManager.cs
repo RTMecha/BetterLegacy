@@ -14,11 +14,13 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
@@ -93,6 +95,11 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.Notify(message, RTColors.InvertColor(ProjectArrhythmia.State.InGame ? ThemeManager.inst.Current.backgroundColor : InterfaceManager.inst.CurrentTheme.backgroundColor));
             }),
 
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_HOST_LOBBY_SETTINGS, 1, reader =>
+            {
+                LobbyInfo.HostLobbySettings = Packet.CreateFromPacket<LobbySettings>(reader);
+            }),
+
             new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_DOWN, 1, reader => ProjectArrhythmia.Input.keyPressDownOnline.Add((KeyCode)reader.ReadInt32())),
             new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS, 1, reader => ProjectArrhythmia.Input.keyPressOnline.Add((KeyCode)reader.ReadInt32())),
             new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_UP, 1, reader => ProjectArrhythmia.Input.keyPressUpOnline.Add((KeyCode)reader.ReadInt32())),
@@ -108,28 +115,28 @@ namespace BetterLegacy.Core.Managers
         {
             new NetworkFunction(Side.Client, NetworkFunction.SEND_CLIENT_PLAYER_DATA, 1, reader =>
             {
-                foreach (var player in PlayerManager.Players)
-                    PlayerManager.DestroyPlayer(player);
-                PlayerManager.Players.Clear();
+                foreach (var player in PlayerManager.inst.players)
+                    PlayerManager.inst.DestroyPlayer(player);
+                PlayerManager.inst.players.Clear();
                 var list = new PacketList<PAPlayer>(new List<PAPlayer>());
                 list.ReadPacket(reader);
                 CoreHelper.Log($"Got players [{list.Count}]");
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (SteamLobbyManager.inst.localPlayers != null && SteamLobbyManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
+                    if (PlayerManager.inst.localPlayers != null && PlayerManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
                     {
                         origPlayer.index = i;
-                        PlayerManager.Players.Add(origPlayer);
+                        PlayerManager.inst.players.Add(origPlayer);
                     }
                     else
                     {
                         player.index = i;
-                        PlayerManager.Players.Add(player);
+                        PlayerManager.inst.players.Add(player);
                     }
                 }
                 if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
-                    PlayerManager.SpawnPlayers(PlayerManager.GetSpawnPosition());
+                    PlayerManager.inst.SpawnPlayers(PlayerManager.inst.GetSpawnPosition());
             }),
             new NetworkFunction(Side.Server, NetworkFunction.SEND_SERVER_PLAYER_DATA, 1, reader =>
             {
@@ -139,54 +146,54 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (!PlayerManager.Players.Has(x => x.id == player.id))
-                        PlayerManager.Players.Add(player);
+                    if (!PlayerManager.inst.players.Has(x => x.id == player.id))
+                        PlayerManager.inst.players.Add(player);
                 }
-                PlayerManager.Players.Sort((a, b) => b.IsLocalPlayer.CompareTo(a.IsLocalPlayer));
-                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                    PlayerManager.Players[i].index = i;
+                PlayerManager.inst.players.Sort((a, b) => b.IsLocalPlayer.CompareTo(a.IsLocalPlayer));
+                for (int i = 0; i < PlayerManager.inst.players.Count; i++)
+                    PlayerManager.inst.players[i].index = i;
                 SteamLobbyManager.inst.SyncPlayersToClients();
                 if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
-                    PlayerManager.RespawnPlayers();
+                    PlayerManager.inst.RespawnPlayers();
             }),
             new NetworkFunction(NetworkFunction.SEND_MULTI_PLAYER_DATA, 1, reader =>
             {
-                foreach (var player in PlayerManager.Players)
-                    PlayerManager.DestroyPlayer(player);
-                PlayerManager.Players.Clear();
+                foreach (var player in PlayerManager.inst.players)
+                    PlayerManager.inst.DestroyPlayer(player);
+                PlayerManager.inst.players.Clear();
                 var list = new PacketList<PAPlayer>(new List<PAPlayer>());
                 list.ReadPacket(reader);
                 CoreHelper.Log($"Got players [{list.Count}]");
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
-                    if (SteamLobbyManager.inst.localPlayers != null && SteamLobbyManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
+                    if (PlayerManager.inst.localPlayers != null && PlayerManager.inst.localPlayers.TryFind(x => x.id == player.id, out PAPlayer origPlayer))
                     {
                         origPlayer.index = i;
-                        PlayerManager.Players.Add(origPlayer);
+                        PlayerManager.inst.players.Add(origPlayer);
                     }
                     else
                     {
                         player.index = i;
-                        PlayerManager.Players.Add(player);
+                        PlayerManager.inst.players.Add(player);
                     }
                 }
                 if (ProjectArrhythmia.State.InEditor)
-                    PlayerManager.SpawnPlayers(PlayerManager.GetSpawnPosition());
+                    PlayerManager.inst.SpawnPlayers(PlayerManager.inst.GetSpawnPosition());
             }),
             new NetworkFunction(Side.Client, NetworkFunction.UPDATE_PLAYER_DATA, reader =>
             {
-                foreach (var player in PlayerManager.Players)
+                foreach (var player in PlayerManager.inst.players)
                 {
                     if (!player.IsLocalPlayer)
                         player.ReadPacket(reader);
                 }
             }),
-            new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, 1, reader => PlayerManager.SpawnPlayers(Packet.CreateFromPacket<Checkpoint>(reader), true)),
-            new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_POS, 1, reader => PlayerManager.SpawnPlayers(reader.ReadVector2(), true)),
-            new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS, 1, reader => PlayerManager.RespawnPlayers(true)),
-            new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS_POS, 1, reader => PlayerManager.RespawnPlayers(reader.ReadVector2(), true)),
-            new NetworkFunction(Side.Client, NetworkFunction.DESTROY_PLAYERS, 1, reader => PlayerManager.DestroyPlayers(true)),
+            new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, 1, reader => PlayerManager.inst.SpawnPlayers(Packet.CreateFromPacket<Checkpoint>(reader), true)),
+            new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_POS, 1, reader => PlayerManager.inst.SpawnPlayers(reader.ReadVector2(), true)),
+            new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS, 1, reader => PlayerManager.inst.RespawnPlayers(true)),
+            new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS_POS, 1, reader => PlayerManager.inst.RespawnPlayers(reader.ReadVector2(), true)),
+            new NetworkFunction(Side.Client, NetworkFunction.DESTROY_PLAYERS, 1, reader => PlayerManager.inst.DestroyPlayers(true)),
             new NetworkFunction(NetworkFunction.PLAYER_BOOST, 2, reader =>
             {
                 var steamID = reader.ReadUInt64();
@@ -194,7 +201,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 var id = reader.ReadString();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                     player.RuntimePlayer.Boost();
             }),
             new NetworkFunction(NetworkFunction.PLAYER_BOOST_STOP, 2, reader =>
@@ -204,7 +211,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 var id = reader.ReadString();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                     player.RuntimePlayer.StopBoosting();
             }),
             new NetworkFunction(NetworkFunction.PLAYER_JUMP, 2, reader =>
@@ -214,7 +221,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 var id = reader.ReadString();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                     player.RuntimePlayer.Jump();
             }),
             new NetworkFunction(NetworkFunction.PLAYER_HEAL, 3, reader =>
@@ -225,7 +232,7 @@ namespace BetterLegacy.Core.Managers
 
                 var id = reader.ReadString();
                 var heal = reader.ReadInt32();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                     player.RuntimePlayer.Heal(heal);
             }),
             new NetworkFunction(NetworkFunction.PLAYER_HIT, 3, reader =>
@@ -236,7 +243,7 @@ namespace BetterLegacy.Core.Managers
 
                 var id = reader.ReadString();
                 var damage = reader.ReadInt32();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                 {
                     if (damage > 0)
                         player.RuntimePlayer.Hit(damage);
@@ -251,7 +258,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 var id = reader.ReadString();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) && player.RuntimePlayer)
                     player.RuntimePlayer.Kill();
             }),
             new NetworkFunction(NetworkFunction.PLAYER_RESET_HEALTH, 2, reader =>
@@ -261,7 +268,7 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 var id = reader.ReadString();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player))
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player))
                     player.ResetHealth();
             }),
             new NetworkFunction(NetworkFunction.SET_PLAYER_POSITION, 4, reader =>
@@ -270,7 +277,7 @@ namespace BetterLegacy.Core.Managers
                 var id = reader.ReadString();
                 var pos = reader.ReadVector2();
                 var rot = reader.ReadSingle();
-                if (steamID == RTSteamManager.inst.steamUser.steamID || !PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
+                if (steamID == RTSteamManager.inst.steamUser.steamID || !PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player) || player.IsLocalPlayer || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
                 player.RuntimePlayer.rb.position = pos;
@@ -284,8 +291,19 @@ namespace BetterLegacy.Core.Managers
 
                 var id = reader.ReadString();
                 var health = reader.ReadInt32();
-                if (PlayerManager.Players.TryFind(x => x.id == id, out PAPlayer player))
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player))
                     player.Health = health;
+            }),
+            new NetworkFunction(NetworkFunction.SET_PLAYER_MODEL, 3, reader =>
+            {
+                var steamID = reader.ReadUInt64();
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
+
+                var id = reader.ReadString();
+                var model = Packet.CreateFromPacket<PlayerModel>(reader);
+                if (PlayerManager.inst.players.TryFind(x => x.id == id, out PAPlayer player))
+                    player.SetModel(model);
             }),
         };
 
@@ -515,8 +533,19 @@ namespace BetterLegacy.Core.Managers
 
         public List<NetworkFunction> editorFunctions = new List<NetworkFunction>
         {
+            new NetworkFunction(Side.Client, NetworkFunction.SET_EDITOR_LEVEL_SORT, 2, reader =>
+            {
+                LobbyInfo.EditorLevelAscend = reader.ReadBoolean();
+                LobbyInfo.EditorLevelSort = (LevelSort)reader.ReadInt32();
+                if (RTEditor.inst)
+                {
+                    RTEditor.inst.UpdateAscendToggle();
+                    RTEditor.inst.UpdateOrderDropdown();
+                }
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.CLEAR_EDITOR_LEVELS, reader =>
             {
+                LobbyInfo.HostEditorLevels.Clear();
                 EditorLevelManager.inst.LevelPanels.Clear();
                 EditorLevelManager.inst.OpenLevelPopup.ClearContent();
             }),
@@ -524,14 +553,11 @@ namespace BetterLegacy.Core.Managers
             {
                 var levelPanel = Packet.CreateFromPacket<LevelPanel>(reader);
                 EditorLevelManager.inst.LevelPanels.Add(levelPanel);
+                LobbyInfo.HostEditorLevels.Add(levelPanel);
 
                 if (levelPanel.isFolder)
                 {
                     levelPanel.Init(levelPanel.Path);
-
-                    if (ProjectArrhythmia.State.IsHosting)
-                        NetworkFunction.SendEditorLevel(levelPanel);
-
                     return;
                 }
 
@@ -551,12 +577,177 @@ namespace BetterLegacy.Core.Managers
                     return;
 
                 GameData.Current.beatmapObjects.Add(beatmapObject);
+                RTLevel.Current?.UpdateObject(beatmapObject);
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                EditorTimeline.inst.UpdateTransformIndex();
                 NetworkFunction.CreateBeatmapObject(beatmapObject);
             }),
             new NetworkFunction(Side.Client, NetworkFunction.CREATE_BEATMAP_OBJECT, 1, reader =>
             {
                 var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
+                if (GameData.Current.beatmapObjects.Has(x => x.id == beatmapObject.id))
+                    return;
+
                 GameData.Current.beatmapObjects.Add(beatmapObject);
+                RTLevel.Current?.UpdateObject(beatmapObject);
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                EditorTimeline.inst.UpdateTransformIndex();
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 3, reader =>
+            {
+                var edit = Packet.CreateFromPacket<BeatmapObject>(reader);
+                var updateContext = reader.ReadString();
+                var updateTimelineObject = reader.ReadBoolean();
+                if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
+                    return;
+                var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
+                var modifiers = updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext) ?  new List<Modifier>(beatmapObject.modifiers) : null;
+                beatmapObject.CopyData(edit, false);
+                if (updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext))
+                    for (int i = 0; i < beatmapObject.modifiers.Count; i++)
+                    {
+                        var modifier = beatmapObject.modifiers[i];
+                        if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
+                        {
+                            var function = modifier.function;
+                            var trigger = modifier.trigger;
+                            var action = modifier.action;
+                            origModifier.CopyData(modifier, false);
+                            origModifier.function = function;
+                            origModifier.trigger = trigger;
+                            origModifier.action = action;
+                            beatmapObject.modifiers[i] = origModifier;
+                        }
+                    }
+                if (updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext))
+                    for (int i = 0; i < beatmapObject.events.Count; i++)
+                    {
+                        var keyframes = beatmapObject.events[i];
+                        for (int j = 0; j < keyframes.Count; j++)
+                        {
+                            var eventKeyframe = keyframes[j];
+                            if (events[i].TryFind(x => x.id == eventKeyframe.id, out EventKeyframe origKeyframe))
+                            {
+                                origKeyframe.CopyData(eventKeyframe, false);
+                                keyframes[j] = origKeyframe;
+                            }
+                        }
+                    }
+                if (updateContext != ObjectContext.EDITOR_UPDATE)
+                    RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
+                if (updateTimelineObject)
+                    beatmapObject.TimelineObject?.Render();
+            }),
+            new NetworkFunction(NetworkFunction.ADD_TAG, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                switch (type)
+                {
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.Add("New Tag");
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.Add("New Tag");
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.Add("New Tag");
+                            break;
+                        }
+                }
+            }),
+            new NetworkFunction(NetworkFunction.REMOVE_TAG, 3, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                var index = reader.ReadInt32();
+                switch (type)
+                {
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.RemoveAt(index);
+                            break;
+                        }
+                }
+            }),
+            new NetworkFunction(NetworkFunction.CLEAR_TAGS, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                switch (type)
+                {
+                    case ModifierReferenceType.BeatmapObject: {
+                            if (!GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject))
+                                break;
+                            beatmapObject.Tags.Clear();
+                            break;
+                        }
+                    case ModifierReferenceType.BackgroundObject: {
+                            if (!GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject))
+                                break;
+                            backgroundObject.Tags.Clear();
+                            break;
+                        }
+                    case ModifierReferenceType.PrefabObject: {
+                            if (!GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject))
+                                break;
+                            prefabObject.Tags.Clear();
+                            break;
+                        }
+                }
+            }),
+            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 2, reader =>
+            {
+                var expander = Packet.CreateFromPacket<PrefabExpander>(reader);
+                var expanded = Packet.CreateFromPacket<PrefabExpander.Expanded>(reader);
+                expanded.Apply(expander.prefab, expander.prefabObject, expander.regen);
+            }),
+            new NetworkFunction(NetworkFunction.ADD_PREFAB_OBJECT, 1, reader =>
+            {
+                var prefabObject = Packet.CreateFromPacket<PrefabObject>(reader);
+                var prefab = prefabObject.GetPrefab();
+
+                for (int i = 0; i < prefab.beatmapThemes.Count; i++)
+                    GameData.Current.AddTheme(prefab.beatmapThemes[i]); // only add, don't overwrite
+                if (!prefab.beatmapThemes.IsEmpty())
+                    RTThemeEditor.inst.LoadInternalThemes();
+
+                GameData.Current.prefabObjects.Add(prefabObject);
+
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+                RTLevel.Current?.RecalculateObjectStates();
+
+                RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, false);
+
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+                EditorTimeline.inst.UpdateTransformIndex();
+            }),
+            new NetworkFunction(NetworkFunction.IMPORT_PREFAB, 1, reader =>
+            {
+                var prefab = Packet.CreateFromPacket<Prefab>(reader);
+                GameData.Current.prefabs.Add(prefab);
+                RTPrefabEditor.inst.RefreshInternalPrefabs();
             }),
         };
 
@@ -603,6 +794,7 @@ namespace BetterLegacy.Core.Managers
             NetworkFunction.Group.Player => playerFunctions,
             NetworkFunction.Group.Interface => interfaceFunctions,
             NetworkFunction.Group.Game => gameFunctions,
+            NetworkFunction.Group.Editor => editorFunctions,
             _ => functions,
         };
 
@@ -720,6 +912,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             using var writer = new NetworkWriter();
+            writer.Write(RTSteamManager.inst.steamUser.steamID);
+            writer.Write((byte)function.side);
+            writer.Write((byte)sendType);
             writer.Write((int)function.group);
             writer.Write(function.id);
             writer.Write(length);
@@ -745,6 +940,10 @@ namespace BetterLegacy.Core.Managers
             while (!chunks.IsEmpty())
             {
                 using var writer = new NetworkWriter();
+                var sendType = SendType.Reliable | SendType.NoNagle;
+                writer.Write(RTSteamManager.inst.steamUser.steamID);
+                writer.Write((byte)side);
+                writer.Write((byte)sendType);
                 writer.Write(group);
                 writer.Write(id);
                 writer.Write(position);
@@ -757,7 +956,7 @@ namespace BetterLegacy.Core.Managers
                 writer.Write(data.Length);
                 writer.Write(data);
                 chunks.RemoveAt(0);
-                Send(side, writer.GetData(), SendType.Reliable | SendType.NoNagle, steamId);
+                Send(side, writer.GetData(), sendType, steamId);
 
                 if (size > MAX_BUFFER_SIZE)
                 {
@@ -787,10 +986,9 @@ namespace BetterLegacy.Core.Managers
                     }
                 case NetworkFunction.Side.Multi: {
                         if (ProjectArrhythmia.State.IsHosting)
-                            Transport.onServerDataReceived?.Invoke(ServerSelfPeerConnection, data);
+                            SendToAllClients(data, sendType);
                         else
                             SendToServer(data, sendType);
-                        SendToAllClients(data, sendType);
                         break;
                     }
             }
@@ -905,6 +1103,9 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
+            var sender = reader.ReadUInt64();
+            var side = (NetworkFunction.Side)reader.ReadByte();
+            var sendType = (SendType)reader.ReadByte();
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
@@ -995,6 +1196,11 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
             var reader = new NetworkReader(data);
+            var sender = reader.ReadUInt64();
+            var side = (NetworkFunction.Side)reader.ReadByte();
+            var sendType = (SendType)reader.ReadByte();
+            if (side == NetworkFunction.Side.Multi && RTSteamManager.inst.steamUser.steamID != sender)
+                SendToAllClients(data, sendType);
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);

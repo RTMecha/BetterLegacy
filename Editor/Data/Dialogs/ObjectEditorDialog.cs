@@ -8,8 +8,6 @@ using UnityEngine.UI;
 
 using TMPro;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
@@ -104,6 +102,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<Toggle> ShapeToggles { get; set; } = new List<Toggle>();
         public List<List<Toggle>> ShapeOptionToggles { get; set; } = new List<List<Toggle>>();
+
+        public PolygonShapeEditor PolygonShapeEditor { get; set; } = new PolygonShapeEditor();
 
         public List<int> UnsupportedShapes { get; set; }
 
@@ -982,6 +982,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyInputField(startHexColorField);
             }
 
+            // 3D Scale
+            {
+                var use3D = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.KeyframeDialogs[1].transform, "use3D");
+                var use3DToggle = use3D.GetComponent<ToggleButtonStorage>();
+                use3DToggle.Text = "Use 3D Axis";
+
+                EditorThemeManager.ApplyToggle(use3DToggle);
+
+                var labels = ObjEditor.inst.KeyframeDialogs[1].transform.Find("scale").GetPreviousSibling();
+                var scaZLabel = labels.GetChild(0).gameObject.Duplicate(labels, "text");
+                var scaZLabelText = scaZLabel.GetComponent<Text>();
+                scaZLabelText.text = "Scale Z";
+                EditorThemeManager.ApplyLightText(scaZLabelText);
+            }
+
             // 3D Rotation
             {
                 var use3D = EditorPrefabHolder.Instance.ToggleButton.Duplicate(ObjEditor.inst.KeyframeDialogs[2].transform, "use3D");
@@ -1071,28 +1086,25 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorThemeManager.ApplyGraphic(flipYStorage.button.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.ApplyGraphic(flipYStorage.label, ThemeGroup.Function_1_Text);
 
-                        if (i == 0 || i == 2)
+                        var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
+                        flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                        var flipZStorage = flipZ.GetComponent<FunctionButtonStorage>();
+                        flipZStorage.Text = "Flip Z";
+                        flipZStorage.OnClick.NewListener(() =>
                         {
-                            var flipZ = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipz");
-                            flipZ.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-                            var flipZStorage = flipZ.GetComponent<FunctionButtonStorage>();
-                            flipZStorage.Text = "Flip Z";
-                            flipZStorage.OnClick.NewListener(() =>
+                            foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
-                                {
-                                    var eventKeyframe = timelineObject.eventKeyframe;
-                                    eventKeyframe.values[2] = -eventKeyframe.values[2];
-                                }
+                                var eventKeyframe = timelineObject.eventKeyframe;
+                                eventKeyframe.values[2] = -eventKeyframe.values[2];
+                            }
 
-                                var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                Timeline.RenderDialog(beatmapObject);
-                            });
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            Timeline.RenderDialog(beatmapObject);
+                        });
 
-                            EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
-                            EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
-                        }
+                        EditorThemeManager.ApplyGraphic(flipZStorage.button.image, ThemeGroup.Function_1, true);
+                        EditorThemeManager.ApplyGraphic(flipZStorage.label, ThemeGroup.Function_1_Text);
                     }
 
                     var edit = parent.Find("edit");
@@ -1167,7 +1179,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 multiKeyframeEditor.GetChild(1).gameObject.SetActive(false);
 
-                RTEditor.GenerateLabels("time_label", multiKeyframeEditor, new Label("Time"));
+                new LabelsElement("Time").Init(EditorElement.InitSettings.Default.Name("time_label").Parent(multiKeyframeEditor));
 
                 var timeBase = Creator.NewUIObject("time", multiKeyframeEditor);
                 timeBase.transform.AsRT().sizeDelta = new Vector2(765f, 38f);
@@ -1186,7 +1198,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplySelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.ApplySelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
-                RTEditor.GenerateLabels("curve_label", multiKeyframeEditor, new Label("Ease Type"));
+                new LabelsElement("Ease Type").Init(EditorElement.InitSettings.Default.Name("curve_label").Parent(multiKeyframeEditor));
 
                 var curveBase = Creator.NewUIObject("curves", multiKeyframeEditor);
                 curveBase.transform.AsRT().sizeDelta = new Vector2(765f, 38f);
@@ -1208,7 +1220,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(curvesApplyFunctionButton.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(curvesApplyFunctionButton.label, ThemeGroup.Function_1_Text);
 
-                RTEditor.GenerateLabels("value index_label", multiKeyframeEditor, new Label("Value Index / Value"));
+                new LabelsElement("Value Index / Value").Init(EditorElement.InitSettings.Default.Name("value index_label").Parent(multiKeyframeEditor));
 
                 var valueBase = Creator.NewUIObject("value base", multiKeyframeEditor);
                 valueBase.transform.AsRT().sizeDelta = new Vector2(364f, 32f);
@@ -1243,7 +1255,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplySelectable(valueStorage.middleButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.ApplySelectable(valueStorage.rightButton, ThemeGroup.Function_2, false);
 
-                RTEditor.GenerateLabels("snap_label", multiKeyframeEditor, new Label("Force Snap Time to BPM"));
+                new LabelsElement("Force Snap Time to BPM").Init(EditorElement.InitSettings.Default.Name("snap_label").Parent(multiKeyframeEditor));
 
                 var snapToBPMObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(multiKeyframeEditor, "snap bpm");
                 snapToBPMObject.transform.localScale = Vector3.one;
@@ -1279,7 +1291,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(snapToBPM.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(snapToBPMText, ThemeGroup.Function_1_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("All Types"));
+                new LabelsElement("All Types").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pasteAllObject = EditorPrefabHolder.Instance.Function1Button.Duplicate(multiKeyframeEditor, "paste");
                 pasteAllObject.transform.localScale = Vector3.one;
@@ -1307,7 +1319,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(pasteAll.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(pasteAllText, ThemeGroup.Paste_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("Position / Scale"));
+                new LabelsElement("Position / Scale").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pastePosScaObject = new GameObject("paste pos sca base");
                 pastePosScaObject.transform.SetParent(multiKeyframeEditor);
@@ -1375,7 +1387,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.ApplyGraphic(pasteSca.image, ThemeGroup.Paste, true);
                 EditorThemeManager.ApplyGraphic(pasteScaText, ThemeGroup.Paste_Text);
 
-                RTEditor.GenerateLabels("paste_label", multiKeyframeEditor, new Label("Rotation / Color"));
+                new LabelsElement("Rotation / Color").Init(EditorElement.InitSettings.Default.Name("paste_label").Parent(multiKeyframeEditor));
 
                 var pasteRotColObject = new GameObject("paste rot col base");
                 pasteRotColObject.transform.SetParent(multiKeyframeEditor);
@@ -2305,276 +2317,275 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var verticalLayoutGroup = so.gameObject.GetOrAddComponent<VerticalLayoutGroup>();
                     verticalLayoutGroup.spacing = 4f;
 
-                    // Polygon Settings
-                    {
-                        #region Radius
+                    #region Radius
 
-                        var radius = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "radius");
-                        var radiusStorage = radius.GetComponent<InputFieldStorage>();
+                    var radius = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "radius");
+                    PolygonShapeEditor.RadiusField = radius.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(radiusStorage.addButton);
-                        CoreHelper.Delete(radiusStorage.subButton);
-                        CoreHelper.Delete(radiusStorage.leftGreaterButton);
-                        CoreHelper.Delete(radiusStorage.middleButton);
-                        CoreHelper.Delete(radiusStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(radiusStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.RadiusField);
 
-                        var radiusLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(radius.transform, "label", 0);
-                        var radiusLabelText = radiusLabel.GetComponent<Text>();
-                        radiusLabelText.alignment = TextAnchor.MiddleLeft;
-                        radiusLabelText.text = "Radius";
-                        radiusLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(radiusLabelText);
-                        var radiusLabelLayout = radiusLabel.AddComponent<LayoutElement>();
-                        radiusLabelLayout.minWidth = 100f;
+                    var radiusLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(radius.transform, "label", 0);
+                    var radiusLabelText = radiusLabel.GetComponent<Text>();
+                    radiusLabelText.alignment = TextAnchor.MiddleLeft;
+                    radiusLabelText.text = "Radius";
+                    radiusLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(radiusLabelText);
+                    var radiusLabelLayout = radiusLabel.AddComponent<LayoutElement>();
+                    radiusLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Sides
+                    #region Sides
 
-                        var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
-                        var sidesStorage = sides.GetComponent<InputFieldStorage>();
+                    var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
+                    PolygonShapeEditor.SidesField = sides.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(sidesStorage.addButton);
-                        CoreHelper.Delete(sidesStorage.subButton);
-                        CoreHelper.Delete(sidesStorage.leftGreaterButton);
-                        CoreHelper.Delete(sidesStorage.middleButton);
-                        CoreHelper.Delete(sidesStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(sidesStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.RadiusField);
 
-                        var sidesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(sides.transform, "label", 0);
-                        var sidesLabelText = sidesLabel.GetComponent<Text>();
-                        sidesLabelText.alignment = TextAnchor.MiddleLeft;
-                        sidesLabelText.text = "Sides";
-                        sidesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(sidesLabelText);
-                        var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
-                        sidesLabelLayout.minWidth = 100f;
+                    var sidesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(sides.transform, "label", 0);
+                    var sidesLabelText = sidesLabel.GetComponent<Text>();
+                    sidesLabelText.alignment = TextAnchor.MiddleLeft;
+                    sidesLabelText.text = "Sides";
+                    sidesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(sidesLabelText);
+                    var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
+                    sidesLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Roundness
+                    #region Roundness
 
-                        var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
-                        var roundnessStorage = roundness.GetComponent<InputFieldStorage>();
+                    var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
+                    PolygonShapeEditor.RoundnessField = roundness.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(roundnessStorage.addButton);
-                        CoreHelper.Delete(roundnessStorage.subButton);
-                        CoreHelper.Delete(roundnessStorage.leftGreaterButton);
-                        CoreHelper.Delete(roundnessStorage.middleButton);
-                        CoreHelper.Delete(roundnessStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RoundnessField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RoundnessField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RoundnessField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RoundnessField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.RoundnessField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(roundnessStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.RoundnessField);
 
-                        var roundnessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(roundness.transform, "label", 0);
-                        var roundnessLabelText = roundnessLabel.GetComponent<Text>();
-                        roundnessLabelText.alignment = TextAnchor.MiddleLeft;
-                        roundnessLabelText.text = "Roundness";
-                        roundnessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(roundnessLabelText);
-                        var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
-                        roundnessLabelLayout.minWidth = 100f;
+                    var roundnessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(roundness.transform, "label", 0);
+                    var roundnessLabelText = roundnessLabel.GetComponent<Text>();
+                    roundnessLabelText.alignment = TextAnchor.MiddleLeft;
+                    roundnessLabelText.text = "Roundness";
+                    roundnessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(roundnessLabelText);
+                    var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
+                    roundnessLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Thickness
+                    #region Thickness
 
-                        var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
-                        var thicknessStorage = thickness.GetComponent<InputFieldStorage>();
+                    var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
+                    PolygonShapeEditor.ThicknessField = thickness.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessStorage.addButton);
-                        CoreHelper.Delete(thicknessStorage.subButton);
-                        CoreHelper.Delete(thicknessStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessStorage.middleButton);
-                        CoreHelper.Delete(thicknessStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessField);
 
-                        var thicknessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thickness.transform, "label", 0);
-                        var thicknessLabelText = thicknessLabel.GetComponent<Text>();
-                        thicknessLabelText.alignment = TextAnchor.MiddleLeft;
-                        thicknessLabelText.text = "Thickness";
-                        thicknessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(thicknessLabelText);
-                        var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
-                        thicknessLabelLayout.minWidth = 100f;
+                    var thicknessLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thickness.transform, "label", 0);
+                    var thicknessLabelText = thicknessLabel.GetComponent<Text>();
+                    thicknessLabelText.alignment = TextAnchor.MiddleLeft;
+                    thicknessLabelText.text = "Thickness";
+                    thicknessLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(thicknessLabelText);
+                    var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
+                    thicknessLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Thickness Offset
+                    #region Thickness Offset
 
-                        var thicknessOffset = Creator.NewUIObject("thickness offset", so);
-                        var thicknessOffsetLayout = thicknessOffset.AddComponent<HorizontalLayoutGroup>();
+                    var thicknessOffset = Creator.NewUIObject("thickness offset", so);
+                    var thicknessOffsetLayout = thicknessOffset.AddComponent<HorizontalLayoutGroup>();
+                    PolygonShapeEditor.ThicknessOffsetFields = thicknessOffset.AddComponent<Vector2InputFieldStorage>();
 
-                        var thicknessOffsetLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessOffset.transform, "label");
-                        var thicknessOffsetLabelText = thicknessOffsetLabel.GetComponent<Text>();
-                        thicknessOffsetLabelText.alignment = TextAnchor.MiddleLeft;
-                        thicknessOffsetLabelText.text = "Thick Offset";
-                        thicknessOffsetLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
-                        EditorThemeManager.ApplyLightText(thicknessOffsetLabelText);
-                        var thicknessOffsetLabelLayout = thicknessOffsetLabel.AddComponent<LayoutElement>();
-                        thicknessOffsetLabelLayout.minWidth = 130f;
+                    var thicknessOffsetLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessOffset.transform, "label");
+                    var thicknessOffsetLabelText = thicknessOffsetLabel.GetComponent<Text>();
+                    thicknessOffsetLabelText.alignment = TextAnchor.MiddleLeft;
+                    thicknessOffsetLabelText.text = "Thick Offset";
+                    thicknessOffsetLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                    EditorThemeManager.ApplyLightText(thicknessOffsetLabelText);
+                    var thicknessOffsetLabelLayout = thicknessOffsetLabel.AddComponent<LayoutElement>();
+                    thicknessOffsetLabelLayout.minWidth = 130f;
 
-                        var thicknessOffsetX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "x");
-                        var thicknessOffsetXStorage = thicknessOffsetX.GetComponent<InputFieldStorage>();
+                    var thicknessOffsetX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "x");
+                    PolygonShapeEditor.ThicknessOffsetFields.x = thicknessOffsetX.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessOffsetXStorage.addButton);
-                        CoreHelper.Delete(thicknessOffsetXStorage.subButton);
-                        CoreHelper.Delete(thicknessOffsetXStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessOffsetXStorage.middleButton);
-                        CoreHelper.Delete(thicknessOffsetXStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.x.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.x.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.x.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.x.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.x.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessOffsetXStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessOffsetFields.x);
                             
-                        var thicknessOffsetY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "y");
-                        var thicknessOffsetYStorage = thicknessOffsetY.GetComponent<InputFieldStorage>();
+                    var thicknessOffsetY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "y");
+                    PolygonShapeEditor.ThicknessOffsetFields.y = thicknessOffsetY.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessOffsetYStorage.addButton);
-                        CoreHelper.Delete(thicknessOffsetYStorage.subButton);
-                        CoreHelper.Delete(thicknessOffsetYStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessOffsetYStorage.middleButton);
-                        CoreHelper.Delete(thicknessOffsetYStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.y.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.y.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.y.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.y.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessOffsetFields.y.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessOffsetYStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessOffsetFields.y);
 
-                        #endregion
+                    #endregion
                             
-                        #region Thickness Scale
+                    #region Thickness Scale
 
-                        var thicknessScale = Creator.NewUIObject("thickness scale", so);
-                        var thicknessScaleLayout = thicknessScale.AddComponent<HorizontalLayoutGroup>();
+                    var thicknessScale = Creator.NewUIObject("thickness scale", so);
+                    var thicknessScaleLayout = thicknessScale.AddComponent<HorizontalLayoutGroup>();
+                    PolygonShapeEditor.ThicknessScaleFields = thicknessScale.AddComponent<Vector2InputFieldStorage>();
 
-                        var thicknessScaleLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessScale.transform, "label");
-                        var thicknessScaleLabelText = thicknessScaleLabel.GetComponent<Text>();
-                        thicknessScaleLabelText.alignment = TextAnchor.MiddleLeft;
-                        thicknessScaleLabelText.text = "Thick Scale";
-                        thicknessScaleLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
-                        EditorThemeManager.ApplyLightText(thicknessScaleLabelText);
-                        var thicknessScaleLabelLayout = thicknessScaleLabel.AddComponent<LayoutElement>();
-                        thicknessScaleLabelLayout.minWidth = 130f;
+                    var thicknessScaleLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessScale.transform, "label");
+                    var thicknessScaleLabelText = thicknessScaleLabel.GetComponent<Text>();
+                    thicknessScaleLabelText.alignment = TextAnchor.MiddleLeft;
+                    thicknessScaleLabelText.text = "Thick Scale";
+                    thicknessScaleLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                    EditorThemeManager.ApplyLightText(thicknessScaleLabelText);
+                    var thicknessScaleLabelLayout = thicknessScaleLabel.AddComponent<LayoutElement>();
+                    thicknessScaleLabelLayout.minWidth = 130f;
 
-                        var thicknessScaleX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "x");
-                        var thicknessScaleXStorage = thicknessScaleX.GetComponent<InputFieldStorage>();
+                    var thicknessScaleX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "x");
+                    PolygonShapeEditor.ThicknessScaleFields.x = thicknessScaleX.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessScaleXStorage.addButton);
-                        CoreHelper.Delete(thicknessScaleXStorage.subButton);
-                        CoreHelper.Delete(thicknessScaleXStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessScaleXStorage.middleButton);
-                        CoreHelper.Delete(thicknessScaleXStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.x.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.x.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.x.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.x.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.x.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessScaleXStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessScaleFields.x);
                             
-                        var thicknessScaleY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "y");
-                        var thicknessScaleYStorage = thicknessScaleY.GetComponent<InputFieldStorage>();
+                    var thicknessScaleY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "y");
+                    PolygonShapeEditor.ThicknessScaleFields.y = thicknessScaleY.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessScaleYStorage.addButton);
-                        CoreHelper.Delete(thicknessScaleYStorage.subButton);
-                        CoreHelper.Delete(thicknessScaleYStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessScaleYStorage.middleButton);
-                        CoreHelper.Delete(thicknessScaleYStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.y.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.y.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.y.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.y.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessScaleFields.y.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessScaleYStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessScaleFields.y);
 
-                        #endregion
+                    #endregion
 
-                        #region Thickness Rotation
+                    #region Thickness Rotation
 
-                        var thicknessRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness angle");
-                        var thicknessRotationStorage = thicknessRotation.GetComponent<InputFieldStorage>();
+                    var thicknessRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness angle");
+                    PolygonShapeEditor.ThicknessAngleField = thicknessRotation.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(thicknessRotationStorage.addButton);
-                        CoreHelper.Delete(thicknessRotationStorage.subButton);
-                        CoreHelper.Delete(thicknessRotationStorage.leftGreaterButton);
-                        CoreHelper.Delete(thicknessRotationStorage.middleButton);
-                        CoreHelper.Delete(thicknessRotationStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessAngleField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessAngleField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessAngleField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessAngleField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.ThicknessAngleField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(thicknessRotationStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.ThicknessAngleField);
 
-                        var thicknessRotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessRotation.transform, "label", 0);
-                        var thicknessRotationLabelText = thicknessRotationLabel.GetComponent<Text>();
-                        thicknessRotationLabelText.alignment = TextAnchor.MiddleLeft;
-                        thicknessRotationLabelText.text = "Thick Angle";
-                        thicknessRotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(thicknessRotationLabelText);
-                        var thicknessRotationLabelLayout = thicknessRotationLabel.AddComponent<LayoutElement>();
-                        thicknessRotationLabelLayout.minWidth = 100f;
+                    var thicknessRotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessRotation.transform, "label", 0);
+                    var thicknessRotationLabelText = thicknessRotationLabel.GetComponent<Text>();
+                    thicknessRotationLabelText.alignment = TextAnchor.MiddleLeft;
+                    thicknessRotationLabelText.text = "Thick Angle";
+                    thicknessRotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(thicknessRotationLabelText);
+                    var thicknessRotationLabelLayout = thicknessRotationLabel.AddComponent<LayoutElement>();
+                    thicknessRotationLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Slices
+                    #region Slices
 
-                        var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
-                        var slicesStorage = slices.GetComponent<InputFieldStorage>();
+                    var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
+                    PolygonShapeEditor.SlicesField = slices.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(slicesStorage.addButton);
-                        CoreHelper.Delete(slicesStorage.subButton);
-                        CoreHelper.Delete(slicesStorage.leftGreaterButton);
-                        CoreHelper.Delete(slicesStorage.middleButton);
-                        CoreHelper.Delete(slicesStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SlicesField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SlicesField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SlicesField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SlicesField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SlicesField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(slicesStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.SlicesField);
 
-                        var slicesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(slices.transform, "label", 0);
-                        var slicesLabelText = slicesLabel.GetComponent<Text>();
-                        slicesLabelText.alignment = TextAnchor.MiddleLeft;
-                        slicesLabelText.text = "Slices";
-                        slicesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(slicesLabelText);
-                        var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
-                        slicesLabelLayout.minWidth = 100f;
+                    var slicesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(slices.transform, "label", 0);
+                    var slicesLabelText = slicesLabel.GetComponent<Text>();
+                    slicesLabelText.alignment = TextAnchor.MiddleLeft;
+                    slicesLabelText.text = "Slices";
+                    slicesLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(slicesLabelText);
+                    var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
+                    slicesLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Angle
+                    #region Angle
 
-                        var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "rotation");
-                        var rotationStorage = rotation.GetComponent<InputFieldStorage>();
+                    var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "rotation");
+                    PolygonShapeEditor.AngleField = rotation.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(rotationStorage.addButton);
-                        CoreHelper.Delete(rotationStorage.subButton);
-                        CoreHelper.Delete(rotationStorage.leftGreaterButton);
-                        CoreHelper.Delete(rotationStorage.middleButton);
-                        CoreHelper.Delete(rotationStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AngleField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AngleField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AngleField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AngleField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AngleField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(rotationStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.AngleField);
 
-                        var rotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(rotation.transform, "label", 0);
-                        var rotationLabelText = rotationLabel.GetComponent<Text>();
-                        rotationLabelText.alignment = TextAnchor.MiddleLeft;
-                        rotationLabelText.text = "Angle";
-                        rotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(rotationLabelText);
-                        var rotationLabelLayout = rotationLabel.AddComponent<LayoutElement>();
-                        rotationLabelLayout.minWidth = 100f;
+                    var rotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(rotation.transform, "label", 0);
+                    var rotationLabelText = rotationLabel.GetComponent<Text>();
+                    rotationLabelText.alignment = TextAnchor.MiddleLeft;
+                    rotationLabelText.text = "Angle";
+                    rotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(rotationLabelText);
+                    var rotationLabelLayout = rotationLabel.AddComponent<LayoutElement>();
+                    rotationLabelLayout.minWidth = 100f;
 
-                        #endregion
+                    #endregion
 
-                        #region Alternate
+                    #region Alternate
 
-                        var alternate = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "alternate");
-                        var alternateStorage = alternate.GetComponent<InputFieldStorage>();
+                    var alternate = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "alternate");
+                    PolygonShapeEditor.AlternateField = alternate.GetComponent<InputFieldStorage>();
 
-                        CoreHelper.Delete(alternateStorage.addButton);
-                        CoreHelper.Delete(alternateStorage.subButton);
-                        CoreHelper.Delete(alternateStorage.leftGreaterButton);
-                        CoreHelper.Delete(alternateStorage.middleButton);
-                        CoreHelper.Delete(alternateStorage.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AlternateField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AlternateField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AlternateField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AlternateField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.AlternateField.rightGreaterButton);
 
-                        EditorThemeManager.ApplyInputField(alternateStorage);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.AlternateField);
 
-                        var alternateLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(alternate.transform, "label", 0);
-                        var alternateLabelText = alternateLabel.GetComponent<Text>();
-                        alternateLabelText.alignment = TextAnchor.MiddleLeft;
-                        alternateLabelText.text = "Alternate";
-                        alternateLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
-                        EditorThemeManager.ApplyLightText(alternateLabelText);
-                        var alternateLabelLayout = alternateLabel.AddComponent<LayoutElement>();
-                        alternateLabelLayout.minWidth = 100f;
+                    var alternateLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(alternate.transform, "label", 0);
+                    var alternateLabelText = alternateLabel.GetComponent<Text>();
+                    alternateLabelText.alignment = TextAnchor.MiddleLeft;
+                    alternateLabelText.text = "Alternate";
+                    alternateLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                    EditorThemeManager.ApplyLightText(alternateLabelText);
+                    var alternateLabelLayout = alternateLabel.AddComponent<LayoutElement>();
+                    alternateLabelLayout.minWidth = 100f;
 
-                        #endregion
-                    }
+                    #endregion
                 }
             }
 

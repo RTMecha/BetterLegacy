@@ -82,8 +82,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (isGroup)
             {
                 modifierCard.PrefabGroupOnly(modifier, reference);
-                var groupField = modifierCard.StringGenerator(modifier, reference, "Object Group", isRGBA ? 8 : 2).transform.Find("Input").GetComponent<InputField>();
-                EditorContextMenu.AddContextMenu(groupField.gameObject, EditorContextMenu.GetNameFunctions(groupField));
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", isRGBA ? 8 : 2);
             }
 
             if (isRGBA)

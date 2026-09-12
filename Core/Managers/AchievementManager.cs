@@ -186,7 +186,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void CheckLevelBeginAchievements()
         {
-            if (PlayerManager.Players.Count > 1)
+            if (PlayerManager.inst.players.Count > 1)
                 UnlockAchievement("friendship");
             var tags = LevelManager.CurrentLevel.metadata.tags;
             if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
@@ -199,7 +199,7 @@ namespace BetterLegacy.Core.Managers
         /// Checks for level finished related achievements.
         /// </summary>
         /// <param name="metadata">Metadata of the level.</param>
-        /// <param name="levelRank">Level rank that was gained.</param>
+        /// <param name="rank">Level rank that was gained.</param>
         public void CheckLevelEndAchievements(MetaData metadata, Rank rank)
         {
             if (metadata.song.difficulty == 6)

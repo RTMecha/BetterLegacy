@@ -1446,6 +1446,7 @@ namespace BetterLegacy.Editor.Data
 
         public LabelElement() { }
         public LabelElement(string text) => this.text = text;
+        public LabelElement(string text, Vector2 sizeDelta) : this(text) => this.sizeDelta = sizeDelta;
 
         #endregion
 

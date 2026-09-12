@@ -30,7 +30,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         #region Functions
 
-        public override bool Run(Modifier modifier, ModifierLoop modifierLoop) => comparison.Compare(PlayerManager.Players.Count, modifier.GetInt(0, 0, modifierLoop.variables));
+        public override bool Run(Modifier modifier, ModifierLoop modifierLoop) => comparison.Compare(PlayerManager.inst.players.Count, modifier.GetInt(0, 0, modifierLoop.variables));
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {

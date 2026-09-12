@@ -49,17 +49,12 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Player models from the players folder.
         /// </summary>
-        public static Dictionary<string, PlayerModel> externalPlayerModels = new Dictionary<string, PlayerModel>();
+        public static List<PlayerModel> externalPlayerModels = new List<PlayerModel>();
 
         /// <summary>
         /// All player models that is currently loaded.
         /// </summary>
-        public Dictionary<string, PlayerModel> playerModels = new Dictionary<string, PlayerModel>();
-
-        /// <summary>
-        /// Current model directionary.
-        /// </summary>
-        public static Dictionary<string, PlayerModel> CurrentModelDictionary => UseGlobal ? externalPlayerModels : Current.playerModels;
+        public List<PlayerModel> playerModels = new List<PlayerModel>();
 
         /// <summary>
         /// Player model ID indexer.
@@ -72,14 +67,14 @@ namespace BetterLegacy.Core.Data.Player
         public MaxBehavior maxBehavior;
         
         /// <summary>
-        /// List of player controls.
+        /// List of player properties.
         /// </summary>
-        public List<PlayerControl> playerControls = new List<PlayerControl>
+        public List<PlayerProperties> playersProperties = new List<PlayerProperties>
         {
-            new PlayerControl(),
-            new PlayerControl(),
-            new PlayerControl(),
-            new PlayerControl(),
+            new PlayerProperties(),
+            new PlayerProperties(),
+            new PlayerProperties(),
+            new PlayerProperties(),
         };
 
         #endregion
@@ -90,31 +85,28 @@ namespace BetterLegacy.Core.Data.Player
         {
             maxBehavior = orig.maxBehavior;
             playerModels.Clear();
-            foreach (var keyValuePair in orig.playerModels)
-                playerModels[keyValuePair.Key] = keyValuePair.Value.Copy();
+            foreach (var playerModel in orig.playerModels)
+                OverwritePlayerModel(playerModel.Copy());
             AssignDefaultModels();
             playerModelsIndex = new List<string>(playerModelsIndex);
-            playerControls = new List<PlayerControl>(playerControls.Select(x => x.Copy()));
+            playersProperties = new List<PlayerProperties>(playersProperties.Select(x => x.Copy()));
         }
 
         public override void ReadJSON(JSONNode jn)
         {
             maxBehavior = (MaxBehavior)jn["max"].AsInt;
             for (int i = 0; i < jn["models"].Count; i++)
-            {
-                var playerModel = PlayerModel.Parse(jn["models"][i]);
-                playerModels[playerModel.basePart.id] = playerModel;
-            }
+                OverwritePlayerModel(PlayerModel.Parse(jn["models"][i]));
             AssignDefaultModels();
             for (int i = 0; i < jn["indexes"].Count; i++)
                 SetPlayerModel(i, jn["indexes"][i]);
             for (int i = 0; i < jn["controls"].Count; i++)
             {
-                var control = PlayerControl.Parse(jn["controls"][i]);
-                if (i < playerControls.Count)
-                    playerControls[i] = control;
+                var control = PlayerProperties.Parse(jn["controls"][i]);
+                if (i < playersProperties.Count)
+                    playersProperties[i] = control;
                 else
-                    playerControls.Add(control);
+                    playersProperties.Add(control);
             }
         }
 
@@ -125,16 +117,16 @@ namespace BetterLegacy.Core.Data.Player
                 jn["max"] = (int)maxBehavior;
             for (int i = 0; i < playerModelsIndex.Count; i++)
                 jn["indexes"][i] = playerModelsIndex[i];
-            for (int i = 0; i < playerControls.Count; i++)
-                jn["controls"][i] = playerControls[i].ToJSON();
+            for (int i = 0; i < playersProperties.Count; i++)
+                jn["controls"][i] = playersProperties[i].ToJSON();
 
             int index = 0;
-            foreach (var keyValuePair in playerModels)
+            foreach (var playerModel in playerModels)
             {
-                if (keyValuePair.Value.IsDefault)
+                if (playerModel.IsDefault)
                     continue;
 
-                jn["models"][index] = keyValuePair.Value.ToJSON();
+                jn["models"][index] = playerModel.ToJSON();
                 index++;
             }
             return jn;
@@ -144,40 +136,17 @@ namespace BetterLegacy.Core.Data.Player
         {
             maxBehavior = (MaxBehavior)reader.ReadByte();
             playerModelsIndex = reader.ReadList(reader.ReadString);
-            Packet.ReadPacketList(playerControls, reader);
-            Packet.ReadPacketDictionary(playerModels, reader, reader.ReadString);
+            Packet.ReadPacketList(playersProperties, reader);
+            Packet.ReadPacketList(playerModels, reader);
         }
 
         public void WritePacket(NetworkWriter writer)
         {
             writer.Write((byte)maxBehavior);
             writer.Write(playerModelsIndex, writer.Write);
-            Packet.WritePacketList(playerControls, writer);
-            Packet.WritePacketDictionary(playerModels, writer,
-                writeKey: writer.Write,
-                writeValue: value => value.WritePacket(writer));
+            Packet.WritePacketList(playersProperties, writer);
+            Packet.WritePacketList(playerModels, writer);
         }
-
-        /// <summary>
-        /// Gets a player model.
-        /// </summary>
-        /// <param name="id">ID of the model to get.</param>
-        /// <returns>Returns the found player model.</returns>
-        public static PlayerModel GetPlayerModel(string id) =>
-            UseGlobal && externalPlayerModels.TryGetValue(id, out PlayerModel externalPlayerModel) ? externalPlayerModel :
-            Current && Current.playerModels.TryGetValue(id, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
-
-        /// <summary>
-        /// Creates a copy of a <see cref="PlayersData"/>.
-        /// </summary>
-        /// <param name="orig">Original to copy.</param>
-        /// <returns>Returns a copied <see cref="PlayersData"/>.</returns>
-        public static PlayersData DeepCopy(PlayersData orig) => new PlayersData
-        {
-            playerModels = orig.playerModels,
-            playerModelsIndex = orig.playerModelsIndex,
-            maxBehavior = orig.maxBehavior,
-        };
 
         /// <summary>
         /// Loads the global player models.
@@ -192,21 +161,21 @@ namespace BetterLegacy.Core.Data.Player
             {
                 for (int i = 0; i < Current.playerModelsIndex.Count; i++)
                     Current.playerModelsIndex[i] = currentLevel.IsVG ? PlayerModel.DEV_ID : PlayerModel.DEFAULT_ID;
-                for (int i = 0; i < Current.playerControls.Count; i++)
+                for (int i = 0; i < Current.playersProperties.Count; i++)
                 {
-                    var playerControl = Current.playerControls[i];
-                    playerControl.moveSpeed = 22f;
-                    playerControl.boostSpeed = 80f;
-                    playerControl.boostCooldown = 0f;
-                    playerControl.minBoostTime = 0.05f;
-                    playerControl.maxBoostTime = 0.25f;
-                    playerControl.hitCooldown = 2f;
+                    var playerProperties = Current.playersProperties[i];
+                    playerProperties.moveSpeed = 22f;
+                    playerProperties.boostSpeed = 80f;
+                    playerProperties.boostCooldown = 0f;
+                    playerProperties.minBoostTime = 0.05f;
+                    playerProperties.maxBoostTime = 0.25f;
+                    playerProperties.hitCooldown = 2f;
                 }
             }
 
             externalPlayerModels.Clear();
             foreach (var playerModel in PlayerModel.DefaultModels)
-                externalPlayerModels[playerModel.basePart.id] = playerModel;
+                OverwriteExternalPlayerModel(playerModel);
 
             var fullPath = ProjectArrhythmia.State.InEditor ? RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlayersPath) : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH);
             RTFile.CreateDirectory(fullPath);
@@ -219,16 +188,14 @@ namespace BetterLegacy.Core.Data.Player
             for (int i = 0; i < files.Length; i++)
             {
                 var file = RTFile.ReplaceSlash(files[i]);
-                var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
-                var id = model.basePart.id;
+                var playerModel = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
+                playerModel.path = file;
+                var id = playerModel.ID;
 
-                if (PlayerModel.DefaultModels.Has(x => x.basePart.id == id))
+                if (PlayerModel.DefaultModels.Has(x => x.ID == id))
                     continue;
 
-                externalPlayerModels[id] = model;
-
-                if (Current && ProjectArrhythmia.State.InEditor)
-                    Current.playerModels[id] = model;
+                OverwriteExternalPlayerModel(playerModel);
             }
         }
 
@@ -245,14 +212,17 @@ namespace BetterLegacy.Core.Data.Player
         {
             bool success = true;
 
-            foreach (var model in externalPlayerModels.Values)
+            foreach (var model in externalPlayerModels)
             {
                 if (model.IsDefault)
                     continue;
 
                 try
                 {
-                    RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.basePart.name)}{FileFormat.LSPL.Dot()}"), model.ToJSON().ToString(3));
+                    var path = !string.IsNullOrEmpty(model.path) ? model.path : RTFile.CombinePaths(RTFile.ApplicationDirectory, PlayerManager.PLAYERS_PATH, $"{RTFile.FormatLegacyFileName(model.Name)}{FileFormat.LSPL.Dot()}");
+                    if (string.IsNullOrEmpty(model.path))
+                        model.path = path;
+                    RTFile.WriteToFile(path, model.ToJSON().ToString(3));
                 }
                 catch (Exception ex)
                 {
@@ -267,7 +237,21 @@ namespace BetterLegacy.Core.Data.Player
         void AssignDefaultModels()
         {
             foreach (var playerModel in PlayerModel.DefaultModels)
-                playerModels[playerModel.basePart.id] = playerModel;
+                OverwritePlayerModel(playerModel);
+        }
+
+        /// <summary>
+        /// Gets the player model for a player to use.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <returns>Returns a player model from the dictionary.</returns>
+        public PlayerModel GetPlayerModel(PAPlayer player)
+        {
+            if (UseGlobal)
+                return externalPlayerModels.TryFind(x => x.ID == (PlayerManager.inst.GetPlayerSettings(player.localIndex)?.playerModelID ?? string.Empty), out PlayerModel customModel) ? customModel : PlayerModel.DefaultPlayer;
+            if (maxBehavior == MaxBehavior.Default && player.index >= playerModelsIndex.Count)
+                return PlayerModel.DefaultPlayer;
+            return playerModels.TryFind(x => x.ID == playerModelsIndex[GetMaxIndex(player.index)], out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
         }
 
         /// <summary>
@@ -275,7 +259,12 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         /// <param name="index">Index of the player model.</param>
         /// <returns>Returns a player model from the dictionary.</returns>
-        public PlayerModel GetPlayerModel(int index) => maxBehavior == MaxBehavior.Default && index >= playerModelsIndex.Count ? PlayerModel.DefaultPlayer : CurrentModelDictionary.TryGetValue(playerModelsIndex[GetMaxIndex(index)], out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+        public PlayerModel GetPlayerModel(int index)
+        {
+            if (maxBehavior == MaxBehavior.Default && index >= playerModelsIndex.Count)
+                return PlayerModel.DefaultPlayer;
+            return playerModels.TryFind(x => x.ID == playerModelsIndex[GetMaxIndex(index)], out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+        }
 
         /// <summary>
         /// Gets a players' maxed index.
@@ -304,51 +293,38 @@ namespace BetterLegacy.Core.Data.Player
         };
 
         /// <summary>
-        /// Creates a new player model.
-        /// </summary>
-        public PlayerModel CreateNewPlayerModel()
-        {
-            var model = new PlayerModel();
-            model.basePart.name = "New Model";
-            model.basePart.id = LSText.randomNumString(16);
-            model.creator = CoreConfig.Instance.DisplayName.Value; // set creator name
-
-            externalPlayerModels[model.basePart.id] = model;
-            playerModels[model.basePart.id] = model;
-            return model;
-        }
-
-        /// <summary>
-        /// Duplicates a player model.
-        /// </summary>
-        /// <param name="id">Model ID to duplicate.</param>
-        public PlayerModel DuplicatePlayerModel(string id)
-        {
-            if (playerModels.TryGetValue(id, out PlayerModel orig))
-            {
-                var model = orig.Copy();
-                model.basePart.name += " Clone";
-                model.basePart.id = LSText.randomNumString(16);
-
-                playerModels[model.basePart.id] = model;
-                return model;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Sets the player model by an ID and index and caches it.
         /// </summary>
         /// <param name="index">Index of the player.</param>
         /// <param name="id">ID of the player model.</param>
         public void SetPlayerModel(int index, string id)
         {
-            if (!PlayerModel.DefaultModels.Has(x => x.basePart.id == id) && (!MetaData.Current || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
+            if (!PlayerModel.DefaultModels.Has(x => x.ID == id) && (!MetaData.Current || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
                 AchievementManager.inst.UnlockAchievement("costume_party");
 
             while (index >= playerModelsIndex.Count)
                 playerModelsIndex.Add("0");
             playerModelsIndex[index] = id;
+        }
+
+        public void OverwritePlayerModel(PlayerModel playerModel)
+        {
+            if (!playerModel)
+                return;
+            if (playerModels.TryFindIndex(x => x.ID == playerModel.ID, out int index))
+                playerModels[index] = playerModel;
+            else
+                playerModels.Add(playerModel);
+        }
+
+        public static void OverwriteExternalPlayerModel(PlayerModel playerModel)
+        {
+            if (!playerModel)
+                return;
+            if (externalPlayerModels.TryFindIndex(x => x.ID == playerModel.ID, out int index))
+                externalPlayerModels[index] = playerModel;
+            else
+                externalPlayerModels.Add(playerModel);
         }
 
         #endregion

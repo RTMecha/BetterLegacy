@@ -217,7 +217,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     if (animateScale)
                     {
                         var r = parentObject.beatmapObject.reactiveScaleOffset;
-                        var value = (parentObject.beatmapObject.disableScaleSequence ? Vector2.one : parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset))).ToVector3(1f) + r;
+                        var value = (parentObject.beatmapObject.disableScaleSequence ? Vector3.one : parentObject.scaleSequence.Interpolate(desync ? syncOffset + prefabOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset))) + r;
                         value = RTMath.Scale(value, parentObject.beatmapObject.fullTransform.scale);
                         RTMath.Operation(ref value, parentObject.beatmapObject.ScaleOffset, parentObject.beatmapObject.ScaleOperation);
 
@@ -289,6 +289,18 @@ namespace BetterLegacy.Core.Runtime.Objects
             parentChain.PositionParentOffset = beatmapParent.parallaxSettings[0];
             parentChain.ScaleParentOffset = beatmapParent.parallaxSettings[1];
             parentChain.RotationParentOffset = beatmapParent.parallaxSettings[2];
+        }
+
+        /// <summary>
+        /// Clears the parent chain.
+        /// </summary>
+        public static void ClearParentChain(this IParentChain parentChain)
+        {
+            if (parentChain == null || parentChain.ParentObjects == null)
+                return;
+            for (int i = 0; i < parentChain.ParentObjects.Count; i++)
+                parentChain.ParentObjects[i].Clear();
+            parentChain.ParentObjects.Clear();
         }
     }
 }

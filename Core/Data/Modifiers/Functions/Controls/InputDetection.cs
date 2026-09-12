@@ -146,7 +146,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return true;
 
             var transformable = modifierLoop.reference.AsTransformable();
-            var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
+            var player = modifierLoop.reference is PAPlayer p ? p : PlayerManager.inst.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)

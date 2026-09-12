@@ -22,6 +22,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -637,15 +638,13 @@ namespace BetterLegacy.Editor.Managers
                 if (prefabObject.editorData.locked)
                     return;
 
-                if (float.TryParse(_val, out float n))
-                {
-                    n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    prefabObject.StartTime = n;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
-                }
-                else
-                    EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
+                if (!float.TryParse(_val, out float n))
+                    return;
+
+                n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                prefabObject.StartTime = n;
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.StartTimeField);
@@ -657,10 +656,8 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabObjectEditor.StartTimeField.middleButton.onClick.NewListener(() =>
             {
-                if (prefabObject.editorData.locked)
-                    return;
-
-                PrefabObjectEditor.StartTimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
+                if (!prefabObject.editorData.locked)
+                    PrefabObjectEditor.StartTimeField.Text = AudioManager.inst.CurrentAudioSource.time.ToString();
             });
         }
 
@@ -757,11 +754,11 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldX.SetTextWithoutNotify(currentKeyframe.values[0].ToString());
                 inputFieldX.OnValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        currentKeyframe.values[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                    }
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    currentKeyframe.values[0] = num;
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
                 inputFieldX.OnEndEdit.NewListener(_val =>
                 {
@@ -771,17 +768,17 @@ namespace BetterLegacy.Editor.Managers
                     };
 
                     if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[0], variables, out float calc))
-                        inputFieldX.inputField.text = calc.ToString();
+                        inputFieldX.Text = calc.ToString();
                 });
 
                 r_inputFieldX.SetTextWithoutNotify(currentKeyframe.randomValues[0].ToString());
                 r_inputFieldX.OnValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        currentKeyframe.randomValues[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                    }
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    currentKeyframe.randomValues[0] = num;
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
                 r_inputFieldX.OnEndEdit.NewListener(_val =>
                 {
@@ -791,7 +788,7 @@ namespace BetterLegacy.Editor.Managers
                     };
 
                     if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[0], variables, out float calc))
-                        r_inputFieldX.inputField.text = calc.ToString();
+                        r_inputFieldX.Text = calc.ToString();
                 });
 
                 var toggles = index switch
@@ -825,11 +822,11 @@ namespace BetterLegacy.Editor.Managers
                     inputFieldY.SetTextWithoutNotify(currentKeyframe.values[1].ToString());
                     inputFieldY.OnValueChanged.NewListener(_val =>
                     {
-                        if (float.TryParse(_val, out float num))
-                        {
-                            currentKeyframe.values[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
+                        if (!float.TryParse(_val, out float num))
+                            return;
+
+                        currentKeyframe.values[1] = num;
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     });
                     inputFieldY.OnEndEdit.NewListener(_val =>
                     {
@@ -839,7 +836,7 @@ namespace BetterLegacy.Editor.Managers
                         };
 
                         if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[1], variables, out float calc))
-                            inputFieldY.inputField.text = calc.ToString();
+                            inputFieldY.Text = calc.ToString();
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(inputFieldX);
@@ -855,11 +852,11 @@ namespace BetterLegacy.Editor.Managers
                     r_inputFieldY.SetTextWithoutNotify(currentKeyframe.randomValues[1].ToString());
                     r_inputFieldY.OnValueChanged.NewListener(_val =>
                     {
-                        if (float.TryParse(_val, out float num))
-                        {
-                            currentKeyframe.randomValues[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                        }
+                        if (!float.TryParse(_val, out float num))
+                            return;
+
+                        currentKeyframe.randomValues[1] = num;
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     });
                     r_inputFieldY.OnEndEdit.NewListener(_val =>
                     {
@@ -869,7 +866,7 @@ namespace BetterLegacy.Editor.Managers
                         };
 
                         if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.randomValues[1], variables, out float calc))
-                            r_inputFieldY.inputField.text = calc.ToString();
+                            r_inputFieldY.Text = calc.ToString();
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(r_inputFieldX);
@@ -901,11 +898,11 @@ namespace BetterLegacy.Editor.Managers
                 randomIntervalField.SetTextWithoutNotify((currentKeyframe.randomValues.Length > 2 ? currentKeyframe.randomValues[2] : 0f).ToString());
                 randomIntervalField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        currentKeyframe.randomValues[2] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                    }
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    currentKeyframe.randomValues[2] = num;
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
 
                 TriggerHelper.InversableField(randomIntervalField);
@@ -943,12 +940,12 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.RepeatCountField.SetTextWithoutNotify(Mathf.Clamp(prefabObject.RepeatCount, 0, 1000).ToString());
             PrefabObjectEditor.RepeatCountField.OnValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int num))
-                {
-                    num = Mathf.Clamp(num, 0, 1000);
-                    prefabObject.RepeatCount = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.REPEAT);
-                }
+                if (!int.TryParse(_val, out int num))
+                    return;
+
+                num = Mathf.Clamp(num, 0, 1000);
+                prefabObject.RepeatCount = num;
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.REPEAT);
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(PrefabObjectEditor.RepeatCountField, max: 1000);
@@ -957,12 +954,12 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.RepeatOffsetTimeField.SetTextWithoutNotify(Mathf.Clamp(prefabObject.RepeatOffsetTime, 0f, 60f).ToString());
             PrefabObjectEditor.RepeatOffsetTimeField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num))
-                {
-                    num = Mathf.Clamp(num, 0f, 60f);
-                    prefabObject.RepeatOffsetTime = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
-                }
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                num = Mathf.Clamp(num, 0f, 60f);
+                prefabObject.RepeatOffsetTime = num;
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.RepeatOffsetTimeField, max: 60f);
@@ -1057,16 +1054,16 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                if (int.TryParse(_val, out int index))
-                {
-                    index = Mathf.Clamp(index, 0, GameData.Current.prefabObjects.Count - 1);
-                    if (currentIndex == index)
-                        return;
+                if (!int.TryParse(_val, out int index))
+                    return;
 
-                    GameData.Current.prefabObjects.Move(currentIndex, index);
-                    EditorTimeline.inst.UpdateTransformIndex();
-                    RenderPrefabObjectIndex(prefabObject);
-                }
+                index = Mathf.Clamp(index, 0, GameData.Current.prefabObjects.Count - 1);
+                if (currentIndex == index)
+                    return;
+
+                GameData.Current.prefabObjects.Move(currentIndex, index);
+                EditorTimeline.inst.UpdateTransformIndex();
+                RenderPrefabObjectIndex(prefabObject);
             });
 
             PrefabObjectEditor.EditorIndexField.leftGreaterButton.onClick.NewListener(() =>
@@ -1126,7 +1123,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pointerEventData = (PointerEventData)eventData;
 
-                if (!int.TryParse(PrefabObjectEditor.EditorIndexField.inputField.text, out int index))
+                if (!int.TryParse(PrefabObjectEditor.EditorIndexField.Text, out int index))
                     return;
 
                 if (pointerEventData.scrollDelta.y < 0f)
@@ -1244,18 +1241,14 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabObjectOffset(PrefabObject prefabObject, Prefab prefab)
         {
-            PrefabObjectEditor.OffsetField.SetTextWithoutNotify(prefab.offset.ToString());
-            PrefabObjectEditor.OffsetField.OnValueChanged.NewListener(_val =>
+            PrefabObjectEditor.OffsetField.Render(prefab.offset, _val =>
             {
-                if (float.TryParse(_val, out float offset))
-                {
-                    prefab.offset = offset;
-                    UpdateOffsets(prefabObject);
-                }
-            });
-            TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.OffsetField.inputField, t: PrefabObjectEditor.OffsetField.transform);
-            TriggerHelper.AddEventTriggers(PrefabObjectEditor.OffsetField.inputField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.OffsetField.inputField));
+                if (!float.TryParse(_val, out float offset))
+                    return;
 
+                prefab.offset = offset;
+                UpdateOffsets(prefabObject);
+            });
             EditorContextMenu.AddContextMenu(PrefabObjectEditor.OffsetField.inputField.gameObject,
                 new ButtonElement("Set to Timeline Cursor", () =>
                 {
@@ -1662,6 +1655,9 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
         }
 
         /// <summary>
@@ -3247,6 +3243,9 @@ namespace BetterLegacy.Editor.Managers
             RefreshInternalPrefabs();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(newPrefab));
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.IMPORT_PREFAB, newPrefab);
 
             return newPrefab;
         }

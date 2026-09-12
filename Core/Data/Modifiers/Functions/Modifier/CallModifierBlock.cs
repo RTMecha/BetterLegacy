@@ -29,19 +29,35 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (string.IsNullOrEmpty(name))
                 return;
 
-            var modifierBlockLoop = modifier.GetResultOrDefault(() => new ModifierLoop(modifierLoop.reference, modifierLoop.variables));
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = modifierLoop.reference.AsPrefabable();
+                var prefab = prefabable?.GetPrefab();
 
-            var prefabable = modifierLoop.reference.AsPrefabable();
-            var prefab = prefabable?.GetPrefab();
-            if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
-                prefabModifierBlock.Run(modifierBlockLoop);
-            else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
-                modifierBlock.Run(modifierBlockLoop);
+                var cache = new Cache();
+                cache.modifierLoop = new ModifierLoop(modifierLoop.reference, modifierLoop.variables);
+                if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
+                    cache.modifierBlock = prefabModifierBlock.Copy(false);
+                else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
+                    cache.modifierBlock = modifierBlock.Copy(false);
+                return cache;
+            });
+            cache?.modifierBlock?.Run(cache.modifierLoop);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.StringGenerator(modifier, reference, "Function Name", 0);
+        }
+
+        #endregion
+
+        #region Sub Classes
+
+        public class Cache : Exists
+        {
+            public ModifierLoop modifierLoop;
+            public ModifierBlock modifierBlock;
         }
 
         #endregion

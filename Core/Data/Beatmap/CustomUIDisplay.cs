@@ -50,6 +50,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             resetValue = 1.0f,
         };
 
+        public static CustomValueDisplay DefaultScaleZDisplay => new CustomValueDisplay()
+        {
+            path = "scale/z",
+            type = UIType.InputField,
+            resetValue = 1.0f,
+        };
+
         public static CustomValueDisplay DefaultRotationXDisplay => new CustomValueDisplay()
         {
             path = "rotation/x",
@@ -228,10 +235,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                             max = jn["max"].AsFloat;
                         if (jn["reset_val"] != null)
                             resetValue = jn["reset_val"].AsFloat;
-
                         break;
                     }
                 case UIType.Dropdown: {
+                        if (jn["reset_val"] != null)
+                            resetValue = jn["reset_val"].AsFloat;
                         if (jn["options"] == null)
                             break;
 
@@ -293,6 +301,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Dropdown: {
+                        if (resetValue != 0.0f)
+                            jn["reset_val"] = resetValue;
                         for (int i = 0; i < options.Count; i++)
                             jn["options"][i] = options[i].ToJSON();
                         break;
@@ -332,6 +342,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Dropdown: {
+                        resetValue = reader.ReadSingle();
                         Packet.ReadPacketList(options, reader);
                         break;
                     }
@@ -364,6 +375,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Dropdown: {
+                        writer.Write(resetValue);
                         Packet.WritePacketList(options, writer);
                         break;
                     }

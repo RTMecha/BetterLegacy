@@ -201,13 +201,13 @@ namespace BetterLegacy.Core.Data.Network
                     writer.Write(data[i]);
             }
         }
-        public void Write(Texture2D texture2D)
+        public void Write(Texture2D texture2D, bool jpg)
         {
             bool hasIcon = texture2D;
             writer.Write(hasIcon);
             if (hasIcon)
             {
-                var data = texture2D.EncodeToPNG();
+                var data = jpg ? texture2D.EncodeToJPG() : texture2D.EncodeToPNG();
                 writer.Write(data.Length);
                 for (int i = 0; i < data.Length; i++)
                     writer.Write(data[i]);

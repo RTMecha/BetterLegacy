@@ -27,15 +27,15 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
             var id = modifier.GetValue(1, modifierLoop.variables);
-            var player = modifierLoop.reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
+            var player = modifierLoop.reference is RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
-            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
+            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTCustomPlayerObject customObject))
                 customObject.active = modifier.GetBool(0, false, modifierLoop.variables);
         }
 
         public override void Inactive(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.GetBool(2, true, modifierLoop.variables) && modifierLoop.reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1, modifierLoop.variables), out RTPlayer.RTCustomPlayerObject customObject))
+            if (modifier.GetBool(2, true, modifierLoop.variables) && modifierLoop.reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1, modifierLoop.variables), out RTCustomPlayerObject customObject))
                 customObject.active = !modifier.GetBool(0, false, modifierLoop.variables);
         }
 

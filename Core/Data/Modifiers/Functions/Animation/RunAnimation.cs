@@ -13,7 +13,11 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
     {
         #region Constructors
 
-        public RunAnimation() => SetupModifier(false, "Anim Name", "Object Group", "1", "0", "True", "True", "True", "False", "0");
+        public RunAnimation()
+        {
+            SetupModifier(false, "Anim Name", "Object Group", "1", "0", "True", "True", "True", "False", "0");
+            IsGroup = true;
+        }
 
         #endregion
 

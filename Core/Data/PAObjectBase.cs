@@ -91,8 +91,6 @@ namespace BetterLegacy.Core.Data
                 return PAObjectType.ModifierBlock;
             if (obj is PlayerModel)
                 return PAObjectType.PlayerModel;
-            if (obj is PlayerItem)
-                return PAObjectType.PlayerItem;
             if (obj is PAAnimation)
                 return PAObjectType.PAAnimation;
 

@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         var runtimeObject = beatmapObject.runtimeObject;
                         if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
                         {
-                            var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
+                            var player = PlayerManager.inst.GetClosestPlayer(beatmapObject.GetFullPosition());
 
                             if (CheckPlayer(modifier, modifierLoop, player))
                                 return true;
@@ -50,20 +50,20 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                     }
                 case Requirement.Index: {
                         var index = modifier.GetInt(0, 0, modifierLoop.variables);
-                        if (PlayerManager.Players.TryGetAt(index, out PAPlayer player) && CheckPlayer(modifier, modifierLoop, player))
+                        if (PlayerManager.inst.players.TryGetAt(index, out PAPlayer player) && CheckPlayer(modifier, modifierLoop, player))
                             return true;
                         break;
                     }
                 case Requirement.Any: {
-                        for (int i = 0; i < PlayerManager.Players.Count; i++)
+                        for (int i = 0; i < PlayerManager.inst.players.Count; i++)
                         {
-                            var player = PlayerManager.Players[i];
+                            var player = PlayerManager.inst.players[i];
                             if (CheckPlayer(modifier, modifierLoop, player))
                                 return true;
                         }
                         break;
                     }
-                case Requirement.All: return PlayerManager.Players.All(x => CheckPlayer(modifier, modifierLoop, x));
+                case Requirement.All: return PlayerManager.inst.players.All(x => CheckPlayer(modifier, modifierLoop, x));
             }
             return false;
         }

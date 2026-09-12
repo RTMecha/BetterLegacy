@@ -149,6 +149,8 @@ namespace BetterLegacy.Core.Runtime
 
             PostTick();
             ScheduleTick();
+            if (sort)
+                ActualSort();
         }
 
         /// <summary>
@@ -179,6 +181,19 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void Clear()
         {
+            foreach (var runtimeModifiers in Modifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeModifiers in PrefabModifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeModifiers in BGModifiers)
+                runtimeModifiers.Clear();
+            foreach (var runtimeObject in Objects)
+                runtimeObject.Clear();
+            foreach (var runtimeObject in PrefabObjects)
+                runtimeObject.Clear();
+            foreach (var runtimeObject in BGObjects)
+                runtimeObject.Clear();
+
             var parent = SpawnParent;
             if (parent)
                 LSHelpers.DeleteChildren(parent);
@@ -406,13 +421,17 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="sort">If the objects should be recalculated depending on the context.</param>
         public virtual void UpdateObject(BeatmapObject beatmapObject, string context, bool sort = true)
         {
-            if (!beatmapObject || string.IsNullOrEmpty(context))
+            if (!beatmapObject || context == null)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
             context = context.ToLower().Remove(" ").Remove("_");
             switch (context)
             {
+                case "": {
+                        UpdateObject(beatmapObject);
+                        break;
+                    }
                 case ObjectContext.RENDERING: {
                         if (!runtimeObject)
                         {
@@ -699,21 +718,18 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case ObjectContext.SELECTABLE: {
-                        if (!beatmapObject.runtimeObject || beatmapObject.editorData.selectable == beatmapObject.selector)
+                        if (!beatmapObject.runtimeObject || beatmapObject.editorData.selectable == beatmapObject.runtimeObject.visualObject.selector)
                             break;
 
-                        if (beatmapObject.selector)
+                        if (beatmapObject.runtimeObject.visualObject.selector)
                         {
-                            CoreHelper.Destroy(beatmapObject.selector);
-                            beatmapObject.selector = null;
+                            CoreHelper.Destroy(beatmapObject.runtimeObject.visualObject.selector);
+                            beatmapObject.runtimeObject.visualObject.selector = null;
                             if (!beatmapObject.editorData.selectable)
                                 break;
                         }
 
-                        var obj = beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>();
-                        obj.SetObject(beatmapObject);
-                        beatmapObject.selector = obj;
-
+                        beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>().SetObject(beatmapObject, beatmapObject.runtimeObject.visualObject);
                         break;
                     }
                 case ObjectContext.HIDE: {
@@ -974,11 +990,7 @@ namespace BetterLegacy.Core.Runtime
                 visualObject.SetActive(!beatmapObject.editorData.hidden);
 
                 if (beatmapObject.editorData.selectable)
-                {
-                    var obj = visualObject.AddComponent<SelectObject>();
-                    obj.SetObject(beatmapObject);
-                    beatmapObject.selector = obj;
-                }
+                    visualObject.AddComponent<SelectObject>().SetObject(beatmapObject, visual);
             }
 
             UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
@@ -1739,11 +1751,19 @@ namespace BetterLegacy.Core.Runtime
 
         #region Misc
 
+        public bool sort;
+
         /// <summary>
         /// Sorts all the spawnable objects by start and kill time.
         /// </summary>
-        public virtual void Sort()
+        public void Sort() => sort = true;
+
+        /// <summary>
+        /// Sorts all the spawnable objects by start and kill time.
+        /// </summary>
+        internal virtual void ActualSort()
         {
+            sort = false;
             objectEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
@@ -1781,6 +1801,9 @@ namespace BetterLegacy.Core.Runtime
                 backgroundObject.customShape = -1;
                 backgroundObject.customShapeOption = -1;
             }
+
+            foreach (var prefabObject in GameData.Current.prefabObjects)
+                prefabObject.ResetOffsets();
         }
 
         #endregion

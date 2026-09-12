@@ -8,11 +8,11 @@ namespace BetterLegacy.Core.Data.Player
     /// <summary>
     /// Controls how a player behaves in a level.
     /// </summary>
-    public class PlayerControl : PAObject<PlayerControl>, IPacket
+    public class PlayerProperties : PAObject<PlayerProperties>, IPacket
     {
         #region Constructors
 
-        public PlayerControl() : base() { }
+        public PlayerProperties() : base() { }
 
         #endregion
 
@@ -137,7 +137,7 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Functions
 
-        public override void CopyData(PlayerControl orig, bool newID = true)
+        public override void CopyData(PlayerProperties orig, bool newID = true)
         {
             id = newID ? GetStringID() : orig.id;
             health = orig.health;

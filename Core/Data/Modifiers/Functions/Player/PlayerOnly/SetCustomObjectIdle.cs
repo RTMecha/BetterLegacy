@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         {
             var id = modifier.GetValue(0, modifierLoop.variables);
             var idle = modifier.GetBool(1, true, modifierLoop.variables);
-            var customPlayerObject = modifierLoop.reference as RTPlayer.RTCustomPlayerObject;
+            var customPlayerObject = modifierLoop.reference as RTCustomPlayerObject;
             var player = customPlayerObject ? customPlayerObject.Player.Core : modifierLoop.reference as PAPlayer;
 
             if (!player || !player.RuntimePlayer)

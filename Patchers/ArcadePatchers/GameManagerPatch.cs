@@ -58,7 +58,7 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.playersCanJoin = false;
             Instance.playerGUI.SetActive(true);
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
-            Instance.initialPlayerCount = PlayerManager.Players.Count;
+            Instance.initialPlayerCount = PlayerManager.inst.players.Count;
             InputDataManager.playerDisconnectedEvent += Instance.PlayerDisconnected;
             InputDataManager.playerReconnectedEvent += Instance.PlayerReconnected;
 
@@ -144,7 +144,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SpawnPlayersPrefix(Vector3 __0)
         {
-            PlayerManager.SpawnPlayers(__0);
+            PlayerManager.inst.SpawnPlayers(__0);
             return false;
         }
 

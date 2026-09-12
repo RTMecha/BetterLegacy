@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             SetupModifier("0.5", "3", "0", "1", "3", "0", "0", "1", "1", "0", "0", "1");
             if (isGroup)
                 Modifier.values.Insert(0, "Object Group");
-            IsGroup = IsGroup;
+            IsGroup = isGroup;
         }
 
         #endregion
@@ -122,6 +122,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => isGroup || modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Polygon;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             var index = 0;
@@ -142,7 +144,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.SingleGenerator(modifier, reference, "Thick Scale Y", 8 + index);
             modifierCard.SingleGenerator(modifier, reference, "Thick Angle", 10 + index);
             modifierCard.IntegerGenerator(modifier, reference, "Slices", 4 + index, max: 32);
-            modifierCard.SingleGenerator(modifier, reference, "Angle", 9 + index);
+            modifierCard.SingleGenerator(modifier, reference, "Angle", 9 + index, amount: 15f, multiply: 3f);
             modifierCard.SingleGenerator(modifier, reference, "Alternate", 11 + index, 1f);
         }
 

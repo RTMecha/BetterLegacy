@@ -71,5 +71,11 @@ namespace BetterLegacy.Core.Components
             if (CheckCollider(other))
                 bulletOver = true;
         }
+
+        public void SetObject(BeatmapObject beatmapObject)
+        {
+            beatmapObject.runtimeObject.visualObject.detector = this;
+            this.beatmapObject = beatmapObject;
+        }
     }
 }

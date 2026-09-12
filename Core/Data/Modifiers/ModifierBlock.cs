@@ -3,7 +3,7 @@
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Network;
-using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Modifiers
 {
@@ -21,6 +21,8 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #region Values
 
+        public string ID { get => id; set => id = value; }
+
         public string Name { get; set; }
 
         public ModifierReferenceType ReferenceType { get; set; }
@@ -32,6 +34,8 @@ namespace BetterLegacy.Core.Data.Modifiers
         public int IntVariable { get; set; }
 
         public bool ModifiersActive => true;
+
+        public RTModifiers RuntimeModifiers { get; set; }
 
         #endregion
 

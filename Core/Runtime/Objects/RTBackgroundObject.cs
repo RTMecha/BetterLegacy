@@ -85,10 +85,20 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (!polygon)
                     return;
 
-                foreach (var visualFadeObject in visualFadeObjects)
-                {
-                    if (visualFadeObject && visualFadeObject.meshFilter)
-                        VGShapes.RoundedRingMesh(visualFadeObject.meshFilter, null,
+                flat = true; // 3D polygon shape doesn't fully work yet
+                var mesh = flat ?
+                    VGShapes.RoundedRingMesh(null, null,
+                            polygon.Radius,
+                            polygon.Sides,
+                            polygon.Roundness,
+                            polygon.Thickness,
+                            polygon.Slices,
+                            polygon.ThicknessOffset,
+                            polygon.ThicknessScale,
+                            polygon.Angle,
+                            polygon.ThicknessRotation,
+                            polygon.Alternate) :
+                    VGShapes.RoundedRingMesh3D(null, null,
                             polygon.Radius,
                             polygon.Sides,
                             polygon.Roundness,
@@ -99,7 +109,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                             polygon.Angle,
                             polygon.ThicknessRotation,
                             polygon.Alternate);
-                }
+                foreach (var visualFadeObject in visualFadeObjects)
+                    if (visualFadeObject && visualFadeObject.meshFilter)
+                        visualFadeObject.meshFilter.mesh = mesh;
                 return;
             }
 

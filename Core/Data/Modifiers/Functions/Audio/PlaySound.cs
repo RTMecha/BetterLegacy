@@ -63,7 +63,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var loop = modifier.GetBool(3, false, modifierLoop.variables);
             var panStereo = modifier.GetFloat(4, 0f, modifierLoop.variables);
 
-            var id = modifierLoop.reference is PAObjectBase obj ? obj.id : modifierLoop.reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            var id = modifierLoop.reference is PAObjectBase obj ? obj.id : modifierLoop.reference is RTPlayerObject playerObject ? playerObject.id : string.Empty;
             if (string.IsNullOrEmpty(id))
                 loop = false;
 

@@ -68,8 +68,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (isGroup)
             {
                 modifierCard.PrefabGroupOnly(modifier, reference);
-                var groupField = modifierCard.StringGenerator(modifier, reference, "Object Group", 0).transform.Find("Input").GetComponent<InputField>();
-                EditorContextMenu.AddContextMenu(groupField.gameObject, EditorContextMenu.GetNameFunctions(groupField));
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", 0);
                 modifierCard.DropdownGenerator(modifier, reference, "Render Type", 1, CoreHelper.ToOptionData<RenderLayerType>());
                 return;
             }

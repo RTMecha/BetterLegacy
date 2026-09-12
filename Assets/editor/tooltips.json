@@ -652,6 +652,26 @@
         ]
       }, // Prefab Default Path
       {
+        "name": "Player Path",
+        "tooltips": [
+          {
+            "desc": "The players directory in your beatmaps folder.",
+            "hint": "Type in the field to change where your player models are loaded from. Right click the field to open a quick folder selection.",
+            "lang": 0
+          }
+        ]
+      }, // Player Path
+      {
+        "name": "Player Default Path",
+        "tooltips": [
+          {
+            "desc": "The player folder that gets loaded whenever you enter this level.",
+            "hint": "If the levels' default players folder was not set, then it'll keep the currently set folder. This is for QOL changing of player model lists for different levels.",
+            "lang": 0
+          }
+        ]
+      }, // Player Default Path
+      {
         "name": "Theme Path",
         "tooltips": [
           {
@@ -2945,6 +2965,16 @@
             ]
           }, // getPlayerHealth
           {
+            "name": "Object Modifier - getPlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "getPlayerVariable (Action)",
+                "hint": "Gets a variable of a player at an index and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getPlayerVariable
+          {
             "name": "Object Modifier - getPlayerLives (Action)",
             "tooltips": [
               {
@@ -4278,6 +4308,99 @@
               }
             ]
           }, // setPlayerMaskAll
+
+          {
+            "name": "Object Modifier - setPlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariable (Action)",
+                "hint": "Sets a variable of the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariable
+          {
+            "name": "Object Modifier - setPlayerVariableIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariableIndex (Action)",
+                "hint": "Sets a variable of the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariableIndex
+          {
+            "name": "Object Modifier - setPlayerVariableAll (Action)",
+            "tooltips": [
+              {
+                "desc": "setPlayerVariableAll (Action)",
+                "hint": "Sets a variable of all players.",
+                "lang": 0
+              }
+            ]
+          }, // setPlayerVariableAll
+
+          {
+            "name": "Object Modifier - removePlayerVariable (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariable (Action)",
+                "hint": "Removes a variable from the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariable
+          {
+            "name": "Object Modifier - removePlayerVariableIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariableIndex (Action)",
+                "hint": "Removes a variable from the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariableIndex
+          {
+            "name": "Object Modifier - removePlayerVariableAll (Action)",
+            "tooltips": [
+              {
+                "desc": "removePlayerVariableAll (Action)",
+                "hint": "Removes a variable from all players.",
+                "lang": 0
+              }
+            ]
+          }, // removePlayerVariableAll
+
+          {
+            "name": "Object Modifier - clearPlayerVariables (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariables (Action)",
+                "hint": "Clears all variables from the player closest to the object.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariables
+          {
+            "name": "Object Modifier - clearPlayerVariablesIndex (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariablesIndex (Action)",
+                "hint": "Clears all variables from the player at an index.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariablesIndex
+          {
+            "name": "Object Modifier - clearPlayerVariablesAll (Action)",
+            "tooltips": [
+              {
+                "desc": "clearPlayerVariablesAll (Action)",
+                "hint": "Clears all variables from all players.",
+                "lang": 0
+              }
+            ]
+          }, // clearPlayerVariablesAll
 
           {
             "name": "Object Modifier - setGameMode (Action)",
@@ -6814,7 +6937,17 @@
             "lang": 0
           }
         ]
-      } // Disabled Preview Selection Indicator
+      }, // Disabled Preview Selection Indicator
+      {
+        "name": "BPM Snap Indicator",
+        "tooltips": [
+          {
+            "desc": "BPM Snap Indicator",
+            "hint": "Indicates that BPM snap is enabled. All objects that align to song time and can be dragged will snap to the current BPM.",
+            "lang": 0
+          }
+        ]
+      } // BPM Snap Indicator
     ],
 
     // Misc

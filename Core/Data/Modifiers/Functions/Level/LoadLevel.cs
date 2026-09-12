@@ -1,4 +1,6 @@
-﻿using BetterLegacy.Configs;
+﻿using System.IO;
+
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
@@ -49,38 +51,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             switch (type)
             {
                 case Type.Path: {
-                        var path = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
-
-                        if (ProjectArrhythmia.State.IsEditing)
-                        {
-                            if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
-                                return;
-
-                            RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
-                            {
-                                string str = RTFile.BasePath;
-                                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
-                                {
-                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
-                                    });
-                                }
-
-                                EditorLevelManager.inst.LoadLevel(new Level.Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path)));
-                            });
-
-                            return;
-                        }
-
-                        if (ProjectArrhythmia.State.InEditor)
-                            return;
-
-                        var levelPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{path}");
-                        if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.Level.LEVEL_VGD)) || RTFile.FileExists(levelPath + FileFormat.ASSET.Dot()))
-                            LevelManager.Load(levelPath);
-                        else
-                            SoundManager.inst.PlaySound(DefaultSounds.Block);
+                        var path = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables).Remove(Level.Level.LEVEL_LSB).Remove(Level.Level.LEVEL_VGD);
+                        var fullPath = ProjectArrhythmia.State.InEditor ? RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, path);
+                        LoadLevelPath(fullPath);
                         break;
                     }
                 case Type.ID: {
@@ -106,7 +79,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                                 return;
 
-                            var path = System.IO.Path.GetFileName(levelPanel.Path);
+                            var path = Path.GetFileName(levelPanel.Path);
 
                             RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                             {
@@ -115,7 +88,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                 {
                                     GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                     {
-                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                                        EditorManager.inst.DisplayNotification($"Saved backup to {Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
                                     });
                                 }
 
@@ -127,38 +100,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         break;
                     }
                 case Type.Internal: {
-                        var path = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables);
-
-                        if (!ProjectArrhythmia.State.InEditor)
-                        {
-                            var filePath = RTFile.CombinePaths(RTFile.BasePath, path);
-                            if (!ProjectArrhythmia.State.InEditor && (RTFile.FileExists(RTFile.CombinePaths(filePath, Level.Level.LEVEL_LSB)) || RTFile.FileIsFormat(RTFile.CombinePaths(filePath, Level.Level.LEVEL_VGD)) || RTFile.FileExists(filePath + FileFormat.ASSET.Dot())))
-                                LevelManager.Load(filePath);
-                            else
-                                SoundManager.inst.PlaySound(DefaultSounds.Block);
-
-                            return;
-                        }
-
-                        if (ProjectArrhythmia.State.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, path, Level.Level.LEVEL_LSB)))
-                        {
-                            if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
-                                return;
-
-                            RTEditor.inst.ShowWarningPopup($"You are about to enter the level {RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path)}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
-                            {
-                                string str = RTFile.BasePath;
-                                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
-                                {
-                                    GameData.Current.SaveData(RTFile.CombinePaths(str, "level-modifier-backup.lsb"), () =>
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
-                                    });
-                                }
-
-                                EditorLevelManager.inst.LoadLevel(new Level.Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path)));
-                            });
-                        }
+                        var path = FormatStringVariables(modifier.GetValue(0, modifierLoop.variables), modifierLoop.variables).Remove(Level.Level.LEVEL_LSB).Remove(Level.Level.LEVEL_VGD);
+                        var fullPath = RTFile.CombinePaths(RTFile.BasePath, path);
+                        LoadLevelPath(fullPath);
                         break;
                     }
                 case Type.Previous: {
@@ -200,6 +144,49 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         levelCollection.DownloadLevel(levelCollection.levelInformation[entryLevelIndex], LevelManager.Play);
                         break;
                     }
+            }
+        }
+
+        void LoadLevelPath(string fullPath)
+        {
+            if (!ProjectArrhythmia.State.InEditor)
+            {
+                if (Level.Level.TryVerify(fullPath, true, out Level.Level level))
+                {
+                    LevelManager.Play(level);
+                    return;
+                }
+
+                if (RTFile.FileExists(fullPath + FileFormat.ASSET.Dot()))
+                    LevelManager.Load(fullPath);
+                else
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+                return;
+            }
+
+            if (ProjectArrhythmia.State.IsEditing)
+            {
+                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                    return;
+
+                if (!Level.Level.TryVerify(fullPath, true, out Level.Level level))
+                    return;
+
+                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {Path.GetFileName(fullPath)}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                {
+                    string str = RTFile.BasePath;
+                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                    {
+                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Saved backup to {Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                        });
+                    }
+
+                    EditorLevelManager.inst.LoadLevel(level);
+                });
+
+                return;
             }
         }
 

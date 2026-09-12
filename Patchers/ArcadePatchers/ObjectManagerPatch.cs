@@ -45,7 +45,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (!ProjectArrhythmia.State.Paused && !ProjectArrhythmia.State.Parsing && !ProjectArrhythmia.State.Loading)
+            if ((ProjectArrhythmia.State.IsInLobby || !ProjectArrhythmia.State.Paused) && !ProjectArrhythmia.State.Parsing && !ProjectArrhythmia.State.Loading)
                 RTLevel.Current?.Tick();
 
             return false;

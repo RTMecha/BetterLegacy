@@ -43,9 +43,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             var min = modifier.GetFloat(8, -9999f, modifierLoop.variables);
             var max = modifier.GetFloat(9, 9999f, modifierLoop.variables);
 
-            var players = PlayerManager.Players;
-
-            if (players.TryFind(x => x.RuntimePlayer && x.RuntimePlayer.rb, out PAPlayer player))
+            if (PlayerManager.inst.players.TryFind(x => x.RuntimePlayer && x.RuntimePlayer.rb, out PAPlayer player))
                 transformable.SetTransform(toType, toAxis, RTMath.Clamp((player.RuntimePlayer.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
         }
 

@@ -28,15 +28,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         {
             if (modifierLoop.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
             {
-                if (!beatmapObject.detector)
-                {
-                    var gameObject = beatmapObject.runtimeObject.visualObject.gameObject;
-                    var op = gameObject.GetOrAddComponent<Detector>();
-                    op.beatmapObject = beatmapObject;
-                    beatmapObject.detector = op;
-                }
-
-                return beatmapObject.detector && beatmapObject.detector.hovered;
+                if (!beatmapObject.runtimeObject.visualObject.detector)
+                    beatmapObject.runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>().SetObject(beatmapObject);
+                return beatmapObject.runtimeObject.visualObject.detector && beatmapObject.runtimeObject.visualObject.detector.hovered;
             }
             return false;
         }

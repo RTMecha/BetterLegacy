@@ -177,29 +177,28 @@ namespace BetterLegacy.Editor.Data.Dialogs
             PageField.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
 
             PageField.inputField.GetComponent<LayoutElement>().minWidth = 60f;
-            PageField.inputField.SetTextWithoutNotify("0");
-            PageField.inputField.onValueChanged.NewListener(_val =>
+            PageField.SetTextWithoutNotify("0");
+            PageField.OnValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int p))
-                {
-                    RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
+                if (!int.TryParse(_val, out int p))
+                    return;
 
-                    RTThemeEditor.inst.RenderThemeList();
-                }
+                RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
+                RTThemeEditor.inst.RenderThemeList();
             });
 
-            PageField.leftGreaterButton.onClick.NewListener(() => PageField.inputField.text = "0");
+            PageField.leftGreaterButton.onClick.NewListener(() => PageField.Text = "0");
             PageField.leftButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
             PageField.rightButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.inputField.text, out int p))
-                    PageField.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
-            PageField.rightGreaterButton.onClick.NewListener(() => PageField.inputField.text = (RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
+            PageField.rightGreaterButton.onClick.NewListener(() => PageField.Text = (RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
 
             CoreHelper.Delete(PageField.middleButton);
 

@@ -122,6 +122,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         //public static JSONNode LastParsedJSON { get; set; }
         //public static GameData ConvertedGameData { get; set; }
 
+        public string ID { get; set; }
+
         public List<string> Tags { get; set; }
 
         public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
@@ -173,6 +175,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BeatmapVariable> variables = new List<BeatmapVariable>();
 
         public RTLevelBase ParentRuntime { get; set; }
+
+        public RTModifiers RuntimeModifiers { get; set; }
 
         public enum DuplicateBehaviorType
         {

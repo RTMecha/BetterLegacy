@@ -194,6 +194,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
         }
 
+        public override bool IsCompatible(IModifyable modifyable) => isGroup || modifyable is IShapeable shapeable && shapeable.ShapeType == ShapeType.Image;
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             var index = 0;
@@ -204,7 +206,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 index++;
             }
 
-            modifierCard.StringGenerator(modifier, reference, "Path", 0 + index);
+            modifierCard.StringGenerator(modifier, reference, "Path", 0);
             modifierCard.SingleGenerator(modifier, reference, "Texture Offset X", 1 + index);
             modifierCard.SingleGenerator(modifier, reference, "Texture Offset Y", 2 + index);
             modifierCard.SingleGenerator(modifier, reference, "Texture Scale X", 3 + index, 1f);

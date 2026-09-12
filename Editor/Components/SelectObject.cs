@@ -113,9 +113,9 @@ namespace BetterLegacy.Editor.Components
         /// Assigns a BeatmapObjects' RTObject references.
         /// </summary>
         /// <param name="beatmapObject"></param>
-        public void SetObject(BeatmapObject beatmapObject)
+        public void SetObject(BeatmapObject beatmapObject, VisualObject visualObject)
         {
-            beatmapObject.selector = this;
+            visualObject.selector = this;
             this.beatmapObject = beatmapObject;
         }
 

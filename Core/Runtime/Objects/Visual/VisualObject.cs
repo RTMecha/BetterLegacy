@@ -3,8 +3,11 @@
 using LSFunctions;
 
 using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Components;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -80,6 +83,26 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public ParticleSystemRenderer particleSystemRenderer;
 
+        /// <summary>
+        /// The visual objects' pool object.
+        /// </summary>
+        public Pool.PoolObject poolObject;
+
+        /// <summary>
+        /// Rigidbody for modifiers.
+        /// </summary>
+        public Rigidbody2D rigidbody;
+
+        /// <summary>
+        /// Used for editor optimization.
+        /// </summary>
+        public SelectObject selector;
+
+        /// <summary>
+        /// Used for detecting modifier states such as collision and mouse hovering.
+        /// </summary>
+        public Detector detector;
+
         #endregion
 
         #region Functions
@@ -104,6 +127,13 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public virtual void Clear()
         {
+            if (poolObject)
+            {
+                poolObject.Return();
+                poolObject = null;
+            }
+            else
+                CoreHelper.Delete(gameObject);
             gameObject = null;
             renderer = null;
             collider = null;

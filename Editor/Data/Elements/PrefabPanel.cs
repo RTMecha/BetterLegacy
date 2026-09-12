@@ -378,193 +378,187 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Updates the prefab panels' function.
         /// </summary>
-        public void UpdateFunction()
+        public void UpdateFunction() => Button.onClick = OnClick;
+
+        public override void OnClick(PointerEventData pointerEventData)
         {
             var prefab = Item;
             switch (Source)
             {
                 case ObjectSource.Internal: {
-                        Button.onClick = eventData =>
+                        if (RTPrefabEditor.inst.onSelectPrefab != null)
                         {
-                            if (RTPrefabEditor.inst.onSelectPrefab != null)
-                            {
-                                RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
-                                RTPrefabEditor.inst.onSelectPrefab = null;
-                                return;
-                            }
+                            RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
+                            RTPrefabEditor.inst.onSelectPrefab = null;
+                            return;
+                        }
 
-                            if (RTEditor.inst.prefabPickerEnabled)
+                        if (RTEditor.inst.prefabPickerEnabled)
+                        {
+                            var prefabInstanceID = PAObjectBase.GetStringID();
+                            if (RTEditor.inst.selectingMultiple)
                             {
-                                var prefabInstanceID = PAObjectBase.GetStringID();
-                                if (RTEditor.inst.selectingMultiple)
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                 {
-                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                    {
-                                        if (!timelineObject.TryGetPrefabable(out IPrefabable prefabable))
-                                            return;
+                                    if (!timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                        return;
 
-                                        prefabable.PrefabID = prefab.id;
-                                        prefabable.PrefabInstanceID = prefabInstanceID;
-                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                    }
+                                    prefabable.PrefabID = prefab.id;
+                                    prefabable.PrefabInstanceID = prefabInstanceID;
+                                    EditorTimeline.inst.RenderTimelineObject(timelineObject);
                                 }
-                                else if (EditorTimeline.inst.CurrentSelection.TryGetPrefabable(out IPrefabable singlePrefabable))
-                                {
-                                    singlePrefabable.PrefabID = prefab.id;
-                                    singlePrefabable.PrefabInstanceID = prefabInstanceID;
-                                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
-
-                                    if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                                        ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
-                                    if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
-                                        RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
-                                }
-
-                                RTEditor.inst.prefabPickerEnabled = false;
-
-                                return;
                             }
-
-                            if (RTPrefabEditor.inst.selectingQuickPrefab)
+                            else if (EditorTimeline.inst.CurrentSelection.TryGetPrefabable(out IPrefabable singlePrefabable))
                             {
-                                RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                RTPrefabEditor.inst.RefreshInternalPrefabs();
-                                return;
+                                singlePrefabable.PrefabID = prefab.id;
+                                singlePrefabable.PrefabInstanceID = prefabInstanceID;
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
+
+                                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                    ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                                if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
+                                    RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
                             }
 
-                            if (eventData.button == PointerEventData.InputButton.Right)
+                            RTEditor.inst.prefabPickerEnabled = false;
+                            return;
+                        }
+
+                        if (RTPrefabEditor.inst.selectingQuickPrefab)
+                        {
+                            RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
+                            RTPrefabEditor.inst.RefreshInternalPrefabs();
+                            return;
+                        }
+
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            var buttonFunctions = new List<EditorElement>
                             {
-                                var buttonFunctions = new List<EditorElement>
+                                new ButtonElement("Add to Level", () =>
                                 {
-                                    new ButtonElement("Add to Level", () =>
-                                    {
-                                        RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                                        RTPrefabEditor.inst.Popups.Close();
-                                    }),
-                                    new ButtonElement("Create Prefab", () =>
-                                    {
-                                        PrefabEditor.inst.OpenDialog();
-                                        RTPrefabEditor.inst.createInternal = true;
-                                    }),
-                                    new ButtonElement("Assign to Quick Prefab", () =>
-                                    {
-                                        RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
-                                        RTPrefabEditor.inst.RefreshInternalPrefabs();
-                                    }),
-                                    new SpacerElement(),
-                                    new ButtonElement("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
-                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteInternalPrefab(Item))),
-                                    new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export", () => !ProjectArrhythmia.State.IsClient),
-                                    new SpacerElement(),
-                                    new ButtonElement("View Animations", () => AnimationEditor.inst.OpenPopup(Item.animationGroups, Item.animations)),
-                                    new SpacerElement(),
-                                };
-                                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, RTPrefabEditor.inst.RefreshInternalPrefabs));
+                                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
+                                    RTPrefabEditor.inst.Popups.Close();
+                                }),
+                                new ButtonElement("Create Prefab", () =>
+                                {
+                                    PrefabEditor.inst.OpenDialog();
+                                    RTPrefabEditor.inst.createInternal = true;
+                                }),
+                                new ButtonElement("Assign to Quick Prefab", () =>
+                                {
+                                    RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
+                                    RTPrefabEditor.inst.RefreshInternalPrefabs();
+                                }),
+                                new SpacerElement(),
+                                new ButtonElement("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
+                                new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteInternalPrefab(Item))),
+                                new ButtonElement("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export", () => !ProjectArrhythmia.State.IsClient),
+                                new SpacerElement(),
+                                new ButtonElement("View Animations", () => AnimationEditor.inst.OpenPopup(Item.animationGroups, Item.animations)),
+                                new SpacerElement(),
+                            };
+                            buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, RTPrefabEditor.inst.RefreshInternalPrefabs));
 
-                                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-                                return;
-                            }
+                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                            return;
+                        }
 
-                            RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-                            RTPrefabEditor.inst.Popups.Close();
-                        };
+                        RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
+                        RTPrefabEditor.inst.Popups.Close();
                         break;
                     }
                 case ObjectSource.External: {
-                        Button.onClick = eventData =>
+                        if (RTPrefabEditor.inst.onSelectPrefab != null)
                         {
-                            if (RTPrefabEditor.inst.onSelectPrefab != null)
-                            {
-                                RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
-                                RTPrefabEditor.inst.onSelectPrefab = null;
-                                return;
-                            }
+                            RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
+                            RTPrefabEditor.inst.onSelectPrefab = null;
+                            return;
+                        }
 
-                            if (RTEditor.inst.prefabPickerEnabled)
-                                RTEditor.inst.prefabPickerEnabled = false;
+                        if (RTEditor.inst.prefabPickerEnabled)
+                            RTEditor.inst.prefabPickerEnabled = false;
 
-                            if (RTPrefabEditor.inst.savingToPrefab && RTPrefabEditor.inst.prefabToSaveFrom != null)
-                            {
-                                RTPrefabEditor.inst.savingToPrefab = false;
+                        if (RTPrefabEditor.inst.savingToPrefab && RTPrefabEditor.inst.prefabToSaveFrom != null)
+                        {
+                            RTPrefabEditor.inst.savingToPrefab = false;
 
-                                var prefabToSaveTo = Item;
-                                var prefabToSaveFrom = RTPrefabEditor.inst.prefabToSaveFrom;
+                            var prefabToSaveTo = Item;
+                            var prefabToSaveFrom = RTPrefabEditor.inst.prefabToSaveFrom;
 
-                                prefabToSaveTo.beatmapObjects = prefabToSaveFrom.beatmapObjects.Clone();
-                                prefabToSaveTo.prefabObjects = prefabToSaveFrom.prefabObjects.Clone();
-                                prefabToSaveTo.backgroundObjects = prefabToSaveFrom.backgroundObjects.Clone();
-                                prefabToSaveTo.backgroundLayers = prefabToSaveFrom.backgroundLayers.Clone();
-                                prefabToSaveTo.prefabs = prefabToSaveFrom.prefabs.Clone();
-                                prefabToSaveTo.beatmapThemes = prefabToSaveFrom.beatmapThemes.Clone();
-                                prefabToSaveTo.modifierBlocks = prefabToSaveFrom.modifierBlocks.Clone();
-                                prefabToSaveTo.offset = prefabToSaveFrom.offset;
-                                prefabToSaveTo.type = prefabToSaveFrom.type;
-                                prefabToSaveTo.typeID = prefabToSaveFrom.typeID;
+                            prefabToSaveTo.beatmapObjects = prefabToSaveFrom.beatmapObjects.Clone();
+                            prefabToSaveTo.prefabObjects = prefabToSaveFrom.prefabObjects.Clone();
+                            prefabToSaveTo.backgroundObjects = prefabToSaveFrom.backgroundObjects.Clone();
+                            prefabToSaveTo.backgroundLayers = prefabToSaveFrom.backgroundLayers.Clone();
+                            prefabToSaveTo.prefabs = prefabToSaveFrom.prefabs.Clone();
+                            prefabToSaveTo.beatmapThemes = prefabToSaveFrom.beatmapThemes.Clone();
+                            prefabToSaveTo.modifierBlocks = prefabToSaveFrom.modifierBlocks.Clone();
+                            prefabToSaveTo.offset = prefabToSaveFrom.offset;
+                            prefabToSaveTo.type = prefabToSaveFrom.type;
+                            prefabToSaveTo.typeID = prefabToSaveFrom.typeID;
 
-                                var prefabType = prefabToSaveTo.GetPrefabType();
+                            var prefabType = prefabToSaveTo.GetPrefabType();
 
-                                RenderLabel();
-                                RenderPrefabType(prefabType);
-                                RenderTooltip(prefab, prefabType);
+                            RenderLabel();
+                            RenderPrefabType(prefabType);
+                            RenderTooltip(prefab, prefabType);
 
-                                prefabToSaveTo.WriteToFile(prefabToSaveTo.filePath);
+                            prefabToSaveTo.WriteToFile(prefabToSaveTo.filePath);
 
-                                RTPrefabEditor.inst.Popups.Close();
+                            RTPrefabEditor.inst.Popups.Close();
 
-                                RTPrefabEditor.inst.prefabToSaveFrom = null;
+                            RTPrefabEditor.inst.prefabToSaveFrom = null;
 
-                                EditorManager.inst.DisplayNotification("Applied all changes to External Prefab.", 2f, EditorManager.NotificationType.Success);
+                            EditorManager.inst.DisplayNotification("Applied all changes to External Prefab.", 2f, EditorManager.NotificationType.Success);
+                            return;
+                        }
 
-                                return;
-                            }
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
+                                new ButtonElement("Update", () =>
+                                {
+                                    if (RTPrefabEditor.inst.UpdateLevelPrefab(Item))
+                                        EditorManager.inst.DisplayNotification($"Updated internal Prefab [ {Item.name} ]!", 2f, EditorManager.NotificationType.Success);
+                                    else
+                                        EditorManager.inst.DisplayNotification($"No internal Prefab was found to update!", 2f, EditorManager.NotificationType.Warning);
+                                }),
+                                new ButtonElement("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
+                                new ButtonElement("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
+                                new SpacerElement(),
+                                new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
+                                new ButtonElement("Create Prefab", () =>
+                                {
+                                    PrefabEditor.inst.OpenDialog();
+                                    RTPrefabEditor.inst.createInternal = false;
+                                }),
+                                new SpacerElement(),
+                                new ButtonElement("Cut", () =>
+                                {
+                                    RTPrefabEditor.inst.shouldCutPrefab = true;
+                                    RTPrefabEditor.inst.copiedPrefabPath = Path;
+                                    EditorManager.inst.DisplayNotification($"Cut {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
+                                    CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
+                                }),
+                                new ButtonElement("Copy", () =>
+                                {
+                                    RTPrefabEditor.inst.shouldCutPrefab = false;
+                                    RTPrefabEditor.inst.copiedPrefabPath = Path;
+                                    EditorManager.inst.DisplayNotification($"Copied {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
+                                    CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
+                                }),
+                                new ButtonElement("Paste", RTPrefabEditor.inst.PastePrefab),
+                                new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteExternalPrefab(this)))
+                                );
 
-                            if (eventData.button == PointerEventData.InputButton.Right)
-                            {
-                                EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonElement("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
-                                    new ButtonElement("Update", () =>
-                                    {
-                                        if (RTPrefabEditor.inst.UpdateLevelPrefab(Item))
-                                            EditorManager.inst.DisplayNotification($"Updated internal Prefab [ {Item.name} ]!", 2f, EditorManager.NotificationType.Success);
-                                        else
-                                            EditorManager.inst.DisplayNotification($"No internal Prefab was found to update!", 2f, EditorManager.NotificationType.Warning);
-                                    }),
-                                    new ButtonElement("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
-                                    new ButtonElement("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
-                                    new SpacerElement(),
-                                    new ButtonElement("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs); RTEditor.inst.HideNameEditor(); })),
-                                    new ButtonElement("Create Prefab", () =>
-                                    {
-                                        PrefabEditor.inst.OpenDialog();
-                                        RTPrefabEditor.inst.createInternal = false;
-                                    }),
-                                    new SpacerElement(),
-                                    new ButtonElement("Cut", () =>
-                                    {
-                                        RTPrefabEditor.inst.shouldCutPrefab = true;
-                                        RTPrefabEditor.inst.copiedPrefabPath = Path;
-                                        EditorManager.inst.DisplayNotification($"Cut {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
-                                        CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
-                                    }),
-                                    new ButtonElement("Copy", () =>
-                                    {
-                                        RTPrefabEditor.inst.shouldCutPrefab = false;
-                                        RTPrefabEditor.inst.copiedPrefabPath = Path;
-                                        EditorManager.inst.DisplayNotification($"Copied {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
-                                        CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
-                                    }),
-                                    new ButtonElement("Paste", RTPrefabEditor.inst.PastePrefab),
-                                    new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () => RTPrefabEditor.inst.DeleteExternalPrefab(this)))
-                                    );
+                            return;
+                        }
 
-                                return;
-                            }
-
-                            if (!EditorConfig.Instance.ImportPrefabsDirectly.Value)
-                                RTPrefabEditor.inst.OpenPrefabEditorDialog(this);
-                            else
-                                RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
-                        };
+                        if (!EditorConfig.Instance.ImportPrefabsDirectly.Value)
+                            RTPrefabEditor.inst.OpenPrefabEditorDialog(this);
+                        else
+                            RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
                         break;
                     }
             }

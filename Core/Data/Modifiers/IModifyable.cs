@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Runtime.Objects;
+
 namespace BetterLegacy.Core.Data.Modifiers
 {
     /// <summary>
@@ -8,6 +10,11 @@ namespace BetterLegacy.Core.Data.Modifiers
     /// <typeparam name="T">Type of the object that can run modifiers.</typeparam>
     public interface IModifyable
     {
+        /// <summary>
+        /// Identification of the modifyable.
+        /// </summary>
+        public string ID { get; set; }
+
         /// <summary>
         /// The reference type of the modifyable.
         /// </summary>
@@ -42,5 +49,10 @@ namespace BetterLegacy.Core.Data.Modifiers
         /// If the modifiers are currently active.
         /// </summary>
         public bool ModifiersActive { get; }
+
+        /// <summary>
+        /// Cached runtime modifiers.
+        /// </summary>
+        public RTModifiers RuntimeModifiers { get; set; }
     }
 }

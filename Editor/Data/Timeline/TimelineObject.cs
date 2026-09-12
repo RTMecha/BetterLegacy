@@ -1094,6 +1094,7 @@ namespace BetterLegacy.Editor.Data.Timeline
                     }
             }
             RenderText(Name);
+            RenderPosLength();
         }
 
         /// <summary>

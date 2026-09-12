@@ -2511,6 +2511,9 @@ namespace BetterLegacy.Companion.Entity
                 base.RegisterFunctions();
                 RegisterAction(SetAttribute);
                 RegisterAction(SetAttributeOperation);
+                RegisterAction(SetPose);
+                RegisterAction(SetFacePosition);
+                RegisterVariable(GetAttribute);
             }
 
             public void SetAttribute(JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
@@ -2815,14 +2818,14 @@ namespace BetterLegacy.Companion.Entity
 
             public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                if (thisElement && thisElement.model)
+                if (thisElement && thisElement.model && thisElement.model.functions.HasIfFunction(name))
                     return thisElement.model.functions.IfFunction(jn, name, parameters, thisElement.model, customVariables);
                 return base.IfFunction(jn, name, parameters, thisElement, customVariables);
             }
 
             public override void Function(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                if (thisElement && thisElement.model)
+                if (thisElement && thisElement.model && thisElement.model.functions.HasFunction(name))
                 {
                     thisElement.model.functions.Function(jn, name, parameters, thisElement.model, customVariables);
                     return;
@@ -2833,7 +2836,7 @@ namespace BetterLegacy.Companion.Entity
 
             public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                if (thisElement && thisElement.model)
+                if (thisElement && thisElement.model && thisElement.model.functions.HasVarFunction(name))
                     return thisElement.model.functions.VarFunction(jn, name, parameters, thisElement.model, customVariables);
                 return base.VarFunction(jn, name, parameters, thisElement, customVariables);
             }

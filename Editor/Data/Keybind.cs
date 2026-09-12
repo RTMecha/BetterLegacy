@@ -72,7 +72,7 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Methods
+        #region Functions
 
         public override void CopyData(Keybind orig, bool newID = true)
         {
@@ -192,6 +192,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public class Key : PAObject<Key>
         {
+            #region Constructors
+
             public Key() { }
 
             public Key(Type type, KeyCode keyCode)
@@ -199,6 +201,8 @@ namespace BetterLegacy.Editor.Data
                 InteractType = type;
                 KeyCode = keyCode;
             }
+
+            #endregion
 
             #region Values
 
@@ -282,6 +286,8 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public class Setting : PAObject<Setting>
         {
+            #region Constructors
+
             public Setting() { }
 
             public Setting(string key, string value, ValueType valueType)
@@ -290,6 +296,8 @@ namespace BetterLegacy.Editor.Data
                 this.value = value;
                 this.valueType = valueType;
             }
+
+            #endregion
 
             #region Values
 

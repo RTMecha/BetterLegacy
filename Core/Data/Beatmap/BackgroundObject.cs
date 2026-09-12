@@ -302,6 +302,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public RTModifiers runtimeModifiers;
 
+        public RTModifiers RuntimeModifiers { get => runtimeModifiers; set => runtimeModifiers = value; }
+
         #endregion
 
         #region Editor

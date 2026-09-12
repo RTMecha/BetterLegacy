@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 Name += "Math";
             if (isGroup)
                 Name += "Other";
-            SetupModifier("1", "0", "0", "0", "0", "True", "0", "True");
+            SetupModifier(false, "1", "0", "0", "0", "0", "True", "0", "True");
             if (isSignal)
             {
                 Modifier.values.Insert(7, "Object Group");

@@ -3,6 +3,7 @@
 using TMPro;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
@@ -15,6 +16,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public TextObject(GameObject gameObject, float opacity, string text, bool autoTextAlign, TextAlignmentOptions textAlignment, int renderType)
         {
             this.gameObject = gameObject;
+            poolObject = gameObject.GetComponent<Pool.PoolObject>();
+
             this.opacity = opacity;
 
             if (this.gameObject.TryGetComponent(out Renderer renderer))

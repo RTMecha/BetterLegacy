@@ -1321,8 +1321,12 @@ namespace BetterLegacy.Editor.Managers
 
             prefabHolder.ContentPopup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Content Popup");
             prefabHolder.DoubleContentPopup = EditorManager.inst.GetDialog(EditorPopup.PREFAB_POPUP).Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Double Content Popup");
-            prefabHolder.DoubleContentPopup.transform.Find("internal prefabs").name = "internal";
+            var internalContentPopup = prefabHolder.DoubleContentPopup.transform.Find("internal prefabs");
+            internalContentPopup.name = "internal";
             prefabHolder.DoubleContentPopup.transform.Find("external prefabs").name = "external";
+            CoreHelper.Delete(internalContentPopup.Find("select_prefab"));
+            RectValues.FullAnchored.AnchoredPosition(0f, -16f).SizeDelta(0f, -32f).AssignToRectTransform(internalContentPopup.Find("mask").AsRT());
+            internalContentPopup.Find("mask/content").GetComponent<GridLayoutGroup>().padding.bottom = 8;
 
             prefabHolder.LevelPanel = EditorManager.inst.folderButtonPrefab.Duplicate(prefabHolder.PrefabParent, "Level Panel");
             CoreHelper.Destroy(true, prefabHolder.LevelPanel.GetComponent<FunctionButtonStorage>());
@@ -2203,7 +2207,8 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.SortDropdown)
                 return;
 
-            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.SetValueWithoutNotify((int)levelSort);
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.SetValueWithoutNotify(ProjectArrhythmia.State.IsClient ? (int)LobbyInfo.EditorLevelSort : (int)levelSort);
+            EditorLevelManager.inst.OpenLevelPopup.SortDropdown.interactable = !ProjectArrhythmia.State.IsClient;
             EditorLevelManager.inst.OpenLevelPopup.SortDropdown.onValueChanged.NewListener(_val =>
             {
                 levelSort = (LevelSort)_val;
@@ -2220,7 +2225,8 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorLevelManager.inst || !EditorLevelManager.inst.OpenLevelPopup || !EditorLevelManager.inst.OpenLevelPopup.AscendToggle)
                 return;
 
-            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.SetIsOnWithoutNotify(levelAscend);
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.SetIsOnWithoutNotify(ProjectArrhythmia.State.IsClient ? LobbyInfo.EditorLevelAscend : levelAscend);
+            EditorLevelManager.inst.OpenLevelPopup.AscendToggle.interactable = !ProjectArrhythmia.State.IsClient;
             EditorLevelManager.inst.OpenLevelPopup.AscendToggle.onValueChanged.NewListener(_val =>
             {
                 levelAscend = _val;
@@ -2529,6 +2535,11 @@ namespace BetterLegacy.Editor.Managers
         /// Opens the prefab list folder in the file browser.
         /// </summary>
         public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PrefabPath));
+        
+        /// <summary>
+        /// Opens the player list folder in the file browser.
+        /// </summary>
+        public void OpenPlayerListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, PlayersPath));
 
         /// <summary>
         /// Opens the level collection list folder in the file browser.
@@ -3215,6 +3226,48 @@ namespace BetterLegacy.Editor.Managers
                 RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
         }
 
+        public void LoadInternalPlayerModelPanelUI(bool update = true)
+        {
+            if (!AssetPack.TryReadFromFile("editor/ui/elements/internal_player_model_panel.json", out string internalPrefabPanelFile))
+                return;
+
+            var jn = JSON.Parse(internalPrefabPanelFile);
+
+            PlayerModelPanel.internalIconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+
+            PlayerModelPanel.internalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+            PlayerModelPanel.internalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+            PlayerModelPanel.internalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+            PlayerModelPanel.internalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+            PlayerModelPanel.internalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+            PlayerModelPanel.internalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+
+            if (update)
+                PlayerEditor.inst.Reload();
+        }
+
+        public void LoadExternalPlayerModelPanelUI(bool update = true)
+        {
+            if (!AssetPack.TryReadFromFile("editor/ui/elements/external_player_model_panel.json", out string externalPrefabPanelFile))
+                return;
+
+            var jn = JSON.Parse(externalPrefabPanelFile);
+
+            PlayerModelPanel.externalIconRect = RectValues.TryParse(jn["icon"]["rect"], RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f));
+
+            PlayerModelPanel.externalNameLabelRect = RectValues.TryParse(jn["name_label"]["rect"], RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f));
+            PlayerModelPanel.externalNameLabelAlignment = jn["name_label"]["alignment"] != null ? (TextAnchor)jn["name_label"]["alignment"].AsInt : TextAnchor.MiddleLeft;
+            PlayerModelPanel.externalNameLabelHorizontalWrap = jn["name_label"]["horizontal_wrap"] != null ? (HorizontalWrapMode)jn["name_label"]["horizontal_wrap"].AsInt : HorizontalWrapMode.Overflow;
+            PlayerModelPanel.externalNameLabelVerticalWrap = jn["name_label"]["vertical_wrap"] != null ? (VerticalWrapMode)jn["name_label"]["vertical_wrap"].AsInt : VerticalWrapMode.Overflow;
+            PlayerModelPanel.externalNameLabelFontSize = jn["name_label"]["font_size"] != null ? jn["name_label"]["font_size"].AsInt : 20;
+
+            PlayerModelPanel.externalDeleteRect = RectValues.TryParse(jn["delete"]["rect"], new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)));
+
+            if (update)
+                PlayerEditor.inst.Reload();
+        }
+
         public void LoadEditorLayers(bool update = true)
         {
             if (!AssetPack.TryReadFromFile("editor/data/editor_layers.json", out string editorLayersFile))
@@ -3244,37 +3297,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Generate UI
 
-        public static GameObject GenerateSpacer(string name, Transform parent, Vector2 size)
-        {
-            var spacer = Creator.NewUIObject(name, parent);
-            spacer.transform.AsRT().sizeDelta = size;
-
-            return spacer;
-        }
-
-        public static GameObject GenerateLabels(string name, Transform parent, params Label[] labels) => GenerateLabels(name, parent, -1, labels);
-
-        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, params Label[] labels)
-        {
-            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
-            var first = label.transform.GetChild(0);
-
-            for (int i = 0; i < labels.Length; i++)
-            {
-                var labelSetting = labels[i];
-                if (i >= label.transform.childCount)
-                    first.gameObject.Duplicate(label.transform, first.name);
-
-                var child = label.transform.GetChild(i);
-                var labelText = child.GetComponent<Text>();
-                labelSetting.Apply(labelText);
-
-                EditorThemeManager.ApplyLightText(labelText);
-            }
-
-            return label;
-        }
-        
         public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, bool applyThemes, params Label[] labels)
         {
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
@@ -3583,11 +3605,21 @@ namespace BetterLegacy.Editor.Managers
                         if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
                             RTMarkerEditor.inst.CreateNewMarker(EditorTimeline.inst.CurrentSelection.Time);
                     }),
+                    ButtonElement.ToggleButton("Current Layer Only", () => EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value, () =>
+                    {
+                        EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value = !EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value;
+                        EditorManager.inst.DisplayNotification(EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value ? "New Markers will now be created on the current layer." : "New Markers will now not have a set layer.", 1.5f, EditorManager.NotificationType.Success);
+                    }),
                     new SpacerElement(),
                     ButtonElement.ToggleButton("Show Markers", () => EditorConfig.Instance.ShowMarkers.Value, () =>
                     {
                         EditorConfig.Instance.ShowMarkers.Value = !EditorConfig.Instance.ShowMarkers.Value;
                         EditorManager.inst.DisplayNotification(EditorConfig.Instance.ShowMarkers.Value ? "Markers will now display." : "Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    ButtonElement.ToggleButton("Show Annotations", () => EditorConfig.Instance.ShowMarkerAnnotations.Value, () =>
+                    {
+                        EditorConfig.Instance.ShowMarkerAnnotations.Value = !EditorConfig.Instance.ShowMarkerAnnotations.Value;
+                        EditorManager.inst.DisplayNotification(EditorConfig.Instance.ShowMarkerAnnotations.Value ? "Annotations will now display." : "Annotations will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new SpacerElement(),
                     new ButtonElement("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
@@ -4705,6 +4737,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     modifyable.Tags.RemoveAt(index);
                     RenderTags(modifyable, dialog);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.RemoveTag(modifyable.ID, modifyable.ReferenceType, index);
                 });
 
                 TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
@@ -4774,6 +4808,8 @@ namespace BetterLegacy.Editor.Managers
                             var orig = new List<string>(modifyable.Tags);
                             modifyable.Tags.Clear();
                             RenderTags(modifyable, dialog);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.ClearTags(modifyable.ID, modifyable.ReferenceType);
                             EditorManager.inst.history.Add(new History.Command("Clear Tags",
                                 () =>
                                 {
@@ -4815,6 +4851,8 @@ namespace BetterLegacy.Editor.Managers
                 var tagIndex = modifyable.Tags.Count;
                 modifyable.Tags.Add("New Tag");
                 RenderTags(modifyable, dialog);
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.AddTag(modifyable.ID, modifyable.ReferenceType);
                 EditorManager.inst.history.Add(new History.Command("Add Tag",
                     () =>
                     {
@@ -4874,6 +4912,8 @@ namespace BetterLegacy.Editor.Managers
                     var orig = new List<string>(modifyable.Tags);
                     modifyable.Tags.Clear();
                     RenderTags(modifyable, dialog);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.ClearTags(modifyable.ID, modifyable.ReferenceType);
                     EditorManager.inst.history.Add(new History.Command("Clear Tags",
                         () =>
                         {
@@ -5500,27 +5540,30 @@ namespace BetterLegacy.Editor.Managers
                 case ShapeType.Polygon: {
                         shapeSettings.AsRT().sizeDelta = new Vector2(351f, 360f);
 
-                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
-                        radius.OnValueChanged.ClearAll();
-                        radius.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
-                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
+                        var polygonShapeEditor = dialog.PolygonShapeEditor;
+                        if (!polygonShapeEditor)
+                            throw new NullReferenceException("Polygon Shape Editor is null!");
+
+                        polygonShapeEditor.RadiusField.OnValueChanged.ClearAll();
+                        polygonShapeEditor.RadiusField.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
+                        polygonShapeEditor.RadiusField.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
                         if (!EditorConfig.Instance.AutoPolygonRadius.Value)
                         {
-                            radius.OnValueChanged.AddListener(_val =>
+                            polygonShapeEditor.RadiusField.OnValueChanged.AddListener(_val =>
                             {
-                                if (float.TryParse(_val, out float num))
-                                {
-                                    num = Mathf.Clamp(num, 0.1f, 10f);
-                                    shapeable.Polygon.Radius = num;
-                                    onUpdate?.Invoke(ObjectContext.POLYGONS);
-                                }
+                                if (!float.TryParse(_val, out float num))
+                                    return;
+
+                                num = Mathf.Clamp(num, PolygonShape.MIN_RADIUS, PolygonShape.MAX_RADIUS);
+                                shapeable.Polygon.Radius = num;
+                                onUpdate?.Invoke(ObjectContext.POLYGONS);
                             });
 
-                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
-                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
+                            TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.RadiusField, min: 0.1f, max: 10f);
+                            TriggerHelper.AddEventTriggers(polygonShapeEditor.RadiusField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.RadiusField.inputField, min: 0.1f, max: 10f));
                         }
 
-                        EditorContextMenu.AddContextMenu(radius.inputField.gameObject,
+                        EditorContextMenu.AddContextMenu(polygonShapeEditor.RadiusField.inputField.gameObject,
                             getEditorElements: () =>
                             {
                                 var editorElements = new List<EditorElement>()
@@ -5552,168 +5595,165 @@ namespace BetterLegacy.Editor.Managers
                                 return editorElements;
                             });
 
-                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
-                        sides.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());
-                        sides.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.SidesField.SetTextWithoutNotify(shapeable.Polygon.Sides.ToString());
+                        polygonShapeEditor.SidesField.OnValueChanged.NewListener(_val =>
                         {
-                            if (int.TryParse(_val, out int num))
+                            if (!int.TryParse(_val, out int num))
+                                return;
+
+                            num = Mathf.Clamp(num, PolygonShape.MIN_SIDES, PolygonShape.MAX_SIDES);
+                            shapeable.Polygon.Sides = num;
+                            if (EditorConfig.Instance.AutoPolygonRadius.Value)
                             {
-                                num = Mathf.Clamp(num, 3, 32);
-                                shapeable.Polygon.Sides = num;
-                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
-                                {
-                                    shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
-                                    radius.inputField.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
-                                }
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
+                                shapeable.Polygon.Radius = shapeable.Polygon.GetAutoRadius();
+                                polygonShapeEditor.RadiusField.SetTextWithoutNotify(shapeable.Polygon.Radius.ToString());
                             }
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
-                        TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
+                        TriggerHelper.IncreaseDecreaseButtonsInt(polygonShapeEditor.SidesField, min: PolygonShape.MIN_SIDES, max: PolygonShape.MAX_SIDES);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.SidesField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(polygonShapeEditor.SidesField.inputField, min: PolygonShape.MIN_SIDES, max: PolygonShape.MAX_SIDES));
                         
-                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
-                        roundness.SetTextWithoutNotify(shapeable.Polygon.Roundness.ToString());
-                        roundness.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.RoundnessField.SetTextWithoutNotify(shapeable.Polygon.Roundness.ToString());
+                        polygonShapeEditor.RoundnessField.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                num = Mathf.Clamp(num, 0f, 1f);
-                                shapeable.Polygon.Roundness = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            num = Mathf.Clamp(num, 0f, 1f);
+                            shapeable.Polygon.Roundness = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
-                        TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.RoundnessField, max: 1f);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.RoundnessField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.RoundnessField.inputField, max: 1f));
 
-                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
-                        thickness.SetTextWithoutNotify(shapeable.Polygon.Thickness.ToString());
-                        thickness.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.ThicknessField.SetTextWithoutNotify(shapeable.Polygon.Thickness.ToString());
+                        polygonShapeEditor.ThicknessField.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                num = Mathf.Clamp(num, 0f, 1f);
-                                shapeable.Polygon.Thickness = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            num = Mathf.Clamp(num, 0f, 1f);
+                            shapeable.Polygon.Thickness = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
-                        TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessField, max: 1f);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessField.inputField, max: 1f));
                         
-                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetX.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.x.ToString());
-                        thicknessOffsetX.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.ThicknessOffsetFields.x.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.x.ToString());
+                        polygonShapeEditor.ThicknessOffsetFields.x.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.ThicknessOffset = new Vector2(num, shapeable.Polygon.ThicknessOffset.y);
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
-                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessOffsetFields.x);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessOffsetFields.x.inputField.gameObject,
+                            TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessOffsetFields.x.inputField, multi: true),
+                            TriggerHelper.ScrollDeltaVector2(polygonShapeEditor.ThicknessOffsetFields.x.inputField, polygonShapeEditor.ThicknessOffsetFields.y.inputField));
                         
-                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessOffsetY.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.y.ToString());
-                        thicknessOffsetY.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.ThicknessOffsetFields.y.SetTextWithoutNotify(shapeable.Polygon.ThicknessOffset.y.ToString());
+                        polygonShapeEditor.ThicknessOffsetFields.y.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.ThicknessOffset = new Vector2(shapeable.Polygon.ThicknessOffset.x, num);
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
-                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessOffsetFields.y);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessOffsetFields.y.inputField.gameObject,
+                            TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessOffsetFields.y.inputField, multi: true),
+                            TriggerHelper.ScrollDeltaVector2(polygonShapeEditor.ThicknessOffsetFields.x.inputField, polygonShapeEditor.ThicknessOffsetFields.y.inputField));
+
+                        polygonShapeEditor.ThicknessScaleFields.x.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.x.ToString());
+                        polygonShapeEditor.ThicknessScaleFields.x.OnValueChanged.NewListener(_val =>
+                        {
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessScaleFields.x);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessScaleFields.x.inputField.gameObject,
+                            TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessScaleFields.x.inputField, multi: true),
+                            TriggerHelper.ScrollDeltaVector2(polygonShapeEditor.ThicknessScaleFields.x.inputField, polygonShapeEditor.ThicknessScaleFields.y.inputField));
+
+                        polygonShapeEditor.ThicknessScaleFields.y.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.y.ToString());
+                        polygonShapeEditor.ThicknessScaleFields.y.OnValueChanged.NewListener(_val =>
+                        {
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessScaleFields.y);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessScaleFields.y.inputField.gameObject,
+                            TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessScaleFields.y.inputField, multi: true),
+                            TriggerHelper.ScrollDeltaVector2(polygonShapeEditor.ThicknessScaleFields.x.inputField, polygonShapeEditor.ThicknessScaleFields.y.inputField));
+
+                        polygonShapeEditor.ThicknessAngleField.SetTextWithoutNotify(shapeable.Polygon.ThicknessRotation.ToString());
+                        polygonShapeEditor.ThicknessAngleField.OnValueChanged.NewListener(_val =>
+                        {
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.ThicknessRotation = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.ThicknessAngleField, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.ThicknessAngleField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.ThicknessAngleField.inputField, 15f, 3f));
+
+                        polygonShapeEditor.SlicesField.SetTextWithoutNotify(shapeable.Polygon.Slices.ToString());
+                        polygonShapeEditor.SlicesField.OnValueChanged.NewListener(_val =>
+                        {
+                            if (!int.TryParse(_val, out int num))
+                                return;
+
+                            num = Mathf.Clamp(num, 1, 32);
+                            shapeable.Polygon.Slices = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(polygonShapeEditor.SlicesField, min: 1, max: 32);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.SlicesField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(polygonShapeEditor.SlicesField.inputField, min: 1, max: 32));
                         
-                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleX.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.x.ToString());
-                        thicknessScaleX.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.AngleField.SetTextWithoutNotify(shapeable.Polygon.Angle.ToString());
+                        polygonShapeEditor.AngleField.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessScale = new Vector2(num, shapeable.Polygon.ThicknessScale.y);
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.Angle = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
-                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.AngleField, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.AngleField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.AngleField.inputField, 15f, 3f));
                         
-                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessScaleY.SetTextWithoutNotify(shapeable.Polygon.ThicknessScale.y.ToString());
-                        thicknessScaleY.OnValueChanged.NewListener(_val =>
+                        polygonShapeEditor.AlternateField.SetTextWithoutNotify(shapeable.Polygon.Alternate.ToString());
+                        polygonShapeEditor.AlternateField.OnValueChanged.NewListener(_val =>
                         {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessScale = new Vector2(shapeable.Polygon.ThicknessScale.x, num);
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
+                            if (!float.TryParse(_val, out float num))
+                                return;
+
+                            shapeable.Polygon.Alternate = num;
+                            onUpdate?.Invoke(ObjectContext.POLYGONS);
                         });
 
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
-                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
-
-                        var thicknessRotation = shapeSettings.Find("10/thickness angle").gameObject.GetComponent<InputFieldStorage>();
-                        thicknessRotation.SetTextWithoutNotify(shapeable.Polygon.ThicknessRotation.ToString());
-                        thicknessRotation.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.ThicknessRotation = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(thicknessRotation, 15f, 3f);
-                        TriggerHelper.AddEventTriggers(thicknessRotation.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessRotation.inputField, 15f, 3f));
-
-                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
-                        slices.SetTextWithoutNotify(shapeable.Polygon.Slices.ToString());
-                        slices.OnValueChanged.NewListener(_val =>
-                        {
-                            if (int.TryParse(_val, out int num))
-                            {
-                                num = Mathf.Clamp(num, 1, 32);
-                                shapeable.Polygon.Slices = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
-                        TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
-                        
-                        var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
-                        rotation.SetTextWithoutNotify(shapeable.Polygon.Angle.ToString());
-                        rotation.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.Angle = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
-                        TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
-                        
-                        var alternate = shapeSettings.Find("10/alternate").gameObject.GetComponent<InputFieldStorage>();
-                        alternate.SetTextWithoutNotify(shapeable.Polygon.Alternate.ToString());
-                        alternate.OnValueChanged.NewListener(_val =>
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                shapeable.Polygon.Alternate = num;
-                                onUpdate?.Invoke(ObjectContext.POLYGONS);
-                            }
-                        });
-
-                        TriggerHelper.IncreaseDecreaseButtons(alternate);
-                        TriggerHelper.AddEventTriggers(alternate.inputField.gameObject, TriggerHelper.ScrollDelta(alternate.inputField));
+                        TriggerHelper.IncreaseDecreaseButtons(polygonShapeEditor.AlternateField);
+                        TriggerHelper.AddEventTriggers(polygonShapeEditor.AlternateField.inputField.gameObject, TriggerHelper.ScrollDelta(polygonShapeEditor.AlternateField.inputField));
 
                         break;
                     }
@@ -6922,7 +6962,7 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.UpdateTimeline();
             EditorManager.inst.UpdatePlayButton();
 
-            if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.Players.IsEmpty())
+            if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.inst.players.IsEmpty())
                 return;
 
             if (!EditorManager.inst.hasLoadedLevel)
@@ -6934,9 +6974,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 UpdatePlayers(false);
                 if (RTBeatmap.Current.ActiveCheckpoint)
-                    PlayerManager.SpawnPlayers(RTBeatmap.Current.ActiveCheckpoint);
+                    PlayerManager.inst.SpawnPlayers(RTBeatmap.Current.ActiveCheckpoint);
                 else
-                    PlayerManager.SpawnPlayers(EventManager.inst.cam.transform.position);
+                    PlayerManager.inst.SpawnPlayers(EventManager.inst.cam.transform.position);
             }
             catch (Exception ex)
             {
@@ -6952,14 +6992,14 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="considerChallengeMode">If challenge mode should be accounted for.</param>
         public void UpdatePlayers(bool considerChallengeMode = true)
         {
-            if (PlayerManager.NoPlayers)
+            if (PlayerManager.inst.NoPlayers)
                 return;
 
-            foreach (var player in PlayerManager.Players)
+            foreach (var player in PlayerManager.inst.players)
             {
                 if (!player.IsLocalPlayer)
                     return;
-                player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
+                player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetProperties()?.Health ?? 3;
                 if (ProjectArrhythmia.State.IsInLobby)
                     NetworkFunction.SetPlayerHealth(player.id, player.Health);
             }

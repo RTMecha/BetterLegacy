@@ -140,6 +140,7 @@ namespace BetterLegacy.Core.Data.Level
                 {
                     jn["vars"][index]["n"] = variable.Key;
                     jn["vars"][index]["v"] = variable.Value;
+                    index++;
                 }
             }
 
@@ -152,9 +153,9 @@ namespace BetterLegacy.Core.Data.Level
             LevelCollectionName = reader.ReadString();
             Completed = reader.ReadBoolean();
             PlayedTimes = reader.ReadInt32();
-            UnlockedAchievements = reader.ReadDictionary(reader.ReadString, reader.ReadBoolean);
             if (reader.ReadBoolean())
-                Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
+                UnlockedAchievements = reader.ReadDictionary(reader.ReadString, reader.ReadBoolean);
+            Variables = reader.ReadDictionary(reader.ReadString, reader.ReadString);
             var hasLastPlayed = reader.ReadBoolean();
             if (hasLastPlayed)
                 LastPlayed = new DateTime(reader.ReadInt64());
@@ -166,14 +167,15 @@ namespace BetterLegacy.Core.Data.Level
             writer.Write(LevelCollectionName);
             writer.Write(Completed);
             writer.Write(PlayedTimes);
-            writer.Write(UnlockedAchievements,
-                writeKey: writer.Write,
-                writeValue: writer.Write);
-            writer.Write(Variables != null);
-            if (Variables != null)
-                writer.Write(Variables,
+            var hasAchievements = UnlockedAchievements != null;
+            writer.Write(hasAchievements);
+            if (hasAchievements)
+                writer.Write(UnlockedAchievements,
                     writeKey: writer.Write,
                     writeValue: writer.Write);
+            writer.Write(Variables,
+                writeKey: writer.Write,
+                writeValue: writer.Write);
             var hasLastPlayed = LastPlayed.HasValue;
             writer.Write(hasLastPlayed);
             if (hasLastPlayed)

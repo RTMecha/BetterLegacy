@@ -65,7 +65,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
                             var pos = beatmapObject.GetFullPosition();
-                            var player = PlayerManager.GetClosestPlayer(pos);
+                            var player = PlayerManager.inst.GetClosestPlayer(pos);
                             RotatePlayer(player, beatmapObject.GetFullRotation(true).z);
                         });
                         break;
@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
                             var pos = beatmapObject.GetFullPosition();
-                            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player))
+                            if (PlayerManager.inst.players.TryGetAt(modifier.GetInt(0, 0, modifierLoop.variables), out PAPlayer player))
                                 RotatePlayer(player, beatmapObject.GetFullRotation(true).z);
                         });
                         break;
@@ -85,7 +85,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         RTLevel.Current.postTick.Enqueue(() =>
                         {
                             var value = beatmapObject.GetFullRotation(true).z;
-                            foreach (var player in PlayerManager.Players)
+                            foreach (var player in PlayerManager.inst.players)
                                 RotatePlayer(player, value);
                         });
                         break;

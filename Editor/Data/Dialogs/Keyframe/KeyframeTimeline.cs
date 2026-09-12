@@ -14,6 +14,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -334,6 +335,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Keyframes affect both physical object and timeline object.
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkFunction.EditBeatmapObject(beatmapObject);
         }
 
         /// <summary>
@@ -434,6 +438,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject);
             }
 
             RenderKeyframes(animatable);
@@ -544,6 +551,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject);
             }
             return pastedKeyframes;
         }
@@ -1263,15 +1272,50 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.EventTimeField.SetTextWithoutNotify(count == 1 ? firstKF.Time.ToString() : "1");
             dialog.EventTimeField.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num) && !draggingKeyframes && selected.Count() == 1)
+                if (!(float.TryParse(_val, out float num) && !draggingKeyframes && selected.Count() == 1))
+                    return;
+
+                if (num < 0f)
+                    num = 0f;
+
+                if (EditorConfig.Instance.RoundToNearest.Value)
+                    num = RTMath.RoundToNearestDecimal(num, 3);
+
+                firstKF.Time = num;
+
+                RenderKeyframes(animatable);
+
+                // Keyframe Time affects both physical object and timeline object.
+                if (animatable is BeatmapObject beatmapObject)
                 {
-                    if (num < 0f)
-                        num = 0f;
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                }
 
-                    if (EditorConfig.Instance.RoundToNearest.Value)
-                        num = RTMath.RoundToNearestDecimal(num, 3);
+                ResizeKeyframeTimeline(animatable);
+                RenderMarkers(animatable);
+            });
 
-                    firstKF.Time = num;
+            if (count == 1)
+                TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField);
+            else
+            {
+                dialog.EventTimeField.leftButton.onClick.NewListener(() =>
+                {
+                    if (!float.TryParse(dialog.EventTimeField.Text, out float result))
+                        return;
+
+                    var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
+                    result -= num;
+
+                    if (count == 1)
+                    {
+                        dialog.EventTimeField.Text = result.ToString();
+                        return;
+                    }
+
+                    foreach (var keyframe in selected)
+                        keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
 
                     RenderKeyframes(animatable);
 
@@ -1284,128 +1328,93 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ResizeKeyframeTimeline(animatable);
                     RenderMarkers(animatable);
-                }
-            });
-
-            if (count == 1)
-                TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField.inputField, t: dialog.EventTimeField.transform);
-            else
-            {
-                dialog.EventTimeField.leftButton.onClick.NewListener(() =>
-                {
-                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
-                    {
-                        var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
-                        result -= num;
-
-                        if (count == 1)
-                        {
-                            dialog.EventTimeField.inputField.text = result.ToString();
-                            return;
-                        }
-
-                        foreach (var keyframe in selected)
-                            keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
-
-                        RenderKeyframes(animatable);
-
-                        // Keyframe Time affects both physical object and timeline object.
-                        if (animatable is BeatmapObject beatmapObject)
-                        {
-                            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-
-                        ResizeKeyframeTimeline(animatable);
-                        RenderMarkers(animatable);
-                    }
                 });
                 dialog.EventTimeField.rightButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
+                    if (!float.TryParse(dialog.EventTimeField.Text, out float result))
+                        return;
+
+                    var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
+                    result += num;
+
+                    if (count == 1)
                     {
-                        var num = Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f;
-                        result += num;
-
-                        if (count == 1)
-                        {
-                            dialog.EventTimeField.inputField.text = result.ToString();
-                            return;
-                        }
-
-                        foreach (var keyframe in selected)
-                            keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
-
-                        RenderKeyframes(animatable);
-
-                        // Keyframe Time affects both physical object and timeline object.
-                        if (animatable is BeatmapObject beatmapObject)
-                        {
-                            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-
-                        ResizeKeyframeTimeline(animatable);
-                        RenderMarkers(animatable);
+                        dialog.EventTimeField.Text = result.ToString();
+                        return;
                     }
+
+                    foreach (var keyframe in selected)
+                        keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
+
+                    RenderKeyframes(animatable);
+
+                    // Keyframe Time affects both physical object and timeline object.
+                    if (animatable is BeatmapObject beatmapObject)
+                    {
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+
+                    ResizeKeyframeTimeline(animatable);
+                    RenderMarkers(animatable);
                 });
                 dialog.EventTimeField.leftGreaterButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
+                    if (!float.TryParse(dialog.EventTimeField.Text, out float result))
+                        return;
+
+                    var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
+                    result -= num;
+
+                    if (count == 1)
                     {
-                        var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
-                        result -= num;
-
-                        if (count == 1)
-                        {
-                            dialog.EventTimeField.inputField.text = result.ToString();
-                            return;
-                        }
-
-                        foreach (var keyframe in selected)
-                            keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
-
-                        RenderKeyframes(animatable);
-
-                        // Keyframe Time affects both physical object and timeline object.
-                        if (animatable is BeatmapObject beatmapObject)
-                        {
-                            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-
-                        ResizeKeyframeTimeline(animatable);
-                        RenderMarkers(animatable);
+                        dialog.EventTimeField.Text = result.ToString();
+                        return;
                     }
+
+                    foreach (var keyframe in selected)
+                        keyframe.Time = Mathf.Clamp(keyframe.Time - num, 0.001f, float.PositiveInfinity);
+
+                    RenderKeyframes(animatable);
+
+                    // Keyframe Time affects both physical object and timeline object.
+                    if (animatable is BeatmapObject beatmapObject)
+                    {
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+
+                    ResizeKeyframeTimeline(animatable);
+                    RenderMarkers(animatable);
                 });
                 dialog.EventTimeField.rightGreaterButton.onClick.NewListener(() =>
                 {
-                    if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
+                    if (!float.TryParse(dialog.EventTimeField.Text, out float result))
+                        return;
+
+                    var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
+                    result += num;
+
+                    if (count == 1)
                     {
-                        var num = (Input.GetKey(KeyCode.LeftAlt) ? 0.1f / 10f : Input.GetKey(KeyCode.LeftControl) ? 0.1f * 10f : 0.1f) * 10f;
-                        result += num;
-
-                        if (count == 1)
-                        {
-                            dialog.EventTimeField.inputField.text = result.ToString();
-                            return;
-                        }
-
-                        foreach (var keyframe in selected)
-                            keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
-
-                        RenderKeyframes(animatable);
-
-                        // Keyframe Time affects both physical object and timeline object.
-                        if (animatable is BeatmapObject beatmapObject)
-                        {
-                            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-
-                        ResizeKeyframeTimeline(animatable);
-                        RenderMarkers(animatable);
+                        dialog.EventTimeField.Text = result.ToString();
+                        return;
                     }
+
+                    foreach (var keyframe in selected)
+                        keyframe.Time = Mathf.Clamp(keyframe.Time + num, 0.001f, float.PositiveInfinity);
+
+                    RenderKeyframes(animatable);
+
+                    // Keyframe Time affects both physical object and timeline object.
+                    if (animatable is BeatmapObject beatmapObject)
+                    {
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    }
+
+                    ResizeKeyframeTimeline(animatable);
+                    RenderMarkers(animatable);
                 });
             }
 
@@ -1488,6 +1497,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         var flipX = kfdialog.Find("flipx").gameObject;
                         var flipY = kfdialog.Find("flipy").gameObject;
+                        var flipZ = kfdialog.Find("flipz").gameObject;
                         EditorContextMenu.AddContextMenu(flipX,
                             new ButtonElement("Hide Flip Buttons", () =>
                             {
@@ -1500,8 +1510,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
                                 RenderDialog(animatable);
                             }));
+                        EditorContextMenu.AddContextMenu(flipZ,
+                            new ButtonElement("Hide Flip Button", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/flip_active"] = 0f;
+                                RenderDialog(animatable);
+                            }));
                         EditorHelper.SetComplexity(flipX, "scale_keyframe/flip_x", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
                         EditorHelper.SetComplexity(flipY, "scale_keyframe/flip_y", Complexity.Normal, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f);
+                        EditorHelper.SetComplexity(flipZ, "rotation_keyframe/flip_z", Complexity.Advanced, visible: () => firstKF.eventKeyframe.values.Length > 2 && (!animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/flip_active", out float f) || f == 1f));
+
+                        var use3DToggle = (dialog.Content ? dialog.Content : dialog.GameObject.transform.AsRT()).Find("use3D").GetComponent<Toggle>();
+                        use3DToggle.interactable = !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/lock_3d_axis", out float axisLock) || axisLock != 1f;
+                        use3DToggle.SetIsOnWithoutNotify(firstKF.eventKeyframe.values.Length > 2);
+                        use3DToggle.onValueChanged.NewListener(_val =>
+                        {
+                            if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/force_3d_axis", out float forceRelative))
+                                _val = forceRelative == 1f;
+
+                            foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            {
+                                var values = firstKF.eventKeyframe.values;
+                                if (_val)
+                                    firstKF.eventKeyframe.SetValues(values[0], values[1], values.Length > 2 ? values[2] : 1f);
+                                else
+                                    firstKF.eventKeyframe.SetValues(values[0], values[1]);
+                            }
+
+                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                            if (beatmapObject)
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+
+                            RenderDialog(animatable);
+                        });
+
+                        EditorHelper.SetComplexity(use3DToggle.gameObject, "rotation_keyframe/use_3d", Complexity.Advanced, visible: () => !animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/3d_axis_active", out float use3DActive) || use3DActive == 1f);
+                        EditorContextMenu.AddContextMenu(use3DToggle.gameObject,
+                            new ButtonElement("Hide 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/3d_axis_active"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement(dialog.RelativeToggle.Interactable ? "Lock 3D Axis Toggle" : "Unlock 3D Axis Toggle", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/lock_3d_axis"] = use3DToggle.interactable ? 1f : 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis On", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 1f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Force 3D Axis Off", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues[IntToType(type) + "/force_3d_axis"] = 0f;
+                                RenderDialog(animatable);
+                            }),
+                            new ButtonElement("Don't Force 3D Axis", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }, shouldGenerate: () => animatable.EditorData.miscDisplayValues.ContainsKey(IntToType(type) + "/force_3d_axis")),
+                            new SpacerElement(),
+                            new ButtonElement("Remove 3D Axis Settings", () =>
+                            {
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/3d_axis_active");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/lock_3d_axis");
+                                animatable.EditorData.miscDisplayValues.Remove(IntToType(type) + "/force_3d_axis");
+                                RenderDialog(animatable);
+                            }));
 
                         break;
                     }
@@ -1841,51 +1918,51 @@ namespace BetterLegacy.Editor.Data.Dialogs
             inputFieldStorage.SetTextWithoutNotify(selected.Count() == 1 ? firstKF.eventKeyframe.randomValues[valueIndex].ToString() : type == 2 ? "15" : "1");
             inputFieldStorage.OnValueChanged.NewListener(_val =>
             {
-                if (float.TryParse(_val, out float num) && selected.Count() == 1)
-                {
-                    firstKF.eventKeyframe.randomValues[valueIndex] = num;
+                if (!(float.TryParse(_val, out float num) && selected.Count() == 1))
+                    return;
 
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                }
+                firstKF.eventKeyframe.randomValues[valueIndex] = num;
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
 
             inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float x))
+                if (!float.TryParse(inputFieldStorage.inputField.text, out float x))
+                    return;
+
+                if (selected.Count() == 1)
                 {
-                    if (selected.Count() == 1)
-                    {
-                        inputFieldStorage.inputField.text = (x - (type == 2 ? 15f : 1f)).ToString();
-                        return;
-                    }
-
-                    foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.randomValues[valueIndex] -= x;
-
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    inputFieldStorage.Text = (x - (type == 2 ? 15f : 1f)).ToString();
+                    return;
                 }
+
+                foreach (var keyframe in selected)
+                    keyframe.eventKeyframe.randomValues[valueIndex] -= x;
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
             inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
-                if (float.TryParse(inputFieldStorage.inputField.text, out float x))
+                if (!float.TryParse(inputFieldStorage.Text, out float x))
+                    return;
+
+                if (selected.Count() == 1)
                 {
-                    if (selected.Count() == 1)
-                    {
-                        inputFieldStorage.inputField.text = (x + (type == 2 ? 15f : 1f)).ToString();
-                        return;
-                    }
-
-                    foreach (var keyframe in selected)
-                        keyframe.eventKeyframe.randomValues[valueIndex] += x;
-
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    inputFieldStorage.Text = (x + (type == 2 ? 15f : 1f)).ToString();
+                    return;
                 }
+
+                foreach (var keyframe in selected)
+                    keyframe.eventKeyframe.randomValues[valueIndex] += x;
+
+                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
 
             if (type != 2)

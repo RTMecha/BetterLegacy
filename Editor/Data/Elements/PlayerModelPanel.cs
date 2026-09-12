@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
@@ -19,7 +21,13 @@ namespace BetterLegacy.Editor.Data.Elements
 {
     public class PlayerModelPanel : EditorPanel<PlayerModel>, ISelectable
     {
+        #region Constructors
+
         public PlayerModelPanel(int index) : base() => this.index = index;
+
+        public PlayerModelPanel(ObjectSource source, int index) : this(index) => this.Source = source;
+
+        #endregion
 
         #region Values
 
@@ -35,11 +43,23 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public DeleteButtonStorage DeleteButton { get; set; }
 
+        public Action<PointerEventData> onClick;
+
         #endregion
 
         #region Data
 
-        public override string DisplayName => Item.basePart.name;
+        public override string DisplayName => Item.Name;
+
+        /// <summary>
+        /// What dialog this player model panel is located in.
+        /// </summary>
+        public ObjectSource Source { get; set; }
+
+        /// <summary>
+        /// If the player model panel is external.
+        /// </summary>
+        public bool IsExternal => Source == ObjectSource.External;
 
         public override float FocusSize => EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
@@ -48,14 +68,6 @@ namespace BetterLegacy.Editor.Data.Elements
         #endregion
 
         #region Asset Pack
-
-        public static RectValues baseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
-
-        public static RectValues labelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
-
-        public static RectValues iconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
-
-        public static RectValues deleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
 
         //public static string labelFormat = "{0}";
 
@@ -67,7 +79,45 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public static int labelFontSize = 20;
 
-        public Action<PointerEventData> onClick;
+        #region Internal
+
+        public static RectValues internalBaseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
+        public static RectValues internalIconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
+
+        public static RectValues internalNameLabelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
+
+        public static TextAnchor internalNameLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode internalNameLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode internalNameLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int internalNameLabelFontSize = 20;
+
+        public static RectValues internalDeleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
+
+        #endregion
+
+        #region External
+
+        public static RectValues externalBaseRect = new RectValues(Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), RectValues.CenterPivot, new Vector2(584f, 32f));
+
+        public static RectValues externalIconRect = RectValues.Default.AnchoredPosition(-276f, 0f).SizeDelta(26f, 26f);
+
+        public static RectValues externalNameLabelRect = RectValues.FullAnchored.AnchoredPosition(32f, 0f).SizeDelta(-12f, -8f);
+
+        public static TextAnchor externalNameLabelAlignment = TextAnchor.MiddleLeft;
+
+        public static HorizontalWrapMode externalNameLabelHorizontalWrap = HorizontalWrapMode.Overflow;
+
+        public static VerticalWrapMode externalNameLabelVerticalWrap = VerticalWrapMode.Overflow;
+
+        public static int externalNameLabelFontSize = 20;
+
+        public static RectValues externalDeleteRect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f));
+
+        #endregion
 
         #endregion
 
@@ -78,15 +128,15 @@ namespace BetterLegacy.Editor.Data.Elements
         public override void Init(PlayerModel item)
         {
             Item = item;
-            //Path = item.path;
+            Path = item.path;
             item.editorPanel = this;
 
             var gameObject = GameObject;
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(PlayerEditor.inst.ModelsPopup.Content, $"Folder [{Name}]");
-            baseRect.AssignToRectTransform(gameObject.transform.AsRT());
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(PlayerEditor.inst.ModelsPopup.GetPopup(Source).Content, $"Folder [{Name}]");
+            (IsExternal ? externalBaseRect : internalBaseRect).AssignToRectTransform(gameObject.transform.AsRT());
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -98,7 +148,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
             Label = folderButtonStorage.label;
             Label.enabled = true;
-            labelRect.AssignToRectTransform(Label.rectTransform);
+            (IsExternal ? externalNameLabelRect : internalNameLabelRect).AssignToRectTransform(Label.rectTransform);
             folderButtonStorage.OnClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -107,7 +157,7 @@ namespace BetterLegacy.Editor.Data.Elements
             var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
             var iconBaseImage = iconBase.AddComponent<Image>();
             iconBase.AddComponent<Mask>().showMaskGraphic = false;
-            iconRect.AssignToRectTransform(iconBaseImage.rectTransform);
+            (IsExternal ? externalIconRect : internalIconRect).AssignToRectTransform(iconBaseImage.rectTransform);
             EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("icon", iconBase.transform);
@@ -122,10 +172,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
             //RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
 
-            if (index >= 5)
+            if (!Item.IsDefault)
             {
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
-                deleteRect.AssignToRectTransform(delete.transform.AsRT());
+                (IsExternal ? externalDeleteRect : internalDeleteRect).AssignToRectTransform(delete.transform.AsRT());
                 DeleteButton = delete.GetComponent<DeleteButtonStorage>();
                 EditorThemeManager.ApplyDeleteButton(DeleteButton);
             }
@@ -167,72 +217,108 @@ namespace BetterLegacy.Editor.Data.Elements
         public override void RenderLabel(string text)
         {
             Label.text = text;
-
             Label.alignment = labelAlignment;
             Label.horizontalOverflow = labelHorizontalWrap;
             Label.verticalOverflow = labelVerticalWrap;
             Label.fontSize = labelFontSize;
         }
 
-        public void UpdateFunction()
+        public void UpdateFunction() => Button.onClick = OnClick;
+
+        public override void OnClick(PointerEventData pointerEventData)
         {
             if (isFolder)
             {
-                return;
-            }
+                var path = Path;
+                if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
+                {
+                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
 
-            Button.onClick = pointerEventData =>
-            {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonElement("Open & Use", () =>
+                    EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetFolderPanelFunctions(this, RenderIcon,
+                        onOpenFolder: () =>
                         {
-                            PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.basePart.id);
-                            PlayerManager.RespawnPlayers();
-                            PlayerEditor.inst.RenderDialog();
-                        }),
-                        new ButtonElement("Set to Global", () => PlayerManager.PlayerIndexes[PlayerEditor.inst.playerIndex].Value = Item.basePart.id),
-                        new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
-                        new ButtonElement("Save", PlayerEditor.inst.Save),
-                        new ButtonElement("Reload", PlayerEditor.inst.Reload),
-                        new SpacerElement(),
-                        new ButtonElement("Duplicate", () =>
-                        {
-                            var dup = PlayersData.Current.DuplicatePlayerModel(Item.basePart.id);
-                            PlayersData.externalPlayerModels[dup.basePart.id] = dup;
-                            if (dup)
-                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, dup.basePart.id);
-                        }),
-                        new ButtonElement("Delete", () =>
-                        {
-                            if (index < 5)
-                            {
-                                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                            {
-                                PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
-                                PlayersData.externalPlayerModels.Remove(Item.basePart.id);
-                                PlayersData.Current.playerModels.Remove(Item.basePart.id);
-                                PlayerManager.RespawnPlayers();
-                                PlayerEditor.inst.RenderDialog();
-                                PlayerEditor.inst.RenderModelsPopup(PlayerEditor.inst.onSelectModel);
-                            });
-                        }));
+                            PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                            PlayerEditor.inst.Reload();
+                        },
+                        onFolderUpdate: () => PlayerEditor.inst.Reload(),
+                        paste: PlayerEditor.inst.PastePlayerModel));
                     return;
                 }
 
-                if (onClick != null)
-                {
-                    onClick.Invoke(pointerEventData);
-                    return;
-                }
+                PlayerEditor.inst.ModelsPopup.External.PathField.text = path.Remove(RTEditor.inst.BeatmapsPath + "/");
+                PlayerEditor.inst.Reload();
+                return;
+            }
+            
+            switch (Source)
+            {
+                case ObjectSource.Internal: {
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Open & Use", () =>
+                                {
+                                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, Item.ID);
+                                    PlayerManager.inst.RespawnPlayers();
+                                    PlayerEditor.inst.RenderDialog();
+                                }),
+                                new ButtonElement("Export", () => PlayerEditor.inst.ExportPlayerModel(Item)),
+                                new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                                new ButtonElement("Save", PlayerEditor.inst.Save),
+                                new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                                new SpacerElement(),
+                                new ButtonElement("Duplicate", () =>
+                                {
+                                    var model = Item.Copy();
+                                    model.Name += " Clone";
+                                    model.ID = LSText.randomNumString(16);
 
-                PlayerEditor.inst.SetCurrentModel(Item);
-            };
+                                    PlayersData.Current.OverwritePlayerModel(model);
+                                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, model.ID);
+                                }),
+                                new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
+                            return;
+                        }
+
+                        if (onClick != null)
+                        {
+                            onClick.Invoke(pointerEventData);
+                            return;
+                        }
+
+                        PlayerEditor.inst.SetCurrentModel(Item);
+                        break;
+                    }
+                case ObjectSource.External: {
+                        if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        {
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonElement("Import", () => PlayerEditor.inst.ImportPlayerModel(Item)),
+                                new ButtonElement("Set to Global", () => PlayerManager.inst.SetCustomModel(PlayerEditor.inst.playerIndex, Item.ID)),
+                                //new ButtonElement("Create New", PlayerEditor.inst.CreateNewModel),
+                                new ButtonElement("Save", PlayerEditor.inst.Save),
+                                new ButtonElement("Reload", PlayerEditor.inst.Reload),
+                                new SpacerElement(),
+                                new ButtonElement("Duplicate", () =>
+                                {
+                                    var model = Item.Copy();
+                                    model.Name += " Clone";
+                                    model.ID = LSText.randomNumString(16);
+
+                                    PlayersData.OverwriteExternalPlayerModel(model);
+                                }),
+                                new ButtonElement("Delete", () => PlayerEditor.inst.DeletePlayerModel(this)));
+                            return;
+                        }
+
+                        PlayerEditor.inst.ImportPlayerModel(Item);
+                        break;
+                    }
+            }
         }
 
         /// <summary>
@@ -241,15 +327,7 @@ namespace BetterLegacy.Editor.Data.Elements
         public void UpdateDeleteFunction()
         {
             if (DeleteButton)
-                DeleteButton.OnClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
-                {
-                    PlayersData.Current.SetPlayerModel(PlayerEditor.inst.playerIndex, PlayerModel.DEFAULT_ID);
-                    PlayersData.externalPlayerModels.Remove(Item.basePart.id);
-                    PlayersData.Current.playerModels.Remove(Item.basePart.id);
-                    PlayerManager.RespawnPlayers();
-                    PlayerEditor.inst.RenderDialog();
-                    PlayerEditor.inst.RenderModelsPopup(PlayerEditor.inst.onSelectModel);
-                }));
+                DeleteButton.OnClick.NewListener(() => PlayerEditor.inst.DeletePlayerModel(this));
         }
 
         public override string ToString() => isFolder ? Name : Item?.ToString();

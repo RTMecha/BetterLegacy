@@ -122,6 +122,7 @@ namespace BetterLegacy.Companion.Data
             new SetSceneCommand(),
             new PlayerCommand(),
             new LoadLevelCommand(),
+            new TickCommand(),
             new HideInterfaceCommand(),
             new ShowPlayerGUICommand(),
             new HideTimelineCommand(),
@@ -133,6 +134,7 @@ namespace BetterLegacy.Companion.Data
             new CreateCommand(),
             new SelectCommand(),
 
+            new ReinitRuntimeCommand(),
             new SetRuntimeVariable(),
             new RemoveRuntimeVariable(),
             new ClearRuntimeVariables(),
@@ -504,7 +506,7 @@ namespace BetterLegacy.Companion.Data
                 public override void Run(string[] parameters)
                 {
                     var pos = new Vector2(Parser.TryParse(parameters[0], 0f), Parser.TryParse(parameters[1], 0f));
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                     {
                         if (player.RuntimePlayer && player.RuntimePlayer.rb)
                             player.RuntimePlayer.rb.position = pos;
@@ -520,7 +522,7 @@ namespace BetterLegacy.Companion.Data
 
                 public override void Run(string[] parameters)
                 {
-                    foreach (var player in PlayerManager.Players)
+                    foreach (var player in PlayerManager.inst.players)
                         player.RuntimePlayer?.Boost();
                 }
             }
@@ -722,6 +724,132 @@ namespace BetterLegacy.Companion.Data
                 {
                     storySelection.skipCutscenes = true;
                     return storySelection;
+                }
+            }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Represents a command capable of modifying the runtime tick.
+        /// </summary>
+        public class TickCommand : ExampleCommand
+        {
+            #region Values
+
+            public override string Name => "tick";
+
+            public override bool Usable => ProjectArrhythmia.State.InEditor && !ProjectArrhythmia.State.IsInLobby;
+
+            public override string Pattern => "tick [function]";
+
+            public override string AddToAutocomplete => "tick ";
+
+            public override string Description => "Performs specific actions related to the runtime per-tick functions. Useful for debugging. Only works in the editor and without being in an online lobby.";
+
+            public List<TickActionParameter> parameters = new List<TickActionParameter>
+            {
+                new FreezeParameter(),
+                new UnfreezeParameter(),
+                new TickStepParameter(),
+                new TickWaitParameter(),
+                new TickLog(),
+            };
+
+            #endregion
+
+            #region Functions
+
+            public override void ConsumeInput(string input, string[] split)
+            {
+                var function = split[1];
+                if (!parameters.TryFind(x => x.Name == function, out TickActionParameter parameter))
+                    return;
+                var index = 1;
+                parameter.ConsumeInput(parameter.GetParameters(split, ref index));
+            }
+
+            public override IEnumerable<ParameterBase> GetParameters()
+            {
+                foreach (var parameter in parameters)
+                    yield return parameter;
+            }
+
+            #endregion
+
+            #region Sub Classes
+
+            public abstract class TickActionParameter : ParameterBase
+            {
+                public abstract void ConsumeInput(string[] parameters);
+            }
+
+            public class FreezeParameter : TickActionParameter
+            {
+                public override string Name => "freeze";
+
+                public override string Description => "Freezes the runtime ticking.";
+
+                public override void ConsumeInput(string[] parameters) => RTLevel.TickFreeze = true;
+            }
+
+            public class UnfreezeParameter : TickActionParameter
+            {
+                public override string Name => "unfreeze";
+
+                public override string Description => "Unfreezes the runtime ticking.";
+
+                public override void ConsumeInput(string[] parameters) => RTLevel.TickFreeze = false;
+            }
+
+            public class TickStepParameter : TickActionParameter
+            {
+                public override string Name => "step";
+
+                public override int ParameterCount => 1;
+
+                public override string AddToAutocomplete => "step 1";
+
+                public override string Description => "Steps a set amount of ticks.";
+
+                public override void ConsumeInput(string[] parameters)
+                {
+                    if (RTLevel.Current)
+                        RTLevel.Current.TickStepCount = RTMath.Clamp(Parser.TryParse(parameters[0], 1), 0, int.MaxValue);
+                }
+            }
+
+            public class TickWaitParameter : TickActionParameter
+            {
+                public override string Name => "wait";
+
+                public override int ParameterCount => 1;
+
+                public override string AddToAutocomplete => "wait 10";
+
+                public override string Description => "How many ticks occur between each actual tick.";
+
+                public override void ConsumeInput(string[] parameters)
+                {
+                    if (RTLevel.Current)
+                        RTLevel.Current.TickWaitCount = RTMath.Clamp(Parser.TryParse(parameters[0], 10), 0, int.MaxValue);
+                }
+            }
+
+            public class TickLog : TickActionParameter
+            {
+                public override string Name => "log";
+
+                public override int ParameterCount => 1;
+
+                public override string AddToAutocomplete => "log true";
+
+                public override string Description => "Enables / disables the logging of each tick. Be warned turning this on with the tick unfrozen will spam the console.";
+
+                public override void ConsumeInput(string[] parameters)
+                {
+                    if (RTLevel.Current)
+                        RTLevel.Current.LogTick = Parser.TryParse(parameters[0], true);
                 }
             }
 
@@ -2643,6 +2771,8 @@ namespace BetterLegacy.Companion.Data
 
             public override string Pattern => "create category [values]";
 
+            public override string AddToAutocomplete => "create ";
+
             public override string Description => "Creates an object. Only available in the editor.";
 
             #endregion
@@ -2749,6 +2879,8 @@ namespace BetterLegacy.Companion.Data
             public override bool Usable => ProjectArrhythmia.State.InEditor;
 
             public override string Pattern => "select type [predicates]";
+
+            public override string AddToAutocomplete => "select ";
 
             public override string Description => "Provides selecting of many different types of objects. Only available in the editor.";
 
@@ -3255,7 +3387,7 @@ namespace BetterLegacy.Companion.Data
                 if (selectable is ThemePanel themePanel)
                     return themePanel.isFolder ? themePanel.Name : themePanel.Item.name;
                 if (selectable is PlayerModelPanel playerModelPanel)
-                    return playerModelPanel.isFolder ? playerModelPanel.Name : playerModelPanel.Item.basePart.name;
+                    return playerModelPanel.isFolder ? playerModelPanel.Name : playerModelPanel.Item.Name;
                 if (selectable is FolderPlanner folderPlanner)
                     return folderPlanner.Name;
                 if (selectable is DocumentPlanner documentPlanner)
@@ -3322,7 +3454,7 @@ namespace BetterLegacy.Companion.Data
                 }
                 if (selectable is PlayerModelPanel playerModelPanel && playerModelPanel.Item)
                 {
-                    playerModelPanel.Item.basePart.name = name;
+                    playerModelPanel.Item.Name = name;
                     playerModelPanel.Render();
                     return;
                 }
@@ -3380,7 +3512,7 @@ namespace BetterLegacy.Companion.Data
                 if (selectable is PrefabPanel prefabPanel)
                     return prefabPanel.Item?.description;
                 if (selectable is PlayerModelPanel playerModelPanel)
-                    return playerModelPanel.Item?.basePart?.name;
+                    return playerModelPanel.Item?.basePart?.description;
                 if (selectable is DocumentPlanner documentPlanner)
                     return documentPlanner.Text;
                 if (selectable is CharacterPlanner characterPlanner)
@@ -5767,13 +5899,27 @@ namespace BetterLegacy.Companion.Data
         }
 
         /// <summary>
+        /// Restarts the level runtime.
+        /// </summary>
+        public class ReinitRuntimeCommand : ExampleCommand
+        {
+            public override string Name => "reinit_runtime";
+
+            public override bool Usable => ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel;
+
+            public override string Description => "Restarts the level runtime.";
+
+            public override void ConsumeInput(string input, string[] split) => RTLevel.Reinit();
+        }
+
+        /// <summary>
         /// Sets a global runtime variable.
         /// </summary>
         public class SetRuntimeVariable : ExampleCommand
         {
             public override string Name => "set_runtime_variable";
 
-            public override bool Usable => ProjectArrhythmia.State.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel;
 
             public override string Pattern => "set_runtime_variable \"var_name\" \"10\"";
 
@@ -5796,7 +5942,7 @@ namespace BetterLegacy.Companion.Data
         {
             public override string Name => "remove_runtime_variable";
 
-            public override bool Usable => ProjectArrhythmia.State.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel;
 
             public override string Pattern => "remove_runtime_variable \"var_name\"";
 
@@ -5818,7 +5964,7 @@ namespace BetterLegacy.Companion.Data
         {
             public override string Name => "clear_runtime_variables";
 
-            public override bool Usable => ProjectArrhythmia.State.InEditor;
+            public override bool Usable => ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel;
 
             public override string Pattern => "clear_runtime_variables";
 

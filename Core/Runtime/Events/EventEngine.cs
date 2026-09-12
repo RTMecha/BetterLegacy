@@ -15,8 +15,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 
-using Ease = BetterLegacy.Core.Animation.Ease;
-
 namespace BetterLegacy.Core.Runtime.Events
 {
     /// <summary>
@@ -986,7 +984,7 @@ namespace BetterLegacy.Core.Runtime.Events
 
             if (!playersCanMove)
             {
-                foreach (var customPlayer in PlayerManager.Players)
+                foreach (var customPlayer in PlayerManager.inst.players)
                 {
                     if (customPlayer.RuntimePlayer && customPlayer.RuntimePlayer.rb)
                     {
