@@ -72,8 +72,8 @@
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>..\lib\Unity.Postprocessing.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression">
-      <HintPath>..\lib\System.IO.Compression.dll</HintPath>
+    <Reference Include="System.IO.Compression-publicized">
+      <HintPath>..\lib\System.IO.Compression-publicized.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro-publicized">
       <HintPath>..\lib\Unity.TextMeshPro-publicized.dll</HintPath>
