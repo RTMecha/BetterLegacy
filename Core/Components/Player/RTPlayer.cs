@@ -2814,8 +2814,12 @@ namespace BetterLegacy.Core.Components.Player
 
         void InitBeforeBoost()
         {
-            if (RTBeatmap.Current && rb)
-                RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position));
+            if (RTBeatmap.Current)
+            {
+                RTBeatmap.Current.playerBoosted = true;
+                if (rb)
+                    RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position));
+            }
             CanBoost = false;
             isBoosting = true;
             CanTakeDamage = false;

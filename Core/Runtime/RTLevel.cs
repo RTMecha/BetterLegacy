@@ -387,6 +387,7 @@ namespace BetterLegacy.Core.Runtime
                 RTBeatmap.Current.playerMoved = false;
                 RTBeatmap.Current.playerHit = false;
                 RTBeatmap.Current.playerDied = false;
+                RTBeatmap.Current.playerBoosted = false;
                 RTBeatmap.Current.playerJumped = false;
                 RTBeatmap.Current.LevelStarted = false;
             }
