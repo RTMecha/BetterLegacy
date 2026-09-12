@@ -22,6 +22,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -1654,6 +1655,9 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
         }
 
         /// <summary>
@@ -3239,6 +3243,9 @@ namespace BetterLegacy.Editor.Managers
             RefreshInternalPrefabs();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(newPrefab));
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.IMPORT_PREFAB, newPrefab);
 
             return newPrefab;
         }

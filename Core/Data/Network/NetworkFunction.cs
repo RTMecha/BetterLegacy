@@ -208,6 +208,12 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int CLEAR_TAGS = 34523467;
 
+        public const int EXPAND_PREFAB = 16213678;
+
+        public const int ADD_PREFAB_OBJECT = 46432637;
+
+        public const int IMPORT_PREFAB = 7456437;
+
         #endregion
 
         #endregion

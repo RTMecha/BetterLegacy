@@ -20,6 +20,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
@@ -715,6 +716,38 @@ namespace BetterLegacy.Core.Managers
                             break;
                         }
                 }
+            }),
+            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 2, reader =>
+            {
+                var expander = Packet.CreateFromPacket<PrefabExpander>(reader);
+                var expanded = Packet.CreateFromPacket<PrefabExpander.Expanded>(reader);
+                expanded.Apply(expander.prefab, expander.prefabObject, expander.regen);
+            }),
+            new NetworkFunction(NetworkFunction.ADD_PREFAB_OBJECT, 1, reader =>
+            {
+                var prefabObject = Packet.CreateFromPacket<PrefabObject>(reader);
+                var prefab = prefabObject.GetPrefab();
+
+                for (int i = 0; i < prefab.beatmapThemes.Count; i++)
+                    GameData.Current.AddTheme(prefab.beatmapThemes[i]); // only add, don't overwrite
+                if (!prefab.beatmapThemes.IsEmpty())
+                    RTThemeEditor.inst.LoadInternalThemes();
+
+                GameData.Current.prefabObjects.Add(prefabObject);
+
+                RTLevel.Current?.UpdatePrefab(prefabObject);
+                RTLevel.Current?.RecalculateObjectStates();
+
+                RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, false);
+
+                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+                EditorTimeline.inst.UpdateTransformIndex();
+            }),
+            new NetworkFunction(NetworkFunction.IMPORT_PREFAB, 1, reader =>
+            {
+                var prefab = Packet.CreateFromPacket<Prefab>(reader);
+                GameData.Current.prefabs.Add(prefab);
+                RTPrefabEditor.inst.RefreshInternalPrefabs();
             }),
         };
 

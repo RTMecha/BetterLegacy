@@ -10,6 +10,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
@@ -200,6 +201,12 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public IEnumerator IExpand(Action<Expanded> result = null)
         {
+            if (!ProjectArrhythmia.State.InEditor)
+            {
+                CoreHelper.LogError($"Not in editor!");
+                yield break;
+            }
+            
             if (!prefab)
             {
                 CoreHelper.LogError($"Prefab is null!");
@@ -210,20 +217,17 @@ namespace BetterLegacy.Editor.Data
 
             float audioTime = AudioManager.inst.CurrentAudioSource.time;
 
-            if (ProjectArrhythmia.State.InEditor)
-            {
-                if (EditorConfig.Instance.BPMSnapsPasted.Value && RTEditor.inst.editorInfo.bpmSnapActive)
-                    audioTime = RTEditor.SnapToBPM(audioTime);
+            if (EditorConfig.Instance.BPMSnapsPasted.Value && RTEditor.inst.editorInfo.bpmSnapActive)
+                audioTime = RTEditor.SnapToBPM(audioTime);
 
-                if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+                EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
 
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
-                    ObjectEditor.inst.Dialog.Timeline.ClearKeyframes();
+            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
+                ObjectEditor.inst.Dialog.Timeline.ClearKeyframes();
 
-                if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
-                    EditorManager.inst.ClearPopups();
-            }
+            if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
+                EditorManager.inst.ClearPopups();
 
             var expanded = new Expanded()
             {
@@ -450,13 +454,6 @@ namespace BetterLegacy.Editor.Data
 
             CoreHelper.StopAndLogStopwatch(sw);
 
-            if (!ProjectArrhythmia.State.InEditor)
-            {
-                sw = null;
-                result?.Invoke(expanded);
-                yield break;
-            }
-
             if (prefabObject)
                 EditorManager.inst.DisplayNotification($"Expanded Prefab Object {prefab.name} in {elapsed}!.", 2f, EditorManager.NotificationType.Success);
             else
@@ -478,6 +475,7 @@ namespace BetterLegacy.Editor.Data
             if (!select)
             {
                 result?.Invoke(expanded);
+                Submit(expanded);
                 yield break;
             }
 
@@ -490,7 +488,14 @@ namespace BetterLegacy.Editor.Data
             else if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
                 RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
             result?.Invoke(expanded);
+            Submit(expanded);
             yield break;
+        }
+
+        void Submit(Expanded expanded)
+        {
+            if (ProjectArrhythmia.State.IsInLobby)
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.EXPAND_PREFAB, this, expanded);
         }
 
         #endregion
@@ -504,7 +509,8 @@ namespace BetterLegacy.Editor.Data
             {
                 BeatmapObjects = Packet.CreatePacketList<BeatmapObject>(reader);
                 PrefabObjects = Packet.CreatePacketList<PrefabObject>(reader);
-                Prefabs = Packet.CreatePacketList<Prefab>(reader);
+                if (reader.ReadBoolean())
+                    Prefabs = Packet.CreatePacketList<Prefab>(reader);
                 BackgroundObjects = Packet.CreatePacketList<BackgroundObject>(reader);
                 BackgroundLayers = Packet.CreatePacketList<BackgroundLayer>(reader);
                 BeatmapThemes = Packet.CreatePacketList<BeatmapTheme>(reader);
@@ -514,7 +520,9 @@ namespace BetterLegacy.Editor.Data
             {
                 Packet.WritePacketList(BeatmapObjects, writer);
                 Packet.WritePacketList(PrefabObjects, writer);
-                Packet.WritePacketList(Prefabs, writer);
+                writer.Write(Prefabs != null);
+                if (Prefabs != null)
+                    Packet.WritePacketList(Prefabs, writer);
                 Packet.WritePacketList(BackgroundObjects, writer);
                 Packet.WritePacketList(BackgroundLayers, writer);
                 Packet.WritePacketList(BeatmapThemes, writer);
@@ -533,6 +541,103 @@ namespace BetterLegacy.Editor.Data
             public List<BackgroundLayer> BackgroundLayers { get; set; }
 
             public List<BeatmapTheme> BeatmapThemes { get; set; }
+
+            public void Apply(Prefab prefab, PrefabObject prefabObject, bool regen)
+            {
+                var unparentedPastedObjects = new List<BeatmapObject>();
+
+                for (int i = 0; i < BeatmapObjects.Count; i++)
+                {
+                    var beatmapObject = BeatmapObjects[i];
+
+                    if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
+                        GameData.Current.assets.sprites.OverwriteAdd((sprite, index) => sprite.name == spriteAsset.name, spriteAsset.Copy());
+
+                    GameData.Current.beatmapObjects.Add(beatmapObject);
+
+                    if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObject.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
+                        unparentedPastedObjects.Add(beatmapObject);
+
+                    if (ProjectArrhythmia.State.InEditor)
+                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(beatmapObject));
+                }
+
+                var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : BeatmapObjects;
+                for (int i = 0; i < list.Count; i++)
+                    RTLevel.Current?.UpdateObject(list[i], recalculate: false);
+
+                unparentedPastedObjects.Clear();
+                unparentedPastedObjects = null;
+
+
+                for (int i = 0; i < prefab.backgroundLayers.Count; i++)
+                    GameData.Current.backgroundLayers.Add(prefab.backgroundLayers[i]);
+
+                for (int i = 0; i < prefab.backgroundObjects.Count; i++)
+                {
+                    var backgroundObject = prefab.backgroundObjects[i];
+
+                    if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset))
+                        GameData.Current.assets.sprites.OverwriteAdd((sprite, index) => sprite.name == spriteAsset.name, spriteAsset.Copy());
+
+                    GameData.Current.backgroundObjects.Add(backgroundObject);
+
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+
+                    if (ProjectArrhythmia.State.InEditor)
+                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(backgroundObject));
+                }
+
+                if (Prefabs != null)
+                {
+                    for (int i = 0; i < Prefabs.Count; i++)
+                    {
+                        var subPrefab = Prefabs[i];
+                        if (!subPrefab)
+                            continue;
+
+                        var prefabCopy = subPrefab.Copy(false);
+                        if (GameData.Current.prefabs.Has(x => x.id == prefabCopy.id))
+                            continue;
+
+                        GameData.Current.prefabs.Add(prefabCopy);
+
+                        if (ProjectArrhythmia.State.InEditor && i == Prefabs.Count - 1 && RTPrefabEditor.inst.Popups.IsOpen)
+                            RTPrefabEditor.inst.RefreshInternalPrefabs();
+                    }
+                }
+
+                var ids = new List<string>();
+                for (int i = 0; i < prefab.prefabObjects.Count; i++)
+                    ids.Add(LSText.randomString(16));
+
+                for (int i = 0; i < prefab.prefabObjects.Count; i++)
+                {
+                    var subPrefabObject = prefab.prefabObjects[i];
+
+                    if (!GameData.Current.prefabs.Has(x => x.id == subPrefabObject.prefabID))
+                        continue;
+
+                    GameData.Current.prefabObjects.Add(subPrefabObject);
+
+                    RTLevel.Current?.UpdatePrefab(subPrefabObject, recalculate: false);
+
+                    if (ProjectArrhythmia.State.InEditor)
+                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(subPrefabObject));
+                }
+
+                for (int i = 0; i < prefab.assets.sprites.Count; i++)
+                {
+                    var spriteAsset = prefab.assets.sprites[i];
+                    GameData.Current.assets.sprites.OverwriteAdd((orig, index) => orig.name == spriteAsset.name, spriteAsset.Copy());
+                }
+
+                RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, regen);
+
+                RTLevel.Current?.RecalculateObjectStates();
+
+                EditorTimeline.inst.UpdateTransformIndex();
+            }
         }
     }
 }
