@@ -2,7 +2,7 @@
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
-    public class GetObjectVariable : ModifierActionBase
+    public class GetObjectVariable : ModifierVariableBase
     {
         #region Constructors
 
@@ -32,14 +32,15 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         #region Functions
 
-        public override void Run(Modifier modifier, ModifierLoop modifierLoop)
-        {
-            if (TryGetModifierReference(modifier, modifierLoop, isGroup, 1, out IModifierReference reference))
-                modifierLoop.variables[FormatStringVariables(modifier.GetValue(0), modifierLoop.variables)] = reference.IntVariable.ToString();
-        }
+        public override string GetValue(Modifier modifier, ModifierLoop modifierLoop) => TryGetModifierReference(modifier, modifierLoop, isGroup, 1, out IModifierReference reference) ? reference.IntVariable.ToString() : null;
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
+            if (isGroup)
+            {
+                modifierCard.PrefabGroupOnly(modifier, reference);
+                modifierCard.GroupFieldGenerator(modifier, reference, "Object Group", 1);
+            }
             modifierCard.StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
         }
 
