@@ -15,14 +15,14 @@
   </PropertyGroup>
 
   <!-- Post-build event for Debug configuration -->
-  <Target Name="PostBuildEventDebug" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+  <Target Name="PostBuildEventDebug" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug' And Exists('$(PluginGamePath)')">
     <Message Text="Debug post-build event running..." Importance="high" />
     <Exec Command="echo F|xcopy /Y /S &quot;$(MSBuildProjectDirectory)\Assets&quot; &quot;$(PluginGamePath)Assets&quot;" />
     <Exec Command="echo F|xcopy /Y &quot;$(MSBuildProjectDirectory)\$(OutDir)$(AssemblyName).dll&quot; &quot;$(PluginGamePath)$(AssemblyName).dll&quot;" />
   </Target>
 
   <!-- Post-build event for Release configuration -->
-  <Target Name="PostBuildEventRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="PostBuildEventRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release' And Exists('$(PluginGamePath)')">
     <Message Text="Release post-build event running..." Importance="high" />
     <Exec Command="echo F|xcopy /Y /S &quot;$(MSBuildProjectDirectory)\Assets&quot; &quot;$(PluginGamePath)Assets&quot;" />
     <Exec Command="echo F|xcopy /Y &quot;$(MSBuildProjectDirectory)\$(OutDir)$(AssemblyName).dll&quot; &quot;$(PluginGamePath)$(AssemblyName).dll&quot;" />
