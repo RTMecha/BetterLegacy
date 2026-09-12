@@ -161,7 +161,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             if (!isCopy)
             {
-                SetupModifier("0", "0", "0", "1", "1", "0", "0", "0", "1", "0", "True", "0", "False");
+                SetupModifier(false, "0", "0", "0", "1", "1", "0", "0", "0", "1", "0", "True", "0", "False");
                 if (isGroup)
                     Modifier.values.Insert(9, "Object Group");
                 if (!isMulti)
@@ -169,7 +169,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             }
             else
             {
-                SetupModifier("0", "Prefab Group", "0", "True", "0", "False");
+                SetupModifier(false, "0", "Prefab Group", "0", "True", "0", "False");
                 if (!isMulti)
                     Modifier.values.Insert(5, "False");
             }
@@ -201,7 +201,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
-            if (modifier.constant || !isMulti && modifier.HasResult())
+            if (!isMulti ? modifier.HasResult() : modifier.constant)
                 return;
 
             var prefab = GameData.Current.GetPrefab(modifier.GetInt(indexMap.searchPrefabUsing, 0, modifierLoop.variables), modifier.GetValue(indexMap.prefabReference, modifierLoop.variables));
@@ -228,10 +228,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 if (isMulti)
                 {
-                    if (!modifier.HasResult())
-                        modifier.Result = new List<PrefabObject>();
-
-                    var list = modifier.GetResult<List<PrefabObject>>();
+                    var list = modifier.GetResultOrDefault(() => new List<PrefabObject>());
                     list.Add(prefabObject);
                     modifier.Result = list;
                 }
@@ -278,7 +275,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             prefabObject.fromModifier = true;
 
-            modifier.Result = prefabObject;
+            if (!isMulti)
+                modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -299,7 +297,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                             GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
-                            modifier.Result = null;
+                            if (!isMulti)
+                                modifier.Result = null;
                         });
                     };
             });
