@@ -110,6 +110,15 @@ namespace BetterLegacy.Core.Helpers
             return newCachedMesh;
         }
 
+        static Mesh CreateMesh(Vector3[] vertices, int[] triangles)
+        {
+            var mesh = new Mesh();
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
         /// <summary>
         /// Generates a custom polygon shape.
         /// </summary>
@@ -170,11 +179,7 @@ namespace BetterLegacy.Core.Helpers
                 triangles[triangleIndex + 2] = i + 1;
             }
 
-            // Create mesh
-            var mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            var mesh = CreateMesh(vertices, triangles);
 
             if (meshFilter)
                 meshFilter.sharedMesh = mesh;
@@ -280,11 +285,7 @@ namespace BetterLegacy.Core.Helpers
                 triangles[triIndex++] = i + 1;
             }
 
-            // Create and assign mesh
-            var mesh = new Mesh();
-            mesh.vertices = finalVertices;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            var mesh = CreateMesh(finalVertices, triangles);
 
             if (meshFilter)
                 meshFilter.sharedMesh = mesh;
@@ -380,11 +381,7 @@ namespace BetterLegacy.Core.Helpers
                 triangles[triangleIndex + 5] = next + sides;
             }
 
-            // Create mesh
-            var mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            var mesh = CreateMesh(vertices, triangles);
 
             if (meshFilter)
                 meshFilter.sharedMesh = mesh;
@@ -529,11 +526,7 @@ namespace BetterLegacy.Core.Helpers
                 triangles[triIndex++] = next + verticesPerRing;
             }
 
-            // Create and assign mesh
-            var mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            var mesh = CreateMesh(vertices, triangles);
 
             meshFilter.sharedMesh = mesh;
 
@@ -693,11 +686,7 @@ namespace BetterLegacy.Core.Helpers
                 triangles[triIndex++] = next + verticesPerRing;
             }
 
-            // Create and assign mesh
-            var mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            var mesh = CreateMesh(vertices, triangles);
 
             if (meshFilter)
                 meshFilter.sharedMesh = mesh;
