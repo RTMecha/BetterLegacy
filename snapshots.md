@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
 ## Features
 ### Core
 - Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
@@ -11,7 +11,9 @@
 
 ### Editor
 - Added Unity Explorer support for Background Objects.
-- Beatmap Objects can now be created and edited by clients in a lobby. This marks the true beginning of editor multiplayer support.
+- EDITOR MULTIPLAYER SUPPORT BEGINS (Keep in mind this is VERY experimental and will not work fully until the end of the snapshot cycle)
+  - Beatmap Objects can now be created and edited by clients in a lobby.
+  - Prefabs can be imported and Prefab Objects can be expanded.
 - Added "Create Marker On Current Layer" to Config Manager > Editor > Creation.
 
 ## Changes
