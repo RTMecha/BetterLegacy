@@ -119,14 +119,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 modifierCard.StringGenerator(modifier, reference, "Start Color", 3);
                 modifierCard.StringGenerator(modifier, reference, "End Color", 4);
-                modifierCard.DropdownGenerator(modifier, reference, "Alignment", 5, CoreHelper.ToOptionData<LineAlignment>());
+                modifierCard.DropdownGenerator(modifier, reference, "Alignment", 5, CoreHelper.StringToOptionData("View", "Local"));
                 return;
             }
             modifierCard.ColorGenerator(modifier, reference, "Start Color", 3);
             modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 4, 1f);
             modifierCard.ColorGenerator(modifier, reference, "End Color", 5);
             modifierCard.SingleGenerator(modifier, reference, "End Opacity", 6, 0f);
-            modifierCard.DropdownGenerator(modifier, reference, "Alignment", 7, CoreHelper.ToOptionData<LineAlignment>());
+            modifierCard.DropdownGenerator(modifier, reference, "Alignment", 7, CoreHelper.StringToOptionData("View", "Local"));
         }
 
         public override void OnRemoveCache(Modifier modifier)
