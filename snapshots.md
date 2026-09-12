@@ -1,4 +1,12 @@
-﻿# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
+﻿# ???
+## Fixes
+- Fixed onPlayerBoosted modifier not working.
+- Fixed getObjectVariableOther modifier not having a group field and prefab group only toggles.
+- Fixed issues with spawnPrefab modifiers.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.9.1 - (Multiplayer Playtest) [Sep 12, 2026]
 ## Features
 ### Core
 - Added "Uses Health" property to the Tail section of the player model. With it off, the player tail will use the tail part count instead of the health for the amount of visible tail parts.
