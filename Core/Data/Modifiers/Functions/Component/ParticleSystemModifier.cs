@@ -44,6 +44,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 "True", // Emit Trail
                 "90", // Angle
                 "1", // Burst Count
+                "1", // Simulation Space
             });
         }
 
@@ -166,9 +167,13 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             psr.trailMaterial = psr.material;
             psr.renderMode = ParticleSystemRenderMode.Mesh;
 
-            var psMain = ps.main;
+            var main = ps.main;
 
-            psMain.simulationSpace = ParticleSystemSimulationSpace.World;
+            var simulationSpace = Parser.TryParse(modifier.GetValue(17, modifierLoop.variables), true, ParticleSystemSimulationSpace.World);
+            main.simulationSpace = simulationSpace;
+
+            psr.alignment = simulationSpace == ParticleSystemSimulationSpace.World ? ParticleSystemRenderSpace.World : ParticleSystemRenderSpace.Local;
+            main.scalingMode = simulationSpace == ParticleSystemSimulationSpace.World ? ParticleSystemScalingMode.Local : ParticleSystemScalingMode.Hierarchy;
 
             var rotationOverLifetime = ps.rotationOverLifetime;
             rotationOverLifetime.enabled = true;
@@ -240,6 +245,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.BoolGenerator(modifier, reference, "Emit Trail", 14, false);
             modifierCard.SingleGenerator(modifier, reference, "Angle", 15, 0f);
             modifierCard.IntegerGenerator(modifier, reference, "Burst Count", 16, 0);
+            modifierCard.DropdownGenerator(modifier, reference, "Sim Space", 17, CoreHelper.StringToOptionData("Local", "World"));
         }
 
         #endregion
