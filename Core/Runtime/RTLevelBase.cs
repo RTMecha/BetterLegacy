@@ -1734,7 +1734,7 @@ namespace BetterLegacy.Core.Runtime
             prefabModifiersEngine?.Recalculate();
         }
 
-        public void WakePrefab(PrefabObject prefabObject)
+        public void WakePrefab(PrefabObject prefabObject, string spawnID = null)
         {
             var runtimeObject = prefabObject.runtimeObject;
             if (!runtimeObject)
@@ -1752,7 +1752,7 @@ namespace BetterLegacy.Core.Runtime
                 GameData.Current.prefabs.AddRange(spawner.Prefabs);
                 GameData.Current.prefabObjects.AddRange(spawner.PrefabObjects);
             }
-            runtimeObject.WakeUp();
+            runtimeObject.WakeUp(spawnID);
             prefabObjects.Add(runtimeObject);
             prefabEngine?.spawner?.InsertObject(runtimeObject, false);
             var runtimeModifiers = prefabObject.runtimeModifiers;
