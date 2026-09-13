@@ -1402,12 +1402,12 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public ObjectEngine prefabEngine;
 
-        // pool of spawned prefabs we reuse, made when first needed
+        // pool of spawned prefabs, spawned when first spawned
         public PrefabPool prefabPool;
 
         public PrefabPool GetPrefabPool() => prefabPool ??= new PrefabPool();
 
-        // package this runtime owns so spawns go in the right place
+        // makes them go to the place of the right level
         public IBeatmap OwningBeatmap => this is Objects.RTPrefabObject rtPrefabObject ? rtPrefabObject.Spawner : GameData.Current;
 
         /// <summary>
@@ -1691,14 +1691,14 @@ namespace BetterLegacy.Core.Runtime
 
         #region Pooling
 
-        // pool a spawned prefab instead of destroying it, keeps it alive but pulls it out of everything so it does nothing
+        // pool a spawned prefab instead of killing them, keeps it alive but makes them have 0 effect, including modifiers.
         public void SleepPrefab(PrefabObject prefabObject)
         {
             if (prefabObject)
                 SleepPrefabs(new List<PrefabObject> { prefabObject });
         }
 
-        // same but for a bunch at once, removes their data in one pass so clearing a lot isnt slow
+        // same but many
         public void SleepPrefabs(List<PrefabObject> pooledPrefabObjects)
         {
             if (pooledPrefabObjects == null || pooledPrefabObjects.IsEmpty())
@@ -1707,7 +1707,7 @@ namespace BetterLegacy.Core.Runtime
             foreach (var prefabObject in pooledPrefabObjects)
                 if (prefabObject)
                     ids.Add(prefabObject.id);
-            // pull the spawned objects out of the global lists
+            // grabs them
             GameData.Current.beatmapObjects.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
             GameData.Current.backgroundLayers.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
             GameData.Current.backgroundObjects.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
@@ -1734,8 +1734,7 @@ namespace BetterLegacy.Core.Runtime
             prefabModifiersEngine?.Recalculate();
         }
 
-        // bring a pooled prefab back like it just spawned, set its transform/time before calling this. spawnID keeps its randomness in sync with a fresh spawn.
-        public void WakePrefab(PrefabObject prefabObject, string spawnID)
+        public void WakePrefab(PrefabObject prefabObject)
         {
             var runtimeObject = prefabObject.runtimeObject;
             if (!runtimeObject)
@@ -1753,7 +1752,7 @@ namespace BetterLegacy.Core.Runtime
                 GameData.Current.prefabs.AddRange(spawner.Prefabs);
                 GameData.Current.prefabObjects.AddRange(spawner.PrefabObjects);
             }
-            runtimeObject.WakeUp(spawnID);
+            runtimeObject.WakeUp();
             prefabObjects.Add(runtimeObject);
             prefabEngine?.spawner?.InsertObject(runtimeObject, false);
             var runtimeModifiers = prefabObject.runtimeModifiers;
