@@ -154,6 +154,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetCustomActive(bool active)
         {
+            if (CustomActive == active)
+                return;
             CustomActive = active;
 
             if (!Parent)

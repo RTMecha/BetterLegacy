@@ -1584,8 +1584,6 @@ namespace BetterLegacy.Core.Components.Player
                 var t2 = Model.tailParts[i].scale;
 
                 tailParts[i].visualObject.transform.localScale = new Vector3(t2.x, t2.y, 1f);
-
-                // apply the tail part's position every frame like scale above, otherwise it only sticks from Assign and reads as doing nothing.
                 var p2 = Model.tailParts[i].position;
                 var tf = tailParts[i].visualObject.transform;
                 tf.localPosition = new Vector3(p2.x, p2.y, tf.localPosition.z);
@@ -3652,7 +3650,7 @@ namespace BetterLegacy.Core.Components.Player
             main.startSpeed = playerObject.Particles.speed;
 
             emission.enabled = playerObject.Particles.emitting;
-            particleSystem.emissionRate = isBoost ? 0f : playerObject.Particles.amount;
+            emission.rateOverTime = isBoost ? 0f : playerObject.Particles.amount;
             if (isBoost)
             {
                 emission.burstCount = (int)playerObject.Particles.amount;

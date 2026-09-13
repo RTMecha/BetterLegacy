@@ -653,7 +653,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 var value = new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.values.Length > 2 ? eventKeyframe.values[2] : 0f);
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 5 && eventKeyframe.random != 6)
                 {
-                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(obj.id, eventKeyframe, num);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(obj.RandomSeed, eventKeyframe, num);
                     value.x = random.x;
                     value.y = random.y;
                 }
@@ -694,7 +694,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 var value = new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.GetValue(2, 1f));
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 6)
                 {
-                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(obj.id, eventKeyframe, num);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(obj.RandomSeed, eventKeyframe, num);
                     value.x = random.x;
                     value.y = random.y;
                 }
@@ -728,8 +728,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             foreach (var eventKeyframe in eventKeyframes)
             {
                 var value = eventKeyframe.values.Length > 2 ?
-                    new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.id, eventKeyframe, 2, num) : eventKeyframe.values[2]) :
-                    new Vector3(0f, 0f, eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.id, eventKeyframe, 0, num) : eventKeyframe.values[0]);
+                    new Vector3(eventKeyframe.values[0], eventKeyframe.values[1], eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.RandomSeed, eventKeyframe, 2, num) : eventKeyframe.values[2]) :
+                    new Vector3(0f, 0f, eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(obj.RandomSeed, eventKeyframe, 0, num) : eventKeyframe.values[0]);
 
                 currentValue = eventKeyframe.relative ? currentValue + value : value;
 

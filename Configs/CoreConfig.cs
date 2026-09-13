@@ -291,6 +291,16 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ReplayIntro { get; set; }
 
+        /// <summary>
+        /// If prefabs should be pooled, which will increase performance. Reusing existing prefabs is more performant than creating a new one.
+        /// </summary>
+        public Setting<bool> PrefabPooling { get; set; }
+
+        /// <summary>
+        /// The cap for which any specific prefab can be pooled, if the concurrent number of prefabs is higher, then any ending prefabs will be destroyed.
+        /// </summary>
+        public Setting<int> PrefabPoolMaxPerPrefab { get; set; }
+
         #endregion
 
         #region Discord
@@ -474,6 +484,8 @@ namespace BetterLegacy.Configs
             PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
             StoreRecentLevels = Bind(this, LEVEL, "Store Recent Levels", false, "If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.");
             ReplayIntro = Bind(this, LEVEL, "Replay Intro", false, "If the level intro should replay on level restart.");
+            PrefabPooling = Bind(this, LEVEL, "Prefab Pooling", true, "If prefabs spawned should be pooled, which will increase performance. Reusing existing prefabs is more performant than creating a new one.");
+            PrefabPoolMaxPerPrefab = Bind(this, LEVEL, "Prefab Pool Max Per Prefab", 32, "The cap for which any specific prefab can be pooled, if the concurrent number of prefabs is higher, then any ending prefabs will be destroyed.");
 
             #endregion
 

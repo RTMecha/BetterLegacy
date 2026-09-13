@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
@@ -39,12 +40,43 @@ namespace BetterLegacy.Core.Helpers
         /// Sets the current seed.
         /// </summary>
         /// <param name="seedSetting">The seed setting to apply.</param>
-        public static void SetSeed(string seedSetting) => CurrentSeed = !string.IsNullOrEmpty(seedSetting) ? seedSetting : LSFunctions.LSText.randomString(16);
+        public static void SetSeed(string seedSetting)
+        {
+            CurrentSeed = !string.IsNullOrEmpty(seedSetting) ? seedSetting : LSFunctions.LSText.randomString(16);
+            ResetSpawnIndices();
+        }
 
         /// <summary>
         /// Randomizes the current seed.
         /// </summary>
-        public static void RandomizeSeed() => CurrentSeed = LSFunctions.LSText.randomString(16);
+        public static void RandomizeSeed()
+        {
+            CurrentSeed = LSFunctions.LSText.randomString(16);
+            ResetSpawnIndices();
+        }
+
+        static readonly Dictionary<string, int> spawnIndices = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Resets the per-prefab spawn counters. Called when the seed changes so a level replays the same.
+        /// </summary>
+        public static void ResetSpawnIndices() => spawnIndices.Clear();
+
+        // deterministic id for the next spawn of a prefab. counts up per prefab so pooling on or off gives the same randomness under a seed.
+        public static string NextSpawnID(string prefabID)
+        {
+            spawnIndices.TryGetValue(prefabID, out int index);
+            spawnIndices[prefabID] = index + 1;
+            return SpawnID(prefabID, index);
+        }
+
+        /// <summary>
+        /// Gets the deterministic spawn id for a prefab at a specific spawn index.
+        /// </summary>
+        /// <param name="prefabID">Prefab ID.</param>
+        /// <param name="index">Spawn index.</param>
+        /// <returns>Returns the deterministic id.</returns>
+        public static string SpawnID(string prefabID, int index) => RandomString(GetHash(prefabID + index, CurrentSeed), 16);
 
         public static float Single(int hash) => (float)(hash / (double)int.MaxValue) * 0.5f + 0.5f;
         public static float SingleFromRange(int hash, float min, float max) => RTMath.Lerp(min, max, Single(hash));

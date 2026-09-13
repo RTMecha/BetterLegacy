@@ -256,6 +256,8 @@ namespace BetterLegacy.Core.Components.Player
 
         public void SetCustomActive(bool active)
         {
+            if (CustomActive == active)
+                return;
             CustomActive = active;
             this.active = active;
         }
