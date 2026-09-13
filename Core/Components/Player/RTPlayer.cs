@@ -1255,7 +1255,7 @@ namespace BetterLegacy.Core.Components.Player
                     new Vector3Keyframe(2.083333f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
                     new Vector3Keyframe(2.25f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
                     new Vector3Keyframe(2.375f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
-                    new Vector3Keyframe(2.5f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.5f, new Vector3(1f, 1f, 1f), Ease.SineInOut),
                 }, vector => { if (rb && !isBoosting) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
                 new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                 {
