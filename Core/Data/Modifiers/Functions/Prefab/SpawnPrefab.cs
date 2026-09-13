@@ -7,6 +7,7 @@ using LSFunctions;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
@@ -204,6 +205,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (!isMulti ? modifier.HasResult() : modifier.constant)
                 return;
 
+            RTLevelBase runtimeLevel = GetRuntime(modifierLoop);
+            IBeatmap beatmap = GetBeatmap(runtimeLevel);
+
             var prefab = GameData.Current.GetPrefab(modifier.GetInt(indexMap.searchPrefabUsing, 0, modifierLoop.variables), modifier.GetValue(indexMap.prefabReference, modifierLoop.variables));
             if (!prefab)
                 return;
@@ -219,7 +223,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 if (modifierLoop.reference is not IPrefabable prefabable || !GameData.Current.TryFindPrefabObjectWithTag(modifier, prefabable, modifier.GetValue(indexMap.group), out PrefabObject orig))
                     return;
 
-                prefabObject.StartTime = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables) : modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
+                prefabObject.StartTime = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables) ? runtimeLevel.CurrentTime + modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables) : modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
 
                 prefabObject.PasteInstanceData(orig);
                 remove = modifier.GetBool(indexMap.removeAfterDespawn, false, modifierLoop.variables);
@@ -243,7 +247,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 var offsetAudio = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables);
                 remove = modifier.GetBool(indexMap.removeAfterDespawn, false, modifierLoop.variables);
 
-                prefabObject.StartTime = offsetAudio ? AudioManager.inst.CurrentAudioSource.time + time : time;
+                prefabObject.StartTime = offsetAudio ? runtimeLevel.CurrentTime + time : time;
 
                 if (offset)
                 {
@@ -277,11 +281,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
             if (!isMulti)
                 modifier.Result = prefabObject;
-            GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current.postTick.Enqueue(() =>
+            beatmap.PrefabObjects.Add(prefabObject);
+            runtimeLevel.postTick.Enqueue(() =>
             {
-                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-                runtimeLevel?.UpdatePrefab(prefabObject);
+                runtimeLevel.UpdatePrefab(prefabObject);
 
                 var runtimePrefabObject = prefabObject.runtimeObject;
                 if (runtimePrefabObject && remove)
@@ -290,12 +293,10 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                         if (enabled)
                             return;
 
-                        RTLevel.Current.postTick.Enqueue(() =>
+                        runtimeLevel.postTick.Enqueue(() =>
                         {
-                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-                            runtimeLevel?.UpdatePrefab(prefabObject, false);
-
-                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                            runtimeLevel.UpdatePrefab(prefabObject, false);
+                            beatmap.PrefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
                             if (!isMulti)
                                 modifier.Result = null;
@@ -309,10 +310,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (isMulti || modifier.Result is not PrefabObject prefabObject || modifier.GetBool(indexMap.dontDespawnOnInactive, false, modifierLoop.variables))
                 return;
 
-            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject, false);
-
-            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+            RTLevelBase runtimeLevel = GetRuntime(modifierLoop);
+            runtimeLevel.UpdatePrefab(prefabObject, false);
+            GetBeatmap(runtimeLevel).PrefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
             modifier.Result = default;
         }
@@ -363,6 +363,12 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 modifierCard.BoolGenerator(modifier, reference, "Don't Despawn On Inactive", indexMap.dontDespawnOnInactive, false);
             modifierCard.BoolGenerator(modifier, reference, "Remove After Despawn", indexMap.removeAfterDespawn);
         }
+
+        static RTLevelBase GetRuntime(ModifierLoop modifierLoop) =>
+            modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
+
+        static IBeatmap GetBeatmap(RTLevelBase runtimeLevel) =>
+            runtimeLevel is RTPrefabObject rtPrefabObject ? rtPrefabObject.Spawner : GameData.Current;
 
         #endregion
 
