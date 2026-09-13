@@ -1,22 +1,15 @@
 using System.Collections.Generic;
-
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
-
 namespace BetterLegacy.Core.Runtime.Objects
+/// This shit was deadass just stolen from my kirby game </3
 {
-    // keeps spawned prefabs around so we can reuse them instead of rebuilding
-    // keyed by id + repeat count since repeat count changes how many objects get made
     public class PrefabPool : Exists
     {
         readonly Dictionary<string, Stack<RTPrefabObject>> pools = new Dictionary<string, Stack<RTPrefabObject>>();
         public const int DEFAULT_CAP = 32;
-        // max pooled instances we keep per prefab
         public static int Cap => CoreConfig.Instance != null ? CoreConfig.Instance.PrefabPoolMaxPerPrefab.Value : DEFAULT_CAP;
-
         static string GetKey(string prefabID, int repeatCount) => prefabID + "_" + repeatCount;
-
-        // grab a pooled one if we have it
         public bool TryGet(string prefabID, int repeatCount, out RTPrefabObject runtimeObject)
         {
             runtimeObject = null;
@@ -27,8 +20,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
             return false;
         }
-
-        // put it back in the pool, or just kill it if we're full
         public void Return(RTPrefabObject runtimeObject)
         {
             if (!runtimeObject || !runtimeObject.PrefabObject || !runtimeObject.Prefab)
@@ -46,8 +37,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
             stack.Push(runtimeObject);
         }
-
-        // clear it all out (level unload)
         public void Clear()
         {
             foreach (var stack in pools.Values)

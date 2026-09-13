@@ -93,6 +93,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             psMain.loop = modifier.constant;
             ps.emissionRate = modifier.GetFloat(10, 1f, modifierLoop.variables);
             //psEmission.burstCount = modifier.GetInt(16, 1, modifierLoop.variables);
+            // 
             psMain.duration = modifier.GetFloat(11, 1f, modifierLoop.variables);
 
             var rotationOverLifetime = ps.rotationOverLifetime;
