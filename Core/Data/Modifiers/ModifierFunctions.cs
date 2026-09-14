@@ -1247,6 +1247,10 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static ObjectCollide objectCollide = new ObjectCollide();
 
+        public static Raycast raycast = new Raycast(false);
+
+        public static Raycast raycastPlayer = new Raycast(true);
+
         #endregion
 
         #region Checkpoints
