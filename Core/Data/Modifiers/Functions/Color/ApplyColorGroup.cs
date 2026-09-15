@@ -43,6 +43,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             getAxis.SetValue(10, string.Empty);
             getAxis.SetValue(1, fromType);
             getAxis.SetValue(2, fromAxis);
+            modifyable.Modifiers.Add(getAxis);
 
             modifier.values.RemoveAt(1); // From Type
             modifier.values.RemoveAt(1); // From Axis
