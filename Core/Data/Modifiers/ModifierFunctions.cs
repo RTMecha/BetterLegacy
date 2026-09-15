@@ -1235,6 +1235,10 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         #region Physics
 
+        public static GetRaycast getRaycast = new GetRaycast(false);
+
+        public static GetRaycast getRaycastPlayer = new GetRaycast(true);
+
         public static SetCollision setCollision = new SetCollision(false);
 
         public static SetCollision setCollisionOther = new SetCollision(true);
@@ -1246,10 +1250,6 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static BulletCollide bulletCollide = new BulletCollide();
 
         public static ObjectCollide objectCollide = new ObjectCollide();
-
-        public static Raycast raycast = new Raycast(false);
-
-        public static Raycast raycastPlayer = new Raycast(true);
 
         #endregion
 
