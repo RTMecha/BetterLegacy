@@ -1255,7 +1255,7 @@ namespace BetterLegacy.Core.Components.Player
                     new Vector3Keyframe(2.083333f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
                     new Vector3Keyframe(2.25f, new Vector3(1.2f, 1.2f, 1f), Ease.SineInOut),
                     new Vector3Keyframe(2.375f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
-                    new Vector3Keyframe(2.5f, new Vector3(0.8f, 0.8f, 1f), Ease.SineInOut),
+                    new Vector3Keyframe(2.5f, new Vector3(1f, 1f, 1f), Ease.SineInOut),
                 }, vector => { if (rb && !isBoosting) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
                 new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                 {
@@ -1584,6 +1584,9 @@ namespace BetterLegacy.Core.Components.Player
                 var t2 = Model.tailParts[i].scale;
 
                 tailParts[i].visualObject.transform.localScale = new Vector3(t2.x, t2.y, 1f);
+                var p2 = Model.tailParts[i].position;
+                var tf = tailParts[i].visualObject.transform;
+                tf.localPosition = new Vector3(p2.x, p2.y, tf.localPosition.z);
             }
         }
 
@@ -3647,7 +3650,7 @@ namespace BetterLegacy.Core.Components.Player
             main.startSpeed = playerObject.Particles.speed;
 
             emission.enabled = playerObject.Particles.emitting;
-            particleSystem.emissionRate = isBoost ? 0f : playerObject.Particles.amount;
+            emission.rateOverTime = isBoost ? 0f : playerObject.Particles.amount;
             if (isBoost)
             {
                 emission.burstCount = (int)playerObject.Particles.amount;

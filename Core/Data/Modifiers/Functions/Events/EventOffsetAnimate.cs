@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
     {
         #region Constructors
 
-        public EventOffsetAnimate() => SetupModifier("1", "0", "0", "1", "0", "False", "0");
+        public EventOffsetAnimate() => SetupModifier(false, "1", "0", "0", "1", "0", "False", "0");
 
         #endregion
 

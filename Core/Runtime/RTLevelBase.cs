@@ -193,7 +193,8 @@ namespace BetterLegacy.Core.Runtime
                 runtimeObject.Clear();
             foreach (var runtimeObject in BGObjects)
                 runtimeObject.Clear();
-
+            prefabPool?.Clear();
+            prefabPool = null;
             var parent = SpawnParent;
             if (parent)
                 LSHelpers.DeleteChildren(parent);
@@ -1401,6 +1402,14 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public ObjectEngine prefabEngine;
 
+        // pool of spawned prefabs, spawned when first spawned
+        public PrefabPool prefabPool;
+
+        public PrefabPool GetPrefabPool() => prefabPool ??= new PrefabPool();
+
+        // makes them go to the place of the right level
+        public IBeatmap OwningBeatmap => this is Objects.RTPrefabObject rtPrefabObject ? rtPrefabObject.Spawner : GameData.Current;
+
         /// <summary>
         /// Readonly collection of runtime Prefab objects.
         /// </summary>
@@ -1679,6 +1688,84 @@ namespace BetterLegacy.Core.Runtime
             if (updateModifiers)
                 AddModifiers(prefab, prefabObject);
         }
+
+        #region Pooling
+
+        // pool a spawned prefab instead of killing them, keeps it alive but makes them have 0 effect, including modifiers.
+        public void SleepPrefab(PrefabObject prefabObject)
+        {
+            if (prefabObject)
+                SleepPrefabs(new List<PrefabObject> { prefabObject });
+        }
+
+        // same but many
+        public void SleepPrefabs(List<PrefabObject> pooledPrefabObjects)
+        {
+            if (pooledPrefabObjects == null || pooledPrefabObjects.IsEmpty())
+                return;
+            var ids = new HashSet<string>();
+            foreach (var prefabObject in pooledPrefabObjects)
+                if (prefabObject)
+                    ids.Add(prefabObject.id);
+            // grabs them
+            GameData.Current.beatmapObjects.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
+            GameData.Current.backgroundLayers.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
+            GameData.Current.backgroundObjects.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
+            GameData.Current.prefabs.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
+            GameData.Current.prefabObjects.RemoveAll(x => ids.Contains(x.PrefabInstanceID));
+            OwningBeatmap.PrefabObjects.RemoveAll(x => ids.Contains(x.id));
+            foreach (var prefabObject in pooledPrefabObjects)
+            {
+                var runtimeObject = prefabObject.runtimeObject;
+                if (!runtimeObject)
+                    continue;
+                runtimeObject.Sleep();
+                prefabEngine?.spawner?.RemoveObject(runtimeObject, false);
+                prefabObjects.Remove(runtimeObject);
+                var runtimeModifiers = prefabObject.runtimeModifiers;
+                if (runtimeModifiers)
+                {
+                    prefabModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                    prefabModifiers.Remove(runtimeModifiers);
+                }
+                GetPrefabPool().Return(runtimeObject);
+            }
+            prefabEngine?.Recalculate();
+            prefabModifiersEngine?.Recalculate();
+        }
+
+        public void WakePrefab(PrefabObject prefabObject, string spawnID = null)
+        {
+            var runtimeObject = prefabObject.runtimeObject;
+            if (!runtimeObject)
+            {
+                UpdatePrefab(prefabObject);
+                return;
+            }
+            OwningBeatmap.PrefabObjects.Add(prefabObject);
+            var spawner = runtimeObject.Spawner;
+            if (spawner)
+            {
+                GameData.Current.beatmapObjects.AddRange(spawner.BeatmapObjects);
+                GameData.Current.backgroundObjects.AddRange(spawner.BackgroundObjects);
+                GameData.Current.backgroundLayers.AddRange(spawner.BackgroundLayers);
+                GameData.Current.prefabs.AddRange(spawner.Prefabs);
+                GameData.Current.prefabObjects.AddRange(spawner.PrefabObjects);
+            }
+            runtimeObject.WakeUp(spawnID);
+            prefabObjects.Add(runtimeObject);
+            prefabEngine?.spawner?.InsertObject(runtimeObject, false);
+            var runtimeModifiers = prefabObject.runtimeModifiers;
+            if (runtimeModifiers)
+            {
+                prefabModifiers.Add(runtimeModifiers);
+                prefabModifiersEngine?.spawner?.InsertObject(runtimeModifiers, false);
+            }
+            prefabEngine?.Recalculate();
+            prefabModifiersEngine?.Recalculate();
+        }
+
+        #endregion
 
         /// <summary>
         /// Removes and recreates the object if it still exists.

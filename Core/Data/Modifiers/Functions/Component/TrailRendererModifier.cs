@@ -25,7 +25,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                     "0", // End Width
                     RTColors.WHITE_HEX_CODE, // Start Color
                     RTColors.WHITE_HEX_CODE + "00", // End Color
-                    "0", // Alignment
+                    "0", // If this was removed it would break something since i think a migration code would be far too much for an update
+                    "True", // Scale Affected
                 } :
                 new string[]
                 {
@@ -36,7 +37,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                     "1", // Start Opacity
                     "0", // End Color
                     "0", // End Opacity
-                    "0", // Alignment
+                    "0", // same here
+                    "True", // Scale Affected
                 });
         }
 
@@ -58,9 +60,15 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         TrailRenderer InitTrailRenderer(GameObject gameObject)
         {
-            var trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
+            var trailObject = new GameObject("Trail Renderer");
+            trailObject.layer = gameObject.layer;
+            trailObject.transform.SetParent(gameObject.transform);
+            trailObject.transform.localPosition = Vector3.zero;
+            trailObject.transform.localRotation = Quaternion.identity;
+            var trailRenderer = trailObject.AddComponent<TrailRenderer>();
             trailRenderer.material = LegacyResources.trailMaterial;
             trailRenderer.material.color = Color.white;
+            trailRenderer.alignment = LineAlignment.TransformZ;
             return trailRenderer;
         }
 
@@ -78,13 +86,17 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (!tr)
                 tr = InitTrailRenderer(gameObject);
 
-            var alignment = Parser.TryParse(modifier.GetValue(isHex ? 5 : 7, modifierLoop.variables), true, LineAlignment.View);
-            if (tr.alignment != alignment)
-                tr.alignment = alignment;
-            tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
-            tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+            var lossyScale = gameObject.transform.lossyScale;
+            tr.transform.localScale = new Vector3(
+                Mathf.Abs(lossyScale.x) > 0.0001f ? 1f / lossyScale.x : 1f,
+                Mathf.Abs(lossyScale.y) > 0.0001f ? 1f / lossyScale.y : 1f,
+                Mathf.Abs(lossyScale.z) > 0.0001f ? 1f / lossyScale.z : 1f);
 
-            var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
+            tr.time = modifier.GetFloat(0, 1f, modifierLoop.variables);
+            tr.emitting = !(lossyScale.x < 0.001f && lossyScale.x > -0.001f || lossyScale.y < 0.001f && lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+            var affectedByScale = modifier.GetBool(isHex ? 6 : 8, true, modifierLoop.variables);
+            var t = affectedByScale ? lossyScale.magnitude * 0.576635f : 1f;
             tr.startWidth = modifier.GetFloat(1, 1f, modifierLoop.variables) * t;
             tr.endWidth = modifier.GetFloat(2, 1f, modifierLoop.variables) * t;
 
@@ -119,21 +131,22 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 modifierCard.StringGenerator(modifier, reference, "Start Color", 3);
                 modifierCard.StringGenerator(modifier, reference, "End Color", 4);
-                modifierCard.DropdownGenerator(modifier, reference, "Alignment", 5, CoreHelper.StringToOptionData("View", "Local"));
+                modifierCard.BoolGenerator(modifier, reference, "Affected by Scale", 6, true);
                 return;
             }
             modifierCard.ColorGenerator(modifier, reference, "Start Color", 3);
             modifierCard.SingleGenerator(modifier, reference, "Start Opacity", 4, 1f);
             modifierCard.ColorGenerator(modifier, reference, "End Color", 5);
             modifierCard.SingleGenerator(modifier, reference, "End Opacity", 6, 0f);
-            modifierCard.DropdownGenerator(modifier, reference, "Alignment", 7, CoreHelper.StringToOptionData("View", "Local"));
+            modifierCard.BoolGenerator(modifier, reference, "Affected by Scale", 8, true);
         }
 
         public override void OnRemoveCache(Modifier modifier)
         {
             if (!modifier.TryGetResult(out TrailRenderer trailRenderer))
                 return;
-            CoreHelper.Destroy(trailRenderer);
+            if (trailRenderer)
+                CoreHelper.Destroy(trailRenderer.gameObject);
             modifier.Result = default;
         }
 

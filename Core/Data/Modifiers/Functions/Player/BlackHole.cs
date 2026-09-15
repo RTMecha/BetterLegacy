@@ -13,7 +13,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
     {
         #region Constructors
 
-        public BlackHole(bool mirror, Selector selector) : base(mirror ? "whiteHole" : "blackHole", selector, "0.01") => this.mirror = mirror;
+        public BlackHole(bool mirror, Selector selector) : base(mirror ? "whiteHole" : "blackHole", selector, "0.01", "False") => this.mirror = mirror;
 
         #endregion
 
@@ -64,7 +64,9 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 return;
 
             var value = modifier.GetFloat(Index(0), 0.01f, modifierLoop.variables);
-
+            // scale strength by their opacity when on, why was this removed? i dunno bro...
+            if (modifier.GetBool(Index(1), false, modifierLoop.variables) && modifierLoop.reference is BeatmapObject beatmapObject)
+                value = -(beatmapObject.Interpolate(3, 1) - 1f) * value;
             if (value == 0f)
                 return;
 
@@ -89,6 +91,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
         {
             base.RenderModifierCard(modifier, modifierCard, reference, modifyable);
             modifierCard.SingleGenerator(modifier, reference, "Value", Index(0), 1f);
+            modifierCard.BoolGenerator(modifier, reference, "Scale By Opacity", Index(1), false);
         }
 
         #endregion

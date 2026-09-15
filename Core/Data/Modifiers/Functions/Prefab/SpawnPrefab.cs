@@ -4,9 +4,11 @@ using UnityEngine;
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
@@ -204,104 +206,121 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (!isMulti ? modifier.HasResult() : modifier.constant)
                 return;
 
+            RTLevelBase runtimeLevel = GetRuntime(modifierLoop);
+            IBeatmap beatmap = GetBeatmap(runtimeLevel);
+
             var prefab = GameData.Current.GetPrefab(modifier.GetInt(indexMap.searchPrefabUsing, 0, modifierLoop.variables), modifier.GetValue(indexMap.prefabReference, modifierLoop.variables));
             if (!prefab)
                 return;
-
-            var prefabObject = new PrefabObject();
-            prefabObject.id = LSText.randomString(16);
-            prefabObject.prefabID = prefab.id;
+            bool pooling = !isCopy && CoreConfig.Instance != null && CoreConfig.Instance.PrefabPooling.Value;
 
             bool remove = false;
 
             if (isCopy)
             {
+                var prefabObject = new PrefabObject();
+                prefabObject.id = LSText.randomString(16);
+                prefabObject.prefabID = prefab.id;
                 if (modifierLoop.reference is not IPrefabable prefabable || !GameData.Current.TryFindPrefabObjectWithTag(modifier, prefabable, modifier.GetValue(indexMap.group), out PrefabObject orig))
                     return;
 
-                prefabObject.StartTime = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables) : modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
+                prefabObject.StartTime = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables) ? runtimeLevel.CurrentTime + modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables) : modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
 
                 prefabObject.PasteInstanceData(orig);
                 remove = modifier.GetBool(indexMap.removeAfterDespawn, false, modifierLoop.variables);
+
+                prefabObject.fromModifier = true;
+
+                if (!isMulti)
+                    modifier.Result = prefabObject;
+                beatmap.PrefabObjects.Add(prefabObject);
+                runtimeLevel.postTick.Enqueue(() =>
+                {
+                    runtimeLevel.UpdatePrefab(prefabObject);
+                    SetupDespawn(runtimeLevel, prefabObject, remove, modifier);
+                });
+                return;
             }
+
+            var pos = new Vector3(modifier.GetFloat(indexMap.posX, 0f, modifierLoop.variables), modifier.GetFloat(indexMap.posY, 0f, modifierLoop.variables));
+            var sca = new Vector2(modifier.GetFloat(indexMap.scaX, 0f, modifierLoop.variables), modifier.GetFloat(indexMap.scaY, 0f, modifierLoop.variables));
+            var rot = modifier.GetFloat(indexMap.rot, 0f, modifierLoop.variables);
+            var repeatCount = modifier.GetInt(indexMap.repeatCount, 0, modifierLoop.variables);
+            var repeatOffsetTime = modifier.GetFloat(indexMap.repeatOffsetTime, 0f, modifierLoop.variables);
+            var speed = modifier.GetFloat(indexMap.speed, 0f, modifierLoop.variables);
+            var time = modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
+            var offsetAudio = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables);
+            remove = modifier.GetBool(indexMap.removeAfterDespawn, false, modifierLoop.variables);
+
+            if (offset)
+            {
+                var transformable = isGroup ? GameData.Current.FindTransformableWithTag(modifier, modifierLoop.reference.AsPrefabable(), modifier.GetValue(indexMap.group, modifierLoop.variables)) : modifierLoop.reference.AsTransformable();
+                if (transformable != null)
+                {
+                    var animationResult = transformable.GetObjectTransform();
+                    pos += animationResult.position;
+                    sca *= animationResult.scale;
+                    rot += animationResult.rotation;
+                }
+            }
+
+            // deterministic per spawn so the randomness lines up whether we build fresh or reuse a pooled one. counts up once per spawn either way.
+            var spawnID = RandomHelper.NextSpawnID(prefab.id);
+
+            RTPrefabObject pooled = null;
+            bool reused = pooling && runtimeLevel.GetPrefabPool().TryGet(prefab.id, repeatCount, out pooled);
+            PrefabObject prefabObj;
+            if (reused)
+                prefabObj = pooled.PrefabObject;
             else
             {
-                if (isMulti)
-                {
-                    var list = modifier.GetResultOrDefault(() => new List<PrefabObject>());
-                    list.Add(prefabObject);
-                    modifier.Result = list;
-                }
-
-                var pos = new Vector3(modifier.GetFloat(indexMap.posX, 0f, modifierLoop.variables), modifier.GetFloat(indexMap.posY, 0f, modifierLoop.variables));
-                var sca = new Vector2(modifier.GetFloat(indexMap.scaX, 0f, modifierLoop.variables), modifier.GetFloat(indexMap.scaY, 0f, modifierLoop.variables));
-                var rot = modifier.GetFloat(indexMap.rot, 0f, modifierLoop.variables);
-                var repeatCount = modifier.GetInt(indexMap.repeatCount, 0, modifierLoop.variables);
-                var repeatOffsetTime = modifier.GetFloat(indexMap.repeatOffsetTime, 0f, modifierLoop.variables);
-                var speed = modifier.GetFloat(indexMap.speed, 0f, modifierLoop.variables);
-                var time = modifier.GetFloat(indexMap.time, 0f, modifierLoop.variables);
-                var offsetAudio = modifier.GetBool(indexMap.timeRelative, true, modifierLoop.variables);
-                remove = modifier.GetBool(indexMap.removeAfterDespawn, false, modifierLoop.variables);
-
-                prefabObject.StartTime = offsetAudio ? AudioManager.inst.CurrentAudioSource.time + time : time;
-
-                if (offset)
-                {
-                    var transformable = isGroup ? GameData.Current.FindTransformableWithTag(modifier, modifierLoop.reference.AsPrefabable(), modifier.GetValue(indexMap.group, modifierLoop.variables)) : modifierLoop.reference.AsTransformable();
-                    if (transformable != null)
-                    {
-                        var animationResult = transformable.GetObjectTransform();
-                        pos += animationResult.position;
-                        sca *= animationResult.scale;
-                        rot += animationResult.rotation;
-                    }
-                }
-
+                prefabObj = new PrefabObject();
+                prefabObj.id = spawnID;
+                prefabObj.prefabID = prefab.id;
                 if (prefab.defaultInstanceData)
-                    prefabObject.PasteInstanceData(prefab.defaultInstanceData);
-
-                prefabObject.events[0].values[0] = pos.x;
-                prefabObject.events[0].values[1] = pos.y;
-                prefabObject.events[1].values[0] = sca.x;
-                prefabObject.events[1].values[1] = sca.y;
-                prefabObject.events[2].values[0] = rot;
-
-                prefabObject.RepeatCount = repeatCount;
-                prefabObject.RepeatOffsetTime = repeatOffsetTime;
-                prefabObject.Speed = speed;
-
-                prefabObject.depth = 0f;
+                    prefabObj.PasteInstanceData(prefab.defaultInstanceData);
             }
 
-            prefabObject.fromModifier = true;
+            prefabObj.StartTime = offsetAudio ? runtimeLevel.CurrentTime + time : time;
 
-            if (!isMulti)
-                modifier.Result = prefabObject;
-            GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current.postTick.Enqueue(() =>
+            prefabObj.events[0].values[0] = pos.x;
+            prefabObj.events[0].values[1] = pos.y;
+            prefabObj.events[1].values[0] = sca.x;
+            prefabObj.events[1].values[1] = sca.y;
+            prefabObj.events[2].values[0] = rot;
+
+            prefabObj.RepeatCount = repeatCount;
+            prefabObj.RepeatOffsetTime = repeatOffsetTime;
+            prefabObj.Speed = speed;
+            prefabObj.depth = 0f;
+            prefabObj.fromModifier = true;
+
+            if (isMulti)
             {
-                RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-                runtimeLevel?.UpdatePrefab(prefabObject);
+                var list = modifier.GetResultOrDefault(() => new List<PrefabObject>());
+                list.Add(prefabObj);
+                modifier.Result = list;
+            }
+            else
+                modifier.Result = prefabObj;
 
-                var runtimePrefabObject = prefabObject.runtimeObject;
-                if (runtimePrefabObject && remove)
-                    runtimePrefabObject.onActiveChanged = enabled =>
-                    {
-                        if (enabled)
-                            return;
-
-                        RTLevel.Current.postTick.Enqueue(() =>
-                        {
-                            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-                            runtimeLevel?.UpdatePrefab(prefabObject, false);
-
-                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                            if (!isMulti)
-                                modifier.Result = null;
-                        });
-                    };
-            });
+            if (reused)
+                runtimeLevel.postTick.Enqueue(() =>
+                {
+                    runtimeLevel.WakePrefab(prefabObj, spawnID);
+                    SetupDespawn(runtimeLevel, prefabObj, remove, modifier);
+                });
+            else
+            {
+                beatmap.PrefabObjects.Add(prefabObj);
+                runtimeLevel.postTick.Enqueue(() =>
+                {
+                    runtimeLevel.UpdatePrefab(prefabObj);
+                    if (prefabObj.runtimeObject)
+                        prefabObj.runtimeObject.poolable = pooling && prefabObj.runtimeObject.IsPoolSafe();
+                    SetupDespawn(runtimeLevel, prefabObj, remove, modifier);
+                });
+            }
         }
 
         public override void Inactive(Modifier modifier, ModifierLoop modifierLoop)
@@ -309,12 +328,46 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (isMulti || modifier.Result is not PrefabObject prefabObject || modifier.GetBool(indexMap.dontDespawnOnInactive, false, modifierLoop.variables))
                 return;
 
-            RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject, false);
-
-            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+            RTLevelBase runtimeLevel = GetRuntime(modifierLoop);
+            Despawn(runtimeLevel, prefabObject);
 
             modifier.Result = default;
+        }
+
+        void SetupDespawn(RTLevelBase runtimeLevel, PrefabObject prefabObject, bool remove, Modifier modifier)
+        {
+            var runtimePrefabObject = prefabObject.runtimeObject;
+            if (!runtimePrefabObject || !remove)
+                return;
+
+            runtimePrefabObject.onActiveChanged = enabled =>
+            {
+                if (enabled)
+                    return;
+
+                runtimeLevel.postTick.Enqueue(() =>
+                {
+                    Despawn(runtimeLevel, prefabObject);
+
+                    if (!isMulti)
+                        modifier.Result = null;
+                    else if (modifier.Result is List<PrefabObject> list)
+                        list.Remove(prefabObject);
+                });
+            };
+        }
+
+        void Despawn(RTLevelBase runtimeLevel, PrefabObject prefabObject)
+        {
+            var runtimePrefabObject = prefabObject.runtimeObject;
+            if (runtimePrefabObject && runtimePrefabObject.poolable && CoreConfig.Instance != null && CoreConfig.Instance.PrefabPooling.Value)
+            {
+                runtimeLevel.SleepPrefab(prefabObject);
+                return;
+            }
+
+            runtimeLevel.UpdatePrefab(prefabObject, false);
+            GetBeatmap(runtimeLevel).PrefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
@@ -363,6 +416,12 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                 modifierCard.BoolGenerator(modifier, reference, "Don't Despawn On Inactive", indexMap.dontDespawnOnInactive, false);
             modifierCard.BoolGenerator(modifier, reference, "Remove After Despawn", indexMap.removeAfterDespawn);
         }
+
+        static RTLevelBase GetRuntime(ModifierLoop modifierLoop) =>
+            modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
+
+        static IBeatmap GetBeatmap(RTLevelBase runtimeLevel) =>
+            runtimeLevel is RTPrefabObject rtPrefabObject ? rtPrefabObject.Spawner : GameData.Current;
 
         #endregion
 

@@ -19,6 +19,10 @@ namespace BetterLegacy.Core.Data
         /// Identification of the object.
         /// </summary>
         public string id;
+        // runtime only. pooled prefabs set this so a reused instance seeds its randomness the same as a fresh spawn would.
+        public string randomSeedSuffix = string.Empty;
+        // seed used for keyframe randomness. the suffix takes over when set so pooling stays deterministic.
+        public string RandomSeed => string.IsNullOrEmpty(randomSeedSuffix) ? id : randomSeedSuffix;
 
         public virtual bool ShouldSerialize => true;
 

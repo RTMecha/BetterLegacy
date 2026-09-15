@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Modifiers.Functions
@@ -41,6 +43,8 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 RTLevelBase runtimeLevel = modifierLoop.reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : modifierLoop.reference.GetParentRuntime();
+                var toPool = new List<PrefabObject>();
+                var toDestroy = new List<PrefabObject>();
 
                 foreach (var modifyable in modifyables)
                 {
@@ -50,10 +54,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
                         if (otherModifier.TryGetResult(out PrefabObject prefabObjectResult))
                         {
-                            runtimeLevel?.UpdatePrefab(prefabObjectResult, false);
-
-                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObjectResult.id);
-
+                            Collect(prefabObjectResult, toPool, toDestroy);
                             otherModifier.Result = null;
                             continue;
                         }
@@ -62,18 +63,33 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             continue;
 
                         for (int k = 0; k < result.Count; k++)
-                        {
-                            var prefabObject = result[k];
-
-                            runtimeLevel?.UpdatePrefab(prefabObject, false);
-                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-                        }
+                            Collect(result[k], toPool, toDestroy);
 
                         result.Clear();
                         otherModifier.Result = null;
                     }
                 }
+
+                if (runtimeLevel != null && !toPool.IsEmpty())
+                    runtimeLevel.SleepPrefabs(toPool);
+                if (!toDestroy.IsEmpty())
+                {
+                    var ids = new HashSet<string>(toDestroy.Select(x => x.id));
+                    for (int i = 0; i < toDestroy.Count; i++)
+                        runtimeLevel?.UpdatePrefab(toDestroy[i], false);
+                    GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && ids.Contains(x.id));
+                }
             });
+        }
+        static void Collect(PrefabObject prefabObject, List<PrefabObject> toPool, List<PrefabObject> toDestroy)
+        {
+            if (!prefabObject)
+                return;
+            var runtimeObject = prefabObject.runtimeObject;
+            if (runtimeObject && runtimeObject.poolable && CoreConfig.Instance != null && CoreConfig.Instance.PrefabPooling.Value)
+                toPool.Add(prefabObject);
+            else
+                toDestroy.Add(prefabObject);
         }
 
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)

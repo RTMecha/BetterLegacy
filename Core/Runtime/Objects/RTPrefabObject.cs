@@ -108,6 +108,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// Triggers when active state changes.
         /// </summary>
         public Action<bool> onActiveChanged;
+        public bool poolable;
+        // inner objects that use random keyframes, paired with their repeat index so we can rebuild their seed on reuse.
+        List<(BeatmapObject obj, int repeat)> randomObjects;
 
         bool prevActive;
 
@@ -530,6 +533,86 @@ namespace BetterLegacy.Core.Runtime.Objects
                 prefabModifiersEngine?.spawner?.DespawnAll();
             }
             prevActive = isActive;
+        }
+
+        /// <summary>
+        /// Code got reworked from kirby rpg since i spent so long trying to ensure it works under all circumstances that copying it wouldve been easier than recreating it from scratch.
+        /// Also. Never think shit you implement will work first try twin. i forget pa is like. not well made.
+        /// </summary>
+        public void Sleep()
+        {
+            onActiveChanged = null;
+            SetActive(false);
+            if (PrefabObject && PrefabObject.runtimeModifiers)
+                PrefabObject.runtimeModifiers.SetActive(false);
+        }
+        public void WakeUp(string spawnID)
+        {
+            if (!PrefabObject || !Prefab)
+                return;
+            StartTime = PrefabObject.StartTime + Prefab.offset;
+            KillTime = PrefabObject.StartTime + Prefab.offset + PrefabObject.SpawnDuration;
+            PrefabObject.cachedTransform = null;
+            var transform = PrefabObject.GetTransformOffset();
+            Position = transform.position;
+            Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+            Rotation = new Vector3(0f, 0f, transform.rotation);
+            RefreshRandomization(spawnID);
+        }
+        // rebuild each random object's seed the exact same way a fresh spawn would with this spawn id, so pooled and non-pooled match under a seed.
+        void RefreshRandomization(string spawnID)
+        {
+            if (randomObjects == null)
+                CacheRandomObjects();
+            if (randomObjects.Count == 0)
+                return;
+            for (int i = 0; i < randomObjects.Count; i++)
+            {
+                var random = randomObjects[i];
+                random.obj.randomSeedSuffix = RandomHelper.RandomString(RandomHelper.GetHash(random.obj.originalID + random.repeat + spawnID, RandomHelper.CurrentSeed), 16);
+                RecacheSequences(random.obj, reinsert: true, updateParents: true, recursive: false);
+            }
+        }
+        void CacheRandomObjects()
+        {
+            randomObjects = new List<(BeatmapObject, int)>();
+            if (Spawner == null)
+                return;
+            int assetCount = Prefab != null ? Prefab.beatmapObjects.Count : 0;
+            for (int i = 0; i < Spawner.BeatmapObjects.Count; i++)
+            {
+                var beatmapObject = Spawner.BeatmapObjects[i];
+                if (HasRandomKeyframes(beatmapObject))
+                    randomObjects.Add((beatmapObject, assetCount > 0 ? i / assetCount : 0));
+            }
+        }
+        static bool HasRandomKeyframes(BeatmapObject beatmapObject)
+        {
+            var events = beatmapObject.events;
+            if (events == null)
+                return false;
+            for (int i = 0; i < events.Count; i++)
+            {
+                var keyframes = events[i];
+                for (int j = 0; j < keyframes.Count; j++)
+                    if (keyframes[j].random != 0)
+                        return true;
+            }
+            return false;
+        }
+        public bool IsPoolSafe()
+        {
+            if (Spawner == null)
+                return true;
+            if (!Spawner.PrefabObjects.IsEmpty() || !Spawner.Prefabs.IsEmpty())
+                return false;
+            for (int i = 0; i < Spawner.BeatmapObjects.Count; i++)
+                if (Spawner.BeatmapObjects[i].autoKillType == AutoKillType.SongTime)
+                    return false;
+            for (int i = 0; i < Spawner.BackgroundObjects.Count; i++)
+                if (Spawner.BackgroundObjects[i].autoKillType == AutoKillType.SongTime)
+                    return false;
+            return true;
         }
 
         #endregion
