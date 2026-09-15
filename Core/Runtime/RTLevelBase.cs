@@ -1402,13 +1402,21 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public ObjectEngine prefabEngine;
 
-        // pool of spawned prefabs, spawned when first spawned
+        /// <summary>
+        /// Pool of spawned prefabs, spawned when this runtime begins.
+        /// </summary>
         public PrefabPool prefabPool;
 
+        /// <summary>
+        /// Gets the prefab pool.
+        /// </summary>
+        /// <returns>Returns <see cref="prefabPool"/>. If <see cref="prefabPool"/> is null, then it is initialized.</returns>
         public PrefabPool GetPrefabPool() => prefabPool ??= new PrefabPool();
 
-        // makes them go to the place of the right level
-        public IBeatmap OwningBeatmap => this is Objects.RTPrefabObject rtPrefabObject ? rtPrefabObject.Spawner : GameData.Current;
+        /// <summary>
+        /// The owning beatmap package.
+        /// </summary>
+        public virtual IBeatmap OwningBeatmap => GameData.Current;
 
         /// <summary>
         /// Readonly collection of runtime Prefab objects.
@@ -1691,14 +1699,20 @@ namespace BetterLegacy.Core.Runtime
 
         #region Pooling
 
-        // pool a spawned prefab instead of killing them, keeps it alive but makes them have 0 effect, including modifiers.
+        /// <summary>
+        /// Returns a <see cref="PrefabObject"/> to the pool.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to return to the pool.</param>
         public void SleepPrefab(PrefabObject prefabObject)
         {
             if (prefabObject)
                 SleepPrefabs(new List<PrefabObject> { prefabObject });
         }
 
-        // same but many
+        /// <summary>
+        /// Returns a collection of <see cref="PrefabObject"/>s to the pool.
+        /// </summary>
+        /// <param name="pooledPrefabObjects">List of <see cref="PrefabObject"/>s to return to the pool.</param>
         public void SleepPrefabs(List<PrefabObject> pooledPrefabObjects)
         {
             if (pooledPrefabObjects == null || pooledPrefabObjects.IsEmpty())
@@ -1734,6 +1748,11 @@ namespace BetterLegacy.Core.Runtime
             prefabModifiersEngine?.Recalculate();
         }
 
+        /// <summary>
+        /// Grabs a prefab object from the pool.
+        /// </summary>
+        /// <param name="prefabObject">Prefab object to grab.</param>
+        /// <param name="spawnID">Spawn ID.</param>
         public void WakePrefab(PrefabObject prefabObject, string spawnID = null)
         {
             var runtimeObject = prefabObject.runtimeObject;
