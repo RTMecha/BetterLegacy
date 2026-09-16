@@ -2841,7 +2841,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             dialog.RelativeToggle.OnValueChanged.NewListener(_val =>
             {
                 if (animatable.EditorData.miscDisplayValues.TryGetValue(IntToType(type) + "/force_relative", out float forceRelative))
+                {
                     _val = forceRelative == 1f;
+                    dialog.RelativeToggle.SetIsOnWithoutNotify(_val);
+                }
 
                 foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                     keyframe.relative = _val;
