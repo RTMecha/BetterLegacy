@@ -32,12 +32,14 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (modifier.version == 1)
                 return;
 
-            var getVisualOpacity = ModifierFunctions.getVisualOpacity.Create();
-            getVisualOpacity.SetValue(0, "BLACK_HOLE_VALUE_UPDATE");
-            modifyable.Modifiers.Add(getVisualOpacity);
-            if (selector == Selector.Nearest && modifier.values.Count > 1)
+            if (selector == Selector.Nearest && modifier.values.Count > 1 && modifier.GetBool(1, false))
+            {
+                var getVisualOpacity = ModifierFunctions.getVisualOpacity.Create();
+                getVisualOpacity.SetValue(0, "BLACK_HOLE_VALUE_UPDATE");
+                modifyable.Modifiers.Add(getVisualOpacity);
                 modifier.values.RemoveAt(1);
-            modifier.SetValue(Index(0), "BLACK_HOLE_VALUE_UPDATE");
+                modifier.SetValue(Index(0), "BLACK_HOLE_VALUE_UPDATE");
+            }
             modifier.version = 1;
         }
 
