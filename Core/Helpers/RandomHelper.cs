@@ -83,15 +83,38 @@ namespace BetterLegacy.Core.Helpers
         public static int IntFromRange(int hash, int min, int max) => UnityEngine.Mathf.RoundToInt(SingleFromRange(hash, min, max));
 
         /// <summary>
+        /// Deterministic string hash (FNV-1a). Unlike <see cref="string.GetHashCode"/>, this is stable across processes and platforms,
+        /// so the same seed produces the same randomness every run and stays in sync between players.
+        /// </summary>
+        /// <param name="str">String to hash.</param>
+        /// <returns>Returns a process-portable hash code.</returns>
+        public static int StableHash(string str)
+        {
+            unchecked
+            {
+                uint hash = 2166136261;
+                for (int i = 0; i < str.Length; i++)
+                {
+                    hash ^= str[i];
+                    hash *= 16777619;
+                }
+                return (int)hash;
+            }
+        }
+
+        // strings hash deterministically via StableHash; ints/floats already hash deterministically (identity / bit pattern).
+        static int HashOf(object obj) => obj is string s ? StableHash(s) : (obj?.GetHashCode() ?? 0);
+
+        /// <summary>
         /// Gets a "random" value from a specific ID and seed between 0 and 1.
         /// </summary>
         /// <param name="seed">Seed to calculate.</param>
         /// <param name="index">Object index to calculate.</param>
         /// <returns>Returns a value based on the object index and seed.</returns>
         public static float SingleFromIndex(string seed, int index) => Single(GetHash(index, seed));
-        public static float Single(string seed) => Single(seed.GetHashCode());
-        public static float SingleFromRange(string seed, float min, float max) => SingleFromRange(seed.GetHashCode(), min, max);
-        public static int IntFromRange(string seed, int min, int max) => IntFromRange(seed.GetHashCode(), min, max);
+        public static float Single(string seed) => Single(StableHash(seed));
+        public static float SingleFromRange(string seed, float min, float max) => SingleFromRange(StableHash(seed), min, max);
+        public static int IntFromRange(string seed, int min, int max) => IntFromRange(StableHash(seed), min, max);
 
         /// <summary>
         /// Gets a "random" string from a specific ID and seed.
@@ -121,7 +144,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="obj1">Object 1 to get hash code from.</param>
         /// <param name="obj2">Object 2 to get hash code from.</param>
         /// <returns>Returns a singlular hash code.</returns>
-        public static int GetHash(object obj1, object obj2) => obj1.GetHashCode() ^ obj2.GetHashCode();
+        public static int GetHash(object obj1, object obj2) => HashOf(obj1) ^ HashOf(obj2);
 
         /// <summary>
         /// Gets a hash code from a set of objects.
@@ -130,7 +153,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="obj2">Object 2 to get hash code from.</param>
         /// <param name="obj3">Object 3 to get hash code from.</param>
         /// <returns>Returns a singlular hash code.</returns>
-        public static int GetHash(object obj1, object obj2, object obj3) => obj1.GetHashCode() ^ obj2.GetHashCode() ^ obj3.GetHashCode();
+        public static int GetHash(object obj1, object obj2, object obj3) => HashOf(obj1) ^ HashOf(obj2) ^ HashOf(obj3);
 
         /// <summary>
         /// Gets a hash code from an array of objects.
@@ -139,9 +162,9 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a singlular hash code.</returns>
         public static int GetHash(params object[] objs)
         {
-            int hash = objs.Length > 0 ? objs[0].GetHashCode() : 0;
+            int hash = objs.Length > 0 ? HashOf(objs[0]) : 0;
             for (int i = 1; i < objs.Length; i++)
-                hash ^= objs[i].GetHashCode();
+                hash ^= HashOf(objs[i]);
             return hash;
         }
 
@@ -163,7 +186,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="seed">Seed to calculate.</param>
         /// <param name="id">Object ID to calculate.</param>
         /// <returns>Returns a value based on the object ID and seed.</returns>
-        public static int FromID(string seed, string id) => id.GetHashCode() ^ seed.GetHashCode();
+        public static int FromID(string seed, string id) => StableHash(id) ^ StableHash(seed);
 
         /// <summary>
         /// Gets a "random" value within a range from a specific ID and seed.
@@ -191,7 +214,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="seed">Seed to calculate.</param>
         /// <param name="index">Object index to calculate.</param>
         /// <returns>Returns a value based on the object index and seed.</returns>
-        public static int FromIndex(string seed, int index) => index.GetHashCode() ^ seed.GetHashCode();
+        public static int FromIndex(string seed, int index) => index ^ StableHash(seed);
 
         /// <summary>
         /// Gets a "random" value within a range from a specific ID and seed.
@@ -218,7 +241,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="seed">The seed to determine the random value.</param>
         /// <returns>Returns a random true or false value based on the seed.</returns>
-        public static bool IsTrue(string seed) => new Random(seed.GetHashCode()).Next(0, 2) == 1;
+        public static bool IsTrue(string seed) => new Random(StableHash(seed)).Next(0, 2) == 1;
 
         /// <summary>
         /// Initializes a new Random class based on a provided seed and checks for a true or false value.
@@ -248,7 +271,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="seed">Seed to calculate.</param>
         /// <param name="p">Percentage chance to happen.</param>
         /// <returns>Returns true if a random value was higher than the percentage.</returns>
-        public static bool PercentChance(string seed, int p) => new Random(seed.GetHashCode()).Next(0, 101) <= p;
+        public static bool PercentChance(string seed, int p) => new Random(StableHash(seed)).Next(0, 101) <= p;
 
         /// <summary>
         /// Calculates a chance value.

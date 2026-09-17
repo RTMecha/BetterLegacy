@@ -335,6 +335,8 @@ namespace BetterLegacy.Editor.Managers
             startOffsetDisplay.color = RTColors.FadeColor(startOffsetDisplay.color, offsetOpacity);
             endOffsetDisplay.color = RTColors.FadeColor(endOffsetDisplay.color, offsetOpacity);
 
+            Editor.Managers.EditorMultiplayer.RenderPlayheads();
+
             if (Input.GetMouseButtonUp((int)UnityEngine.EventSystems.PointerEventData.InputButton.Middle))
                 movingTimeline = false;
 

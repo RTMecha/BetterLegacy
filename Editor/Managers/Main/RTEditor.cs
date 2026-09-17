@@ -4179,6 +4179,11 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Show Lobby Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () => LobbyPopup.Instance?.Open());
 
+            EditorHelper.AddEditorDropdown("Hide Players", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/eye{FileFormat.PNG.Dot()}")), () =>
+            {
+                EditorConfig.Instance.HidePlayers.Value = !EditorConfig.Instance.HidePlayers.Value;
+            });
+
             EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
                 RTColorPicker.inst.Show(Color.white,

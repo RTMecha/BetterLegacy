@@ -214,6 +214,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             {
                 selected = value;
                 RenderVisibleState(false);
+                Editor.Managers.EditorMultiplayer.selectionDirty = true;
             }
         }
 
@@ -520,8 +521,14 @@ namespace BetterLegacy.Editor.Data.Timeline
                                 beatmapObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? GetSelectedColor() : GetColor();
-                        if (!selected && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
+
+                        if (!selected && !remoteSel && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
                             color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)
@@ -541,7 +548,12 @@ namespace BetterLegacy.Editor.Data.Timeline
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ? GetSelectedColor() : GetColor();
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
 
                         if (Image.color != color)
                             Image.color = color;
@@ -569,8 +581,14 @@ namespace BetterLegacy.Editor.Data.Timeline
                                 backgroundObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? GetSelectedColor() : GetColor();
-                        if (!selected && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
+
+                        if (!selected && !remoteSel && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
                             color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)

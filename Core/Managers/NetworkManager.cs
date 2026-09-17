@@ -802,6 +802,27 @@ namespace BetterLegacy.Core.Managers
                 GameData.Current.prefabs.Add(prefab);
                 RTPrefabEditor.inst.RefreshInternalPrefabs();
             }),
+            new NetworkFunction(NetworkFunction.SET_PLAYHEAD_PRESENCE, 5, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                if (sender == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                var time = reader.ReadSingle();
+                var layer = reader.ReadInt32();
+                var layerType = (BetterLegacy.Editor.Managers.EditorTimeline.LayerType)reader.ReadByte();
+                var colorHex = reader.ReadString();
+                var color = RTColors.HexToColor(colorHex);
+                Editor.Managers.EditorMultiplayer.ApplyPlayhead(sender, time, layer, layerType, color);
+            }),
+            new NetworkFunction(NetworkFunction.SET_SELECTION_PRESENCE, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                if (sender == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                var joinedIDs = reader.ReadString();
+                var ids = joinedIDs.Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                Editor.Managers.EditorMultiplayer.ApplySelection(sender, ids);
+            }),
         };
 
         Dictionary<string, NetworkWriterQueue> dataChunks = new Dictionary<string, NetworkWriterQueue>();

@@ -301,7 +301,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             elements.AddRange(GenerateBottomBar());
 
             InterfaceManager.inst.SetCurrentInterface(this);
-            if (!CoreConfig.Instance.ReplayLevel.Value && CoreConfig.Instance.PlayEndLevelMusic.Value)
+            // connecting clients shouldn't play the results music; it lingers after they exit the level.
+            if (!ProjectArrhythmia.State.IsClient && !CoreConfig.Instance.ReplayLevel.Value && CoreConfig.Instance.PlayEndLevelMusic.Value)
                 InterfaceManager.inst.PlayMusic();
         }
 

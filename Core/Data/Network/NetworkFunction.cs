@@ -218,6 +218,10 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int IMPORT_PREFAB = 7456437;
 
+        public const int SET_PLAYHEAD_PRESENCE = 342534623;
+
+        public const int SET_SELECTION_PRESENCE = 234876543;
+
         #endregion
 
         #endregion
@@ -461,6 +465,17 @@ namespace BetterLegacy.Core.Data.Network
         public static void ClearTags(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
             new StringParameter(id),
             new IntParameter((int)modifierReferenceType));
+
+        public static void SetPlayheadPresence(ulong sender, float time, int layer, byte layerType, string colorHex) => NetworkManager.inst.RunFunction(Group.Editor, SET_PLAYHEAD_PRESENCE,
+            new ULongParameter(sender),
+            new FloatParameter(time),
+            new IntParameter(layer),
+            new ByteParameter(layerType),
+            new StringParameter(colorHex));
+
+        public static void SetSelectionPresence(ulong sender, string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, SET_SELECTION_PRESENCE,
+            new ULongParameter(sender),
+            new StringParameter(joinedIDs));
 
         #endregion
 
