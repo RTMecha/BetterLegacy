@@ -121,11 +121,16 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseUp()
         {
+            bool draggedValues = setKeyframeValues; 
+            bool wasPrefabDrag = prefabObjectToDrag;
             dragging = false;
             selectedKeyframe = null;
             setKeyframeValues = false;
             firstDirection = Axis.Static;
             clicked = false;
+            prefabObjectToDrag = null;
+            if (draggedValues && !wasPrefabDrag && ProjectArrhythmia.State.IsInLobby && beatmapObject != null)
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
         }
 
         void OnMouseDown()

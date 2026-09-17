@@ -189,6 +189,28 @@ namespace BetterLegacy.Core.Managers
                         player.ReadPacket(reader);
                 }
             }),
+            new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 1, reader =>
+            {
+                var list = new PacketList<PlayerSettings>(new List<PlayerSettings>());
+                list.ReadPacket(reader);
+                CoreHelper.Log($"Got player settings [{list.Count}]");
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var settings = list[i];
+                    // upsert by index. note: index is a local key with no owner id, so this only round-trips cleanly for single-local-player clients. see PlayerSettings TODO.
+                    if (PlayerManager.inst.playerSettings.TryFind(x => x.index == settings.index, out PlayerSettings existing))
+                        existing.CopyData(settings);
+                    else
+                        PlayerManager.inst.playerSettings.Add(settings);
+
+                    // apply visual settings to a matching live player.
+                    if (PlayerManager.inst.players.TryFind(x => !x.IsLocalPlayer && x.index == settings.index, out PAPlayer player) && player.RuntimePlayer)
+                    {
+                        player.ColorSlot = settings.colorSlot;
+                        player.RuntimePlayer.UpdateModel();
+                    }
+                }
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, 1, reader => PlayerManager.inst.SpawnPlayers(Packet.CreateFromPacket<Checkpoint>(reader), true)),
             new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_POS, 1, reader => PlayerManager.inst.SpawnPlayers(reader.ReadVector2(), true)),
             new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS, 1, reader => PlayerManager.inst.RespawnPlayers(true)),
@@ -593,11 +615,15 @@ namespace BetterLegacy.Core.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 EditorTimeline.inst.UpdateTransformIndex();
             }),
-            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 3, reader =>
+            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 4, reader =>
             {
+                var steamID = reader.ReadUInt64();
                 var edit = Packet.CreateFromPacket<BeatmapObject>(reader);
                 var updateContext = reader.ReadString();
                 var updateTimelineObject = reader.ReadBoolean();
+                // skip our own edit echoed back by the host relay; we already applied it locally.
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
                 if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
                     return;
                 var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
@@ -607,17 +633,16 @@ namespace BetterLegacy.Core.Managers
                     for (int i = 0; i < beatmapObject.modifiers.Count; i++)
                     {
                         var modifier = beatmapObject.modifiers[i];
+                        // keep the original modifier instance where possible so runtime references stay valid.
                         if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
                         {
-                            var function = modifier.function;
-                            var trigger = modifier.trigger;
-                            var action = modifier.action;
                             origModifier.CopyData(modifier, false);
-                            origModifier.function = function;
-                            origModifier.trigger = trigger;
-                            origModifier.action = action;
                             beatmapObject.modifiers[i] = origModifier;
+                            modifier = origModifier;
                         }
+                        // network-deserialized modifiers carry no runtime function/trigger/action; (re)assign from the name so they actually run.
+                        modifier.verified = false;
+                        ModifiersManager.inst.VerifyModifier(modifier, beatmapObject);
                     }
                 if (updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext))
                     for (int i = 0; i < beatmapObject.events.Count; i++)
@@ -637,6 +662,24 @@ namespace BetterLegacy.Core.Managers
                     RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
                 if (updateTimelineObject)
                     beatmapObject.TimelineObject?.Render();
+                // refresh the open object dialog so this client sees the changed values (keyframes, shape, etc.), not just the runtime object.
+                if (ObjectEditor.inst && EditorTimeline.inst && EditorTimeline.inst.CurrentSelection != null && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id && ObjectEditor.inst.Dialog != null && ObjectEditor.inst.Dialog.IsCurrent)
+                    ObjectEditor.inst.RenderDialog(beatmapObject);
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_DELETE_OBJECT, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                if (!SteamLobbyManager.inst.LobbySettings.CanEditObjects)
+                    return;
+                EditorTimeline.inst.DeleteObjectNetwork(id, type);
+                NetworkFunction.DeleteObject(id, type);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.DELETE_OBJECT, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                EditorTimeline.inst.DeleteObjectNetwork(id, type);
             }),
             new NetworkFunction(NetworkFunction.ADD_TAG, 2, reader =>
             {
@@ -717,15 +760,22 @@ namespace BetterLegacy.Core.Managers
                         }
                 }
             }),
-            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 2, reader =>
+            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 3, reader =>
             {
+                var steamID = reader.ReadUInt64();
                 var expander = Packet.CreateFromPacket<PrefabExpander>(reader);
                 var expanded = Packet.CreateFromPacket<PrefabExpander.Expanded>(reader);
+                // we already expanded locally; don't re-apply our own echo.
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
                 expanded.Apply(expander.prefab, expander.prefabObject, expander.regen);
             }),
             new NetworkFunction(NetworkFunction.ADD_PREFAB_OBJECT, 1, reader =>
             {
                 var prefabObject = Packet.CreateFromPacket<PrefabObject>(reader);
+                // skip our own echo / duplicate delivery.
+                if (GameData.Current.prefabObjects.Has(x => x.id == prefabObject.id))
+                    return;
                 var prefab = prefabObject.GetPrefab();
 
                 for (int i = 0; i < prefab.beatmapThemes.Count; i++)
@@ -746,6 +796,9 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(NetworkFunction.IMPORT_PREFAB, 1, reader =>
             {
                 var prefab = Packet.CreateFromPacket<Prefab>(reader);
+                // skip our own echo / duplicate delivery.
+                if (GameData.Current.prefabs.Has(x => x.id == prefab.id))
+                    return;
                 GameData.Current.prefabs.Add(prefab);
                 RTPrefabEditor.inst.RefreshInternalPrefabs();
             }),
@@ -758,6 +811,12 @@ namespace BetterLegacy.Core.Managers
         /// If packets are being written.
         /// </summary>
         public bool writingPackets;
+
+        /// <summary>
+        /// True while a received network function is being applied. Editor broadcast helpers check this to avoid re-broadcasting
+        /// changes that came from the network (which would create a receive → render → rebroadcast flood).
+        /// </summary>
+        public static bool applyingNetworkChange;
 
         #endregion
 
@@ -1111,7 +1170,11 @@ namespace BetterLegacy.Core.Managers
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
             if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Server, out NetworkFunction function))
-                function.Run(handler.Item2);
+            {
+                applyingNetworkChange = true;
+                try { function.Run(handler.Item2); }
+                finally { applyingNetworkChange = false; }
+            }
             handler.Item2.Dispose();
         }
 
@@ -1206,7 +1269,11 @@ namespace BetterLegacy.Core.Managers
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
             if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
-                function.Run(handler.Item2);
+            {
+                applyingNetworkChange = true;
+                try { function.Run(handler.Item2); }
+                finally { applyingNetworkChange = false; }
+            }
             handler.Item2.Dispose();
         }
 

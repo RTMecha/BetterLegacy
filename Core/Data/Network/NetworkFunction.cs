@@ -202,6 +202,10 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int EDIT_BEATMAP_OBJECT = 3657883;
 
+        public const int SUBMIT_DELETE_OBJECT = 91827364;
+
+        public const int DELETE_OBJECT = 91827365;
+
         public const int ADD_TAG = 67423626;
 
         public const int REMOVE_TAG = 75366454;
@@ -293,7 +297,7 @@ namespace BetterLegacy.Core.Data.Network
                     new StringParameter(id),
                     new IntParameter(health));
 
-        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(SEND_PLAYER_SETTINGS, new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
+        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, SEND_PLAYER_SETTINGS, new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
 
         #endregion
 
@@ -426,10 +430,24 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void CreateBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, CREATE_BEATMAP_OBJECT, beatmapObject);
 
-        public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true) => NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
-            beatmapObject,
-            new StringParameter(updateContext),
-            new BoolParameter(updateTimelineContext));
+        public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true)
+        {
+            if (NetworkManager.applyingNetworkChange)
+                return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
+                new ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                beatmapObject,
+                new StringParameter(updateContext),
+                new BoolParameter(updateTimelineContext));
+        }
+
+        public static void SubmitDeleteObject(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_DELETE_OBJECT,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
+
+        public static void DeleteObject(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, DELETE_OBJECT,
+            new StringParameter(id),
+            new IntParameter((int)modifierReferenceType));
 
         public static void AddTag(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
             new StringParameter(id),

@@ -283,7 +283,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     modifyable.IgnoreLifespan = _val;
                     if (modifyable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.MODIFIERS, false);
                     if (modifyable is BackgroundObject backgroundObject)
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
                     if (modifyable is PrefabObject prefabObject)

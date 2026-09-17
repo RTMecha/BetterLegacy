@@ -18,6 +18,8 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -781,6 +783,18 @@ namespace BetterLegacy.Editor.Managers
                     RTBackgroundEditor.inst.UpdateBackgroundList();
             }
 
+            // sync the deletion to the lobby. suppressed while applying a delete received from the network so we don't echo it back.
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.InEditor && !applyingNetworkChange)
+            {
+                var type = timelineObject.isBeatmapObject ? ModifierReferenceType.BeatmapObject :
+                    timelineObject.isPrefabObject ? ModifierReferenceType.PrefabObject :
+                    ModifierReferenceType.BackgroundObject;
+                if (ProjectArrhythmia.State.IsHosting)
+                    NetworkFunction.DeleteObject(timelineObject.ID, type);
+                else
+                    NetworkFunction.SubmitDeleteObject(timelineObject.ID, type);
+            }
+
             CoreHelper.Delete(timelineObject.GameObject);
             timelineObjects.Remove(timelineObject);
 
@@ -791,6 +805,30 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             HandleSelection(timelineObjects, index, false);
+        }
+        public bool applyingNetworkChange;
+        public void DeleteObjectNetwork(string id, ModifierReferenceType type)
+        {
+            if (!GameData.Current)
+                return;
+            TimelineObject timelineObject = type switch
+            {
+                ModifierReferenceType.BeatmapObject => GameData.Current.beatmapObjects.TryFind(x => x.id == id, out BeatmapObject beatmapObject) ? GetTimelineObject(beatmapObject) : null,
+                ModifierReferenceType.PrefabObject => GameData.Current.prefabObjects.TryFind(x => x.id == id, out PrefabObject prefabObject) ? GetTimelineObject(prefabObject) : null,
+                ModifierReferenceType.BackgroundObject => GameData.Current.backgroundObjects.TryFind(x => x.id == id, out BackgroundObject backgroundObject) ? GetTimelineObject(backgroundObject) : null,
+                _ => null,
+            };
+            if (timelineObject == null)
+                return;
+            applyingNetworkChange = true;
+            try
+            {
+                DeleteObject(timelineObject, select: false);
+            }
+            finally
+            {
+                applyingNetworkChange = false;
+            }
         }
 
         /// <summary>
@@ -1261,7 +1299,12 @@ namespace BetterLegacy.Editor.Managers
                             continue;
                         }
                         if (otherTimelineObject.isBeatmapObject)
-                            success = otherTimelineObject.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
+                        {
+                            var childBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+                            success = childBeatmapObject.TrySetParent(timelineObject.GetData<BeatmapObject>());
+                            if (success && ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBeatmapObject(childBeatmapObject, updateTimelineContext: false);
+                        }
                     }
                     RTLevel.Current?.RecalculateObjectStates();
 
@@ -1284,12 +1327,17 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                var tryParent = CurrentSelection.GetData<BeatmapObject>().TrySetParent(timelineObject.GetData<BeatmapObject>());
+                var childObject = CurrentSelection.GetData<BeatmapObject>();
+                var tryParent = childObject.TrySetParent(timelineObject.GetData<BeatmapObject>());
 
                 if (!tryParent)
                     EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
                 else
+                {
                     RTEditor.inst.parentPickerEnabled = false;
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(childObject, updateTimelineContext: false);
+                }
             }
         }
 

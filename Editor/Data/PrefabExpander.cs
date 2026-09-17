@@ -177,6 +177,7 @@ namespace BetterLegacy.Editor.Data
         {
             writer.Write(prefabObject != null);
             prefabObject?.WritePacket(writer);
+            prefab.WritePacket(writer); 
             writer.Write(select);
             writer.Write(offset);
             writer.Write(offsetToCurrentTime);
@@ -495,7 +496,10 @@ namespace BetterLegacy.Editor.Data
         void Submit(Expanded expanded)
         {
             if (ProjectArrhythmia.State.IsInLobby)
-                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.EXPAND_PREFAB, this, expanded);
+                NetworkManager.inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.EXPAND_PREFAB,
+                    new NetworkFunction.ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                    this,
+                    expanded);
         }
 
         #endregion
@@ -570,12 +574,13 @@ namespace BetterLegacy.Editor.Data
                 unparentedPastedObjects = null;
 
 
-                for (int i = 0; i < prefab.backgroundLayers.Count; i++)
-                    GameData.Current.backgroundLayers.Add(prefab.backgroundLayers[i]);
+                if (BackgroundLayers != null)
+                    for (int i = 0; i < BackgroundLayers.Count; i++)
+                        GameData.Current.backgroundLayers.Add(BackgroundLayers[i]);
 
-                for (int i = 0; i < prefab.backgroundObjects.Count; i++)
+                for (int i = 0; i < BackgroundObjects.Count; i++)
                 {
-                    var backgroundObject = prefab.backgroundObjects[i];
+                    var backgroundObject = BackgroundObjects[i];
 
                     if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.OverwriteAdd((sprite, index) => sprite.name == spriteAsset.name, spriteAsset.Copy());
@@ -607,13 +612,9 @@ namespace BetterLegacy.Editor.Data
                     }
                 }
 
-                var ids = new List<string>();
-                for (int i = 0; i < prefab.prefabObjects.Count; i++)
-                    ids.Add(LSText.randomString(16));
-
-                for (int i = 0; i < prefab.prefabObjects.Count; i++)
+                for (int i = 0; i < PrefabObjects.Count; i++)
                 {
-                    var subPrefabObject = prefab.prefabObjects[i];
+                    var subPrefabObject = PrefabObjects[i];
 
                     if (!GameData.Current.prefabs.Has(x => x.id == subPrefabObject.prefabID))
                         continue;

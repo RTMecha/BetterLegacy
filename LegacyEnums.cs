@@ -1091,6 +1091,13 @@ namespace BetterLegacy
 
     #region Beatmap
 
+    public enum MotionPathShape
+    {
+        Square = 0,
+        Circle = 1,
+        Triangle = 2,
+    }
+
     /// <summary>
     /// Represents all shape types.
     /// </summary>

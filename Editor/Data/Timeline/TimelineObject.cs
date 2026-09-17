@@ -323,6 +323,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         #endregion
 
         #region Functions
+        public IEditable Data => data;
 
         /// <summary>
         /// Casts the object data of the timeline object into a type.
@@ -830,6 +831,16 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
+                ButtonElement.ToggleButton("Preview Motion",
+                    () => MotionPathManager.inst && EditorTimeline.inst.SelectedObjects.All(x => MotionPathManager.inst.IsActive(x.Data)),
+                    () =>
+                    {
+                        if (!MotionPathManager.inst)
+                            return;
+                        bool enable = !EditorTimeline.inst.SelectedObjects.All(x => MotionPathManager.inst.IsActive(x.Data));
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                            MotionPathManager.inst.SetActive(timelineObject.Data, enable);
+                    }),
                 new SpacerElement(),
                 new ButtonElement("Move Backwards", () =>
                 {

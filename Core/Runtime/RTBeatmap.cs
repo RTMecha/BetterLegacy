@@ -192,7 +192,13 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="t">Time to calculate.</param>
         /// <param name="length">Length of the timeline.</param>
         /// <returns>Returns the position of an element on the game timeline based on the time, the song length and the level start and end offsets.</returns>
-        public float GetTimelineOffset(float t, float length) => ((t - GameData.Current.data.level.LevelStartOffset) / (length - (GameData.Current.data.level.LevelEndOffset + GameData.Current.data.level.LevelStartOffset))) * 400f;
+        public float GetTimelineOffset(float t, float length)
+        {
+            var levelData = GameData.Current?.data?.level;
+            float startOffset = levelData != null ? levelData.LevelStartOffset : 0f;
+            float endOffset = levelData != null ? levelData.LevelEndOffset : 0f;
+            return ((t - startOffset) / (length - (endOffset + startOffset))) * 400f;
+        }
 
         #region Packet
 

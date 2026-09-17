@@ -566,6 +566,8 @@ namespace BetterLegacy.Menus.UI.Popups
                     SteamLobbyManager.inst.SaveLobbySettings();
                     if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
                         PlayerManager.inst.RespawnPlayer(player);
+                    if (ProjectArrhythmia.State.IsOnlineMultiplayer)
+                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
                 });
                 modelIDField.GetPlaceholderText().text = "Set ID...";
                 EditorThemeManager.ApplyInputField(modelIDField, ThemeGroup.Search_Field_1);
@@ -593,6 +595,8 @@ namespace BetterLegacy.Menus.UI.Popups
                     player.colorSlot = num;
                     if (player.RuntimePlayer)
                         player.RuntimePlayer.colorSlot = num;
+                    if (ProjectArrhythmia.State.IsOnlineMultiplayer)
+                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
                 });
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(colorSlotField, min: -1, max: int.MaxValue);
@@ -620,6 +624,8 @@ namespace BetterLegacy.Menus.UI.Popups
                     SteamLobbyManager.inst.SaveLobbySettings();
                     if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
                         PlayerManager.inst.RespawnPlayer(player);
+                    if (ProjectArrhythmia.State.IsOnlineMultiplayer)
+                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
                 });
                 displayNameField.GetPlaceholderText().text = "Set name...";
                 EditorThemeManager.ApplyInputField(displayNameField, ThemeGroup.Search_Field_1);

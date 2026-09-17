@@ -329,7 +329,7 @@ namespace BetterLegacy.Editor.Managers
                     switch (referenceType)
                     {
                         case ModifierReferenceType.BeatmapObject: {
-                                RTLevel.Current?.UpdateObject(modifyable as BeatmapObject, ObjectContext.MODIFIERS);
+                                ObjectEditor.inst.UpdateObject(modifyable as BeatmapObject, ObjectContext.MODIFIERS, false);
                                 break;
                             }
                         case ModifierReferenceType.BackgroundObject: {
@@ -393,7 +393,7 @@ namespace BetterLegacy.Editor.Managers
 
                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.MODIFIERS, false);
                 if (modifyable is BackgroundObject backgroundObject)
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 

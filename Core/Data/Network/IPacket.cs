@@ -303,6 +303,11 @@ namespace BetterLegacy.Core.Data.Network
         /// <param name="writer">The current network writer.</param>
         public static void WritePacketList<T>(List<T> list, NetworkWriter writer) where T : IPacket
         {
+            if (list == null)
+            {
+                writer.Write(0);
+                return;
+            }
             writer.Write(list.Count);
             for (int i = 0; i < list.Count; i++)
                 list[i].WritePacket(writer);

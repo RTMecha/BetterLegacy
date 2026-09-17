@@ -334,7 +334,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Keyframes affect both physical object and timeline object.
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
             if (ProjectArrhythmia.State.IsInLobby)
                 NetworkFunction.EditBeatmapObject(beatmapObject);
@@ -434,7 +434,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (animatable is BeatmapObject beatmapObject)
             {
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                 if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
@@ -549,7 +549,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (animatable is BeatmapObject beatmapObject)
             {
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 if (ProjectArrhythmia.State.IsInLobby)
                     NetworkFunction.EditBeatmapObject(beatmapObject);
@@ -677,7 +677,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RenderKeyframes(animatable);
             RenderDialog(animatable);
             if (animatable is BeatmapObject beatmapObject)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
         }
 
@@ -830,6 +830,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             if (beatmapObject)
             {
+                // local-only per frame; the drag is broadcast once on release (CreateTimelineKeyframeEndDragTrigger) to avoid network spam.
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
             }
@@ -1027,7 +1028,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             if (animatable is BeatmapObject beatmapObject)
                             {
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                             }
 
                             ResizeKeyframeTimeline(animatable);
@@ -1059,7 +1060,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             if (animatable is BeatmapObject beatmapObject)
                             {
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                             }
 
                             ResizeKeyframeTimeline(animatable);
@@ -1086,7 +1087,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             if (animatable is BeatmapObject beatmapObject)
                             {
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                             }
 
                             ResizeKeyframeTimeline(animatable);
@@ -1113,7 +1114,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             if (animatable is BeatmapObject beatmapObject)
                             {
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                             }
 
                             ResizeKeyframeTimeline(animatable);
@@ -1140,7 +1141,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             if (animatable is BeatmapObject beatmapObject)
                             {
                                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                             }
 
                             ResizeKeyframeTimeline(animatable);
@@ -1166,7 +1167,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Keyframe Time affects both physical object and timeline object.
                         if (animatable is BeatmapObject beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                         RenderMarkers(animatable);
                     });
@@ -1208,7 +1209,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             // Keyframe Time affects both physical object and timeline object.
                             if (animatable is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         }
                     });
 
@@ -1289,7 +1290,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (animatable is BeatmapObject beatmapObject)
                 {
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }
 
                 ResizeKeyframeTimeline(animatable);
@@ -1323,7 +1324,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (animatable is BeatmapObject beatmapObject)
                     {
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
 
                     ResizeKeyframeTimeline(animatable);
@@ -1352,7 +1353,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (animatable is BeatmapObject beatmapObject)
                     {
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
 
                     ResizeKeyframeTimeline(animatable);
@@ -1381,7 +1382,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (animatable is BeatmapObject beatmapObject)
                     {
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
 
                     ResizeKeyframeTimeline(animatable);
@@ -1410,7 +1411,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (animatable is BeatmapObject beatmapObject)
                     {
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
 
                     ResizeKeyframeTimeline(animatable);
@@ -1434,7 +1435,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Keyframe Time affects both physical object and timeline object.
                 if (animatable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
             TriggerHelper.AddEventTriggers(dialog.CurvesDropdown.gameObject, TriggerHelper.ScrollDelta(dialog.CurvesDropdown));
 
@@ -1539,7 +1540,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                             RenderDialog(animatable);
                         });
@@ -1639,7 +1640,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                             RenderDialog(animatable);
                         });
@@ -1818,7 +1819,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                     KeyframeRandomHandler(type, selected, firstKF, animatable);
                 });
@@ -1851,7 +1852,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         keyframe.SetRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], _val);
                     if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 });
             }
 
@@ -1869,7 +1870,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                         keyframe.flee = _val;
                     if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 });
             }
 
@@ -1893,7 +1894,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (animatable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }
             });
 
@@ -1925,7 +1926,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (animatable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
 
             inputFieldStorage.leftButton.onClick.NewListener(() =>
@@ -1944,7 +1945,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (animatable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
             inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
@@ -1962,7 +1963,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (animatable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
 
             if (type != 2)
@@ -2055,7 +2056,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
             if (beatmapObject)
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
             int num = 0;
             foreach (var toggle in colorButtons)
@@ -2098,7 +2099,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 hexColors = selected.ToDictionary(x => x.ID, x => x.eventKeyframe.stringValues?.Copy());
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
             EditorContextMenu.AddContextMenu(StartHexColorField.gameObject,
                 EditorContextMenu.GetEditorColorFunctions(StartHexColorField, () => firstKF.eventKeyframe.GetStringValue(0, RTColors.WHITE_HEX_CODE), _val =>
@@ -2108,7 +2109,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 },
                 () =>
                 {
@@ -2120,7 +2121,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }));
             EndHexColorField.gameObject.SetActive(useCustomHexColor && showGradient);
             EndHexColorField.SetTextWithoutNotify(firstKF.eventKeyframe.GetStringValue(1, RTColors.WHITE_HEX_CODE));
@@ -2131,7 +2132,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 hexColors = selected.ToDictionary(x => x.ID, x => x.eventKeyframe.stringValues?.Copy());
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
             EditorContextMenu.AddContextMenu(EndHexColorField.gameObject,
                 EditorContextMenu.GetEditorColorFunctions(EndHexColorField, () => firstKF.eventKeyframe.GetStringValue(1, RTColors.WHITE_HEX_CODE), _val =>
@@ -2141,7 +2142,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 },
                 () =>
                 {
@@ -2154,7 +2155,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }));
 
             var hexCollision = kfdialog.Find("opacitycollision").GetComponent<Toggle>();
@@ -2211,7 +2212,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                 });
                 opacity.onEndEdit.NewListener(_val =>
@@ -2228,7 +2229,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                 });
 
@@ -2248,7 +2249,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
@@ -2263,7 +2264,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
@@ -2298,7 +2299,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                 });
                 gradientOpacity.onEndEdit.NewListener(_val =>
@@ -2310,7 +2311,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                 });
 
@@ -2326,7 +2327,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
@@ -2337,7 +2338,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
@@ -2358,7 +2359,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2371,7 +2372,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2389,7 +2390,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match End Hue", () =>
@@ -2405,7 +2406,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
 
@@ -2421,7 +2422,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2434,7 +2435,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2450,7 +2451,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match End Sat", () =>
@@ -2466,7 +2467,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
 
@@ -2482,7 +2483,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2495,7 +2496,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(0, startColorsReference, selected, firstKF, animatable);
                 });
@@ -2511,7 +2512,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match End Val", () =>
@@ -2527,7 +2528,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
             }
@@ -2547,7 +2548,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2560,7 +2561,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2578,7 +2579,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match Start Hue", () =>
@@ -2588,7 +2589,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
 
@@ -2604,7 +2605,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2617,7 +2618,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2633,7 +2634,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match Start Sat", () =>
@@ -2643,7 +2644,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
 
@@ -2659,7 +2660,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2672,7 +2673,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     ColorKeyframeHandler(5, endColorsReference, selected, firstKF, animatable);
                 });
@@ -2688,7 +2689,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }),
                     new ButtonElement("Match Start Sat", () =>
@@ -2698,7 +2699,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                         if (beatmapObject)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                         FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                     }));
             }
@@ -2757,7 +2758,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                 FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
             });
@@ -2801,7 +2802,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
 
                     FullColorKeyframeHandler(selected, firstKF, animatable, beatmapObject, kfdialog);
                 }));
@@ -2848,7 +2849,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                 if (beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
             });
 
             EditorContextMenu.AddContextMenu(dialog.RelativeToggle.gameObject,
@@ -2902,7 +2903,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
                     firstKF.eventKeyframe.SetSecondaryValue(valueIndex, num);
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }
             });
 
@@ -2918,7 +2919,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     foreach (var keyframe in selected)
                         keyframe.eventKeyframe.secondaryValues[valueIndex] -= x;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }
             });
             inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -2933,7 +2934,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     foreach (var keyframe in selected)
                         keyframe.eventKeyframe.secondaryValues[valueIndex] += x;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 }
             });
 
@@ -2960,7 +2961,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         foreach (var keyframe in selected)
                             keyframe.eventKeyframe.values[valueIndex] = x;
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                     }
                     else
                     {

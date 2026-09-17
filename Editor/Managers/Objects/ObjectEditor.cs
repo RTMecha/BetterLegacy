@@ -2184,7 +2184,7 @@ namespace BetterLegacy.Editor.Managers
             if (!active)
                 return;
 
-            RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => RTLevel.Current.UpdateObject(beatmapObject, context));
+            RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => UpdateObject(beatmapObject, context, false));
         }
 
         /// <summary>

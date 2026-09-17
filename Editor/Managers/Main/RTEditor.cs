@@ -1409,6 +1409,7 @@ namespace BetterLegacy.Editor.Managers
             RTPrefabEditor.Init();
             ObjectEditor.Init();
             RTCheckpointEditor.Init();
+            MotionPathManager.Init();
 
             MultiObjectEditor.Init();
             RTTextEditor.Init();
@@ -4948,6 +4949,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     parentable.Parent = BeatmapObject.CAMERA_PARENT;
                     parentable.UpdateParentChain();
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                        NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                     RenderParent(parentable, dialog, advancedParent);
                 }));
 
@@ -5030,6 +5033,8 @@ namespace BetterLegacy.Editor.Managers
                 else
                     parentable.Parent = string.Empty;
                 parentable.UpdateParentChain();
+                if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                    NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                 RenderParent(parentable, dialog, advancedParent);
             });
 
@@ -5072,6 +5077,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 parentable.ParentDesync = _val;
                 parentable.UpdateParentChain();
+                if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                    NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
             });
 
             for (int i = 0; i < dialog.ParentSettings.Count; i++)
@@ -5086,6 +5093,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     parentable.SetParentType(index, _val);
                     parentable.UpdateParentChain();
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                        NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                 });
 
                 // Parent Offset
@@ -5096,6 +5105,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         parentable.SetParentOffset(index, num);
                         parentable.UpdateParentChain();
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                        NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                     }
                 });
 
@@ -5107,6 +5118,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     parentable.SetParentAdditive(index, _val);
                     parentable.UpdateParentChain();
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                        NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                 });
 
                 // Parent Parallax
@@ -5117,6 +5130,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         parentable.ParentParallax[index] = num;
                         parentable.UpdateParentChain();
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
+                        NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
                     }
                 });
 
@@ -5143,6 +5158,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     editable.EditorData.Layer = _val;
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
+                    if (ProjectArrhythmia.State.IsInLobby && editable is BeatmapObject layerObject)
+                        NetworkFunction.EditBeatmapObject(layerObject);
                     RenderEditorLayer(editable, editorLayerUI);
                 });
             EditorContextMenu.AddContextMenu(editorLayerUI.EditorLayerField.gameObject,
@@ -5151,6 +5168,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         editable.EditorData.Layer = EditorTimeline.inst.Layer;
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
+                        if (ProjectArrhythmia.State.IsInLobby && editable is BeatmapObject layerObject)
+                            NetworkFunction.EditBeatmapObject(layerObject);
                         RenderEditorLayer(editable, editorLayerUI);
                     }));
         }
