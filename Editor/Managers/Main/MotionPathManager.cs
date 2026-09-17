@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -9,19 +9,17 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 namespace BetterLegacy.Editor.Managers
+// Basically, right? I had a dream. Install and Open SFM to understand what i going for.
 {
     public class MotionPathManagerSettings : ManagerSettings
     {
         public MotionPathManagerSettings() { }
+
         public override string ClassName => "[<color=#4CAF50>MotionPathManager</color>] \n";
     }
     public class MotionPathManager : BaseManager<MotionPathManager, MotionPathManagerSettings>
     {
-        // pinned paths, toggled on via the "Preview Motion" menu. persist until toggled off.
         public Dictionary<IEditable, MotionPath> activePaths = new Dictionary<IEditable, MotionPath>();
-        // transient paths driven purely by selection when "Always Preview Selected" is on. never persisted, never touch the pinned toggle state.
-        public Dictionary<IEditable, MotionPath> selectionPaths = new Dictionary<IEditable, MotionPath>();
-        readonly List<IEditable> selectionToRemove = new List<IEditable>();
         Transform container;
         Material exteriorMaterial;
         Material interiorMaterial;
@@ -68,6 +66,7 @@ namespace BetterLegacy.Editor.Managers
                 interiorMaterial = new Material(protoMaterial);
             }
         }
+
         public bool IsActive(IEditable obj) => obj != null && activePaths.ContainsKey(obj);
         public void Toggle(IEditable obj) => SetActive(obj, !IsActive(obj));
         public void SetActive(IEditable obj, bool active)
@@ -88,15 +87,7 @@ namespace BetterLegacy.Editor.Managers
         }
         public override void OnTick()
         {
-            // motion paths are an editor-only visual. tear them down when we leave the editor so they don't linger in-game.
-            if (!ProjectArrhythmia.State.InEditor || !GameData.Current)
-            {
-                if (activePaths.Count > 0 || selectionPaths.Count > 0)
-                    ClearAllPaths();
-                return;
-            }
-            UpdateSelectionPreview();
-            if (activePaths.Count == 0 && selectionPaths.Count == 0)
+            if (activePaths.Count == 0 || !GameData.Current)
                 return;
             var config = EditorConfig.Instance;
             if (baseVertices == null || (int)config.MotionPathNodeShape.Value != builtShape)
@@ -134,54 +125,6 @@ namespace BetterLegacy.Editor.Managers
             }
             for (int i = 0; i < toRemove.Count; i++)
                 SetActive(toRemove[i], false);
-            // transient selection previews. validity is maintained in UpdateSelectionPreview, so just render.
-            foreach (var kvp in selectionPaths)
-                RenderPath(kvp.Value, now, pulseClock, maxSeek, baseSize, largeMult, shrink, interval, interiorMult, nodePerFrame, easeFunc, frontZ);
-        }
-        // syncs the transient selection-driven paths against the current selection, without touching the pinned toggle state.
-        void UpdateSelectionPreview()
-        {
-            if (!EditorConfig.Instance.MotionPathAlwaysPreviewSelected.Value || !EditorTimeline.inst)
-            {
-                if (selectionPaths.Count > 0)
-                    ClearSelectionPaths();
-                return;
-            }
-            var selected = EditorTimeline.inst.SelectedObjects;
-            // drop transient paths that are no longer selected, became pinned, or went invalid.
-            selectionToRemove.Clear();
-            foreach (var kvp in selectionPaths)
-            {
-                var obj = kvp.Key;
-                if (activePaths.ContainsKey(obj) || !IsObjectValid(obj) || !selected.Exists(x => x.Data == obj))
-                    selectionToRemove.Add(obj);
-            }
-            for (int i = 0; i < selectionToRemove.Count; i++)
-            {
-                selectionPaths[selectionToRemove[i]].Destroy();
-                selectionPaths.Remove(selectionToRemove[i]);
-            }
-            // add transient paths for newly selected objects. skip ones already pinned so we never duplicate or persist them.
-            for (int i = 0; i < selected.Count; i++)
-            {
-                var data = selected[i].Data;
-                if (data == null || activePaths.ContainsKey(data) || selectionPaths.ContainsKey(data) || !IsObjectValid(data))
-                    continue;
-                selectionPaths[data] = new MotionPath(data);
-            }
-        }
-        void ClearSelectionPaths()
-        {
-            foreach (var kvp in selectionPaths)
-                kvp.Value.Destroy();
-            selectionPaths.Clear();
-        }
-        void ClearAllPaths()
-        {
-            foreach (var kvp in activePaths)
-                kvp.Value.Destroy();
-            activePaths.Clear();
-            ClearSelectionPaths();
         }
         void RenderPath(MotionPath path, float now, float pulseClock, float maxSeek, float baseSize, float largeMult, float shrink, float interval, float interiorMult, float nodePerFrame, EaseFunction easeFunc, float frontZ)
         {
