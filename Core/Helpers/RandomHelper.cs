@@ -46,6 +46,10 @@ namespace BetterLegacy.Core.Helpers
             ResetSpawnIndices();
         }
 
+        public static string ResolveSeed(string requested)
+            => !string.IsNullOrEmpty(requested) ? requested
+                : !string.IsNullOrEmpty(HostSeed) ? HostSeed
+                : LSFunctions.LSText.randomString(16);
         /// <summary>
         /// Randomizes the current seed.
         /// </summary>
@@ -82,12 +86,6 @@ namespace BetterLegacy.Core.Helpers
         public static float SingleFromRange(int hash, float min, float max) => RTMath.Lerp(min, max, Single(hash));
         public static int IntFromRange(int hash, int min, int max) => UnityEngine.Mathf.RoundToInt(SingleFromRange(hash, min, max));
 
-        /// <summary>
-        /// Deterministic string hash (FNV-1a). Unlike <see cref="string.GetHashCode"/>, this is stable across processes and platforms,
-        /// so the same seed produces the same randomness every run and stays in sync between players.
-        /// </summary>
-        /// <param name="str">String to hash.</param>
-        /// <returns>Returns a process-portable hash code.</returns>
         public static int StableHash(string str)
         {
             unchecked
@@ -101,8 +99,6 @@ namespace BetterLegacy.Core.Helpers
                 return (int)hash;
             }
         }
-
-        // strings hash deterministically via StableHash; ints/floats already hash deterministically (identity / bit pattern).
         static int HashOf(object obj) => obj is string s ? StableHash(s) : (obj?.GetHashCode() ?? 0);
 
         /// <summary>

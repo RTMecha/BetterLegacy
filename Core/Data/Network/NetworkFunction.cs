@@ -155,6 +155,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_SCENE = 683429582;
 
         public const int SET_CLIENT_SEED = 64674378;
+        public const int SUBMIT_SEED = 64674379;
         public const int SET_CLIENT_GAME_DATA = 9432119;
         public const int SET_CLIENT_META_DATA = 52635853;
         public const int SET_CLIENT_RUNTIME = 2536736;
@@ -215,12 +216,23 @@ namespace BetterLegacy.Core.Data.Network
         public const int EXPAND_PREFAB = 16213678;
 
         public const int ADD_PREFAB_OBJECT = 46432637;
+        public const int EDIT_PREFAB_OBJECT = 46432638;
 
         public const int IMPORT_PREFAB = 7456437;
 
         public const int SET_PLAYHEAD_PRESENCE = 342534623;
 
         public const int SET_SELECTION_PRESENCE = 234876543;
+
+        public const int RECONCILE_OBJECTS = 728451963;
+
+        public const int REQUEST_OBJECTS = 728451964;
+
+        public const int ANNOUNCE_SAVE = 728451965;
+
+        public const int RECONCILE_PREFABS = 728451966;
+
+        public const int REQUEST_PREFABS = 728451967;
 
         #endregion
 
@@ -364,6 +376,11 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void SetClientSeed(string seed, SteamId? steamId) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_SEED, steamId, new StringParameter(seed));
 
+        /// <summary>
+        /// Client → host: request that the lobby seed be set to the given value. Host resolves and broadcasts it.
+        /// </summary>
+        public static void SubmitSeed(string seed) => NetworkManager.inst.RunFunction(Group.Game, SUBMIT_SEED, new StringParameter(seed));
+
         public static void SetClientMetaData(MetaData metaData, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_META_DATA, new StringParameter(id), metaData);
 
         public static void SetClientGameData(GameData gameData, string id = null) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_GAME_DATA, new StringParameter(id), gameData);
@@ -445,6 +462,19 @@ namespace BetterLegacy.Core.Data.Network
                 new BoolParameter(updateTimelineContext));
         }
 
+        public static void EditPrefabObject(PrefabObject prefabObject, string updateContext = "")
+        {
+            if (prefabObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby)
+                return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_PREFAB_OBJECT,
+                new ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                prefabObject,
+                new StringParameter(updateContext));
+        }
+        public static void ReconcilePrefabs(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, RECONCILE_PREFABS, SendType.Unreliable,
+            new StringParameter(joinedIDs));
+        public static void RequestPrefabs(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, REQUEST_PREFABS,
+            new StringParameter(joinedIDs));
         public static void SubmitDeleteObject(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_DELETE_OBJECT,
             new StringParameter(id),
             new IntParameter((int)modifierReferenceType));
@@ -477,6 +507,12 @@ namespace BetterLegacy.Core.Data.Network
             new ULongParameter(sender),
             new StringParameter(joinedIDs));
 
+        public static void ReconcileObjects(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, RECONCILE_OBJECTS, SendType.Unreliable,
+            new StringParameter(joinedIDs));
+        public static void RequestObjects(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, REQUEST_OBJECTS,
+            new StringParameter(joinedIDs));
+        public static void AnnounceSave(string message) => NetworkManager.inst.RunFunction(Group.Editor, ANNOUNCE_SAVE,
+            new StringParameter(message));
         #endregion
 
         #endregion

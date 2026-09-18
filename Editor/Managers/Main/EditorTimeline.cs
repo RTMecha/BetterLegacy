@@ -486,6 +486,8 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdateTimeChange()
         {
+            if (!timelineSlider || !AudioManager.inst.CurrentAudioSource.clip)
+                return;
             if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
             {
                 newTime = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * EditorManager.inst.Zoom;
@@ -1296,6 +1298,8 @@ namespace BetterLegacy.Editor.Managers
                             prefabObject.Parent = timelineObject.ID;
                             prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
 
                             success = true;
                             continue;
@@ -1324,6 +1328,8 @@ namespace BetterLegacy.Editor.Managers
                     prefabObject.Parent = timelineObject.ID;
                     prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                     RTEditor.inst.parentPickerEnabled = false;
 
                     return;

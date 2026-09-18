@@ -643,7 +643,7 @@ namespace BetterLegacy.Editor.Managers
 
                 n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 prefabObject.StartTime = n;
-                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TIME);
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             });
 
@@ -670,7 +670,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.AutokillDropdown.onValueChanged.NewListener(_val =>
             {
                 prefabObject.autoKillType = (PrefabAutoKillType)_val;
-                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.AUTOKILL);
             });
 
             PrefabObjectEditor.AutokillField.SetTextWithoutNotify(prefabObject.autoKillOffset.ToString());
@@ -680,7 +680,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     prefabObject.autoKillOffset = num;
                     if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.AUTOKILL);
                 }
             });
 
@@ -693,7 +693,7 @@ namespace BetterLegacy.Editor.Managers
                                                 prefabObject.autoKillType == PrefabAutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
 
                 if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.AUTOKILL);
                 RenderPrefabObjectAutokill(prefabObject, prefab);
             });
         }
@@ -708,12 +708,14 @@ namespace BetterLegacy.Editor.Managers
             {
                 prefabObject.offsetParentDesyncTime = _val;
                 RTLevel.Current?.UpdatePrefab(prefabObject);
+                NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
             });
             PrefabObjectEditor.ParentSelfToggle.SetIsOnWithoutNotify(prefabObject.parentSelf);
             PrefabObjectEditor.ParentSelfToggle.OnValueChanged.NewListener(_val =>
             {
                 prefabObject.parentSelf = _val;
                 RTLevel.Current?.UpdatePrefab(prefabObject);
+                NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
             });
             RTEditor.inst.RenderParent(prefabObject, PrefabObjectEditor, ObjEditor.inst.advancedParent && EditorHelper.CheckComplexity("prefab_object/parent", Complexity.Advanced));
         }
@@ -758,7 +760,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     currentKeyframe.values[0] = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
                 inputFieldX.OnEndEdit.NewListener(_val =>
                 {
@@ -778,7 +780,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     currentKeyframe.randomValues[0] = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
                 r_inputFieldX.OnEndEdit.NewListener(_val =>
                 {
@@ -809,7 +811,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             currentKeyframe.random = randomIndex;
                             RenderPrefabObjectTransforms(prefabObject);
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         });
                     }
                 }
@@ -826,7 +828,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         currentKeyframe.values[1] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     });
                     inputFieldY.OnEndEdit.NewListener(_val =>
                     {
@@ -856,7 +858,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         currentKeyframe.randomValues[1] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     });
                     r_inputFieldY.OnEndEdit.NewListener(_val =>
                     {
@@ -902,7 +904,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     currentKeyframe.randomValues[2] = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                 });
 
                 TriggerHelper.InversableField(randomIntervalField);
@@ -926,7 +928,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 prefabObject.depth = num;
-                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
             });
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.DepthField);
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.DepthField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.DepthField.inputField));
@@ -945,7 +947,7 @@ namespace BetterLegacy.Editor.Managers
 
                 num = Mathf.Clamp(num, 0, 1000);
                 prefabObject.RepeatCount = num;
-                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.REPEAT);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.REPEAT); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.REPEAT);
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(PrefabObjectEditor.RepeatCountField, max: 1000);
@@ -959,7 +961,7 @@ namespace BetterLegacy.Editor.Managers
 
                 num = Mathf.Clamp(num, 0f, 60f);
                 prefabObject.RepeatOffsetTime = num;
-                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TIME);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.RepeatOffsetTimeField, max: 60f);
@@ -975,7 +977,10 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.SpeedField.OnValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
+                {
                     prefabObject.Speed = num;
+                    NetworkFunction.EditPrefabObject(prefabObject);
+                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.SpeedField, min: 0.1f, max: PrefabObject.MAX_PREFAB_OBJECT_SPEED);

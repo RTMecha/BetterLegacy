@@ -9,6 +9,8 @@ using SteamworksFacepunch;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -160,7 +162,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var peer in Peers.Values)
             {
-                if (!ShouldShowPeerPlayhead(peer) || EditorConfig.Instance.HidePlayers.Value)
+                if (!ShouldShowPeerPlayhead(peer) || EditorConfig.Instance.HideOtherUsers.Value)
                 {
                     if (peer.ghost)
                         peer.ghost.SetActive(false);
@@ -180,7 +182,11 @@ namespace BetterLegacy.Editor.Managers
             }
 
             while (nextGhostPoolIndex < ghostPool.Count)
-                ghostPool[nextGhostPoolIndex++].SetActive(false);
+            {
+                var pooled = ghostPool[nextGhostPoolIndex++];
+                if (pooled)
+                    pooled.SetActive(false);
+            }
         }
 
         static void EnsureGhostPool()
@@ -190,16 +196,24 @@ namespace BetterLegacy.Editor.Managers
                 if (!EditorTimeline.inst || !EditorTimeline.inst.timelineObjectsParent)
                     return;
 
-                ghostPoolParent = new GameObject("Ghost Playheads");
-                ghostPoolParent.transform.SetParent(EditorTimeline.inst.timelineObjectsParent, false);
-                ghostPoolParent.transform.SetSiblingIndex(0);
+                ghostPool.Clear();
+                nextGhostPoolIndex = 0;
+                foreach (var peer in Peers.Values)
+                    peer.ghost = null;
+                ghostPoolParent = Creator.NewUIObject("Ghost Playheads", EditorTimeline.inst.timelineObjectsParent);
+                RectValues.FullAnchored.AssignToRectTransform(ghostPoolParent.transform.AsRT());
+                ghostPoolParent.transform.SetAsLastSibling();
             }
         }
 
         static GameObject GetOrCreateGhost()
         {
-            if (nextGhostPoolIndex < ghostPool.Count)
-                return ghostPool[nextGhostPoolIndex++];
+            while (nextGhostPoolIndex < ghostPool.Count)
+            {
+                if (ghostPool[nextGhostPoolIndex])
+                    return ghostPool[nextGhostPoolIndex++];
+                ghostPool.RemoveAt(nextGhostPoolIndex);
+            }
 
             var ghost = new GameObject("Ghost Playhead");
             ghost.transform.SetParent(ghostPoolParent.transform, false);
@@ -223,7 +237,7 @@ namespace BetterLegacy.Editor.Managers
             if (!PlayerManager.inst)
                 return;
 
-            bool hide = EditorConfig.Instance.HidePlayers.Value;
+            bool hide = EditorConfig.Instance.HideOtherUsers.Value;
             foreach (var player in PlayerManager.inst.players)
             {
                 if (!player.IsLocalPlayer && player.RuntimePlayer && player.RuntimePlayer.gameObject)
@@ -259,6 +273,16 @@ namespace BetterLegacy.Editor.Managers
             string joinedIDs = string.Join("\n", ids);
 
             NetworkFunction.SetSelectionPresence(RTSteamManager.inst.steamUser.steamID, joinedIDs);
+        }
+        public static void BroadcastNewObject(BeatmapObject beatmapObject)
+        {
+            if (beatmapObject == null || !ProjectArrhythmia.State.IsInLobby)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.CreateBeatmapObject(beatmapObject);
+            else
+                NetworkFunction.SubmitBeatmapObject(beatmapObject);
         }
 
         public static void Clear()

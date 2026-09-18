@@ -59,6 +59,11 @@ namespace BetterLegacy.Core.Helpers
 
         public static Sprite LoadSprite(string path, TextureFormat textureFormat = TextureFormat.ARGB32, bool mipChain = false, TextureWrapMode textureWrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Point)
         {
+            if (!File.Exists(path))
+            {
+                CoreHelper.LogError($"Sprite file does not exist: {path}");
+                return null;
+            }
             return LoadSprite(File.ReadAllBytes(path), textureFormat, mipChain, textureWrapMode, filterMode);
         }
 

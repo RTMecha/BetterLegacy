@@ -81,7 +81,7 @@ namespace BetterLegacy.Configs
         public Setting<Color> TimelineCursorColor { get; set; }
         public Setting<Color> KeyframeCursorColor { get; set; }
         public Setting<Color> ObjectSelectionColor { get; set; }
-        public Setting<bool> HidePlayers { get; set; }
+        public Setting<bool> HideOtherUsers { get; set; }
         public Setting<Color> TimelineObjectBaseColor { get; set; }
         public Setting<Color> TimelineObjectTextColor { get; set; }
         public Setting<Color> TimelineObjectMarkColor { get; set; }
@@ -631,7 +631,7 @@ namespace BetterLegacy.Configs
             TimelineCursorColor = Bind(this, TIMELINE, "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
             KeyframeCursorColor = Bind(this, TIMELINE, "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
             ObjectSelectionColor = Bind(this, TIMELINE, "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
-            HidePlayers = Bind(this, TIMELINE, "Hide Players", false, "Hide other players' playheads and models in the editor.");
+            HideOtherUsers = Bind(this, TIMELINE, "Hide Other Users", false, "Hide other users' playheads and player models in the editor.");
             TimelineObjectBaseColor = Bind(this, TIMELINE, "Timeline Object Base Color", RTColors.HexToColor("F5F5F5"), "Color of the base of timeline objects.");
             TimelineObjectTextColor = Bind(this, TIMELINE, "Timeline Object Text Color", RTColors.HexToColor("FFFFFF"), "Color of the text of timeline objects.");
             TimelineObjectMarkColor = Bind(this, TIMELINE, "Timeline Object Mark Color", RTColors.HexToColor("000000aa"), "Color of the mark (text BG) of timeline objects.");
@@ -1290,7 +1290,7 @@ namespace BetterLegacy.Configs
             TimelineGridThickness.SettingChanged += TimelineGridChanged;
             TimelineGridColor.SettingChanged += TimelineGridChanged;
 
-            HidePlayers.SettingChanged += () =>
+            HideOtherUsers.SettingChanged += () =>
             {
                 Editor.Managers.EditorMultiplayer.RenderPlayheads();
                 Editor.Managers.EditorMultiplayer.UpdatePlayerModelVisibility();

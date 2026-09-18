@@ -39,6 +39,9 @@ namespace BetterLegacy.Editor.Managers
         Vector3[] chainLocalPos = new Vector3[8];
         float[] chainLocalRot = new float[8];
         Vector3[] chainLocalScale = new Vector3[8];
+        Sequence<Vector3> camPosSequence;
+        Sequence<Vector3> camZoomSequence;
+        Sequence<Vector3> camRotSequence;
         readonly List<IEditable> toRemove = new List<IEditable>();
         const int MAX_VISIBLE = 2000;
         static int ObjectLayer => RTLevel.FOREGROUND_LAYER;
@@ -112,6 +115,7 @@ namespace BetterLegacy.Editor.Managers
             float interiorMult = config.MotionPathNodeInteriorMultiplier.Value;
             float nodePerFrame = config.MotionPathNodePerFrame.Value;
             var easeFunc = Ease.GetEaseFunction(config.MotionPathNodeAnimationEasing.Value);
+            BuildCameraSequences();
             toRemove.Clear();
             foreach (var kvp in activePaths)
             {
@@ -259,7 +263,69 @@ namespace BetterLegacy.Editor.Managers
                 rot += localRot[i];
                 scale = RTMath.Scale(scale, localScale[i]);
             }
+
+            // The topmost object may be parented to the camera, whose motion comes from event keyframes.
+            // Compose it as the outermost parent (scale -> rotate -> move), mirroring UpdateCameraParent.
+            var top = chain[n - 1];
+            if (top.Parent == BeatmapObject.CAMERA_PARENT)
+                ApplyCameraParent(top, time, ref pos, ref rot, ref scale);
+
             return new WorldTransform { position = pos, rotation = rot, scale = scale };
+        }
+        void ApplyCameraParent(BeatmapObject top, float time, ref Vector3 pos, ref float rot, ref Vector3 scale)
+        {
+            var camPos = camPosSequence != null ? EvalSequence(camPosSequence, time) : Vector3.zero;
+            float zoom = camZoomSequence != null ? EvalSequence(camZoomSequence, time).x : 20f;
+            if (zoom == 0f || float.IsNaN(zoom))
+                zoom = 20f;
+            float camRot = camRotSequence != null ? EvalSequence(camRotSequence, time).x : 0f;
+            float camOrthoZoom = zoom / 20f - 1f;
+
+            if (top.GetParentType(1))
+            {
+                float off = top.parallaxSettings[1];
+                float zoomFactor = camOrthoZoom * off + 1f;
+                pos = new Vector3(pos.x * zoomFactor, pos.y * zoomFactor, pos.z);
+                scale = new Vector3(scale.x * zoomFactor, scale.y * zoomFactor, scale.z * (off + 1f));
+            }
+            if (top.GetParentType(2))
+            {
+                float cr = camRot * top.parallaxSettings[2];
+                pos = RTMath.Rotate(pos, cr);
+                rot += cr;
+            }
+            if (top.GetParentType(0))
+            {
+                float off = top.parallaxSettings[0];
+                pos = RTMath.Move(pos, new Vector3(camPos.x * off, camPos.y * off, 0f));
+            }
+        }
+        void BuildCameraSequences()
+        {
+            var events = GameData.Current ? GameData.Current.events : null;
+            camPosSequence = BuildEventSequence(events != null && events.Count > 0 ? events[0] : null);
+            camZoomSequence = BuildEventSequence(events != null && events.Count > 1 ? events[1] : null);
+            camRotSequence = BuildEventSequence(events != null && events.Count > 2 ? events[2] : null);
+        }
+        static Sequence<Vector3> BuildEventSequence(List<EventKeyframe> eventKeyframes)
+        {
+            var keyframes = new List<IKeyframe<Vector3>>();
+            if (eventKeyframes != null)
+            {
+                var currentValue = Vector3.zero;
+                foreach (var eventKeyframe in eventKeyframes)
+                {
+                    var value = new Vector3(
+                        eventKeyframe.values.Length > 0 ? eventKeyframe.values[0] : 0f,
+                        eventKeyframe.values.Length > 1 ? eventKeyframe.values[1] : 0f,
+                        eventKeyframe.values.Length > 2 ? eventKeyframe.values[2] : 0f);
+                    currentValue = eventKeyframe.relative ? currentValue + value : value;
+                    keyframes.Add(new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative));
+                }
+            }
+            if (keyframes.Count == 0)
+                keyframes.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.GetEaseFunction(Easing.Linear), false));
+            return new Sequence<Vector3>(keyframes);
         }
         static Vector3 ScaleXY(Vector3 v, float parallax) => new Vector3(v.x * parallax, v.y * parallax, 0f);
         static Vector3 ScaleXY1(Vector3 v, float parallax) => new Vector3(v.x * parallax, v.y * parallax, 1f);

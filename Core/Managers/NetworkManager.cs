@@ -484,7 +484,18 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
-            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 1, reader => RandomHelper.HostSeed = reader.ReadString()),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 1, reader =>
+            {
+                RandomHelper.HostSeed = reader.ReadString();
+                RTLevel.Current?.InitSeed();
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_SEED, 1, reader =>
+            {
+                var effective = RandomHelper.ResolveSeed(reader.ReadString());
+                RandomHelper.HostSeed = effective;
+                NetworkFunction.SetClientSeed(effective, null);
+                RTLevel.Current?.InitSeed(effective);
+            }),
 
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_AUDIO, 1, reader =>
             {
@@ -596,6 +607,8 @@ namespace BetterLegacy.Core.Managers
             {
                 var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
                 if (!SteamLobbyManager.inst.LobbySettings.CanEditObjects)
+                    return;
+                if (GameData.Current.beatmapObjects.Has(x => x.id == beatmapObject.id))
                     return;
 
                 GameData.Current.beatmapObjects.Add(beatmapObject);
@@ -793,6 +806,36 @@ namespace BetterLegacy.Core.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                 EditorTimeline.inst.UpdateTransformIndex();
             }),
+            new NetworkFunction(NetworkFunction.EDIT_PREFAB_OBJECT, 3, reader =>
+            {
+                var steamID = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<PrefabObject>(reader);
+                var updateContext = reader.ReadString();
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                if (!GameData.Current || !GameData.Current.prefabObjects.TryFind(x => x.id == edit.id, out PrefabObject prefabObject))
+                    return;
+                prefabObject.CopyData(edit, false);
+                for (int i = 0; i < prefabObject.modifiers.Count; i++)
+                {
+                    var modifier = prefabObject.modifiers[i];
+                    modifier.verified = false;
+                    ModifiersManager.inst.VerifyModifier(modifier, prefabObject);
+                }
+
+                var prefab = prefabObject.GetPrefab();
+                if (string.IsNullOrEmpty(updateContext))
+                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                else
+                    RTLevel.Current?.UpdatePrefab(prefabObject, updateContext);
+                RTLevel.Current?.RecalculateObjectStates();
+                if (prefab && RTPrefabEditor.inst)
+                    RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, false);
+                if (EditorTimeline.inst)
+                    prefabObject.TimelineObject?.Render();
+                if (RTPrefabEditor.inst && EditorTimeline.inst && EditorTimeline.inst.CurrentSelection != null && EditorTimeline.inst.CurrentSelection.ID == prefabObject.id)
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+            }),
             new NetworkFunction(NetworkFunction.IMPORT_PREFAB, 1, reader =>
             {
                 var prefab = Packet.CreateFromPacket<Prefab>(reader);
@@ -822,6 +865,61 @@ namespace BetterLegacy.Core.Managers
                 var joinedIDs = reader.ReadString();
                 var ids = joinedIDs.Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
                 Editor.Managers.EditorMultiplayer.ApplySelection(sender, ids);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.RECONCILE_OBJECTS, 1, reader =>
+            {
+                var hostIDs = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                var localNonPrefab = GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab);
+                var localIDs = localNonPrefab.Select(x => x.id).ToHashSet();
+                foreach (var beatmapObject in localNonPrefab)
+                    if (!hostIDs.Contains(beatmapObject.id))
+                        NetworkFunction.SubmitBeatmapObject(beatmapObject);
+
+                var missing = hostIDs.Where(id => !localIDs.Contains(id)).ToList();
+                if (missing.Count > 0)
+                    NetworkFunction.RequestObjects(string.Join("\n", missing));
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.ANNOUNCE_SAVE, 1, reader =>
+            {
+                var message = reader.ReadString();
+                if (ProjectArrhythmia.State.InEditor && EditorManager.inst)
+                    EditorManager.inst.DisplayNotification(message, 3f, EditorManager.NotificationType.Success);
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_OBJECTS, 1, reader =>
+            {
+                var ids = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                foreach (var beatmapObject in GameData.Current.beatmapObjects)
+                    if (ids.Contains(beatmapObject.id))
+                        NetworkFunction.CreateBeatmapObject(beatmapObject);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.RECONCILE_PREFABS, 1, reader =>
+            {
+                var hostIDs = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+
+                var localIDs = GameData.Current.prefabObjects.Select(x => x.id).ToHashSet();
+
+                foreach (var prefabObject in GameData.Current.prefabObjects)
+                    if (!hostIDs.Contains(prefabObject.id))
+                        inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
+
+                var missing = hostIDs.Where(id => !localIDs.Contains(id)).ToList();
+                if (missing.Count > 0)
+                    NetworkFunction.RequestPrefabs(string.Join("\n", missing));
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_PREFABS, 1, reader =>
+            {
+                var ids = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                foreach (var prefabObject in GameData.Current.prefabObjects)
+                    if (ids.Contains(prefabObject.id))
+                        inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
             }),
         };
 
