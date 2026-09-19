@@ -3,21 +3,21 @@
 ### Core
 - Added getRaycast and getRaycastPlayer modifiers. These modifiers sends a ray and send variables based on what was hit. [Blum]
 - Added settings that manage prefab pooling under Config Manager > Core > Level. [Blum]
-- Added onPlayerBoostedIndex, works the same as onPlayerBoosted but for individual players.
+- Added onPlayerBoostedIndex, works the same as onPlayerBoosted but for individual players. [Blum]
 
 ### Editor
 - The path an object takes can now be viewed by right clicking the timeline object or by turning on the setting: Config Manager > Editor > Motion Path > Always View Selected. [Blum]
 - Added a "Motion Path" sub tab to the Editor Config. [Blum]
-- THe playheads (timeline cursors) of other users are now represented in editor multiplayer.
-- Objects selected by other players use the color of their playheads.
-- Added "Hide Other Users" to Config Manager > Editor > Timeline. With it on, other users' playheads and players are hidden.
-- Prefab collapsing and moving is supported. Expanding is yet to work.
-- When the host saves in the editor a notification is now sent to clients.
+- THe playheads (timeline cursors) of other users are now represented in editor multiplayer. [Blum]
+- Objects selected by other players use the color of their playheads. [Blum]
+- Added "Hide Other Users" to Config Manager > Editor > Timeline. With it on, other users' playheads and players are hidden. [Blum]
+- Prefab collapsing and moving is supported. Expanding is yet to work. [Blum]
+- When the host saves in the editor a notification is now sent to clients. [Blum]
 
 ## Changes
 ### Core
 - spawnPrefab modifiers now use object pooling, increasing performance. [Blum]
-- trailRenderer modifiers now have a toggle "Affected by Scale". With it on, the start & end width of the trail attempts to match the object scale.
+- trailRenderer modifiers now have a toggle "Affected by Scale". With it on, the start & end width of the trail attempts to match the object scale. [Blum]
 
 ### Editor
 - Objects are now almost fully synced in editor multiplayer. [Blum]
