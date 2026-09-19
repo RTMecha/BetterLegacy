@@ -1,8 +1,35 @@
 ﻿# ???
+## Features
+### Core
+- Added getRaycast and getRaycastPlayer modifiers. These modifiers sends a ray and send variables based on what was hit. [Blum]
+- Added settings that manage prefab pooling under Config Manager > Core > Level. [Blum]
+- Added onPlayerBoostedIndex, works the same as onPlayerBoosted but for individual players.
+
+### Editor
+- The path an object takes can now be viewed by right clicking the timeline object or by turning on the setting: Config Manager > Editor > Motion Path > Always View Selected. [Blum]
+- Added a "Motion Path" sub tab to the Editor Config. [Blum]
+- THe playheads (timeline cursors) of other users are now represented in editor multiplayer.
+- Objects selected by other players use the color of their playheads.
+- Added "Hide Other Users" to Config Manager > Editor > Timeline. With it on, other users' playheads and players are hidden.
+- Prefab collapsing and moving is supported. Expanding is yet to work.
+- When the host saves in the editor a notification is now sent to clients.
+
+## Changes
+### Core
+- spawnPrefab modifiers now use object pooling, increasing performance. [Blum]
+- trailRenderer modifiers now have a toggle "Affected by Scale". With it on, the start & end width of the trail attempts to match the object scale.
+
+### Editor
+- Objects are now almost fully synced in editor multiplayer. [Blum]
+
 ## Fixes
 - Fixed onPlayerBoosted modifier not working.
 - Fixed getObjectVariableOther modifier not having a group field and prefab group only toggles.
-- Fixed issues with spawnPrefab modifiers.
+- Fixed issues with spawnPrefab modifiers. [Blum]
+- Fixed the player becoming smaller on hit. [Blum]
+- Fixed the level progress text displaying for folders.
+- Fixed applyColorGroup and blackHole modifiers not updating correctly.
+- Fixed the player tail elements not using position. [Blum]
 
 -------------------------------------------------------------------
 
