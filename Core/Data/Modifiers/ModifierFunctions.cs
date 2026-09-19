@@ -627,8 +627,6 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static OnPlayerBoosted onPlayerBoosted = new OnPlayerBoosted();
 
-        public static OnPlayerBoostedIndex onPlayerBoostedIndex = new OnPlayerBoostedIndex();
-
         public static OnPlayerJumped onPlayerJumped = new OnPlayerJumped();
 
         public static PlayerIsLocal playerIsLocal = new PlayerIsLocal(PlayerTriggerBase.Requirement.Nearest);
