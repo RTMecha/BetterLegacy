@@ -392,6 +392,14 @@ namespace BetterLegacy.Core.Runtime
                 RTBeatmap.Current.LevelStarted = false;
             }
 
+            if (PlayerManager.inst && PlayerManager.inst.players != null)
+                for (int i = 0; i < PlayerManager.inst.players.Count; i++)
+                {
+                    var runtimePlayer = PlayerManager.inst.players[i].RuntimePlayer;
+                    if (runtimePlayer)
+                        runtimePlayer.playerBoosted = false;
+                }
+
             try
             {
                 var level = LevelManager.CurrentLevel;

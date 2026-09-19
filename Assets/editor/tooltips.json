@@ -3406,6 +3406,16 @@
             ]
           }, // onPlayerBoosted
           {
+            "name": "Object Modifier - onPlayerBoostedIndex (Trigger)",
+            "tooltips": [
+              {
+                "desc": "onPlayerBoostedIndex (Trigger)",
+                "hint": "Trigger is active if the player at the set index boosted.",
+                "lang": 0
+              }
+            ]
+          }, // onPlayerBoostedIndex
+          {
             "name": "Object Modifier - onPlayerJumped (Trigger)",
             "tooltips": [
               {
