@@ -626,6 +626,8 @@ namespace BetterLegacy.Core.Data.Modifiers
         public static OnPlayerDeath onPlayerDeath = new OnPlayerDeath();
 
         public static OnPlayerBoosted onPlayerBoosted = new OnPlayerBoosted();
+        
+        public static OnPlayerBoostedIndex onPlayerBoostedIndex = new OnPlayerBoostedIndex();
 
         public static OnPlayerJumped onPlayerJumped = new OnPlayerJumped();
 
