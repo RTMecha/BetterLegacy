@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Helpers
         {
             try
             {
-                SetSeed(ProjectArrhythmia.State.IsInLobby ? HostSeed : CoreConfig.Instance.Seed.Value);
+                SetSeed(ProjectArrhythmia.State.IsClient ? HostSeed : CoreConfig.Instance.Seed.Value);
             }
             catch (Exception ex)
             {
