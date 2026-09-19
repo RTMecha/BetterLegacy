@@ -9,6 +9,7 @@ using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
@@ -121,11 +122,16 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseUp()
         {
+            bool draggedValues = setKeyframeValues; 
+            bool wasPrefabDrag = prefabObjectToDrag;
             dragging = false;
             selectedKeyframe = null;
             setKeyframeValues = false;
             firstDirection = Axis.Static;
             clicked = false;
+            prefabObjectToDrag = null;
+            if (draggedValues && !wasPrefabDrag && ProjectArrhythmia.State.IsInLobby && beatmapObject != null)
+                ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES, false);
         }
 
         void OnMouseDown()
@@ -256,7 +262,10 @@ namespace BetterLegacy.Editor.Components
                 selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
             if (prefabObjectToDrag)
+            {
                 RTLevel.Current?.UpdatePrefab(prefabObjectToDrag, PrefabObjectContext.TRANSFORM_OFFSET);
+                NetworkFunction.EditPrefabObject(prefabObjectToDrag, PrefabObjectContext.TRANSFORM_OFFSET);
+            }
             else
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
         }

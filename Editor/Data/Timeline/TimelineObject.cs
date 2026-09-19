@@ -214,6 +214,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             {
                 selected = value;
                 RenderVisibleState(false);
+                Editor.Managers.EditorMultiplayer.selectionDirty = true;
             }
         }
 
@@ -323,6 +324,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         #endregion
 
         #region Functions
+        public IEditable Data => data;
 
         /// <summary>
         /// Casts the object data of the timeline object into a type.
@@ -519,8 +521,14 @@ namespace BetterLegacy.Editor.Data.Timeline
                                 beatmapObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? GetSelectedColor() : GetColor();
-                        if (!selected && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
+
+                        if (!selected && !remoteSel && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
                             color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)
@@ -540,7 +548,12 @@ namespace BetterLegacy.Editor.Data.Timeline
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ? GetSelectedColor() : GetColor();
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
 
                         if (Image.color != color)
                             Image.color = color;
@@ -568,8 +581,14 @@ namespace BetterLegacy.Editor.Data.Timeline
                                 backgroundObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? GetSelectedColor() : GetColor();
-                        if (!selected && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
+                        Color color;
+                        Color peerColor = Color.white;
+                        bool remoteSel = !selected && Editor.Managers.EditorMultiplayer.TryGetRemoteSelectionColor(ID, out peerColor);
+                        if (selected) color = GetSelectedColor();
+                        else if (remoteSel) color = peerColor;
+                        else color = GetColor();
+
+                        if (!selected && !remoteSel && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
                             color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)
@@ -830,6 +849,16 @@ namespace BetterLegacy.Editor.Data.Timeline
                         }
                     }
                 }),
+                ButtonElement.ToggleButton("Preview Motion",
+                    () => MotionPathManager.inst && EditorTimeline.inst.SelectedObjects.All(x => MotionPathManager.inst.IsActive(x.Data)),
+                    () =>
+                    {
+                        if (!MotionPathManager.inst)
+                            return;
+                        bool enable = !EditorTimeline.inst.SelectedObjects.All(x => MotionPathManager.inst.IsActive(x.Data));
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                            MotionPathManager.inst.SetActive(timelineObject.Data, enable);
+                    }),
                 new SpacerElement(),
                 new ButtonElement("Move Backwards", () =>
                 {

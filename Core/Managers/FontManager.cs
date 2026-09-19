@@ -254,6 +254,10 @@ namespace BetterLegacy.Core.Managers
             "majormonodisplay-regular.ttf" => "MajorMonoDisplay",
             "poorstory-regular.ttf" => "Poorstory",
             "hellovetica regular.ttf" => "Hellovetica",
+            "blippo.ttf" => "Blippo",
+            "omnes regular.ttf" => "Omnes",
+            "omnes bold.ttf" => "Omnes Bold",
+            "vcr_osd_mono_1.001.ttf" => "VCR OSD Mono",
 
             #endregion
 

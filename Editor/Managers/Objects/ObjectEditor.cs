@@ -494,6 +494,8 @@ namespace BetterLegacy.Editor.Managers
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             RTPrefabEditor.inst.RenderPrefabObjectStartTime(prefabObject);
                             RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME, false);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TIME);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -901,13 +903,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
             EditorTimeline.inst.UpdateTransformIndex();
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             if (openDialog)
                 OpenDialog(bm);
@@ -942,13 +938,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -985,13 +975,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1028,13 +1012,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1082,13 +1060,7 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.IsAprilFools)
                 OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1125,13 +1097,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1169,13 +1135,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1212,13 +1172,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1255,13 +1209,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -1298,13 +1246,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
-            if (ProjectArrhythmia.State.IsInLobby)
-            {
-                if (ProjectArrhythmia.State.IsHosting)
-                    NetworkFunction.CreateBeatmapObject(bm);
-                else
-                    NetworkFunction.SubmitBeatmapObject(bm);
-            }
+            EditorMultiplayer.BroadcastNewObject(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
 
@@ -2184,7 +2126,7 @@ namespace BetterLegacy.Editor.Managers
             if (!active)
                 return;
 
-            RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => RTLevel.Current.UpdateObject(beatmapObject, context));
+            RTEditor.inst.RenderShapeable(beatmapObject, Dialog, context => UpdateObject(beatmapObject, context, false));
         }
 
         /// <summary>

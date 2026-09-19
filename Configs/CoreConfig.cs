@@ -2,6 +2,7 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -559,8 +560,22 @@ namespace BetterLegacy.Configs
 
         void SeedChanged()
         {
-            if (ProjectArrhythmia.State.InEditor)
+            if (!ProjectArrhythmia.State.InEditor)
+                return;
+            if (!ProjectArrhythmia.State.IsInLobby)
+            {
                 RTLevel.Current.InitSeed();
+                return;
+            }
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                var effective = RandomHelper.ResolveSeed(Seed.Value);
+                RandomHelper.HostSeed = effective;
+                NetworkFunction.SetClientSeed(effective, null);
+                RTLevel.Current.InitSeed(effective);
+            }
+            else
+                NetworkFunction.SubmitSeed(Seed.Value);
         }
 
         void OnCursorChanged() => CursorManager.onScreenTime = CursorVisibleTime.Value;

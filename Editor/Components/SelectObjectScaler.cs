@@ -2,6 +2,7 @@
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
@@ -148,7 +149,10 @@ namespace BetterLegacy.Editor.Components
             }
 
             if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
+            {
                 RTLevel.Current?.UpdatePrefab(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), PrefabObjectContext.TRANSFORM_OFFSET);
+                NetworkFunction.EditPrefabObject(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>(), PrefabObjectContext.TRANSFORM_OFFSET);
+            }
             else
                 RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
         }

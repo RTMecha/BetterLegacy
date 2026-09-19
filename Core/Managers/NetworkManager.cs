@@ -189,6 +189,28 @@ namespace BetterLegacy.Core.Managers
                         player.ReadPacket(reader);
                 }
             }),
+            new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 1, reader =>
+            {
+                var list = new PacketList<PlayerSettings>(new List<PlayerSettings>());
+                list.ReadPacket(reader);
+                CoreHelper.Log($"Got player settings [{list.Count}]");
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var settings = list[i];
+                    // upsert by index. note: index is a local key with no owner id, so this only round-trips cleanly for single-local-player clients. see PlayerSettings TODO.
+                    if (PlayerManager.inst.playerSettings.TryFind(x => x.index == settings.index, out PlayerSettings existing))
+                        existing.CopyData(settings);
+                    else
+                        PlayerManager.inst.playerSettings.Add(settings);
+
+                    // apply visual settings to a matching live player.
+                    if (PlayerManager.inst.players.TryFind(x => !x.IsLocalPlayer && x.index == settings.index, out PAPlayer player) && player.RuntimePlayer)
+                    {
+                        player.ColorSlot = settings.colorSlot;
+                        player.RuntimePlayer.UpdateModel();
+                    }
+                }
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_CHECKPOINT, 1, reader => PlayerManager.inst.SpawnPlayers(Packet.CreateFromPacket<Checkpoint>(reader), true)),
             new NetworkFunction(Side.Client, NetworkFunction.SPAWN_PLAYERS_POS, 1, reader => PlayerManager.inst.SpawnPlayers(reader.ReadVector2(), true)),
             new NetworkFunction(Side.Client, NetworkFunction.RESPAWN_PLAYERS, 1, reader => PlayerManager.inst.RespawnPlayers(true)),
@@ -462,7 +484,18 @@ namespace BetterLegacy.Core.Managers
                     LogError($"Failed to read game data due to the exception: {ex}");
                 }
             }),
-            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 1, reader => RandomHelper.HostSeed = reader.ReadString()),
+            new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_SEED, 1, reader =>
+            {
+                RandomHelper.HostSeed = reader.ReadString();
+                RTLevel.Current?.InitSeed();
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_SEED, 1, reader =>
+            {
+                var effective = RandomHelper.ResolveSeed(reader.ReadString());
+                RandomHelper.HostSeed = effective;
+                NetworkFunction.SetClientSeed(effective, null);
+                RTLevel.Current?.InitSeed(effective);
+            }),
 
             new NetworkFunction(Side.Client, NetworkFunction.SET_CLIENT_AUDIO, 1, reader =>
             {
@@ -575,6 +608,8 @@ namespace BetterLegacy.Core.Managers
                 var beatmapObject = Packet.CreateFromPacket<BeatmapObject>(reader);
                 if (!SteamLobbyManager.inst.LobbySettings.CanEditObjects)
                     return;
+                if (GameData.Current.beatmapObjects.Has(x => x.id == beatmapObject.id))
+                    return;
 
                 GameData.Current.beatmapObjects.Add(beatmapObject);
                 RTLevel.Current?.UpdateObject(beatmapObject);
@@ -593,11 +628,15 @@ namespace BetterLegacy.Core.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 EditorTimeline.inst.UpdateTransformIndex();
             }),
-            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 3, reader =>
+            new NetworkFunction(NetworkFunction.EDIT_BEATMAP_OBJECT, 4, reader =>
             {
+                var steamID = reader.ReadUInt64();
                 var edit = Packet.CreateFromPacket<BeatmapObject>(reader);
                 var updateContext = reader.ReadString();
                 var updateTimelineObject = reader.ReadBoolean();
+                // skip our own edit echoed back by the host relay; we already applied it locally.
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
                 if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
                     return;
                 var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
@@ -607,17 +646,16 @@ namespace BetterLegacy.Core.Managers
                     for (int i = 0; i < beatmapObject.modifiers.Count; i++)
                     {
                         var modifier = beatmapObject.modifiers[i];
+                        // keep the original modifier instance where possible so runtime references stay valid.
                         if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
                         {
-                            var function = modifier.function;
-                            var trigger = modifier.trigger;
-                            var action = modifier.action;
                             origModifier.CopyData(modifier, false);
-                            origModifier.function = function;
-                            origModifier.trigger = trigger;
-                            origModifier.action = action;
                             beatmapObject.modifiers[i] = origModifier;
+                            modifier = origModifier;
                         }
+                        // network-deserialized modifiers carry no runtime function/trigger/action; (re)assign from the name so they actually run.
+                        modifier.verified = false;
+                        ModifiersManager.inst.VerifyModifier(modifier, beatmapObject);
                     }
                 if (updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext))
                     for (int i = 0; i < beatmapObject.events.Count; i++)
@@ -637,6 +675,24 @@ namespace BetterLegacy.Core.Managers
                     RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
                 if (updateTimelineObject)
                     beatmapObject.TimelineObject?.Render();
+                // refresh the open object dialog so this client sees the changed values (keyframes, shape, etc.), not just the runtime object.
+                if (ObjectEditor.inst && EditorTimeline.inst && EditorTimeline.inst.CurrentSelection != null && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id && ObjectEditor.inst.Dialog != null && ObjectEditor.inst.Dialog.IsCurrent)
+                    ObjectEditor.inst.RenderDialog(beatmapObject);
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_DELETE_OBJECT, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                if (!SteamLobbyManager.inst.LobbySettings.CanEditObjects)
+                    return;
+                EditorTimeline.inst.DeleteObjectNetwork(id, type);
+                NetworkFunction.DeleteObject(id, type);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.DELETE_OBJECT, 2, reader =>
+            {
+                var id = reader.ReadString();
+                var type = (ModifierReferenceType)reader.ReadInt32();
+                EditorTimeline.inst.DeleteObjectNetwork(id, type);
             }),
             new NetworkFunction(NetworkFunction.ADD_TAG, 2, reader =>
             {
@@ -717,15 +773,22 @@ namespace BetterLegacy.Core.Managers
                         }
                 }
             }),
-            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 2, reader =>
+            new NetworkFunction(NetworkFunction.EXPAND_PREFAB, 3, reader =>
             {
+                var steamID = reader.ReadUInt64();
                 var expander = Packet.CreateFromPacket<PrefabExpander>(reader);
                 var expanded = Packet.CreateFromPacket<PrefabExpander.Expanded>(reader);
+                // we already expanded locally; don't re-apply our own echo.
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
                 expanded.Apply(expander.prefab, expander.prefabObject, expander.regen);
             }),
             new NetworkFunction(NetworkFunction.ADD_PREFAB_OBJECT, 1, reader =>
             {
                 var prefabObject = Packet.CreateFromPacket<PrefabObject>(reader);
+                // skip our own echo / duplicate delivery.
+                if (GameData.Current.prefabObjects.Has(x => x.id == prefabObject.id))
+                    return;
                 var prefab = prefabObject.GetPrefab();
 
                 for (int i = 0; i < prefab.beatmapThemes.Count; i++)
@@ -743,11 +806,120 @@ namespace BetterLegacy.Core.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                 EditorTimeline.inst.UpdateTransformIndex();
             }),
+            new NetworkFunction(NetworkFunction.EDIT_PREFAB_OBJECT, 3, reader =>
+            {
+                var steamID = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<PrefabObject>(reader);
+                var updateContext = reader.ReadString();
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                if (!GameData.Current || !GameData.Current.prefabObjects.TryFind(x => x.id == edit.id, out PrefabObject prefabObject))
+                    return;
+                prefabObject.CopyData(edit, false);
+                for (int i = 0; i < prefabObject.modifiers.Count; i++)
+                {
+                    var modifier = prefabObject.modifiers[i];
+                    modifier.verified = false;
+                    ModifiersManager.inst.VerifyModifier(modifier, prefabObject);
+                }
+
+                var prefab = prefabObject.GetPrefab();
+                if (string.IsNullOrEmpty(updateContext))
+                    RTLevel.Current?.UpdatePrefab(prefabObject);
+                else
+                    RTLevel.Current?.UpdatePrefab(prefabObject, updateContext);
+                RTLevel.Current?.RecalculateObjectStates();
+                if (prefab && RTPrefabEditor.inst)
+                    RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, false);
+                if (EditorTimeline.inst)
+                    prefabObject.TimelineObject?.Render();
+                if (RTPrefabEditor.inst && EditorTimeline.inst && EditorTimeline.inst.CurrentSelection != null && EditorTimeline.inst.CurrentSelection.ID == prefabObject.id)
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+            }),
             new NetworkFunction(NetworkFunction.IMPORT_PREFAB, 1, reader =>
             {
                 var prefab = Packet.CreateFromPacket<Prefab>(reader);
+                // skip our own echo / duplicate delivery.
+                if (GameData.Current.prefabs.Has(x => x.id == prefab.id))
+                    return;
                 GameData.Current.prefabs.Add(prefab);
                 RTPrefabEditor.inst.RefreshInternalPrefabs();
+            }),
+            new NetworkFunction(NetworkFunction.SET_PLAYHEAD_PRESENCE, 5, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                if (sender == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                var time = reader.ReadSingle();
+                var layer = reader.ReadInt32();
+                var layerType = (BetterLegacy.Editor.Managers.EditorTimeline.LayerType)reader.ReadByte();
+                var colorHex = reader.ReadString();
+                var color = RTColors.HexToColor(colorHex);
+                Editor.Managers.EditorMultiplayer.ApplyPlayhead(sender, time, layer, layerType, color);
+            }),
+            new NetworkFunction(NetworkFunction.SET_SELECTION_PRESENCE, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                if (sender == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                var joinedIDs = reader.ReadString();
+                var ids = joinedIDs.Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                Editor.Managers.EditorMultiplayer.ApplySelection(sender, ids);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.RECONCILE_OBJECTS, 1, reader =>
+            {
+                var hostIDs = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                var localNonPrefab = GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab);
+                var localIDs = localNonPrefab.Select(x => x.id).ToHashSet();
+                foreach (var beatmapObject in localNonPrefab)
+                    if (!hostIDs.Contains(beatmapObject.id))
+                        NetworkFunction.SubmitBeatmapObject(beatmapObject);
+
+                var missing = hostIDs.Where(id => !localIDs.Contains(id)).ToList();
+                if (missing.Count > 0)
+                    NetworkFunction.RequestObjects(string.Join("\n", missing));
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.ANNOUNCE_SAVE, 1, reader =>
+            {
+                var message = reader.ReadString();
+                if (ProjectArrhythmia.State.InEditor && EditorManager.inst)
+                    EditorManager.inst.DisplayNotification(message, 3f, EditorManager.NotificationType.Success);
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_OBJECTS, 1, reader =>
+            {
+                var ids = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                foreach (var beatmapObject in GameData.Current.beatmapObjects)
+                    if (ids.Contains(beatmapObject.id))
+                        NetworkFunction.CreateBeatmapObject(beatmapObject);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.RECONCILE_PREFABS, 1, reader =>
+            {
+                var hostIDs = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+
+                var localIDs = GameData.Current.prefabObjects.Select(x => x.id).ToHashSet();
+
+                foreach (var prefabObject in GameData.Current.prefabObjects)
+                    if (!hostIDs.Contains(prefabObject.id))
+                        inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
+
+                var missing = hostIDs.Where(id => !localIDs.Contains(id)).ToList();
+                if (missing.Count > 0)
+                    NetworkFunction.RequestPrefabs(string.Join("\n", missing));
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_PREFABS, 1, reader =>
+            {
+                var ids = reader.ReadString().Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries).ToHashSet();
+                if (!GameData.Current)
+                    return;
+                foreach (var prefabObject in GameData.Current.prefabObjects)
+                    if (ids.Contains(prefabObject.id))
+                        inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
             }),
         };
 
@@ -758,6 +930,12 @@ namespace BetterLegacy.Core.Managers
         /// If packets are being written.
         /// </summary>
         public bool writingPackets;
+
+        /// <summary>
+        /// True while a received network function is being applied. Editor broadcast helpers check this to avoid re-broadcasting
+        /// changes that came from the network (which would create a receive → render → rebroadcast flood).
+        /// </summary>
+        public static bool applyingNetworkChange;
 
         #endregion
 
@@ -1111,7 +1289,11 @@ namespace BetterLegacy.Core.Managers
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
             if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Server, out NetworkFunction function))
-                function.Run(handler.Item2);
+            {
+                applyingNetworkChange = true;
+                try { function.Run(handler.Item2); }
+                finally { applyingNetworkChange = false; }
+            }
             handler.Item2.Dispose();
         }
 
@@ -1206,7 +1388,11 @@ namespace BetterLegacy.Core.Managers
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
             if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
-                function.Run(handler.Item2);
+            {
+                applyingNetworkChange = true;
+                try { function.Run(handler.Item2); }
+                finally { applyingNetworkChange = false; }
+            }
             handler.Item2.Dispose();
         }
 

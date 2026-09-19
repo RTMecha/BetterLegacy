@@ -456,6 +456,7 @@ namespace BetterLegacy.Core.Components.Player
         public bool isTakingHit;
         public bool isBoosting;
         public bool isBoostCancelled;
+        public bool playerBoosted;
         public bool isDead = true;
 
         public bool animatingBoost;
@@ -2823,6 +2824,7 @@ namespace BetterLegacy.Core.Components.Player
                 if (rb)
                     RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position));
             }
+            playerBoosted = true;
             CanBoost = false;
             isBoosting = true;
             CanTakeDamage = false;

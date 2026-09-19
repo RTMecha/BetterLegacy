@@ -82,6 +82,26 @@ namespace BetterLegacy.Core.Managers
         {
             if (GameData.Current && ProjectArrhythmia.State.InGame && ProjectArrhythmia.State.IsHosting && TickCount % 100 == 0)
                 NetworkFunction.SyncLevelToClients();
+
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.InEditor)
+            {
+                if (TickCount % 4 == 0)
+                    Editor.Managers.EditorMultiplayer.BroadcastLocalPlayhead();
+
+                if (Editor.Managers.EditorMultiplayer.selectionDirty)
+                {
+                    Editor.Managers.EditorMultiplayer.BroadcastLocalSelection();
+                    Editor.Managers.EditorMultiplayer.selectionDirty = false;
+                }
+                if (ProjectArrhythmia.State.IsHosting && GameData.Current && TickCount % 200 == 0)
+                {
+                    var joinedIDs = string.Join("\n", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Select(x => x.id));
+                    NetworkFunction.ReconcileObjects(joinedIDs);
+
+                    var joinedPrefabIDs = string.Join("\n", GameData.Current.prefabObjects.Select(x => x.id));
+                    NetworkFunction.ReconcilePrefabs(joinedPrefabIDs);
+                }
+            }
         }
 
         public void SaveLobbySettings()
@@ -239,6 +259,7 @@ namespace BetterLegacy.Core.Managers
             ProjectArrhythmia.State.IsInLobby = false;
             CurrentLobby.Leave();
             ClearLoaded();
+            Editor.Managers.EditorMultiplayer.Clear();
         }
 
         /// <summary>
@@ -386,6 +407,8 @@ namespace BetterLegacy.Core.Managers
                     PlayerManager.inst.RemovePlayer(player);
             });
             PlayerManager.inst.players.ForLoop((player, index) => player.index = index);
+
+            Editor.Managers.EditorMultiplayer.RemovePeer(friend.Id);
 
             if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(friend.Id, out int id))
                 NetworkManager.inst.KickClient(id);

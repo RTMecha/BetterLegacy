@@ -243,7 +243,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
                     if (modifyable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.MODIFIERS, false);
                     if (modifyable is BackgroundObject backgroundObject)
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 
@@ -263,7 +263,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
                     if (modifyable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.MODIFIERS, false);
                     if (modifyable is BackgroundObject backgroundObject)
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 
@@ -283,7 +283,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
                     if (modifyable is BeatmapObject beatmapObject)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                        ObjectEditor.inst.UpdateObject(beatmapObject, ObjectContext.MODIFIERS, false);
                     if (modifyable is BackgroundObject backgroundObject)
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 

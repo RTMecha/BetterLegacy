@@ -81,6 +81,7 @@ namespace BetterLegacy.Configs
         public Setting<Color> TimelineCursorColor { get; set; }
         public Setting<Color> KeyframeCursorColor { get; set; }
         public Setting<Color> ObjectSelectionColor { get; set; }
+        public Setting<bool> HideOtherUsers { get; set; }
         public Setting<Color> TimelineObjectBaseColor { get; set; }
         public Setting<Color> TimelineObjectTextColor { get; set; }
         public Setting<Color> TimelineObjectMarkColor { get; set; }
@@ -368,6 +369,70 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Motion Path
+
+        /// <summary>
+        /// How many nodes are placed. 60FPS reference.
+        /// </summary>
+        public Setting<float> MotionPathNodePerFrame { get; set; }
+
+        /// <summary>
+        /// Color of the interior of motion path nodes.
+        /// </summary>
+        public Setting<Color> MotionPathNodeColorInterior { get; set; }
+
+        /// <summary>
+        /// Color of the exterior of motion path nodes.
+        /// </summary>
+        public Setting<Color> MotionPathNodeColorExterior { get; set; }
+
+        /// <summary>
+        /// Shape of the nodes.
+        /// </summary>
+        public Setting<MotionPathShape> MotionPathNodeShape { get; set; }
+
+        /// <summary>
+        /// Base size of a node.
+        /// </summary>
+        public Setting<float> MotionPathNodeBaseSize { get; set; }
+
+        /// <summary>
+        /// Interior size relative to the exterior; outline effect.
+        /// </summary>
+        public Setting<float> MotionPathNodeInteriorMultiplier { get; set; }
+
+        /// <summary>
+        /// Size when the pulse interval passes through it.
+        /// </summary>
+        public Setting<float> MotionPathNodeLargeSizeMultiplier { get; set; }
+
+        /// <summary>
+        /// Animation time for a node going back to the base size.
+        /// </summary>
+        public Setting<float> MotionPathNodeShrinkTime { get; set; }
+
+        /// <summary>
+        /// Easing curve used for returning to original size.
+        /// </summary>
+        public Setting<Easing> MotionPathNodeAnimationEasing { get; set; }
+
+        /// <summary>
+        /// How far the motion path is shown, forward and backwards. Prevents objects from showing their path when they are no longer relevant.
+        /// </summary>
+        public Setting<float> MotionPathMaxSeekTime { get; set; }
+
+        /// <summary>
+        /// How long between the pulses.
+        /// </summary>
+        public Setting<float> MotionPathPlaybackInterval { get; set; }
+
+        /// <summary>
+        /// Shows the path if the object is selected.
+        /// </summary>
+        public Setting<bool> MotionPathAlwaysPreviewSelected { get; set; }
+
+        #endregion
+
         #region Modifiers
 
         /// <summary>
@@ -566,6 +631,7 @@ namespace BetterLegacy.Configs
             TimelineCursorColor = Bind(this, TIMELINE, "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
             KeyframeCursorColor = Bind(this, TIMELINE, "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
             ObjectSelectionColor = Bind(this, TIMELINE, "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
+            HideOtherUsers = Bind(this, TIMELINE, "Hide Other Users", false, "Hide other users' playheads and player models in the editor.");
             TimelineObjectBaseColor = Bind(this, TIMELINE, "Timeline Object Base Color", RTColors.HexToColor("F5F5F5"), "Color of the base of timeline objects.");
             TimelineObjectTextColor = Bind(this, TIMELINE, "Timeline Object Text Color", RTColors.HexToColor("FFFFFF"), "Color of the text of timeline objects.");
             TimelineObjectMarkColor = Bind(this, TIMELINE, "Timeline Object Mark Color", RTColors.HexToColor("000000aa"), "Color of the mark (text BG) of timeline objects.");
@@ -935,6 +1001,23 @@ namespace BetterLegacy.Configs
 
             #endregion
 
+            #region Motion Path
+
+            MotionPathNodePerFrame = Bind(this, MOTION_PATH, "Node Per Frame", 1f, "How many nodes are placed. 60FPS reference.", 0.05f, 4f);
+            MotionPathNodeColorInterior = Bind(this, MOTION_PATH, "Node Color Interior", new Color(0.1f, 0.1f, 0.1f), "Color of the interior of motion path nodes.");
+            MotionPathNodeColorExterior = Bind(this, MOTION_PATH, "Node Color Exterior", Color.white, "Color of the exterior of motion path nodes.");
+            MotionPathNodeShape = BindEnum(this, MOTION_PATH, "Node Shape", MotionPathShape.Triangle, "Shape of the nodes.");
+            MotionPathNodeBaseSize = Bind(this, MOTION_PATH, "Node Base Size", 0.5f, "Base size of a node.", 0.001f, 100f);
+            MotionPathNodeInteriorMultiplier = Bind(this, MOTION_PATH, "Node Interior Multiplier", 0.7f, "Interior size relative to the exterior; outline effect.", 0f, 1f);
+            MotionPathNodeLargeSizeMultiplier = Bind(this, MOTION_PATH, "Node Large Size Multiplier", 2f, "Size when the pulse interval passes through it.", 1f, 1000f);
+            MotionPathNodeShrinkTime = Bind(this, MOTION_PATH, "Node Shrink Time", 0.3f, "Animation time for a node going back to the base size.", 0.01f, 60f);
+            MotionPathNodeAnimationEasing = BindEnum(this, MOTION_PATH, "Node Animation Easing", Easing.OutCubic, "Easing curve used for returning to original size.");
+            MotionPathMaxSeekTime = Bind(this, MOTION_PATH, "Max Seek Time", 5f, "How far the motion path is shown, forward and backwards. Prevents objects from showing their path when they are no longer relevant.", 0.1f, 60f);
+            MotionPathPlaybackInterval = Bind(this, MOTION_PATH, "Playback Interval", 1f, "How long between the pulses.", 0.05f, 30f);
+            MotionPathAlwaysPreviewSelected = Bind(this, MOTION_PATH, "Always Preview Selected", false, "Shows the path if the object is selected.");
+
+            #endregion
+
             #region Modifiers
 
             ModifiersCanLoadLevels = Bind(this, MODIFIERS, "Modifiers Can Load Levels", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
@@ -1206,6 +1289,12 @@ namespace BetterLegacy.Configs
             TimelineGridEnabled.SettingChanged += TimelineGridChanged;
             TimelineGridThickness.SettingChanged += TimelineGridChanged;
             TimelineGridColor.SettingChanged += TimelineGridChanged;
+
+            HideOtherUsers.SettingChanged += () =>
+            {
+                Editor.Managers.EditorMultiplayer.RenderPlayheads();
+                Editor.Managers.EditorMultiplayer.UpdatePlayerModelVisibility();
+            };
 
             AutoPolygonRadius.SettingChanged += ObjectEditorChanged;
             HideVisualElementsWhenObjectIsEmpty.SettingChanged += ObjectEditorChanged;
@@ -1610,6 +1699,7 @@ namespace BetterLegacy.Configs
         public const string FIELDS = "Fields";
         public const string ANIMATIONS = "Animations";
         public const string PREVIEW = "Preview";
+        public const string MOTION_PATH = "Motion Path";
         public const string MODIFIERS = "Modifiers";
         public const string CREATION = "Creation";
         public const string FREECAM = "Freecam";

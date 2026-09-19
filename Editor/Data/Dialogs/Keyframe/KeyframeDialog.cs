@@ -398,7 +398,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         KeyframeTimeline.CurrentTimeline.RenderKeyframes(KeyframeTimeline.CurrentTimeline.CurrentObject);
                         if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                            RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+                            ObjectEditor.inst.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES, false);
                     }
                     else
                     {
@@ -424,7 +424,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (!isObjectKeyframe)
                         RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                     else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                        RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+                        ObjectEditor.inst.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES, false);
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(EventTimeField);
@@ -725,7 +725,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 timelineKeyframe.eventKeyframe.values[index] = value;
 
             if (isObjectKeyframe)
-                RTLevel.Current?.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES, false);
             else
                 RTLevel.Current?.UpdateEvents(type);
         }

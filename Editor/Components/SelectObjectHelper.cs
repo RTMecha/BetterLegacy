@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
@@ -233,7 +234,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -295,7 +296,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -357,7 +358,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -521,7 +522,7 @@ namespace BetterLegacy.Editor.Components
                         if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 && (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY))
                             selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET); NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
                         break;
                     }

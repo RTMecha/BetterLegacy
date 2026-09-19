@@ -1567,6 +1567,9 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Saved Beatmap!", 2f, EditorManager.NotificationType.Success);
             EditorManager.inst.savingBeatmap = false;
 
+            if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting)
+                NetworkFunction.AnnounceSave($"{RTSteamManager.inst.steamUser.name} has saved the game.");
+
             Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_SAVED_LEVEL);
 
             yield break;

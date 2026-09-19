@@ -10,6 +10,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
@@ -473,6 +474,9 @@ namespace BetterLegacy.Core.Helpers
                 ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
                 ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                 ObjectEditor.inst.Dialog.Timeline.RenderMarkers(beatmapObject);
+                // sync the moved keyframes once on release.
+                if (ProjectArrhythmia.State.IsInLobby)
+                    NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.KEYFRAMES, false);
                 timelineKeyframe.timeline.draggingKeyframes = false;
             }
             else
@@ -638,6 +642,10 @@ namespace BetterLegacy.Core.Helpers
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME, false);
                     if (beatmapObject.desync)
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN, false);
+                    // broadcast the drag result once on release; the whole-object edit carries start time, bin and layer.
+                    // updateTimelineObject must be true so the receiver re-renders the timeline bar to the new position/bin.
+                    if (ProjectArrhythmia.State.IsInLobby)
+                        NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
                 }
                 if (timelineObject.isPrefabObject)
                     RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME, false);
