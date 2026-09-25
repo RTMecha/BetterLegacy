@@ -31,6 +31,7 @@ namespace BetterLegacy.Core.Data.Network
         readonly BinaryReader reader;
 
         public long Count => reader.BaseStream.Length;
+        public long Position { get => reader.BaseStream.Position; set => reader.BaseStream.Position = value; }
 
         #endregion
 

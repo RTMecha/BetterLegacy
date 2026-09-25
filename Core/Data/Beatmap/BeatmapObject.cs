@@ -707,7 +707,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             opacityCollision = orig.opacityCollision;
 
             for (int i = 0; i < events.Count; i++)
-                events[i] = new List<EventKeyframe>(orig.events[i].Select(x => x.Copy()));
+                events[i] = new List<EventKeyframe>(orig.events[i].Select(x => x.Copy(newID)));
 
             this.SortKeyframes(events);
 

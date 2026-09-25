@@ -10,6 +10,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -468,6 +469,8 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <param name="reference">Object reference.</param>
         public void Delete(IModifierReference reference)
         {
+            if (NetworkPermissions.BlockEditModifiers())
+                return;
             if (reference is not IModifyable modifyable)
                 return;
 
@@ -553,11 +556,39 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!modifier)
                 return;
 
+            if (NetworkPermissions.BlockEditModifiers())
+                return;
             modifier.active = false;
             modifier.runCount = 0;
             modifier.RunInactive(modifier, reference);
             modifier.OnRemoveCache();
             modifier.Result = default;
+            if (reference is not IModifyable modifyable)
+                return;
+            switch (modifyable.ReferenceType)
+            {
+                case ModifierReferenceType.BeatmapObject: {
+                        var beatmapObject = modifyable as BeatmapObject;
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                        if (ProjectArrhythmia.State.IsInLobby)
+                            NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.MODIFIERS);
+                        break;
+                    }
+                case ModifierReferenceType.BackgroundObject: {
+                        var backgroundObject = modifyable as BackgroundObject;
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
+                        if (ProjectArrhythmia.State.IsInLobby)
+                            NetworkFunction.EditBackgroundObject(backgroundObject);
+                        break;
+                    }
+                case ModifierReferenceType.PrefabObject: {
+                        var prefabObject = modifyable as PrefabObject;
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
+                        if (ProjectArrhythmia.State.IsInLobby)
+                            NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.MODIFIERS);
+                        break;
+                    }
+            }
         }
 
         /// <summary>

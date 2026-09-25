@@ -15,6 +15,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
@@ -184,6 +185,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var selectedKeyframes = SelectedKeyframes;
+            if (selectedKeyframes.Any(x => NetworkPermissions.BlockEditEvents(x.Type)))
+                return;
             var timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value);
             var lockedCount = 0;
             foreach (var timelineKeyframe in selectedKeyframes)
@@ -225,12 +228,16 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="keyframeCoord">Coordinates of the event keyframe.</param>
         public void DeleteKeyframe(KeyframeCoord keyframeCoord)
         {
+            if (NetworkPermissions.BlockEditEvents(keyframeCoord.type))
+                return;
             if (keyframeCoord.type == 0)
             {
                 EditorManager.inst.DisplayNotification("Can't delete first Keyframe", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
+            if (GameData.Current.events[keyframeCoord.type].TryGetAt(keyframeCoord.index, out EventKeyframe deletedKeyframe))
+                NetworkFunction.DeleteEventKeyframe(keyframeCoord.type, deletedKeyframe.id);
             GameData.Current.events[keyframeCoord.type].RemoveAt(keyframeCoord.index);
             CreateTimelineKeyframes();
             RTLevel.Current?.UpdateEvents(keyframeCoord.type);
@@ -259,6 +266,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="list">List of keyframes to delete.</param>
         public IEnumerator IDeleteKeyframes(List<TimelineKeyframe> list)
         {
+            if (list.Any(x => NetworkPermissions.BlockEditEvents(x.Type)))
+                yield break;
             var count = list.Count;
             var types = list.Select(x => x.Type);
             var typesCount = types.Count();
@@ -286,6 +295,7 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.Delete(timelineKeyframe.GameObject);
                 EditorTimeline.inst.timelineKeyframes.RemoveAt(index);
                 GameData.Current.events[timelineKeyframe.Type].Remove(timelineKeyframe.eventKeyframe);
+                NetworkFunction.DeleteEventKeyframe(timelineKeyframe.Type, timelineKeyframe.eventKeyframe.id);
             });
 
             RTLevel.Current?.UpdateEvents();
@@ -421,6 +431,7 @@ namespace BetterLegacy.Editor.Managers
                     index = GameData.Current.events[keyframeSelection.Type].Count;
 
                 GameData.Current.events[keyframeSelection.Type].Insert(index, eventKeyframe);
+                NetworkFunction.CreateEventKeyframe(keyframeSelection.Type, eventKeyframe);
 
                 var kf = CreateTimelineKeyframe(keyframeSelection.Type, index);
                 if (selectPasted)
@@ -487,6 +498,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="type">Type of the event keyframe to create.</param>
         public void CreateNewEventKeyframe(float time, int type)
         {
+            if (NetworkPermissions.BlockEditEvents(type))
+                return;
             if (RTEditor.inst.editorInfo.bpmSnapActive)
                 time = RTEditor.SnapToBPM(time);
 
@@ -510,6 +523,7 @@ namespace BetterLegacy.Editor.Managers
                 eventKeyframe.SetValues(new float[1]);
 
             GameData.Current.events[type].Insert(prevIndex + 1, eventKeyframe);
+            NetworkFunction.CreateEventKeyframe(type, eventKeyframe);
 
             var kf = CreateTimelineKeyframe(type, Mathf.Clamp(prevIndex + 1, 0, GameData.Current.events[type].Count - 1));
             EditorTimeline.inst.timelineKeyframes.Add(kf);
@@ -736,6 +750,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var eventKeyframe = kf.eventKeyframe;
                     eventKeyframe.time = Mathf.Clamp(eventKeyframe.time - (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    NetworkFunction.EditEventKeyframe(kf.Type, eventKeyframe);
                 }
 
                 RTLevel.Current?.UpdateEvents();
@@ -752,6 +767,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var eventKeyframe = kf.eventKeyframe;
                     eventKeyframe.time = Mathf.Clamp(eventKeyframe.time + num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    NetworkFunction.EditEventKeyframe(kf.Type, eventKeyframe);
                 }
 
                 RTLevel.Current?.UpdateEvents();
@@ -765,7 +781,10 @@ namespace BetterLegacy.Editor.Managers
                 num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
+                {
                     kf.eventKeyframe.time = num;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
+                }
 
                 RTLevel.Current?.UpdateEvents();
                 RenderTimelineKeyframes();
@@ -781,6 +800,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var eventKeyframe = kf.eventKeyframe;
                     eventKeyframe.time = Mathf.Clamp(eventKeyframe.time - num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    NetworkFunction.EditEventKeyframe(kf.Type, eventKeyframe);
                 }
 
                 RTLevel.Current?.UpdateEvents();
@@ -797,6 +817,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var eventKeyframe = kf.eventKeyframe;
                     eventKeyframe.time = Mathf.Clamp(eventKeyframe.time + (num * 10f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    NetworkFunction.EditEventKeyframe(kf.Type, eventKeyframe);
                 }
 
                 RTLevel.Current?.UpdateEvents();
@@ -810,7 +831,10 @@ namespace BetterLegacy.Editor.Managers
             {
                 var anim = RTEditor.inst.GetEasing(_val);
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
+                {
                     kf.eventKeyframe.curve = anim;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
+                }
 
                 RTLevel.Current?.UpdateEvents();
             });
@@ -837,6 +861,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] -= num * 10f;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                 }
             });
             valueStorage.leftButton.onClick.NewListener(() =>
@@ -850,6 +875,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] -= num;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                 }
             });
             valueStorage.middleButton.onClick.NewListener(() =>
@@ -863,6 +889,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] = num;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                 }
             });
             valueStorage.rightButton.onClick.NewListener(() =>
@@ -876,6 +903,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] += num;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                 }
             });
             valueStorage.rightGreaterButton.onClick.NewListener(() =>
@@ -889,6 +917,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     index = Mathf.Clamp(index, 0, kf.eventKeyframe.values.Length - 1);
                     kf.eventKeyframe.values[index] += num * 10f;
+                    NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                 }
             });
 
@@ -963,6 +992,7 @@ namespace BetterLegacy.Editor.Managers
                     kf.randomValues = copiedKeyframeDatas[type].randomValues.Copy();
                     kf.random = copiedKeyframeDatas[type].random;
                     kf.relative = copiedKeyframeDatas[type].relative;
+                    NetworkFunction.EditEventKeyframe(type, kf);
                 }
 
                 RenderDialog();
@@ -1001,8 +1031,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="value">Value to set.</param>
         public void SetKeyframeValue(int type, int index, float value)
         {
+            if (NetworkPermissions.BlockEditEvents(type))
+                return;
             foreach (var timelineKeyframe in SelectedKeyframes.Where(x => x.Type == type))
+            {
                 timelineKeyframe.eventKeyframe.values[index] = value;
+                NetworkFunction.EditEventKeyframe(type, timelineKeyframe.eventKeyframe);
+            }
             RTLevel.Current?.UpdateEvents(type);
         }
 

@@ -484,6 +484,8 @@ namespace BetterLegacy.Core.Helpers
                 EventEditor.inst.eventDrag = false;
                 RTLevel.Current?.UpdateEvents(timelineKeyframe.Type);
 
+                foreach (var selected in RTEventEditor.inst.SelectedKeyframes)
+                    NetworkFunction.EditEventKeyframe(selected.Type, selected.eventKeyframe);
                 RTEventEditor.inst.OpenDialog();
             }
         });

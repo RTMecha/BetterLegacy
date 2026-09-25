@@ -2648,8 +2648,17 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="cut">If the objects should be removed.</param>
         /// <param name="dup">If the objects should be pasted.</param>
         /// <param name="regen">If IDs should be regenerated.</param>
+        static bool BlockTimelineEdit()
+        {
+            if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+                return RTEventEditor.inst.SelectedKeyframes.Any(x => NetworkPermissions.BlockEditEvents(x.Type));
+            return NetworkPermissions.BlockEditObjects();
+        }
+
         public void Copy(bool cut = false, bool dup = false, bool regen = true)
         {
+            if ((cut || dup) && BlockTimelineEdit())
+                return;
             if (EditorTimeline.inst.isOverMainTimeline)
             {
                 switch (EditorTimeline.inst.layerType)
@@ -2826,6 +2835,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="regen">If the prefab instance IDs should be regenerated.</param>
         public void Paste(float offsetTime, bool dup, bool regen)
         {
+            if (BlockTimelineEdit())
+                return;
             if (EditorTimeline.inst.isOverMainTimeline)
             {
                 switch (EditorTimeline.inst.layerType)
@@ -2890,6 +2901,8 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void Delete()
         {
+            if (BlockTimelineEdit())
+                return;
             if (EditorTimeline.inst.isOverMainTimeline)
             {
                 switch (EditorTimeline.inst.layerType)
@@ -2897,6 +2910,8 @@ namespace BetterLegacy.Editor.Managers
                     case EditorTimeline.LayerType.Objects: {
                             // prepare undo / redo
                             List<TimelineObject> list = EditorTimeline.inst.SelectedObjects;
+                            if (list.IsEmpty())
+                                return;
                             Prefab prefab = null;
                             float t = 0f;
                             List<IDPair> children = null;

@@ -15,6 +15,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
@@ -191,12 +192,15 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void CreateNewAchievement()
         {
+            if (NetworkPermissions.BlockEditAchievements())
+                return;
             var achievement = new Achievement()
             {
                 name = "NEW ACHIEVEMENT",
                 description = "This is the default description!",
             };
             CurrentAchievements.Add(achievement);
+            NetworkFunction.CreateAchievement(achievement);
             OpenDialog(achievement);
         }
 
@@ -258,6 +262,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="achievements">List of achievements to render.</param>
         public void DeleteAchievement(Achievement achievement, List<Achievement> achievements)
         {
+            if (NetworkPermissions.BlockEditAchievements())
+                return;
             if (!achievement)
             {
                 EditorManager.inst.DisplayNotification($"Select an achievement to delete first.", 2f, EditorManager.NotificationType.Warning);
@@ -265,6 +271,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var index = achievements.IndexOf(achievement);
+            NetworkFunction.DeleteAchievement(achievement.id);
             achievements.RemoveAt(index);
             EditorManager.inst.DisplayNotification("Deleted achievement.", 1f, EditorManager.NotificationType.Success);
             OpenDialog(achievements.TryGetAt(index - 1, out Achievement prevAchievement) ? prevAchievement : null, achievements);
@@ -339,10 +346,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 achievement.name = _val;
                 RenderAchievementList(achievements);
+                NetworkFunction.EditAchievement(achievement);
             });
 
             Dialog.DescriptionField.SetTextWithoutNotify(achievement.description);
-            Dialog.DescriptionField.onValueChanged.NewListener(_val => achievement.description = _val);
+            Dialog.DescriptionField.onValueChanged.NewListener(_val => { achievement.description = _val; NetworkFunction.EditAchievement(achievement); });
 
             var icon = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
             Dialog.IconImage.sprite = icon;
@@ -406,15 +414,15 @@ namespace BetterLegacy.Editor.Managers
             });
 
             Dialog.HiddenToggle.SetIsOnWithoutNotify(achievement.hidden);
-            Dialog.HiddenToggle.OnValueChanged.NewListener(_val => achievement.hidden = _val);
+            Dialog.HiddenToggle.OnValueChanged.NewListener(_val => { achievement.hidden = _val; NetworkFunction.EditAchievement(achievement); });
 
             Dialog.HintField.SetTextWithoutNotify(achievement.hint);
-            Dialog.HintField.onValueChanged.NewListener(_val => achievement.hint = _val);
+            Dialog.HintField.onValueChanged.NewListener(_val => { achievement.hint = _val; NetworkFunction.EditAchievement(achievement); });
 
             RenderDifficulty(achievement);
 
             Dialog.SharedToggle.SetIsOnWithoutNotify(achievement.shared);
-            Dialog.SharedToggle.OnValueChanged.NewListener(_val => achievement.shared = _val);
+            Dialog.SharedToggle.OnValueChanged.NewListener(_val => { achievement.shared = _val; NetworkFunction.EditAchievement(achievement); });
 
             Dialog.PreviewButton.OnClick.NewListener(DisplayAchievement);
         }
@@ -452,6 +460,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     achievement.DifficultyType = difficulty;
                     RenderDifficulty(achievement);
+                    NetworkFunction.EditAchievement(achievement);
                 });
 
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);

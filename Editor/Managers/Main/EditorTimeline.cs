@@ -646,6 +646,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="openDialog">If the dialog should be opened.</param>
         public void SetCurrentObject(TimelineObject timelineObject, bool bringTo = false, bool openDialog = true)
         {
+            if (!timelineObject)
+                return;
             if (!timelineObject.verified && !timelineObjects.Has(x => x.ID == timelineObject.ID))
                 RenderTimelineObject(timelineObject);
 
@@ -2275,6 +2277,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.pop, 0.7f, 1.3f + UnityRandom.Range(-0.05f, 0.05f));
+            NetworkFunction.SetBinCount(BinCount);
         }
 
         /// <summary>
@@ -2317,6 +2320,7 @@ namespace BetterLegacy.Editor.Managers
             float add = UnityRandom.Range(-0.05f, 0.05f);
             SoundManager.inst.PlaySound(DefaultSounds.Block, 0.5f, 1.3f + add);
             SoundManager.inst.PlaySound(DefaultSounds.menuflip, 0.4f, 1.5f + add);
+            NetworkFunction.SetBinCount(BinCount);
         }
 
         /// <summary>
@@ -2356,6 +2360,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorConfig.Instance.BinControlsPlaysSounds.Value)
                 SoundManager.inst.PlaySound(DefaultSounds.glitch);
+            NetworkFunction.SetBinCount(BinCount);
         }
 
         /// <summary>

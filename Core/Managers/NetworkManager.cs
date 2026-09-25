@@ -21,6 +21,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
@@ -98,6 +99,12 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.SEND_HOST_LOBBY_SETTINGS, 1, reader =>
             {
                 LobbyInfo.HostLobbySettings = Packet.CreateFromPacket<LobbySettings>(reader);
+                if (ProjectArrhythmia.State.IsClient)
+                {
+                    LegacyPlugin.CanEdit = LobbyInfo.HostLobbySettings.CanEdit;
+                    if (ProjectArrhythmia.State.InEditor && EditorManager.inst)
+                        EditorManager.inst.canEdit = LegacyPlugin.CanEdit;
+                }
             }),
 
             new NetworkFunction(NetworkFunction.Side.Multi, NetworkFunction.KEY_PRESS_DOWN, 1, reader => ProjectArrhythmia.Input.keyPressDownOnline.Add((KeyCode)reader.ReadInt32())),
@@ -637,26 +644,29 @@ namespace BetterLegacy.Core.Managers
                 // skip our own edit echoed back by the host relay; we already applied it locally.
                 if (steamID == RTSteamManager.inst.steamUser.steamID)
                     return;
+                if (ProjectArrhythmia.State.IsHosting && updateContext == ObjectContext.MODIFIERS && !SteamLobbyManager.inst.LobbySettings.CanUseModifiers)
+                    return;
                 if (!GameData.Current || !GameData.Current.beatmapObjects.TryFind(x => x.id == edit.id, out BeatmapObject beatmapObject))
                     return;
                 var events = updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext) ? new List<List<EventKeyframe>>(beatmapObject.events) : null;
-                var modifiers = updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext) ?  new List<Modifier>(beatmapObject.modifiers) : null;
+                var modifiers = new List<Modifier>(beatmapObject.modifiers);
                 beatmapObject.CopyData(edit, false);
-                if (updateContext == ObjectContext.MODIFIERS || string.IsNullOrEmpty(updateContext))
-                    for (int i = 0; i < beatmapObject.modifiers.Count; i++)
+                for (int i = 0; i < beatmapObject.modifiers.Count; i++)
+                {
+                    var modifier = beatmapObject.modifiers[i];
+                    // keep the original modifier instance where possible so runtime references stay valid.
+                    if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
                     {
-                        var modifier = beatmapObject.modifiers[i];
-                        // keep the original modifier instance where possible so runtime references stay valid.
-                        if (modifiers.TryFind(x => x.id == modifier.id, out Modifier origModifier))
-                        {
-                            origModifier.CopyData(modifier, false);
-                            beatmapObject.modifiers[i] = origModifier;
-                            modifier = origModifier;
-                        }
-                        // network-deserialized modifiers carry no runtime function/trigger/action; (re)assign from the name so they actually run.
-                        modifier.verified = false;
-                        ModifiersManager.inst.VerifyModifier(modifier, beatmapObject);
+                        origModifier.CopyData(modifier, false);
+                        beatmapObject.modifiers[i] = origModifier;
+                        modifier = origModifier;
                     }
+                    // network-deserialized modifiers carry no runtime function/trigger/action; (re)assign from the name so they actually run.
+                    modifier.verified = false;
+                    ModifiersManager.inst.VerifyModifier(modifier, beatmapObject);
+                    if (!modifier.function)
+                        CoreHelper.LogError($"Network: modifier '{modifier.Name}' (type {modifier.type}) on object {beatmapObject.id} failed to resolve a runtime function and will not run.");
+                }
                 if (updateContext == ObjectContext.KEYFRAMES || string.IsNullOrEmpty(updateContext))
                     for (int i = 0; i < beatmapObject.events.Count; i++)
                     {
@@ -678,6 +688,8 @@ namespace BetterLegacy.Core.Managers
                 // refresh the open object dialog so this client sees the changed values (keyframes, shape, etc.), not just the runtime object.
                 if (ObjectEditor.inst && EditorTimeline.inst && EditorTimeline.inst.CurrentSelection != null && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id && ObjectEditor.inst.Dialog != null && ObjectEditor.inst.Dialog.IsCurrent)
                     ObjectEditor.inst.RenderDialog(beatmapObject);
+                if (updateContext == ObjectContext.MODIFIERS && ModifiersEditorDialog.Current != null && ModifiersEditorDialog.Current.CurrentObject is BeatmapObject modifierDialogObject && modifierDialogObject.id == beatmapObject.id)
+                    CoroutineHelper.StartCoroutine(ModifiersEditorDialog.Current.RenderModifiers(beatmapObject));
             }),
             new NetworkFunction(Side.Server, NetworkFunction.SUBMIT_DELETE_OBJECT, 2, reader =>
             {
@@ -781,6 +793,8 @@ namespace BetterLegacy.Core.Managers
                 // we already expanded locally; don't re-apply our own echo.
                 if (steamID == RTSteamManager.inst.steamUser.steamID)
                     return;
+                if (expander.prefabObject != null && EditorTimeline.inst)
+                    EditorTimeline.inst.DeleteObjectNetwork(expander.prefabObject.id, ModifierReferenceType.PrefabObject);
                 expanded.Apply(expander.prefab, expander.prefabObject, expander.regen);
             }),
             new NetworkFunction(NetworkFunction.ADD_PREFAB_OBJECT, 1, reader =>
@@ -844,6 +858,25 @@ namespace BetterLegacy.Core.Managers
                     return;
                 GameData.Current.prefabs.Add(prefab);
                 RTPrefabEditor.inst.RefreshInternalPrefabs();
+            }),
+            new NetworkFunction(NetworkFunction.UPDATE_PREFAB, 2, reader =>
+            {
+                var steamID = reader.ReadUInt64();
+                var prefab = Packet.CreateFromPacket<Prefab>(reader);
+                if (steamID == RTSteamManager.inst.steamUser.steamID)
+                    return;
+                if (!GameData.Current)
+                    return;
+                int index = GameData.Current.prefabs.FindIndex(x => x.id == prefab.id);
+                if (index >= 0)
+                    GameData.Current.prefabs[index] = prefab;
+                else
+                    GameData.Current.prefabs.Add(prefab);
+                RTPrefabEditor.inst?.RefreshInternalPrefabs();
+                foreach (var prefabObject in GameData.Current.prefabObjects)
+                    if (prefabObject.prefabID == prefab.id)
+                        RTLevel.Current?.UpdatePrefab(prefabObject);
+                RTLevel.Current?.RecalculateObjectStates();
             }),
             new NetworkFunction(NetworkFunction.SET_PLAYHEAD_PRESENCE, 5, reader =>
             {
@@ -920,6 +953,212 @@ namespace BetterLegacy.Core.Managers
                 foreach (var prefabObject in GameData.Current.prefabObjects)
                     if (ids.Contains(prefabObject.id))
                         inst.RunFunction(NetworkFunction.Group.Editor, NetworkFunction.ADD_PREFAB_OBJECT, prefabObject);
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_MARKER, 3, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                var marker = Packet.CreateFromPacket<Marker>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || GameData.Current.data.markers.Has(x => x.id == id)) return;
+                marker.id = id;
+                GameData.Current.data.markers.Add(marker);
+                RTMarkerEditor.inst?.CreateMarkers();
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_MARKER, 3, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                var edit = Packet.CreateFromPacket<Marker>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.data.markers.TryFind(x => x.id == id, out Marker marker)) return;
+                marker.CopyData(edit, false);
+                marker.id = id;
+                RTMarkerEditor.inst?.CreateMarkers();
+            }),
+            new NetworkFunction(NetworkFunction.DELETE_MARKER, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.data.markers.TryFindIndex(x => x.id == id, out int index)) return;
+                GameData.Current.data.markers.RemoveAt(index);
+                RTMarkerEditor.inst?.CreateMarkers();
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_BACKGROUND_OBJECT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var backgroundObject = Packet.CreateFromPacket<BackgroundObject>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || GameData.Current.backgroundObjects.Has(x => x.id == backgroundObject.id)) return;
+                GameData.Current.backgroundObjects.Add(backgroundObject);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                if (EditorTimeline.inst)
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_BACKGROUND_OBJECT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<BackgroundObject>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.backgroundObjects.TryFind(x => x.id == edit.id, out BackgroundObject backgroundObject)) return;
+                backgroundObject.CopyData(edit, false);
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                if (RTBackgroundEditor.inst && RTBackgroundEditor.inst.Dialog != null && RTBackgroundEditor.inst.Dialog.IsCurrent)
+                    RTBackgroundEditor.inst.RenderDialog(backgroundObject);
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_EVENT_KEYFRAME, 4, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var type = reader.ReadInt32();
+                var id = reader.ReadString();
+                var eventKeyframe = Packet.CreateFromPacket<EventKeyframe>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || type < 0 || type >= GameData.Current.events.Count) return;
+                if (GameData.Current.events[type].Has(x => x.id == id)) return;
+                eventKeyframe.id = id;
+                int insertIndex = GameData.Current.events[type].FindLastIndex(x => x.time <= eventKeyframe.time) + 1;
+                GameData.Current.events[type].Insert(insertIndex, eventKeyframe);
+                RTEventEditor.inst?.CreateTimelineKeyframes();
+                RTLevel.Current?.UpdateEvents(type);
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_EVENT_KEYFRAME, 5, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var type = reader.ReadInt32();
+                var id = reader.ReadString();
+                var index = reader.ReadInt32();
+                var edit = Packet.CreateFromPacket<EventKeyframe>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || type < 0 || type >= GameData.Current.events.Count) return;
+                // prefer id match; fall back to the sent list index for pre-existing keyframes whose ids diverged between peers.
+                if (!GameData.Current.events[type].TryFind(x => x.id == id, out EventKeyframe eventKeyframe))
+                {
+                    if (index < 0 || index >= GameData.Current.events[type].Count) return;
+                    eventKeyframe = GameData.Current.events[type][index];
+                }
+                eventKeyframe.CopyData(edit, false);
+                eventKeyframe.id = id; // reconcile to the sender's id so future edits match by id directly.
+                RTEventEditor.inst?.CreateTimelineKeyframes();
+                RTLevel.Current?.UpdateEvents(type);
+            }),
+            new NetworkFunction(NetworkFunction.DELETE_EVENT_KEYFRAME, 4, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var type = reader.ReadInt32();
+                var id = reader.ReadString();
+                var sentIndex = reader.ReadInt32();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || type < 0 || type >= GameData.Current.events.Count) return;
+                if (!GameData.Current.events[type].TryFindIndex(x => x.id == id, out int index))
+                    index = sentIndex;
+                if (index <= 0 || index >= GameData.Current.events[type].Count) return;
+                GameData.Current.events[type].RemoveAt(index);
+                RTEventEditor.inst?.CreateTimelineKeyframes();
+                RTLevel.Current?.UpdateEvents(type);
+            }),
+            new NetworkFunction(NetworkFunction.SET_BIN_COUNT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var count = reader.ReadInt32();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (EditorTimeline.inst && EditorTimeline.inst.layerType != EditorTimeline.LayerType.Events)
+                    EditorTimeline.inst.SetBinCount(count);
+            }),
+            new NetworkFunction(NetworkFunction.SET_META_DATA, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<MetaData>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!MetaData.Current) return;
+                MetaData.Current.CopyData(edit, false);
+                if (RTMetaDataEditor.inst && RTMetaDataEditor.inst.Dialog != null && RTMetaDataEditor.inst.Dialog.IsCurrent)
+                    RTMetaDataEditor.inst.RenderDialog();
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_ACHIEVEMENT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var achievement = Packet.CreateFromPacket<Core.Data.Achievement>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!AchievementEditor.inst || AchievementEditor.inst.achievements.Has(x => x.id == achievement.id)) return;
+                AchievementEditor.inst.achievements.Add(achievement);
+                if (AchievementEditor.inst.Dialog != null && AchievementEditor.inst.Dialog.IsCurrent)
+                    AchievementEditor.inst.RenderAchievementList(AchievementEditor.inst.achievements);
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_ACHIEVEMENT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<Core.Data.Achievement>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!AchievementEditor.inst || !AchievementEditor.inst.achievements.TryFind(x => x.id == edit.id, out Core.Data.Achievement achievement)) return;
+                achievement.CopyData(edit, false);
+                if (AchievementEditor.inst.Dialog != null && AchievementEditor.inst.Dialog.IsCurrent)
+                    AchievementEditor.inst.RenderDialog(achievement, AchievementEditor.inst.achievements);
+            }),
+            new NetworkFunction(NetworkFunction.DELETE_ACHIEVEMENT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!AchievementEditor.inst || !AchievementEditor.inst.achievements.TryFindIndex(x => x.id == id, out int index)) return;
+                AchievementEditor.inst.achievements.RemoveAt(index);
+                if (AchievementEditor.inst.Dialog != null && AchievementEditor.inst.Dialog.IsCurrent)
+                    AchievementEditor.inst.RenderAchievementList(AchievementEditor.inst.achievements);
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_CHECKPOINT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var checkpoint = Packet.CreateFromPacket<Checkpoint>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.data || GameData.Current.data.checkpoints.Has(x => x.id == checkpoint.id)) return;
+                GameData.Current.data.checkpoints.Add(checkpoint);
+                RTCheckpointEditor.inst?.UpdateCheckpointTimeline();
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_CHECKPOINT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<Checkpoint>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.checkpoints.TryFind(x => x.id == edit.id, out Checkpoint checkpoint)) return;
+                checkpoint.CopyData(edit, false);
+                RTCheckpointEditor.inst?.UpdateCheckpointTimeline();
+                if (RTCheckpointEditor.inst && RTCheckpointEditor.inst.Dialog != null && RTCheckpointEditor.inst.Dialog.IsCurrent &&
+                    RTCheckpointEditor.inst.CurrentCheckpoint != null && RTCheckpointEditor.inst.CurrentCheckpoint.Checkpoint != null &&
+                    RTCheckpointEditor.inst.CurrentCheckpoint.Checkpoint.id == checkpoint.id)
+                    RTCheckpointEditor.inst.RenderDialog(checkpoint);
+            }),
+            new NetworkFunction(NetworkFunction.DELETE_CHECKPOINT, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.checkpoints.TryFindIndex(x => x.id == id, out int index) || index == 0) return;
+                GameData.Current.data.checkpoints.RemoveAt(index);
+                RTCheckpointEditor.inst?.UpdateCheckpointTimeline();
+            }),
+            new NetworkFunction(NetworkFunction.CREATE_ANIMATION_GROUP, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var animationGroup = Packet.CreateFromPacket<AnimationGroup>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || GameData.Current.animationGroups.Has(x => x.id == animationGroup.id)) return;
+                GameData.Current.animationGroups.Add(animationGroup);
+            }),
+            new NetworkFunction(NetworkFunction.EDIT_ANIMATION_GROUP, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var edit = Packet.CreateFromPacket<AnimationGroup>(reader);
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.animationGroups.TryFind(x => x.id == edit.id, out AnimationGroup animationGroup)) return;
+                animationGroup.CopyData(edit, false);
+            }),
+            new NetworkFunction(NetworkFunction.DELETE_ANIMATION_GROUP, 2, reader =>
+            {
+                var sender = reader.ReadUInt64();
+                var id = reader.ReadString();
+                if (sender == RTSteamManager.inst.steamUser.steamID) return;
+                if (!GameData.Current || !GameData.Current.animationGroups.TryFindIndex(x => x.id == id, out int index)) return;
+                GameData.Current.animationGroups.RemoveAt(index);
             }),
         };
 
@@ -1381,13 +1620,16 @@ namespace BetterLegacy.Core.Managers
             var sender = reader.ReadUInt64();
             var side = (NetworkFunction.Side)reader.ReadByte();
             var sendType = (SendType)reader.ReadByte();
-            if (side == NetworkFunction.Side.Multi && RTSteamManager.inst.steamUser.steamID != sender)
-                SendToAllClients(data, sendType);
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
             var handler = HandleChunkData(reader);
-            if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
+            bool allowed = NetworkPermissions.IsServerAllowed(group, id);
+            if (allowed && handler.Item1)
+                allowed = NetworkPermissions.IsServerAllowedPayload(group, id, handler.Item2);
+            if (allowed && side == NetworkFunction.Side.Multi && RTSteamManager.inst.steamUser.steamID != sender)
+                SendToAllClients(data, sendType);
+            if (allowed && handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Client, out NetworkFunction function))
             {
                 applyingNetworkChange = true;
                 try { function.Run(handler.Item2); }

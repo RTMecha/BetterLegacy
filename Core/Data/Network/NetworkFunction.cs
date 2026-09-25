@@ -220,6 +220,8 @@ namespace BetterLegacy.Core.Data.Network
 
         public const int IMPORT_PREFAB = 7456437;
 
+        public const int UPDATE_PREFAB = 7456438;
+
         public const int SET_PLAYHEAD_PRESENCE = 342534623;
 
         public const int SET_SELECTION_PRESENCE = 234876543;
@@ -233,6 +235,25 @@ namespace BetterLegacy.Core.Data.Network
         public const int RECONCILE_PREFABS = 728451966;
 
         public const int REQUEST_PREFABS = 728451967;
+        public const int CREATE_MARKER = 800100001;
+        public const int EDIT_MARKER = 800100002;
+        public const int DELETE_MARKER = 800100003;
+        public const int CREATE_BACKGROUND_OBJECT = 800100010;
+        public const int EDIT_BACKGROUND_OBJECT = 800100011;
+        public const int CREATE_EVENT_KEYFRAME = 800100020;
+        public const int EDIT_EVENT_KEYFRAME = 800100021;
+        public const int DELETE_EVENT_KEYFRAME = 800100022;
+        public const int SET_BIN_COUNT = 800100030;
+        public const int SET_META_DATA = 800100040;
+        public const int CREATE_ACHIEVEMENT = 800100050;
+        public const int EDIT_ACHIEVEMENT = 800100051;
+        public const int DELETE_ACHIEVEMENT = 800100052;
+        public const int CREATE_CHECKPOINT = 800100060;
+        public const int EDIT_CHECKPOINT = 800100061;
+        public const int DELETE_CHECKPOINT = 800100062;
+        public const int CREATE_ANIMATION_GROUP = 800100070;
+        public const int EDIT_ANIMATION_GROUP = 800100071;
+        public const int DELETE_ANIMATION_GROUP = 800100072;
 
         #endregion
 
@@ -447,13 +468,20 @@ namespace BetterLegacy.Core.Data.Network
         public static void RefreshEditorLevelList(string searchTerm) => NetworkManager.inst.RunFunction(Group.Editor, REFRESH_EDITOR_LEVEL_LIST,
             new StringParameter(searchTerm));
 
-        public static void SubmitBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_BEATMAP_OBJECT, beatmapObject);
+        public static void SubmitBeatmapObject(BeatmapObject beatmapObject)
+        {
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects))
+                return;
+            NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_BEATMAP_OBJECT, beatmapObject);
+        }
 
         public static void CreateBeatmapObject(BeatmapObject beatmapObject) => NetworkManager.inst.RunFunction(Group.Editor, CREATE_BEATMAP_OBJECT, beatmapObject);
 
         public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true)
         {
             if (NetworkManager.applyingNetworkChange)
+                return;
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects) || (updateContext == ObjectContext.MODIFIERS && !NetworkPermissions.ClientAllows(x => x.CanUseModifiers)))
                 return;
             NetworkManager.inst.RunFunction(Group.Editor, EDIT_BEATMAP_OBJECT,
                 new ULongParameter(RTSteamManager.inst.steamUser.steamID),
@@ -464,37 +492,68 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void EditPrefabObject(PrefabObject prefabObject, string updateContext = "")
         {
-            if (prefabObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby)
+            if (prefabObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanExpandPrefabs))
                 return;
             NetworkManager.inst.RunFunction(Group.Editor, EDIT_PREFAB_OBJECT,
                 new ULongParameter(RTSteamManager.inst.steamUser.steamID),
                 prefabObject,
                 new StringParameter(updateContext));
         }
+
+        public static void AddPrefabObject(PrefabObject prefabObject)
+        {
+            if (prefabObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanExpandPrefabs))
+                return;
+            NetworkManager.inst.RunFunction(Group.Editor, ADD_PREFAB_OBJECT, prefabObject);
+        }
+        public static void UpdatePrefab(Prefab prefab)
+        {
+            if (prefab == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanExpandPrefabs))
+                return;
+            NetworkManager.inst.RunFunction(Group.Editor, UPDATE_PREFAB,
+                new ULongParameter(RTSteamManager.inst.steamUser.steamID),
+                prefab);
+        }
         public static void ReconcilePrefabs(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, RECONCILE_PREFABS, SendType.Unreliable,
             new StringParameter(joinedIDs));
         public static void RequestPrefabs(string joinedIDs) => NetworkManager.inst.RunFunction(Group.Editor, REQUEST_PREFABS,
             new StringParameter(joinedIDs));
-        public static void SubmitDeleteObject(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_DELETE_OBJECT,
-            new StringParameter(id),
-            new IntParameter((int)modifierReferenceType));
+        public static void SubmitDeleteObject(string id, ModifierReferenceType modifierReferenceType)
+        {
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_DELETE_OBJECT,
+                new StringParameter(id),
+                new IntParameter((int)modifierReferenceType));
+        }
 
         public static void DeleteObject(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, DELETE_OBJECT,
             new StringParameter(id),
             new IntParameter((int)modifierReferenceType));
 
-        public static void AddTag(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
-            new StringParameter(id),
-            new IntParameter((int)modifierReferenceType));
-        
-        public static void RemoveTag(string id, ModifierReferenceType modifierReferenceType, int index) => NetworkManager.inst.RunFunction(Group.Editor, REMOVE_TAG,
-            new StringParameter(id),
-            new IntParameter((int)modifierReferenceType),
-            new IntParameter(index));
+        public static void AddTag(string id, ModifierReferenceType modifierReferenceType)
+        {
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
+                new StringParameter(id),
+                new IntParameter((int)modifierReferenceType));
+        }
 
-        public static void ClearTags(string id, ModifierReferenceType modifierReferenceType) => NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
-            new StringParameter(id),
-            new IntParameter((int)modifierReferenceType));
+        public static void RemoveTag(string id, ModifierReferenceType modifierReferenceType, int index)
+        {
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, REMOVE_TAG,
+                new StringParameter(id),
+                new IntParameter((int)modifierReferenceType),
+                new IntParameter(index));
+        }
+
+        public static void ClearTags(string id, ModifierReferenceType modifierReferenceType)
+        {
+            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
+                new StringParameter(id),
+                new IntParameter((int)modifierReferenceType));
+        }
 
         public static void SetPlayheadPresence(ulong sender, float time, int layer, byte layerType, string colorHex) => NetworkManager.inst.RunFunction(Group.Editor, SET_PLAYHEAD_PRESENCE,
             new ULongParameter(sender),
@@ -513,6 +572,104 @@ namespace BetterLegacy.Core.Data.Network
             new StringParameter(joinedIDs));
         public static void AnnounceSave(string message) => NetworkManager.inst.RunFunction(Group.Editor, ANNOUNCE_SAVE,
             new StringParameter(message));
+        public static void CreateMarker(Marker marker)
+        {
+            if (marker == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditMarkers)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_MARKER, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(marker.id), marker);
+        }
+        public static void EditMarker(Marker marker)
+        {
+            if (marker == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditMarkers)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_MARKER, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(marker.id), marker);
+        }
+        public static void DeleteMarker(string id)
+        {
+            if (string.IsNullOrEmpty(id) || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditMarkers)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, DELETE_MARKER, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(id));
+        }
+        public static void CreateBackgroundObject(BackgroundObject backgroundObject)
+        {
+            if (backgroundObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_BACKGROUND_OBJECT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), backgroundObject);
+        }
+        public static void EditBackgroundObject(BackgroundObject backgroundObject)
+        {
+            if (backgroundObject == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_BACKGROUND_OBJECT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), backgroundObject);
+        }
+        public static void CreateEventKeyframe(int type, EventKeyframe eventKeyframe)
+        {
+            if (eventKeyframe == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllowsEvent(type)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_EVENT_KEYFRAME, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new IntParameter(type), new StringParameter(eventKeyframe.id), eventKeyframe);
+        }
+        public static void EditEventKeyframe(int type, EventKeyframe eventKeyframe)
+        {
+            if (eventKeyframe == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllowsEvent(type)) return;
+            int index = GameData.Current && type >= 0 && type < GameData.Current.events.Count ? GameData.Current.events[type].IndexOf(eventKeyframe) : -1;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_EVENT_KEYFRAME, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new IntParameter(type), new StringParameter(eventKeyframe.id), new IntParameter(index), eventKeyframe);
+        }
+        public static void DeleteEventKeyframe(int type, string id)
+        {
+            if (string.IsNullOrEmpty(id) || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllowsEvent(type)) return;
+            int index = GameData.Current && type >= 0 && type < GameData.Current.events.Count ? GameData.Current.events[type].FindIndex(x => x.id == id) : -1;
+            NetworkManager.inst.RunFunction(Group.Editor, DELETE_EVENT_KEYFRAME, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new IntParameter(type), new StringParameter(id), new IntParameter(index));
+        }
+        public static void SetBinCount(int count)
+        {
+            if (NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, SET_BIN_COUNT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new IntParameter(count));
+        }
+        public static void SetMetaData(MetaData metaData)
+        {
+            if (metaData == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditMetaData)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, SET_META_DATA, new ULongParameter(RTSteamManager.inst.steamUser.steamID), metaData);
+        }
+        public static void CreateAchievement(Achievement achievement)
+        {
+            if (achievement == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditAchievements)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_ACHIEVEMENT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), achievement);
+        }
+        public static void EditAchievement(Achievement achievement)
+        {
+            if (achievement == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditAchievements)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_ACHIEVEMENT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), achievement);
+        }
+        public static void DeleteAchievement(string id)
+        {
+            if (string.IsNullOrEmpty(id) || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditAchievements)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, DELETE_ACHIEVEMENT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(id));
+        }
+        public static void CreateCheckpoint(Checkpoint checkpoint)
+        {
+            if (checkpoint == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_CHECKPOINT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), checkpoint);
+        }
+        public static void EditCheckpoint(Checkpoint checkpoint)
+        {
+            if (checkpoint == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_CHECKPOINT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), checkpoint);
+        }
+        public static void DeleteCheckpoint(string id)
+        {
+            if (string.IsNullOrEmpty(id) || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, DELETE_CHECKPOINT, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(id));
+        }
+        public static void CreateAnimationGroup(AnimationGroup animationGroup)
+        {
+            if (animationGroup == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, CREATE_ANIMATION_GROUP, new ULongParameter(RTSteamManager.inst.steamUser.steamID), animationGroup);
+        }
+        public static void EditAnimationGroup(AnimationGroup animationGroup)
+        {
+            if (animationGroup == null || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, EDIT_ANIMATION_GROUP, new ULongParameter(RTSteamManager.inst.steamUser.steamID), animationGroup);
+        }
+        public static void DeleteAnimationGroup(string id)
+        {
+            if (string.IsNullOrEmpty(id) || NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            NetworkManager.inst.RunFunction(Group.Editor, DELETE_ANIMATION_GROUP, new ULongParameter(RTSteamManager.inst.steamUser.steamID), new StringParameter(id));
+        }
+
         #endregion
 
         #endregion

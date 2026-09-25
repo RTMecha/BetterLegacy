@@ -3776,6 +3776,7 @@ namespace BetterLegacy.Core
         {
             prefabable.PrefabID = reader.ReadString();
             prefabable.PrefabInstanceID = reader.ReadString();
+            prefabable.FromPrefab = reader.ReadBoolean();
         }
 
         /// <summary>
@@ -3787,6 +3788,7 @@ namespace BetterLegacy.Core
         {
             writer.Write(prefabable.PrefabID);
             writer.Write(prefabable.PrefabInstanceID);
+            writer.Write(prefabable.FromPrefab);
         }
 
         /// <summary>

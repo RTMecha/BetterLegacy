@@ -61,7 +61,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                             innerLoop.Run(selectModifiers, i, endCount);
                         }
                     else
-                        for (int i = endCount - 1; i >= startIndex; i -= increment)
+                        for (int i = endCount - 1; i >= startIndex; i += increment)
                         {
                             innerLoop.variables[variable] = i.ToString();
                             innerLoop.Run(selectModifiers, i, endCount);

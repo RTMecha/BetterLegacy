@@ -14,6 +14,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -161,6 +162,11 @@ namespace BetterLegacy.Editor.Managers
             };
             Dialog.ModdedDisplayText.text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
             Dialog.ConvertButton.onClick.NewListener(ConvertLevel);
+            bool canEditMetaData = NetworkPermissions.ClientAllows(x => x.CanEditMetaData);
+            if (Dialog.GameObject)
+                foreach (var selectable in Dialog.GameObject.GetComponentsInChildren<Selectable>(true))
+                    if (selectable is InputField || selectable is Dropdown || selectable is Toggle)
+                        selectable.interactable = canEditMetaData;
         }
 
         /// <summary>
@@ -174,6 +180,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string oldVal = metadata.artist.name;
                 metadata.artist.name = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Name", () =>
                 {
                     metadata.artist.name = _val;
@@ -197,6 +204,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string oldVal = metadata.artist.link;
                 metadata.artist.link = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.artist.link = _val;
@@ -214,6 +222,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int oldVal = metadata.artist.linkType;
                 metadata.artist.linkType = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.artist.linkType = _val;
@@ -235,11 +244,11 @@ namespace BetterLegacy.Editor.Managers
             if (Dialog.UploaderNameField)
             {
                 Dialog.UploaderNameField.SetTextWithoutNotify(metadata.uploaderName);
-                Dialog.UploaderNameField.onValueChanged.NewListener(_val => metadata.uploaderName = _val);
+                Dialog.UploaderNameField.onValueChanged.NewListener(_val => { metadata.uploaderName = _val; EditorMultiplayer.metadataDirty = true; });
             }
 
             Dialog.CreatorNameField.SetTextWithoutNotify(metadata.creator.name);
-            Dialog.CreatorNameField.onValueChanged.NewListener(_val => metadata.creator.name = _val);
+            Dialog.CreatorNameField.onValueChanged.NewListener(_val => { metadata.creator.name = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.OpenCreatorURLButton.onClick.NewListener(() =>
             {
@@ -253,6 +262,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string oldVal = metadata.creator.link;
                 metadata.creator.link = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.creator.link = _val;
@@ -270,6 +280,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int oldVal = metadata.creator.linkType;
                 metadata.creator.linkType = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Creator Link", () =>
                 {
                     metadata.creator.linkType = _val;
@@ -289,7 +300,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderSong(MetaData metadata)
         {
             Dialog.SongTitleField.SetTextWithoutNotify(metadata.song.title);
-            Dialog.SongTitleField.onValueChanged.NewListener(_val => metadata.song.title = _val);
+            Dialog.SongTitleField.onValueChanged.NewListener(_val => { metadata.song.title = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.OpenSongURLButton.onClick.NewListener(() =>
             {
@@ -303,6 +314,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string oldVal = metadata.song.link;
                 metadata.song.link = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.song.link = _val;
@@ -320,6 +332,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int oldVal = metadata.song.linkType;
                 metadata.song.linkType = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Creator Link", () =>
                 {
                     metadata.song.linkType = _val;
@@ -339,10 +352,10 @@ namespace BetterLegacy.Editor.Managers
         public void RenderLevel(MetaData metadata)
         {
             Dialog.LevelNameField.SetTextWithoutNotify(metadata.beatmap.name);
-            Dialog.LevelNameField.onValueChanged.NewListener(_val => metadata.beatmap.name = _val);
+            Dialog.LevelNameField.onValueChanged.NewListener(_val => { metadata.beatmap.name = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.DescriptionField.SetTextWithoutNotify(metadata.song.description);
-            Dialog.DescriptionField.onValueChanged.NewListener(_val => metadata.song.description = _val);
+            Dialog.DescriptionField.onValueChanged.NewListener(_val => { metadata.song.description = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.OpenVideoURLButton.onClick.NewListener(() =>
             {
@@ -356,6 +369,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 string oldVal = metadata.beatmap.videoLink;
                 metadata.beatmap.videoLink = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.beatmap.videoLink = _val;
@@ -373,6 +387,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int oldVal = metadata.beatmap.videoLinkType;
                 metadata.beatmap.videoLinkType = _val;
+                EditorMultiplayer.metadataDirty = true;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
                     metadata.beatmap.videoLinkType = _val;
@@ -385,7 +400,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             Dialog.VersionField.SetTextWithoutNotify(metadata.ObjectVersion);
-            Dialog.VersionField.onValueChanged.NewListener(_val => metadata.ObjectVersion = _val);
+            Dialog.VersionField.onValueChanged.NewListener(_val => { metadata.ObjectVersion = _val; EditorMultiplayer.metadataDirty = true; });
             Dialog.VersionField.onEndEdit.NewListener(_val => RenderLevel(metadata));
             EditorContextMenu.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
         }
@@ -399,15 +414,15 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PackageContent.gameObject.SetActive(Dialog.PackageToggle.IsOn);
             Dialog.PackageToggle.OnValueChanged.NewListener(_val => RenderPackage(metadata));
             Dialog.MainAudioField.SetTextWithoutNotify(metadata.package.mainAudio);
-            Dialog.MainAudioField.onValueChanged.NewListener(_val => metadata.package.mainAudio = _val);
+            Dialog.MainAudioField.onValueChanged.NewListener(_val => { metadata.package.mainAudio = _val; EditorMultiplayer.metadataDirty = true; });
             Dialog.MainPreviewAudioField.SetTextWithoutNotify(metadata.package.mainPreviewAudio);
-            Dialog.MainPreviewAudioField.onValueChanged.NewListener(_val => metadata.package.mainPreviewAudio = _val);
+            Dialog.MainPreviewAudioField.onValueChanged.NewListener(_val => { metadata.package.mainPreviewAudio = _val; EditorMultiplayer.metadataDirty = true; });
             Dialog.MainCoverField.SetTextWithoutNotify(metadata.package.mainCover);
-            Dialog.MainCoverField.onValueChanged.NewListener(_val => metadata.package.mainCover = _val);
+            Dialog.MainCoverField.onValueChanged.NewListener(_val => { metadata.package.mainCover = _val; EditorMultiplayer.metadataDirty = true; });
             Dialog.MainLockedCoverField.SetTextWithoutNotify(metadata.package.mainLockedCover);
-            Dialog.MainLockedCoverField.onValueChanged.NewListener(_val => metadata.package.mainLockedCover = _val);
+            Dialog.MainLockedCoverField.onValueChanged.NewListener(_val => { metadata.package.mainLockedCover = _val; EditorMultiplayer.metadataDirty = true; });
             Dialog.MainLevelField.SetTextWithoutNotify(metadata.package.mainLevel);
-            Dialog.MainLevelField.onValueChanged.NewListener(_val => metadata.package.mainLevel = _val);
+            Dialog.MainLevelField.onValueChanged.NewListener(_val => { metadata.package.mainLevel = _val; EditorMultiplayer.metadataDirty = true; });
 
             CoreHelper.DestroyChildren(Dialog.FileContent);
             for (int i = 0; i < metadata.package.files.Count; i++)
@@ -418,17 +433,18 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.transform.AsRT().sizeDelta = new Vector2(719f, 32f);
                 var idField = gameObject.transform.Find("id").GetComponent<InputField>();
                 idField.SetTextWithoutNotify(file.id);
-                idField.onValueChanged.NewListener(_val => file.id = _val);
+                idField.onValueChanged.NewListener(_val => { file.id = _val; EditorMultiplayer.metadataDirty = true; });
 
                 var fileNameField = gameObject.transform.Find("file name").GetComponent<InputField>();
                 fileNameField.SetTextWithoutNotify(file.fileName);
-                fileNameField.onValueChanged.NewListener(_val => file.fileName = _val);
+                fileNameField.onValueChanged.NewListener(_val => { file.fileName = _val; EditorMultiplayer.metadataDirty = true; });
 
                 var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
                 deleteButton.OnClick.NewListener(() =>
                 {
                     metadata.package.files.RemoveAt(index);
                     RenderPackage(metadata);
+                    EditorMultiplayer.metadataDirty = true;
                 });
 
                 EditorThemeManager.ApplyInputField(idField);
@@ -441,6 +457,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 metadata.package.files.Add(new PackageMetaData.File());
                 RenderPackage(metadata);
+                EditorMultiplayer.metadataDirty = true;
             });
         }
 
@@ -451,13 +468,13 @@ namespace BetterLegacy.Editor.Managers
         public void RenderSettings(MetaData metadata)
         {
             Dialog.IsHubLevelToggle.SetIsOnWithoutNotify(metadata.isHubLevel);
-            Dialog.IsHubLevelToggle.OnValueChanged.NewListener(_val => metadata.isHubLevel = _val);
+            Dialog.IsHubLevelToggle.OnValueChanged.NewListener(_val => { metadata.isHubLevel = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.UnlockRequiredToggle.SetIsOnWithoutNotify(metadata.requireUnlock);
-            Dialog.UnlockRequiredToggle.OnValueChanged.NewListener(_val => metadata.requireUnlock = _val);
+            Dialog.UnlockRequiredToggle.OnValueChanged.NewListener(_val => { metadata.requireUnlock = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.UnlockCompletedToggle.SetIsOnWithoutNotify(metadata.unlockAfterCompletion);
-            Dialog.UnlockCompletedToggle.OnValueChanged.NewListener(_val => metadata.unlockAfterCompletion = _val);
+            Dialog.UnlockCompletedToggle.OnValueChanged.NewListener(_val => { metadata.unlockAfterCompletion = _val; EditorMultiplayer.metadataDirty = true; });
 
             var levelData = GameData.Current?.data?.level;
             if (!levelData)
@@ -478,17 +495,17 @@ namespace BetterLegacy.Editor.Managers
             });
 
             Dialog.PreferredPlayerCountDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredPlayerCount);
-            Dialog.PreferredPlayerCountDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val);
+            Dialog.PreferredPlayerCountDropdown.onValueChanged.NewListener(_val => { metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.PreferredControlTypeDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredControlType);
-            Dialog.PreferredControlTypeDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredControlType = (BeatmapMetaData.PreferredControlType)_val);
+            Dialog.PreferredControlTypeDropdown.onValueChanged.NewListener(_val => { metadata.beatmap.preferredControlType = (BeatmapMetaData.PreferredControlType)_val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.RequireVersion.SetIsOnWithoutNotify(metadata.requireVersion);
-            Dialog.RequireVersion.OnValueChanged.NewListener(_val => metadata.requireVersion = _val);
+            Dialog.RequireVersion.OnValueChanged.NewListener(_val => { metadata.requireVersion = _val; EditorMultiplayer.metadataDirty = true; });
 
             Dialog.VersionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
             Dialog.VersionComparison.SetValueWithoutNotify((int)metadata.versionRange);
-            Dialog.VersionComparison.onValueChanged.NewListener(_val => metadata.versionRange = (DataManager.VersionComparison)_val);
+            Dialog.VersionComparison.onValueChanged.NewListener(_val => { metadata.versionRange = (DataManager.VersionComparison)_val; EditorMultiplayer.metadataDirty = true; });
         }
 
         /// <summary>
@@ -523,6 +540,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.onValueChanged.NewListener(_val =>
                 {
                     metadata.song.Difficulty = difficulty;
+                    EditorMultiplayer.metadataDirty = true;
                     RenderDifficulty(metadata);
                 });
 

@@ -79,6 +79,8 @@ namespace BetterLegacy.Editor.Components
             if (ProjectArrhythmia.State.InEditorPreview)
                 return;
 
+            if (NetworkPermissions.BlockEditObjects())
+                return;
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
             var vector2 = Camera.main.ScreenToWorldPoint(vector) * 0.2f;
             var vector3 = new Vector3(RTMath.RoundToNearestDecimal(vector2.x, 1), RTMath.RoundToNearestDecimal(vector2.y, 1), transform.localPosition.z);

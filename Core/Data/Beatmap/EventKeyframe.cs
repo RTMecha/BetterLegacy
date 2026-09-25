@@ -249,6 +249,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var eventKeyframe = new EventKeyframe();
 
+            if (jn["id"] != null)
+                eventKeyframe.id = jn["id"];
             eventKeyframe.time = jn["t"].AsFloat;
 
             if (jn["ct"] != null)
@@ -305,6 +307,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1, bool saveSecondaryValues = true)
         {
             JSONNode jn = Parser.NewJSONObject();
+            jn["id"] = id;
             jn["t"] = time;
 
             for (int i = 0; i < values.Length; i++)
@@ -351,6 +354,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void ReadPacket(NetworkReader reader)
         {
+            id = reader.ReadString();
             time = reader.ReadSingle();
             values = reader.ReadSingleArray();
             curve = (Easing)reader.ReadUInt16();
@@ -374,6 +378,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void WritePacket(NetworkWriter writer)
         {
+            writer.Write(id);
             writer.Write(time);
             writer.Write(values);
             writer.Write((ushort)curve);

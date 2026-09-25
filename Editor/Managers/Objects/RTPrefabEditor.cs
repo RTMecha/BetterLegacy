@@ -1385,6 +1385,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="createNew">If a new Prefab should be created.</param>
         public void Collapse(IPrefabable prefabable, ObjectEditorData editorData, bool createNew = false)
         {
+            if (NetworkPermissions.BlockEditPrefabs())
+                return;
             var prefabID = prefabable.PrefabID;
             var prefabInstanceID = prefabable.PrefabInstanceID;
 
@@ -1479,6 +1481,7 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.Delete(timelineObject.GameObject);
                 EditorTimeline.inst.timelineObjects.RemoveAt(index);
             });
+            var removedIDs = new List<(string id, ModifierReferenceType type)>();
 
             GameData.Current.beatmapObjects.ForLoopReverse((beatmapObject, index) =>
             {
@@ -1488,6 +1491,7 @@ namespace BetterLegacy.Editor.Managers
                 if (quickPrefabTarget && quickPrefabTarget.id == beatmapObject.id)
                     quickPrefabTarget = null;
 
+                removedIDs.Add((beatmapObject.id, ModifierReferenceType.BeatmapObject));
                 RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
                 GameData.Current.beatmapObjects.RemoveAt(index);
             });
@@ -1496,6 +1500,7 @@ namespace BetterLegacy.Editor.Managers
                 if (backgroundObject.prefabInstanceID != prefabInstanceID || backgroundObject.FromPrefab)
                     return;
 
+                removedIDs.Add((backgroundObject.id, ModifierReferenceType.BackgroundObject));
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: false);
                 GameData.Current.backgroundObjects.RemoveAt(index);
             });
@@ -1504,6 +1509,7 @@ namespace BetterLegacy.Editor.Managers
                 if (prefabObject.prefabInstanceID != prefabInstanceID || prefabObject.FromPrefab)
                     return;
 
+                removedIDs.Add((prefabObject.id, ModifierReferenceType.PrefabObject));
                 RTLevelBase runtimeLevel = prefabObject.runtimeObject?.ParentRuntime ?? RTLevel.Current;
 
                 runtimeLevel?.RemovePrefab(prefabObject);
@@ -1535,6 +1541,21 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
 
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                NetworkFunction.UpdatePrefab(newPrefab);
+                foreach (var removed in removedIDs)
+                {
+                    if (removed.id == prefabObject.id)
+                        continue;
+                    if (ProjectArrhythmia.State.IsHosting)
+                        NetworkFunction.DeleteObject(removed.id, removed.type);
+                    else
+                        NetworkFunction.SubmitDeleteObject(removed.id, removed.type);
+                }
+                NetworkFunction.AddPrefabObject(prefabObject);
+            }
+
             EditorManager.inst.DisplayNotification("Replaced all instances of Prefab!", 2f, EditorManager.NotificationType.Success);
         }
 
@@ -1544,6 +1565,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefabObject">Prefab instance.</param>
         public void Expand(PrefabObject prefabObject)
         {
+            if (NetworkPermissions.BlockEditPrefabs())
+                return;
             List<TimelineObject> selected = null;
             PrefabExpander.Expanded expanded = null;
             EditorManager.inst.history.Add(new History.Command("Expand Prefab",

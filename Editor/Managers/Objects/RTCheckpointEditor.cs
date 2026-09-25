@@ -12,6 +12,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -165,11 +166,14 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="pos">Position of the checkpoint to set.</param>
         public void CreateNewCheckpoint(float time, Vector2 pos)
         {
+            if (NetworkPermissions.BlockEditCheckpoints())
+                return;
             if (!GameData.Current || !GameData.Current.data)
                 return;
 
             var checkpoint = new Checkpoint(Checkpoint.DEFAULT_CHECKPOINT_NAME, Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), pos);
             GameData.Current.data.checkpoints.Add(checkpoint);
+            NetworkFunction.CreateCheckpoint(checkpoint);
 
             (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? (Action)CreateCheckpoints : CreateGhostCheckpoints).Invoke();
 
@@ -184,6 +188,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="index">Index of the checkpoint to delete.</param>
         public void DeleteCheckpoint(int index)
         {
+            if (NetworkPermissions.BlockEditCheckpoints())
+                return;
             if (!GameData.Current || !GameData.Current.data)
                 return;
 
@@ -191,6 +197,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             Debug.Log($"{CheckpointEditor.inst.className}Deleting checkpoint at [{index}] index.");
+            NetworkFunction.DeleteCheckpoint(GameData.Current.data.checkpoints[index].id);
             GameData.Current.data.checkpoints.RemoveAt(index);
             if (GameData.Current.data.checkpoints.Count > 0)
                 SetCurrentCheckpoint(Mathf.Clamp(index - 1, 0, GameData.Current.data.checkpoints.Count - 1));
@@ -222,6 +229,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.BPMSnapsPasted.Value && RTEditor.inst.editorInfo.bpmSnapActive)
                 checkpoint.time = RTEditor.SnapToBPM(checkpoint.time);
             GameData.Current.data.checkpoints.Add(checkpoint);
+            NetworkFunction.CreateCheckpoint(checkpoint);
             UpdateCheckpointTimeline();
             RTBeatmap.Current.ResetCheckpoint();
         }
@@ -289,6 +297,7 @@ namespace BetterLegacy.Editor.Managers
                 checkpoint.time = num;
                 RenderCheckpoint(index);
                 GameManager.inst.UpdateTimeline();
+                NetworkFunction.EditCheckpoint(checkpoint);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.TimeField);
@@ -298,6 +307,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 checkpoint.name = _val;
                 RenderCheckpointList();
+                NetworkFunction.EditCheckpoint(checkpoint);
             });
 
             Dialog.TimeField.eventTrigger.triggers.Clear();
@@ -312,6 +322,7 @@ namespace BetterLegacy.Editor.Managers
 
                 checkpoint.pos.x = num;
                 RenderCheckpoint(index);
+                NetworkFunction.EditCheckpoint(checkpoint);
             });
 
             Dialog.PositionFields.y.SetTextWithoutNotify(checkpoint.pos.y.ToString());
@@ -322,6 +333,7 @@ namespace BetterLegacy.Editor.Managers
 
                 checkpoint.pos.y = num;
                 RenderCheckpoint(index);
+                NetworkFunction.EditCheckpoint(checkpoint);
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.PositionFields.x, 5f);
@@ -338,22 +350,22 @@ namespace BetterLegacy.Editor.Managers
             Dialog.PositionFields.y.gameObject.GetOrAddComponent<InputFieldSwapper>().Init(Dialog.PositionFields.y.inputField, InputFieldSwapper.Type.Num);
 
             Dialog.RespawnToggle.SetIsOnWithoutNotify(checkpoint.respawn);
-            Dialog.RespawnToggle.OnValueChanged.NewListener(_val => checkpoint.respawn = _val);
-            
+            Dialog.RespawnToggle.OnValueChanged.NewListener(_val => { checkpoint.respawn = _val; NetworkFunction.EditCheckpoint(checkpoint); });
+
             Dialog.HealToggle.SetIsOnWithoutNotify(checkpoint.heal);
-            Dialog.HealToggle.OnValueChanged.NewListener(_val => checkpoint.heal = _val);
-            
+            Dialog.HealToggle.OnValueChanged.NewListener(_val => { checkpoint.heal = _val; NetworkFunction.EditCheckpoint(checkpoint); });
+
             Dialog.SetTimeToggle.SetIsOnWithoutNotify(checkpoint.setTime);
-            Dialog.SetTimeToggle.OnValueChanged.NewListener(_val => checkpoint.setTime = _val);
-            
+            Dialog.SetTimeToggle.OnValueChanged.NewListener(_val => { checkpoint.setTime = _val; NetworkFunction.EditCheckpoint(checkpoint); });
+
             Dialog.ReverseToggle.SetIsOnWithoutNotify(checkpoint.reverse);
-            Dialog.ReverseToggle.OnValueChanged.NewListener(_val => checkpoint.reverse = _val);
-            
+            Dialog.ReverseToggle.OnValueChanged.NewListener(_val => { checkpoint.reverse = _val; NetworkFunction.EditCheckpoint(checkpoint); });
+
             Dialog.AutoTriggerableToggle.SetIsOnWithoutNotify(checkpoint.autoTriggerable);
-            Dialog.AutoTriggerableToggle.OnValueChanged.NewListener(_val => checkpoint.autoTriggerable = _val);
+            Dialog.AutoTriggerableToggle.OnValueChanged.NewListener(_val => { checkpoint.autoTriggerable = _val; NetworkFunction.EditCheckpoint(checkpoint); });
 
             Dialog.SpawnPositionDropdown.SetValueWithoutNotify((int)checkpoint.spawnType);
-            Dialog.SpawnPositionDropdown.onValueChanged.NewListener(_val => checkpoint.spawnType = (Checkpoint.SpawnPositionType)_val);
+            Dialog.SpawnPositionDropdown.onValueChanged.NewListener(_val => { checkpoint.spawnType = (Checkpoint.SpawnPositionType)_val; NetworkFunction.EditCheckpoint(checkpoint); });
 
             RenderCheckpointPositions(checkpoint);
 
@@ -389,13 +401,19 @@ namespace BetterLegacy.Editor.Managers
                 storage.x.OnValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
+                    {
                         checkpoint.positions[index] = new Vector2(num, checkpoint.positions[index].y);
+                        NetworkFunction.EditCheckpoint(checkpoint);
+                    }
                 });
                 storage.y.SetTextWithoutNotify(pos.y.ToString());
                 storage.y.OnValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
+                    {
                         checkpoint.positions[index] = new Vector2(checkpoint.positions[index].x, num);
+                        NetworkFunction.EditCheckpoint(checkpoint);
+                    }
                 });
 
                 TriggerHelper.AddEventTriggers(storage.x.inputField.gameObject,
@@ -414,6 +432,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     checkpoint.positions.RemoveAt(index);
                     RenderCheckpointPositions(checkpoint);
+                    NetworkFunction.EditCheckpoint(checkpoint);
                 });
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
@@ -436,6 +455,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 checkpoint.positions.Add(EventManager.inst.cam.transform.position);
                 RenderCheckpointPositions(checkpoint);
+                NetworkFunction.EditCheckpoint(checkpoint);
             };
         }
 

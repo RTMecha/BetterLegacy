@@ -236,6 +236,7 @@ namespace BetterLegacy.Editor.Data
                 PrefabObjects = new List<PrefabObject>(),
                 BackgroundLayers = new List<BackgroundLayer>(),
                 BackgroundObjects = new List<BackgroundObject>(),
+                BeatmapThemes = new List<BeatmapTheme>(),
             };
 
             var sw = CoreHelper.StartNewStopwatch();
@@ -294,6 +295,7 @@ namespace BetterLegacy.Editor.Data
                     continue;
 
                 var timelineObject = new TimelineObject(beatmapObjectCopy);
+                beatmapObjectCopy.TimelineObject = timelineObject;
 
                 timelineObject.Selected = true;
                 EditorTimeline.inst.CurrentSelection = timelineObject;
@@ -357,6 +359,7 @@ namespace BetterLegacy.Editor.Data
                     continue;
 
                 var timelineObject = new TimelineObject(backgroundObjectCopy);
+                backgroundObjectCopy.TimelineObject = timelineObject;
 
                 timelineObject.Selected = true;
                 EditorTimeline.inst.CurrentSelection = timelineObject;
@@ -434,6 +437,7 @@ namespace BetterLegacy.Editor.Data
                     continue;
 
                 var timelineObject = new TimelineObject(prefabObjectCopy);
+                prefabObjectCopy.TimelineObject = timelineObject;
 
                 timelineObject.Selected = true;
                 EditorTimeline.inst.CurrentSelection = timelineObject;
@@ -441,6 +445,8 @@ namespace BetterLegacy.Editor.Data
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
 
+            for (int i = 0; i < prefab.beatmapThemes.Count; i++)
+                expanded.BeatmapThemes.Add(prefab.beatmapThemes[i]);
             for (int i = 0; i < prefab.assets.sprites.Count; i++)
             {
                 var spriteAsset = prefab.assets.sprites[i];
@@ -563,7 +569,11 @@ namespace BetterLegacy.Editor.Data
                         unparentedPastedObjects.Add(beatmapObject);
 
                     if (ProjectArrhythmia.State.InEditor)
-                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(beatmapObject));
+                    {
+                        var timelineObject = new TimelineObject(beatmapObject);
+                        beatmapObject.TimelineObject = timelineObject;
+                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                    }
                 }
 
                 var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : BeatmapObjects;
@@ -590,7 +600,11 @@ namespace BetterLegacy.Editor.Data
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
 
                     if (ProjectArrhythmia.State.InEditor)
-                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(backgroundObject));
+                    {
+                        var timelineObject = new TimelineObject(backgroundObject);
+                        backgroundObject.TimelineObject = timelineObject;
+                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                    }
                 }
 
                 if (Prefabs != null)
@@ -624,13 +638,24 @@ namespace BetterLegacy.Editor.Data
                     RTLevel.Current?.UpdatePrefab(subPrefabObject, recalculate: false);
 
                     if (ProjectArrhythmia.State.InEditor)
-                        EditorTimeline.inst.RenderTimelineObject(new TimelineObject(subPrefabObject));
+                    {
+                        var timelineObject = new TimelineObject(subPrefabObject);
+                        subPrefabObject.TimelineObject = timelineObject;
+                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                    }
                 }
 
                 for (int i = 0; i < prefab.assets.sprites.Count; i++)
                 {
                     var spriteAsset = prefab.assets.sprites[i];
                     GameData.Current.assets.sprites.OverwriteAdd((orig, index) => orig.name == spriteAsset.name, spriteAsset.Copy());
+                }
+                if (BeatmapThemes != null)
+                {
+                    for (int i = 0; i < BeatmapThemes.Count; i++)
+                        GameData.Current.AddTheme(BeatmapThemes[i]);
+                    if (!BeatmapThemes.IsEmpty())
+                        RTThemeEditor.inst.LoadInternalThemes();
                 }
 
                 RTPrefabEditor.inst.ApplyAnimations(prefab, prefabObject, regen);

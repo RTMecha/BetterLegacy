@@ -39,6 +39,7 @@ namespace BetterLegacy.Editor.Managers
         public static Dictionary<string, List<ulong>> ObjectSelectors { get; private set; } = new Dictionary<string, List<ulong>>();
 
         public static bool selectionDirty;
+        public static bool metadataDirty;
 
         static GameObject ghostPoolParent;
         static List<GameObject> ghostPool = new List<GameObject>();
@@ -274,6 +275,12 @@ namespace BetterLegacy.Editor.Managers
 
             NetworkFunction.SetSelectionPresence(RTSteamManager.inst.steamUser.steamID, joinedIDs);
         }
+        public static void BroadcastMetaData()
+        {
+            if (!ProjectArrhythmia.State.IsInLobby || !ProjectArrhythmia.State.InEditor || !MetaData.Current) return;
+            NetworkFunction.SetMetaData(MetaData.Current);
+        }
+
         public static void BroadcastNewObject(BeatmapObject beatmapObject)
         {
             if (beatmapObject == null || !ProjectArrhythmia.State.IsInLobby)

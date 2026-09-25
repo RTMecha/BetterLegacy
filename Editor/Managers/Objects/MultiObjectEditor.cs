@@ -4,6 +4,7 @@ using System.Linq;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
@@ -67,7 +68,11 @@ namespace BetterLegacy.Editor.Managers
         public void ForEachBeatmapObject(Action<BeatmapObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
-                action?.Invoke(timelineObject.GetData<BeatmapObject>());
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                action?.Invoke(beatmapObject);
+                NetworkFunction.EditBeatmapObject(beatmapObject);
+            }
         }
 
         /// <summary>
@@ -87,7 +92,11 @@ namespace BetterLegacy.Editor.Managers
         public void ForEachPrefabObject(Action<PrefabObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedPrefabObjects)
-                action?.Invoke(timelineObject.GetData<PrefabObject>());
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                action?.Invoke(prefabObject);
+                NetworkFunction.EditPrefabObject(prefabObject);
+            }
         }
 
         /// <summary>
@@ -107,7 +116,11 @@ namespace BetterLegacy.Editor.Managers
         public void ForEachBackgroundObject(Action<BackgroundObject> action)
         {
             foreach (var timelineObject in EditorTimeline.inst.SelectedBackgroundObjects)
-                action?.Invoke(timelineObject.GetData<BackgroundObject>());
+            {
+                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                action?.Invoke(backgroundObject);
+                NetworkFunction.EditBackgroundObject(backgroundObject);
+            }
         }
 
         /// <summary>

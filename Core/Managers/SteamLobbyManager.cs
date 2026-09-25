@@ -93,6 +93,11 @@ namespace BetterLegacy.Core.Managers
                     Editor.Managers.EditorMultiplayer.BroadcastLocalSelection();
                     Editor.Managers.EditorMultiplayer.selectionDirty = false;
                 }
+                if (Editor.Managers.EditorMultiplayer.metadataDirty)
+                {
+                    Editor.Managers.EditorMultiplayer.BroadcastMetaData();
+                    Editor.Managers.EditorMultiplayer.metadataDirty = false;
+                }
                 if (ProjectArrhythmia.State.IsHosting && GameData.Current && TickCount % 200 == 0)
                 {
                     var joinedIDs = string.Join("\n", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Select(x => x.id));

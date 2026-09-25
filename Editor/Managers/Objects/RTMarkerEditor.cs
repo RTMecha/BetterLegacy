@@ -14,6 +14,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
@@ -773,7 +774,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                var index = num;
+                var timelineMarker = marker.timelineMarker;
 
                 var markerButton = marker.timelineMarker.panel;
 
@@ -788,13 +789,13 @@ namespace BetterLegacy.Editor.Managers
                 markerButton.RenderColor();
 
                 markerButton.Button = gameObject.GetComponent<Button>();
-                markerButton.Button.onClick.AddListener(() => SetCurrentMarker(timelineMarkers[index], true));
+                markerButton.Button.onClick.AddListener(() => SetCurrentMarker(timelineMarker, true));
 
                 var contextClickable = gameObject.AddComponent<ContextClickable>();
                 contextClickable.onClick = eventData =>
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
-                        ShowMarkerContextMenu(timelineMarkers[index]);
+                        ShowMarkerContextMenu(timelineMarker);
                 };
 
                 TooltipHelper.AddHoverTooltip(gameObject, $"<#{LSColors.ColorToHex(marker.timelineMarker.Color)}>{marker.name} [ {marker.time} ]</color>", marker.desc, new List<string>());
@@ -817,6 +818,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="time">If a marker is found nearby this time, select that marker. Otherwise, create a new marker with this time.</param>
         public void CreateNewMarker(float time)
         {
+            if (NetworkPermissions.BlockEditMarkers())
+                return;
             Marker marker;
             if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (EditorConfig.Instance.ShowMarkersOnAllLayers.Value || x.VisibleOnLayer(EditorTimeline.inst.Layer)), out Marker baseMarker))
                 marker = baseMarker;
@@ -826,6 +829,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.data.markers.Add(marker);
                 if (EditorConfig.Instance.CreateMarkerOnCurrentLayer.Value)
                     marker.layers.Add(EditorTimeline.inst.Layer);
+                NetworkFunction.CreateMarker(marker);
             }
 
             OrderMarkers();
@@ -840,6 +844,10 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="index">Index of the marker to delete.</param>
         public void DeleteMarker(int index)
         {
+            if (NetworkPermissions.BlockEditMarkers())
+                return;
+            if (GameData.Current.data.markers.TryGetAt(index, out Marker deletedMarker))
+                NetworkFunction.DeleteMarker(deletedMarker.id);
             GameData.Current.data.markers.RemoveAt(index);
             if (index - 1 >= 0)
                 SetCurrentMarker(timelineMarkers[index - 1]);
@@ -937,6 +945,7 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineMarker.Selected)
                     {
                         time = timelineMarker.Time;
+                        NetworkFunction.DeleteMarker(timelineMarker.Marker.id);
                         GameData.Current.data.markers.RemoveAt(timelineMarker.Index);
                     }
                 }
@@ -1164,6 +1173,8 @@ namespace BetterLegacy.Editor.Managers
         public void ClearMarkers() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete ALL markers? (This is irreversible!)", () =>
         {
             EditorManager.inst.DisplayNotification($"Deleted {GameData.Current.data.markers.Count} markers!", 2f, EditorManager.NotificationType.Success);
+            foreach (var marker in GameData.Current.data.markers)
+                NetworkFunction.DeleteMarker(marker.id);
             GameData.Current.data.markers.Clear();
             UpdateMarkerList();
             CreateMarkers();
@@ -1276,6 +1287,7 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarker.Name = name;
                 timelineMarker.RenderName();
                 timelineMarker.RenderTooltip();
+                NetworkFunction.EditMarker(timelineMarker.Marker);
             });
             UpdateMarkerList();
         }
@@ -1288,6 +1300,7 @@ namespace BetterLegacy.Editor.Managers
         {
             timelineMarker.Description = desc;
             timelineMarker.RenderTooltip();
+            NetworkFunction.EditMarker(timelineMarker.Marker);
         });
 
         /// <summary>
@@ -1300,6 +1313,7 @@ namespace BetterLegacy.Editor.Managers
             if (CurrentMarker.panel && CurrentMarker.panel.Time)
                 CurrentMarker.panel.RenderTime();
             OrderMarkers();
+            NetworkFunction.EditMarker(CurrentMarker.Marker);
         }
 
         /// <summary>
@@ -1309,6 +1323,7 @@ namespace BetterLegacy.Editor.Managers
         public void SetDuration(float duration)
         {
             CurrentMarker.Duration = duration;
+            NetworkFunction.EditMarker(CurrentMarker.Marker);
         }
 
         /// <summary>
@@ -1322,6 +1337,7 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarker.ColorSlot = color;
                 timelineMarker.RenderTooltip();
                 timelineMarker.RenderColor();
+                NetworkFunction.EditMarker(timelineMarker.Marker);
             });
             UpdateMarkerList();
         }
@@ -1460,6 +1476,8 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
             }
+            if (Input.GetMouseButtonUp(0) && tool != AnnotationTool.None && CurrentMarker && CurrentMarker.Marker)
+                NetworkFunction.EditMarker(CurrentMarker.Marker);
         }
 
         void BeginMove(Vector2 pos)
@@ -1917,6 +1935,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
             }
+            NetworkFunction.EditMarker(CurrentMarker.Marker);
         }
 
         /// <summary>
@@ -1948,6 +1967,7 @@ namespace BetterLegacy.Editor.Managers
 
             CurrentMarker.Marker.annotations.AddRange(copiedAnnotations.Select(x => x.Copy()));
             EditorManager.inst.DisplayNotification("Pasted all annotations onto the current marker!", 2f, EditorManager.NotificationType.Success);
+            NetworkFunction.EditMarker(CurrentMarker.Marker);
         }
 
         /// <summary>
@@ -1963,6 +1983,7 @@ namespace BetterLegacy.Editor.Managers
                     CurrentMarker.Marker.annotations.RemoveAll(x => x.selected);
                 else
                     CurrentMarker.Marker.annotations.Clear();
+                NetworkFunction.EditMarker(CurrentMarker.Marker);
             });
 
         #endregion
