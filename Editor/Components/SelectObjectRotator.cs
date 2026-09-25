@@ -50,6 +50,8 @@ namespace BetterLegacy.Editor.Components
             if (ProjectArrhythmia.State.InEditorPreview)
                 return;
 
+            if (NetworkPermissions.BlockEditObjects())
+                return;
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
             var vector2 = Camera.main.ScreenToWorldPoint(vector);
 

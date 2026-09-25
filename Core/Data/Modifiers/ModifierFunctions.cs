@@ -23,6 +23,9 @@ namespace BetterLegacy.Core.Data.Modifiers
 
         public static ResetLoop resetLoop = new ResetLoop();
 
+        public static Delay delay = new Delay(false);
+        public static Delay delayEnd = new Delay(true);
+
         public static Await await = new Await();
 
         public static AwaitCounter awaitCounter = new AwaitCounter();

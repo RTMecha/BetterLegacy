@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -28,7 +29,17 @@ namespace BetterLegacy.Core.Helpers
         {
             try
             {
-                SetSeed(ProjectArrhythmia.State.IsClient ? HostSeed : CoreConfig.Instance.Seed.Value);
+                if (ProjectArrhythmia.State.IsInLobby)
+                {
+                    if (string.IsNullOrEmpty(HostSeed) && ProjectArrhythmia.State.IsHosting)
+                    {
+                        HostSeed = ResolveSeed(CoreConfig.Instance.Seed.Value);
+                        NetworkFunction.SetClientSeed(HostSeed, null);
+                    }
+                    SetSeed(HostSeed);
+                    return;
+                }
+                SetSeed(CoreConfig.Instance.Seed.Value);
             }
             catch (Exception ex)
             {

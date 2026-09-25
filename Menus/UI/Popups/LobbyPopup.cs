@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -54,6 +55,9 @@ namespace BetterLegacy.Menus.UI.Popups
             /// </summary>
             Create,
             /// <summary>
+            /// Edits the lobby's settings. Takes over "Create" when a lobby is created. 
+            Edit,
+            /// <summary>
             /// List of lobbies to join.
             /// </summary>
             List,
@@ -70,9 +74,12 @@ namespace BetterLegacy.Menus.UI.Popups
         public Transform tabs;
         public Transform lobbyContent;
         public Transform playerSettingsContent;
+        public Transform lobbySettingsContent;
         public string searchTerm;
 
         public List<GameObject> tabObjects = new List<GameObject>();
+        public Text createTabTitle;
+        static Sprite checkmarkSprite;
 
         public InputField nameField;
 
@@ -146,10 +153,20 @@ namespace BetterLegacy.Menus.UI.Popups
                 tabTitleText.fontSize = 15;
                 tabTitleText.text = Lang.Current.GetOrDefault("popups.lobby." + value.ToString().ToLower(), value.ToString());
 
+                if (value == LobbyTab.Create)
+                    createTabTitle = tabTitleText;
+                if (value == LobbyTab.Edit)
+                    tab.SetActive(false);
+
                 var tabButton = tabBase.AddComponent<Button>();
                 tabButton.image = tabBaseImage;
                 tabButton.onClick.NewListener(() =>
                 {
+                    if (value == LobbyTab.Create)
+                    {
+                        SetTab(ProjectArrhythmia.State.IsInLobby ? LobbyTab.Edit : LobbyTab.Create);
+                        return;
+                    }
                     if (value != LobbyTab.Random)
                     {
                         SetTab(value);
@@ -185,6 +202,7 @@ namespace BetterLegacy.Menus.UI.Popups
                             closeLobbyButton.image = closeLobbyImage;
                             closeLobbyButton.onClick.NewListener(() =>
                             {
+                                LegacyPlugin.CanEdit = true;
                                 if (ProjectArrhythmia.State.IsHosting)
                                 {
                                     RTSteamManager.inst.EndServer();
@@ -321,6 +339,16 @@ namespace BetterLegacy.Menus.UI.Popups
                             EditorThemeManager.ApplyGraphic(labelText, ThemeGroup.Function_1_Text);
                             break;
                         }
+                    case LobbyTab.Edit: {
+                            lobbySettingsContent = Creator.NewUIObject("Content", tabObject.transform).transform;
+                            var contentVerticalLayoutGroup = lobbySettingsContent.gameObject.AddComponent<VerticalLayoutGroup>();
+                            contentVerticalLayoutGroup.spacing = 4f;
+                            contentVerticalLayoutGroup.childControlHeight = false;
+                            contentVerticalLayoutGroup.childForceExpandHeight = false;
+                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.98f), new Vector2(0.136f, 0.02f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(lobbySettingsContent.AsRT());
+
+                            break;
+                        }
                     case LobbyTab.List: {
                             var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(tabObject.transform);
                             searchField.SetActive(true);
@@ -374,6 +402,10 @@ namespace BetterLegacy.Menus.UI.Popups
                 closeSprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/close.png"));
 
             tabObjects.ForLoop((gameObject, index) => gameObject.SetActive(index == (int)CurrentTab));
+            if (createTabTitle)
+                createTabTitle.text = ProjectArrhythmia.State.IsInLobby
+                    ? Lang.Current.GetOrDefault("popups.lobby.edit", "Edit")
+                    : Lang.Current.GetOrDefault("popups.lobby.create", "Create");
             switch (CurrentTab)
             {
                 case LobbyTab.Current: {
@@ -431,6 +463,10 @@ namespace BetterLegacy.Menus.UI.Popups
                         break;
                     }
                 case LobbyTab.Create: {
+                        break;
+                    }
+                case LobbyTab.Edit: {
+                        RenderLobbySettings();
                         break;
                     }
                 case LobbyTab.List: {
@@ -655,6 +691,81 @@ namespace BetterLegacy.Menus.UI.Popups
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(label);
+        }
+
+        void RenderLobbySettings()
+        {
+            LSHelpers.DeleteChildren(lobbySettingsContent);
+            bool editable = ProjectArrhythmia.State.IsHosting;
+            var settings = editable ? SteamLobbyManager.inst.LobbySettings : LobbyInfo.HostLobbySettings;
+            if (settings == null)
+            {
+                var waiting = GenerateText(lobbySettingsContent, "Waiting for host settings...", RectValues.Default.SizeDelta(860f, 32f));
+                EditorThemeManager.ApplyLightText(waiting);
+                return;
+            }
+            var toggles = new (string name, string description, Func<bool> get, Action<bool> set)[]
+            {
+                ("Read-Only", "If the player can edit the level at all.", () => !settings.CanEdit, v => settings.CanEdit = !v),
+                ("Can View Editor Levels", "If the player can view the host's editor level list.", () => settings.CanViewEditorLevels, v => settings.CanViewEditorLevels = v),
+                ("Can Import Prefabs", "If the player can import prefabs from their external prefab list.", () => settings.CanImportPrefabs, v => settings.CanImportPrefabs = v),
+                ("Can Expand Prefabs", "If the player can expand prefabs into the level.", () => settings.CanExpandPrefabs, v => settings.CanExpandPrefabs = v),
+                ("Can Edit Objects", "If the player can create and edit objects (timeline, keyframes, etc.).", () => settings.CanEditObjects, v => settings.CanEditObjects = v),
+                ("Can Edit Markers", "If the player can create and edit markers.", () => settings.CanEditMarkers, v => settings.CanEditMarkers = v),
+                ("Can Draw Annotations", "If the player can draw annotations.", () => settings.CanDrawAnnotations, v => settings.CanDrawAnnotations = v),
+                ("Can Edit Events", "If the player can edit events (screen shake, bloom, etc.).", () => settings.CanEditEvents, v => settings.CanEditEvents = v),
+                ("Can Edit Themes", "If the player can edit the theme layer of events.", () => settings.CanEditThemes, v => settings.CanEditThemes = v),
+                ("Can Use Modifiers", "If the player can use and edit modifiers.", () => settings.CanUseModifiers, v => settings.CanUseModifiers = v),
+                ("Can Edit Pinned Editor Layers", "If the player can edit the pinned editor layers.", () => settings.CanEditPinnedEditorLayers, v => settings.CanEditPinnedEditorLayers = v),
+                ("Can View Outside Range", "If the player can view objects/keyframes outside their song time restriction.", () => settings.CanViewOutsideRange, v => settings.CanViewOutsideRange = v),
+                ("Can Edit Players", "If the player can edit player settings (model, speed, boost).", () => settings.CanEditPlayers, v => settings.CanEditPlayers = v),
+                ("Can Import Files", "If the player can add external files/media to the level.", () => settings.CanImportFiles, v => settings.CanImportFiles = v),
+                ("Can Edit Achievements", "If the player can create and edit achievements.", () => settings.CanEditAchievements, v => settings.CanEditAchievements = v),
+                ("Can Edit Level Properties", "If the player can edit the level's properties.", () => settings.CanEditLevelProperties, v => settings.CanEditLevelProperties = v),
+                ("Can Edit Metadata", "If the player can edit the level's metadata (difficulty, etc.).", () => settings.CanEditMetaData, v => settings.CanEditMetaData = v),
+            };
+            for (int i = 0; i < toggles.Length; i++)
+            {
+                var entry = toggles[i];
+                GenerateSettingToggle(entry.name, entry.description, entry.get, entry.set, editable);
+            }
+        }
+        void GenerateSettingToggle(string name, string description, Func<bool> get, Action<bool> set, bool editable)
+        {
+            if (!checkmarkSprite)
+                checkmarkSprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/checkmark.png"));
+
+            var row = Creator.NewUIObject("Setting", lobbySettingsContent);
+            row.transform.AsRT().sizeDelta = new Vector2(860f, 32f);
+            var toggleObj = Creator.NewUIObject("Toggle", row.transform);
+            RectValues.LeftAnchored.AnchoredPosition(16f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(toggleObj.transform.AsRT());
+            var toggleImage = toggleObj.AddComponent<Image>();
+            var checkmark = Creator.NewUIObject("Checkmark", toggleObj.transform);
+            RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(checkmark.transform.AsRT());
+            var checkmarkImage = checkmark.AddComponent<Image>();
+            checkmarkImage.sprite = checkmarkSprite;
+            var toggle = toggleObj.AddComponent<Toggle>();
+            toggle.image = toggleImage;
+            toggle.graphic = checkmarkImage;
+            toggle.interactable = editable;
+            toggle.SetIsOnWithoutNotify(get());
+            if (editable)
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    set(_val);
+                    SteamLobbyManager.inst.SaveLobbySettings();
+                    LobbySettingsChanged();
+                });
+
+            EditorThemeManager.ApplyToggle(toggle);
+
+            var label = GenerateText(row.transform, name, RectValues.LeftAnchored.AnchoredPosition(52f, 0f).SizeDelta(260f, 32f));
+            EditorThemeManager.ApplyLightText(label);
+
+            var desc = GenerateText(row.transform, description, RectValues.LeftAnchored.AnchoredPosition(324f, 0f).SizeDelta(520f, 32f));
+            desc.fontSize = 12;
+            desc.horizontalOverflow = HorizontalWrapMode.Overflow;
+            EditorThemeManager.ApplyLightText(desc);
         }
 
         void LobbySettingsChanged()

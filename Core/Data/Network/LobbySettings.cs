@@ -77,6 +77,7 @@ namespace BetterLegacy.Core.Data.Network
         /// If users can import their own prefabs into the current level when the host is in the editor.
         /// </summary>
         public bool CanImportPrefabs { get; set; }
+        public bool CanExpandPrefabs { get; set; } = true;
 
         /// <summary>
         /// If users can import their own themes into the current level when the host is in the editor.
@@ -104,14 +105,49 @@ namespace BetterLegacy.Core.Data.Network
         public bool CanEditEvents { get; set; } = true;
 
         /// <summary>
+        /// If users can edit the theme layer of event keyframes.
+        /// </summary>
+        public bool CanEditThemes { get; set; } = true;
+
+        /// <summary>
+        /// If users can use and edit modifiers.
+        /// </summary>
+        public bool CanUseModifiers { get; set; } = true;
+
+        /// <summary>
         /// If users can create and edit pinned editor layers.
         /// </summary>
-        public bool CanEditPinnedEditorLayers { get; set; }
+        public bool CanEditPinnedEditorLayers { get; set; } = true;
+
+        /// <summary>
+        /// If users can view objects and keyframes outside of their song time restriction.
+        /// </summary>
+        public bool CanViewOutsideRange { get; set; } = true;
+
+        /// <summary>
+        /// If users can edit player settings.
+        /// </summary>
+        public bool CanEditPlayers { get; set; }
+
+        /// <summary>
+        /// If users can import external files into the level.
+        /// </summary>
+        public bool CanImportFiles { get; set; }
+
+        /// <summary>
+        /// If users can create and edit achievements.
+        /// </summary>
+        public bool CanEditAchievements { get; set; } = true;
+
+        /// <summary>
+        /// If users can edit the levels' properties.
+        /// </summary>
+        public bool CanEditLevelProperties { get; set; } = true;
 
         /// <summary>
         /// If users can edit the levels' metadata.
         /// </summary>
-        public bool CanEditMetaData { get; set; }
+        public bool CanEditMetaData { get; set; } = true;
 
         #endregion
 
@@ -157,11 +193,20 @@ namespace BetterLegacy.Core.Data.Network
             CanEdit = orig.CanEdit;
             CanViewEditorLevels = orig.CanViewEditorLevels;
             CanImportPrefabs = orig.CanImportPrefabs;
+            CanExpandPrefabs = orig.CanExpandPrefabs;
             CanImportThemes = orig.CanImportThemes;
             CanEditObjects = orig.CanEditObjects;
             CanEditMarkers = orig.CanEditMarkers;
             CanDrawAnnotations = orig.CanDrawAnnotations;
             CanEditEvents = orig.CanEditEvents;
+            CanEditThemes = orig.CanEditThemes;
+            CanUseModifiers = orig.CanUseModifiers;
+            CanEditPinnedEditorLayers = orig.CanEditPinnedEditorLayers;
+            CanViewOutsideRange = orig.CanViewOutsideRange;
+            CanEditPlayers = orig.CanEditPlayers;
+            CanImportFiles = orig.CanImportFiles;
+            CanEditAchievements = orig.CanEditAchievements;
+            CanEditLevelProperties = orig.CanEditLevelProperties;
             CanEditMetaData = orig.CanEditMetaData;
         }
 
@@ -185,6 +230,8 @@ namespace BetterLegacy.Core.Data.Network
                 CanViewEditorLevels = jn["can_view_editor_levels"].AsBool;
             if (jn["can_import_prefabs"] != null)
                 CanImportPrefabs = jn["can_import_prefabs"].AsBool;
+            if (jn["can_expand_prefabs"] != null)
+                CanExpandPrefabs = jn["can_expand_prefabs"].AsBool;
             if (jn["can_import_themes"] != null)
                 CanImportThemes = jn["can_import_themes"].AsBool;
             if (jn["can_edit_objects"] != null)
@@ -195,6 +242,22 @@ namespace BetterLegacy.Core.Data.Network
                 CanDrawAnnotations = jn["can_draw_annotations"].AsBool;
             if (jn["can_edit_events"] != null)
                 CanEditEvents = jn["can_edit_events"].AsBool;
+            if (jn["can_edit_themes"] != null)
+                CanEditThemes = jn["can_edit_themes"].AsBool;
+            if (jn["can_use_modifiers"] != null)
+                CanUseModifiers = jn["can_use_modifiers"].AsBool;
+            if (jn["can_edit_pinned_editor_layers"] != null)
+                CanEditPinnedEditorLayers = jn["can_edit_pinned_editor_layers"].AsBool;
+            if (jn["can_view_outside_range"] != null)
+                CanViewOutsideRange = jn["can_view_outside_range"].AsBool;
+            if (jn["can_edit_players"] != null)
+                CanEditPlayers = jn["can_edit_players"].AsBool;
+            if (jn["can_import_files"] != null)
+                CanImportFiles = jn["can_import_files"].AsBool;
+            if (jn["can_edit_achievements"] != null)
+                CanEditAchievements = jn["can_edit_achievements"].AsBool;
+            if (jn["can_edit_level_properties"] != null)
+                CanEditLevelProperties = jn["can_edit_level_properties"].AsBool;
             if (jn["can_edit_metadata"] != null)
                 CanEditMetaData = jn["can_edit_metadata"].AsBool;
         }
@@ -213,11 +276,20 @@ namespace BetterLegacy.Core.Data.Network
             jn["can_edit"] = CanEdit;
             jn["can_view_editor_levels"] = CanViewEditorLevels;
             jn["can_import_prefabs"] = CanImportPrefabs;
+            jn["can_expand_prefabs"] = CanExpandPrefabs;
             jn["can_import_themes"] = CanImportThemes;
             jn["can_edit_objects"] = CanEditObjects;
             jn["can_edit_markers"] = CanEditMarkers;
             jn["can_draw_annotations"] = CanDrawAnnotations;
             jn["can_edit_events"] = CanEditEvents;
+            jn["can_edit_themes"] = CanEditThemes;
+            jn["can_use_modifiers"] = CanUseModifiers;
+            jn["can_edit_pinned_editor_layers"] = CanEditPinnedEditorLayers;
+            jn["can_view_outside_range"] = CanViewOutsideRange;
+            jn["can_edit_players"] = CanEditPlayers;
+            jn["can_import_files"] = CanImportFiles;
+            jn["can_edit_achievements"] = CanEditAchievements;
+            jn["can_edit_level_properties"] = CanEditLevelProperties;
             jn["can_edit_metadata"] = CanEditMetaData;
 
             return jn;
@@ -235,11 +307,20 @@ namespace BetterLegacy.Core.Data.Network
             CanEdit = reader.ReadBoolean();
             CanViewEditorLevels = reader.ReadBoolean();
             CanImportPrefabs = reader.ReadBoolean();
+            CanExpandPrefabs = reader.ReadBoolean();
             CanImportThemes = reader.ReadBoolean();
             CanEditObjects = reader.ReadBoolean();
             CanEditMarkers = reader.ReadBoolean();
             CanDrawAnnotations = reader.ReadBoolean();
             CanEditEvents = reader.ReadBoolean();
+            CanEditThemes = reader.ReadBoolean();
+            CanUseModifiers = reader.ReadBoolean();
+            CanEditPinnedEditorLayers = reader.ReadBoolean();
+            CanViewOutsideRange = reader.ReadBoolean();
+            CanEditPlayers = reader.ReadBoolean();
+            CanImportFiles = reader.ReadBoolean();
+            CanEditAchievements = reader.ReadBoolean();
+            CanEditLevelProperties = reader.ReadBoolean();
             CanEditMetaData = reader.ReadBoolean();
         }
 
@@ -255,11 +336,20 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(CanEdit);
             writer.Write(CanViewEditorLevels);
             writer.Write(CanImportPrefabs);
+            writer.Write(CanExpandPrefabs);
             writer.Write(CanImportThemes);
             writer.Write(CanEditObjects);
             writer.Write(CanEditMarkers);
             writer.Write(CanDrawAnnotations);
             writer.Write(CanEditEvents);
+            writer.Write(CanEditThemes);
+            writer.Write(CanUseModifiers);
+            writer.Write(CanEditPinnedEditorLayers);
+            writer.Write(CanViewOutsideRange);
+            writer.Write(CanEditPlayers);
+            writer.Write(CanImportFiles);
+            writer.Write(CanEditAchievements);
+            writer.Write(CanEditLevelProperties);
             writer.Write(CanEditMetaData);
         }
 

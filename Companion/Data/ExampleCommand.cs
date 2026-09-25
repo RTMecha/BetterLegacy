@@ -17,6 +17,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -5392,7 +5393,10 @@ namespace BetterLegacy.Companion.Data
                     foreach (var selectable in selectables)
                     {
                         if (selectable is TimelineMarker timelineMarker && timelineMarker.Marker)
+                        {
                             timelineMarker.Marker.annotations.Clear();
+                            NetworkFunction.EditMarker(timelineMarker.Marker);
+                        }
                     }
                 }
             }

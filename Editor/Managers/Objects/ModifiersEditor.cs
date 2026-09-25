@@ -11,6 +11,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
@@ -311,6 +312,8 @@ namespace BetterLegacy.Editor.Managers
                 spriteFunctionButton.Text = name;
                 spriteFunctionButton.OnClick.NewListener(() =>
                 {
+                    if (NetworkPermissions.BlockEditModifiers())
+                        return;
                     var name = defaultModifier.Name;
                     if ((defaultModifier.Name == nameof(ModifierFunctions.spawnClone) || defaultModifier.Name == nameof(ModifierFunctions.spawnCloneMath)) && modifyable.Modifiers.Has(x => x.Name == defaultModifier.Name))
                     {
@@ -389,6 +392,8 @@ namespace BetterLegacy.Editor.Managers
             buttonStorage.Text = "Paste";
             buttonStorage.OnClick.NewListener(() =>
             {
+                if (NetworkPermissions.BlockEditModifiers())
+                    return;
                 modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));

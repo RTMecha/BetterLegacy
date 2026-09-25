@@ -186,6 +186,8 @@ namespace BetterLegacy.Editor.Components
             if (!Application.isFocused) // don't drag
                 return;
 
+            if (NetworkPermissions.BlockEditObjects()) 
+                return;
             dragTime = Time.time;
             if (!ProjectArrhythmia.State.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject() || RTMarkerEditor.inst && RTMarkerEditor.inst.Dialog.IsCurrent && RTMarkerEditor.inst.Settings.tool != AnnotationTool.None)
                 return;

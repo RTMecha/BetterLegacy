@@ -60,8 +60,15 @@ namespace BetterLegacy.Core.Data.Modifiers
                 state.Reset();
             state.sequence = sequence;
             state.end = end;
+            int lastIndex = -1;
             while (state.index < modifiers.Count)
             {
+                if (state.index == lastIndex)
+                {
+                    state.index++;
+                    continue;
+                }
+                lastIndex = state.index;
                 var modifier = modifiers[state.index];
                 if (!modifier.function || !modifier.enabled || modifier.compatibility.StoryOnly && !ProjectArrhythmia.State.InStory)
                 {

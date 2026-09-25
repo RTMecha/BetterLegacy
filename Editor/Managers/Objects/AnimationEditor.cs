@@ -14,6 +14,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -515,7 +516,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (animationGroups == null)
                         return;
-                    animationGroups.Add(CreateAnimationGroup());
+                    var newGroup = CreateAnimationGroup();
+                    animationGroups.Add(newGroup);
+                    if (animationGroups == GameData.Current.animationGroups)
+                        NetworkFunction.CreateAnimationGroup(newGroup);
                     RenderPopup();
                 }, shouldGenerate: () => animationGroups != null),
                 new ButtonElement("Create Animation From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
@@ -547,6 +551,8 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
                     animationGroups.Add(animationGroup);
+                    if (animationGroups == GameData.Current.animationGroups)
+                        NetworkFunction.CreateAnimationGroup(animationGroup);
                     RenderPopup();
                     EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
                 }, shouldGenerate: () => animationGroups != null),
@@ -583,7 +589,11 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                    var pasted = copiedAnimationGroups.Select(x => x.Copy()).ToList();
+                    animationGroups.AddRange(pasted);
+                    if (animationGroups == GameData.Current.animationGroups)
+                        foreach (var g in pasted)
+                            NetworkFunction.CreateAnimationGroup(g);
                     RenderPopup();
                     EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
                 }, shouldGenerate: () => animationGroups != null),
@@ -596,6 +606,9 @@ namespace BetterLegacy.Editor.Managers
                 })),
                 new ButtonElement("Clear Animation Groups", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all animation groups from the list? This cannot be undone?", () =>
                 {
+                    if (animationGroups == GameData.Current.animationGroups)
+                        foreach (var g in animationGroups)
+                            NetworkFunction.DeleteAnimationGroup(g.id);
                     animationGroups.Clear();
                     RenderPopup();
                     EditorManager.inst.DisplayNotification($"Cleared animation groups.", 2f, EditorManager.NotificationType.Success);
@@ -619,7 +632,10 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (animationGroups == null)
                                 return;
-                            animationGroups.Add(CreateAnimationGroup());
+                            var newGroup = CreateAnimationGroup();
+                            animationGroups.Add(newGroup);
+                            if (animationGroups == GameData.Current.animationGroups)
+                                NetworkFunction.CreateAnimationGroup(newGroup);
                             RenderPopup();
                         }, shouldGenerate: () => animationGroups != null),
                         new ButtonElement("Create Animation From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
@@ -651,6 +667,8 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
                             animationGroups.Add(animationGroup);
+                            if (animationGroups == GameData.Current.animationGroups)
+                                NetworkFunction.CreateAnimationGroup(animationGroup);
                             RenderPopup();
                             EditorManager.inst.DisplayNotification($"Converted all selected objects to an animation!", 2f, EditorManager.NotificationType.Success);
                         }, shouldGenerate: () => animationGroups != null),
@@ -687,7 +705,11 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
 
-                            animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                            var pasted = copiedAnimationGroups.Select(x => x.Copy()).ToList();
+                            animationGroups.AddRange(pasted);
+                            if (animationGroups == GameData.Current.animationGroups)
+                                foreach (var g in pasted)
+                                    NetworkFunction.CreateAnimationGroup(g);
                             RenderPopup();
                             EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
                         }, shouldGenerate: () => animationGroups != null));
@@ -715,15 +737,19 @@ namespace BetterLegacy.Editor.Managers
                             var elements = new List<EditorElement>
                             {
                                 new StringInputElement(animationGroup.name,
-                                _val => animationGroup.name = _val,
+                                _val => { animationGroup.name = _val; if (animationGroups == GameData.Current.animationGroups) NetworkFunction.EditAnimationGroup(animationGroup); },
                                 _val => RenderPopup()),
                                 ButtonElement.ToggleButton("Collapse", () => animationGroup.collapse, () =>
                                 {
                                     animationGroup.collapse = !animationGroup.collapse;
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        NetworkFunction.EditAnimationGroup(animationGroup);
                                     RenderPopup();
                                 }),
                                 new ButtonElement("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation group?", () =>
                                 {
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        NetworkFunction.DeleteAnimationGroup(animationGroup.id);
                                     animationGroups.RemoveAt(index);
                                     RenderPopup();
                                 })),
@@ -747,16 +773,22 @@ namespace BetterLegacy.Editor.Managers
                                             continue;
                                         animationGroup.animations.Add(ConvertToAnimation(beatmapObject));
                                     }
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        NetworkFunction.EditAnimationGroup(animationGroup);
                                     RenderPopup();
                                 }),
                                 new ButtonElement("Paste Animations", () =>
                                 {
                                     animationGroup.animations.AddRange(copiedAnimations.Select(x => x.Copy()));
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        NetworkFunction.EditAnimationGroup(animationGroup);
                                     RenderPopup();
                                 }, shouldGenerate: () => !copiedAnimations.IsEmpty()),
                                 new ButtonElement("Clear Animations", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the animations from this group?", () =>
                                 {
                                     animationGroup.animations.Clear();
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        NetworkFunction.EditAnimationGroup(animationGroup);
                                     RenderPopup();
                                 }), shouldGenerate: () => !animationGroup.animations.IsEmpty()),
                                 new SpacerElement(),
@@ -779,7 +811,11 @@ namespace BetterLegacy.Editor.Managers
                                         return;
                                     }
 
-                                    animationGroups.AddRange(copiedAnimationGroups.Select(x => x.Copy()));
+                                    var pasted = copiedAnimationGroups.Select(x => x.Copy()).ToList();
+                                    animationGroups.AddRange(pasted);
+                                    if (animationGroups == GameData.Current.animationGroups)
+                                        foreach (var g in pasted)
+                                            NetworkFunction.CreateAnimationGroup(g);
                                     RenderPopup();
                                     EditorManager.inst.DisplayNotification($"Pasted animation groups.", 2f, EditorManager.NotificationType.Success);
                                 }),

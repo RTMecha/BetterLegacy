@@ -392,7 +392,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     var anim = RTEditor.inst.GetEasing(_val);
                     foreach (var kf in GetSelectedKeyframes())
+                    {
                         kf.eventKeyframe.curve = anim;
+                        if (!isObjectKeyframe)
+                            NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
+                    }
 
                     if (isObjectKeyframe)
                     {
@@ -419,6 +423,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         kf.Time = num;
                         kf.Render();
+                        if (!isObjectKeyframe)
+                            NetworkFunction.EditEventKeyframe(kf.Type, kf.eventKeyframe);
                     }
 
                     if (!isObjectKeyframe)
@@ -722,7 +728,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public void SetKeyframeValue(int type, int index, float value)
         {
             foreach (var timelineKeyframe in GetSelectedKeyframes())
+            {
                 timelineKeyframe.eventKeyframe.values[index] = value;
+                if (!isObjectKeyframe)
+                    NetworkFunction.EditEventKeyframe(type, timelineKeyframe.eventKeyframe);
+            }
 
             if (isObjectKeyframe)
                 ObjectEditor.inst.UpdateObject(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), ObjectContext.KEYFRAMES, false);

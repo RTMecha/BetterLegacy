@@ -398,6 +398,8 @@ namespace BetterLegacy.Editor.Managers
             if (!ObjEditor.inst.beatmapObjectsDrag)
                 return;
 
+            if (NetworkPermissions.BlockEditObjects())
+                return;
             var musicLength = SoundManager.inst.MusicLength;
             var selectedObjects = EditorTimeline.inst.SelectedObjects;
 
@@ -513,6 +515,8 @@ namespace BetterLegacy.Editor.Managers
 
                             if (selectedObjects.Count == 1)
                                 RTBackgroundEditor.inst.RenderStartTime(backgroundObject);
+                            if (ProjectArrhythmia.State.IsInLobby)
+                                NetworkFunction.EditBackgroundObject(backgroundObject);
                             break;
                         }
                 }
@@ -812,6 +816,8 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns the generated Timeline Object.</returns>
         public TimelineObject CreateNewDefaultObject(bool select = true)
         {
+            if (NetworkPermissions.BlockEditObjects())
+                return null;
             if (!EditorManager.inst.hasLoadedLevel)
             {
                 EditorManager.inst.DisplayNotification("Can't add objects to level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
@@ -2762,6 +2768,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineObject = true)
         {
+            if (updateContext == ObjectContext.MODIFIERS ? NetworkPermissions.BlockEditModifiers() : NetworkPermissions.BlockEditObjects())
+                return;
             RTLevel.Current?.UpdateObject(beatmapObject, updateContext);
 
             if (updateTimelineObject)

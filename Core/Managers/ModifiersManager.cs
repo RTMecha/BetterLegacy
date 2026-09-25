@@ -112,7 +112,6 @@ namespace BetterLegacy.Core.Managers
                     updater.UpdateModifier(modifier, modifyable);
             }
 
-            modifier.verified = true;
             if (!functions.TryFind(x => x.Modifier && x.Name == modifier.Name && x.Modifier.type == modifier.type, out ModifierFunctionBase function))
                 return !string.IsNullOrEmpty(modifier.Name);
             if (function.Compatibility.StoryOnly ? !ProjectArrhythmia.State.InEditor && !ProjectArrhythmia.State.InStory : !function.Compatibility.CompareType(modifyable.ReferenceType))
@@ -124,6 +123,7 @@ namespace BetterLegacy.Core.Managers
             if (function is ModifierActionBase action)
                 modifier.action = action;
             modifier.compatibility = function.Compatibility;
+            modifier.verified = true;
 
             modifier.function.ValidateModifier(modifier, modifyable);
 

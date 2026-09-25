@@ -792,6 +792,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!draggingKeyframes)
                 return;
 
+            if (NetworkPermissions.BlockEditObjects())
+                return;
             var animatable = CurrentObject;
             if (animatable == null)
                 return;
