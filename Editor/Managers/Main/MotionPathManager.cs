@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+
 using UnityEngine;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
@@ -8,18 +10,32 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
 using BetterLegacy.Core.Runtime;
-namespace BetterLegacy.Editor.Managers
+
 // Basically, right? I had a dream. Install and Open SFM to understand what i going for.
+
+namespace BetterLegacy.Editor.Managers
 {
     public class MotionPathManagerSettings : ManagerSettings
     {
         public MotionPathManagerSettings() { }
 
+        public override Transform Parent => EditorManager.inst.transform.parent;
+
         public override string ClassName => "[<color=#4CAF50>MotionPathManager</color>] \n";
     }
+
+    /// <summary>
+    /// Manages rendering for motion paths.
+    /// </summary>
     public class MotionPathManager : BaseManager<MotionPathManager, MotionPathManagerSettings>
     {
+        #region Values
+
+        /// <summary>
+        /// Dictionary of active motion paths.
+        /// </summary>
         public Dictionary<IEditable, MotionPath> activePaths = new Dictionary<IEditable, MotionPath>();
+
         Transform container;
         Material exteriorMaterial;
         Material interiorMaterial;
@@ -44,12 +60,18 @@ namespace BetterLegacy.Editor.Managers
         Sequence<Vector3> camRotSequence;
         readonly List<IEditable> toRemove = new List<IEditable>();
         const int MAX_VISIBLE = 2000;
-        static int ObjectLayer => RTLevel.FOREGROUND_LAYER;
+        static int ObjectLayer => RTLevel.UI_LAYER;
+
+        #endregion
+
+        #region Functions
+
         public override void OnInit()
         {
             container = Creator.NewGameObject("Motion Paths", transform).transform;
             RebuildShape();
         }
+
         void RebuildShape()
         {
             builtShape = (int)EditorConfig.Instance.MotionPathNodeShape.Value;
@@ -70,8 +92,24 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Checks if an editable object has an active motion path.
+        /// </summary>
+        /// <param name="obj">Editable object.</param>
+        /// <returns>Returns <see langword="true"/> if the motion path is active, otherwise returns <see langword="false"/>.</returns>
         public bool IsActive(IEditable obj) => obj != null && activePaths.ContainsKey(obj);
+
+        /// <summary>
+        /// Toggles the editable objects' motion path.
+        /// </summary>
+        /// <param name="obj">Editable object.</param>
         public void Toggle(IEditable obj) => SetActive(obj, !IsActive(obj));
+
+        /// <summary>
+        /// Sets the active state of the editable objects' motion path.
+        /// </summary>
+        /// <param name="obj">Editable object.</param>
+        /// <param name="active">Active state to set.</param>
         public void SetActive(IEditable obj, bool active)
         {
             if (obj == null)
@@ -88,6 +126,7 @@ namespace BetterLegacy.Editor.Managers
                 activePaths.Remove(obj);
             }
         }
+
         public override void OnTick()
         {
             if (activePaths.Count == 0 || !GameData.Current)
@@ -130,6 +169,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < toRemove.Count; i++)
                 SetActive(toRemove[i], false);
         }
+
         void RenderPath(MotionPath path, float now, float pulseClock, float maxSeek, float baseSize, float largeMult, float shrink, float interval, float interiorMult, float nodePerFrame, EaseFunction easeFunc, float frontZ)
         {
             var lifetime = (ILifetime)path.reference;
@@ -386,12 +426,6 @@ namespace BetterLegacy.Editor.Managers
                 pos = RTMath.Move(pos, pt.position);
             return pos;
         }
-        struct WorldTransform
-        {
-            public Vector3 position;
-            public float rotation;
-            public Vector3 scale;
-        }
         static bool IsObjectValid(IEditable obj)
         {
             if (!GameData.Current)
@@ -404,9 +438,30 @@ namespace BetterLegacy.Editor.Managers
                 _ => false,
             };
         }
+
+        #endregion
+
+        #region Sub Classes
+
+        struct WorldTransform
+        {
+            public Vector3 position;
+            public float rotation;
+            public Vector3 scale;
+        }
+
+        /// <summary>
+        /// Represents an editable objects' motion path.
+        /// </summary>
         public class MotionPath
         {
             public MotionPath(IEditable reference) => this.reference = reference;
+
+            #region Values
+
+            /// <summary>
+            /// Editable object reference.
+            /// </summary>
             public readonly IEditable reference;
             MeshFilter exteriorFilter;
             MeshFilter interiorFilter;
@@ -414,6 +469,18 @@ namespace BetterLegacy.Editor.Managers
             MeshRenderer interiorRenderer;
             Mesh exteriorMesh;
             Mesh interiorMesh;
+
+            #endregion
+
+            #region Functions
+
+            /// <summary>
+            /// Ensures the renderer exists.
+            /// </summary>
+            /// <param name="parent">Parent to use.</param>
+            /// <param name="exteriorMaterial">Material to use for the exterior.</param>
+            /// <param name="interiorMaterial">Material to use for the interior.</param>
+            /// <param name="layer">Layer to set.</param>
             public void EnsureRenderers(Transform parent, Material exteriorMaterial, Material interiorMaterial, int layer)
             {
                 if (exteriorFilter)
@@ -438,12 +505,17 @@ namespace BetterLegacy.Editor.Managers
                 interiorRenderer.sharedMaterial = interiorMaterial;
                 interiorRenderer.enabled = true;
             }
+
+            /// <summary>
+            /// Applies meshes to interior and exterior meshes.
+            /// </summary>
             public void ApplyMeshes(List<Vector3> extVerts, List<Vector2> extUVs, List<int> extTris, List<Vector3> intVerts, List<Vector2> intUVs, List<int> intTris)
             {
                 SetRenderersEnabled(true);
                 UploadMesh(exteriorMesh, extVerts, extUVs, extTris);
                 UploadMesh(interiorMesh, intVerts, intUVs, intTris);
             }
+            
             static void UploadMesh(Mesh mesh, List<Vector3> verts, List<Vector2> uvs, List<int> tris)
             {
                 mesh.Clear();
@@ -452,6 +524,11 @@ namespace BetterLegacy.Editor.Managers
                 mesh.SetTriangles(tris, 0, true);
                 mesh.RecalculateBounds();
             }
+
+            /// <summary>
+            /// Sets the renderers active state.
+            /// </summary>
+            /// <param name="enabled">Active state to set.</param>
             public void SetRenderersEnabled(bool enabled)
             {
                 if (exteriorRenderer)
@@ -459,6 +536,10 @@ namespace BetterLegacy.Editor.Managers
                 if (interiorRenderer)
                     interiorRenderer.enabled = enabled;
             }
+
+            /// <summary>
+            /// Destroys the motion path.
+            /// </summary>
             public void Destroy()
             {
                 if (exteriorFilter)
@@ -476,6 +557,10 @@ namespace BetterLegacy.Editor.Managers
                 exteriorMesh = null;
                 interiorMesh = null;
             }
+
+            #endregion
         }
+
+        #endregion
     }
 }

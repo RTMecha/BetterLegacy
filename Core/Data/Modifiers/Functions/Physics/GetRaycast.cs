@@ -1,50 +1,58 @@
 using System.Collections.Generic;
+
 using UnityEngine;
+
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Data.Elements;
-namespace BetterLegacy.Core.Data.Modifiers.Functions
-// Do not change this to be 4 seperate variables. I understand it may seem simplier on the surface. Which is why it was my first implementation. It was my first solution.
-// After I tested it with the 4 variables, I found it annoying that I had to define 4 things when I would inheritly use all 4 together. So I inspected the code to find a different solution, led me to the player colliding modifier
-// After, I decided to use that, and it was simplier. I tested both possibilities and can confirm within reason, the second outcome is simplier overall.
-// The modifier has 1 variable per modifier, with 4 unchanging suffixes, meaning its always N+4 things to remember. (5 things at 1 modifier, 6 things at 2, 7 things at 3, etc)
-// With each value being seperate, it's 4 unique variables per modifier, being N*4 (Becomes noticably harder to remember at 2+ raycast)
-// This is the reason it should not be reverted to the old method, it will overall make the system coincidentally, more complex.
-// I also feel it is very easy to remember "_hit" "_x" "_y" "_direction" "_index" (Hit isn't really useful since direction can be used to check, but I still added it just incase.)
 
-// The decision was not made on impulse.
+namespace BetterLegacy.Core.Data.Modifiers.Functions
 {
-    public class Raycast : ModifierActionBase
+    public class GetRaycast : ModifierActionBase
     {
+        // the modifier variables are specifed in the tooltip.
+
         #region Constructors
-        readonly bool checkPlayers;
-        public Raycast(bool checkPlayers)
+
+        public GetRaycast(bool checkPlayers)
         {
             this.checkPlayers = checkPlayers;
-            Name = checkPlayers ? "raycastPlayer" : "raycast";
+            Name = checkPlayers ? "getRaycastPlayer" : "getRaycast";
             if (checkPlayers)
                 SetupModifier(true, "RAYCAST_VAR", "0", "100");
             else
                 SetupModifier(true, "RAYCAST_VAR", "Object Group", "0", "100");
         }
+
         #endregion
+
         #region Values
+
         public override string Name { get; }
+
         public override ModifierCategoryType Category => ModifierCategoryType.Physics;
+
         public override ModifierCompatibility Compatibility => ModifierCompatibility.BeatmapObjectCompatible;
+
         public override Sprite Icon => EditorSprites.DownArrow;
+
+        readonly bool checkPlayers;
         int MinIndex => checkPlayers ? 1 : 2;
         int MaxIndex => checkPlayers ? 2 : 3;
         readonly List<Collider2D> forcedOn = new List<Collider2D>();
         readonly List<RaycastHit2D> hitResults = new List<RaycastHit2D>();
         readonly ContactFilter2D triggerFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
+
         #endregion
+
         #region Functions
+
         public override void Run(Modifier modifier, ModifierLoop modifierLoop)
         {
             if (modifierLoop.reference is not ITransformable transformable)
                 return;
+
             var origin = (Vector2)transformable.GetFullPosition();
             var rotZ = transformable.GetFullRotation(true).z;
             var dir = (Vector2)(Quaternion.Euler(0f, 0f, rotZ) * Vector2.right);
@@ -122,6 +130,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             if (checkPlayers)
                 modifierLoop.variables[key + "_index"] = playerIndex.ToString();
         }
+
         public override void RenderModifierCard(Modifier modifier, ModifierCard modifierCard, IModifierReference reference, IModifyable modifyable)
         {
             modifierCard.StringGenerator(modifier, reference, "Variable Name", 0, renderVariables: false);
@@ -133,6 +142,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             modifierCard.SingleGenerator(modifier, reference, "Min Distance", MinIndex, 0f);
             modifierCard.SingleGenerator(modifier, reference, "Max Distance", MaxIndex, 100f);
         }
+
         #endregion
     }
 }

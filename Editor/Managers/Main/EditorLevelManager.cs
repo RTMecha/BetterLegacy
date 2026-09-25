@@ -1273,7 +1273,7 @@ namespace BetterLegacy.Editor.Managers
 
             ProjectArrhythmia.Window.ResetTitle();
 
-            RandomHelper.CurrentSeed = seed;
+            RandomHelper.HostSeed = seed;
 
             RTEditor.inst.ResetHistory();
 

@@ -275,6 +275,9 @@ namespace BetterLegacy.Editor.Data.Elements
             SelectedUI = levelPanelStorage.selectedImage.gameObject;
             SelectedUI.SetActive(false);
 
+            levelPanelStorage.progressCheckmark.gameObject.SetActive(false);
+            levelPanelStorage.progressText.gameObject.SetActive(false);
+
             Render();
         }
 
@@ -379,6 +382,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
             SelectedUI = levelPanelStorage.selectedImage.gameObject;
             SelectedUI.SetActive(false);
+
+            levelPanelStorage.progressCheckmark.gameObject.SetActive(false);
+            levelPanelStorage.progressText.gameObject.SetActive(false);
 
             Render();
         }
