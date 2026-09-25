@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +15,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
     public class IntroDialog : EditorDialog
     {
         public RectTransform Content { get; set; }
+
+        public InputField PlayHeadColorField { get; set; }
 
         public List<ToggleButtonStorage> ComplexityToggles { get; set; } = new List<ToggleButtonStorage>();
 
@@ -76,6 +74,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.ApplyLightText(welcomeText);
 
             new ButtonElement("editor.intro.help", () => EditorDocumentation.inst.OpenPopup()).Init(EditorElement.InitSettings.Default.Parent(Content));
+
+            new LabelElement("Playhead / Timeline Cursor Color").Init(EditorElement.InitSettings.Default.Parent(Content));
+
+            var playHeadColor = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
+            RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(playHeadColor.transform.AsRT());
+
+            PlayHeadColorField = playHeadColor.GetComponent<InputField>();
+            PlayHeadColorField.GetPlaceholderText().text = "Set color...";
+            PlayHeadColorField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            EditorThemeManager.ApplyInputField(PlayHeadColorField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Editor Complexity");
             var complexityTogglesParent = new LayoutGroupElement(EditorElement.InitSettings.Default.Parent(Content).Rect(RectValues.Default.SizeDelta(0f, 32f)), HorizontalOrVerticalLayoutValues.Horizontal.Spacing(8f));
