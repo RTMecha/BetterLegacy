@@ -10,19 +10,7 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// </summary>
     public class ObjectSpawner : Exists
     {
-        public IEnumerable<IRTObject> ActiveObjects => activeObjects;
-
-        public readonly List<IRTObject> activateList = new List<IRTObject>();
-        public readonly List<IRTObject> deactivateList = new List<IRTObject>();
-
-        int activateIndex = 0;
-        int deactivateIndex = 0;
-        float currentTime = 0.0f;
-
-        readonly HashSet<IRTObject> activeObjects = new HashSet<IRTObject>();
-
-        public static event RuntimeObjectNotifier OnObjectSpawned;
-        public static event RuntimeObjectNotifier OnObjectDespawned;
+        #region Constructors
 
         public ObjectSpawner(IEnumerable<IRTObject> levelObjects)
         {
@@ -36,6 +24,35 @@ namespace BetterLegacy.Core.Runtime.Objects
             // sort by kill time
             deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
         }
+
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Collection of active objects.
+        /// </summary>
+        public IEnumerable<IRTObject> ActiveObjects => activeObjects;
+
+        /// <summary>
+        /// List of objects to activate.
+        /// </summary>
+        public readonly List<IRTObject> activateList = new List<IRTObject>();
+
+        /// <summary>
+        /// List of objects to deactivate.
+        /// </summary>
+        public readonly List<IRTObject> deactivateList = new List<IRTObject>();
+
+        int activateIndex = 0;
+        int deactivateIndex = 0;
+        float currentTime = 0.0f;
+
+        readonly HashSet<IRTObject> activeObjects = new HashSet<IRTObject>();
+
+        #endregion
+
+        #region Functions
 
         /// <summary>
         /// Ticks the spawner engine.
@@ -156,7 +173,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var activate = activateList[activateIndex];
                 activate.SetActive(true);
-                OnObjectSpawned?.Invoke(activate);
                 activeObjects.Add(activate);
                 activateIndex++;
             }
@@ -166,7 +182,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var deactivate = deactivateList[deactivateIndex];
                 deactivate.SetActive(false);
-                OnObjectDespawned?.Invoke(deactivate);
                 activeObjects.Remove(deactivate);
                 deactivateIndex++;
             }
@@ -179,7 +194,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var deactivate = deactivateList[deactivateIndex - 1];
                 deactivate.SetActive(true);
-                OnObjectSpawned?.Invoke(deactivate);
                 activeObjects.Add(deactivate);
                 deactivateIndex--;
             }
@@ -189,10 +203,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var activate = activateList[activateIndex - 1];
                 activate.SetActive(false);
-                OnObjectDespawned?.Invoke(activate);
                 activeObjects.Remove(activate);
                 activateIndex--;
             }
         }
+
+        #endregion
     }
 }

@@ -67,6 +67,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public PrefabSpawner Spawner { get; set; } = new PrefabSpawner();
 
+        public override IBeatmap OwningBeatmap => Spawner;
+
         public override Transform SpawnParent { get; set; }
 
         #endregion
@@ -108,7 +110,12 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// Triggers when active state changes.
         /// </summary>
         public Action<bool> onActiveChanged;
+
+        /// <summary>
+        /// If the prefab object is poolable.
+        /// </summary>
         public bool poolable;
+
         // inner objects that use random keyframes, paired with their repeat index so we can rebuild their seed on reuse.
         List<(BeatmapObject obj, int repeat)> randomObjects;
 
@@ -536,8 +543,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         }
 
         /// <summary>
-        /// Code got reworked from kirby rpg since i spent so long trying to ensure it works under all circumstances that copying it wouldve been easier than recreating it from scratch.
-        /// Also. Never think shit you implement will work first try twin. i forget pa is like. not well made.
+        /// Puts the runtime object to sleep.
         /// </summary>
         public void Sleep()
         {
@@ -546,6 +552,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (PrefabObject && PrefabObject.runtimeModifiers)
                 PrefabObject.runtimeModifiers.SetActive(false);
         }
+
+        /// <summary>
+        /// Wakes up the runtime object.
+        /// </summary>
+        /// <param name="spawnID">Randomization ID to set.</param>
         public void WakeUp(string spawnID)
         {
             if (!PrefabObject || !Prefab)
@@ -559,6 +570,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             Rotation = new Vector3(0f, 0f, transform.rotation);
             RefreshRandomization(spawnID);
         }
+
         // rebuild each random object's seed the exact same way a fresh spawn would with this spawn id, so pooled and non-pooled match under a seed.
         void RefreshRandomization(string spawnID)
         {
@@ -573,6 +585,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 RecacheSequences(random.obj, reinsert: true, updateParents: true, recursive: false);
             }
         }
+
         void CacheRandomObjects()
         {
             randomObjects = new List<(BeatmapObject, int)>();
@@ -586,6 +599,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     randomObjects.Add((beatmapObject, assetCount > 0 ? i / assetCount : 0));
             }
         }
+
         static bool HasRandomKeyframes(BeatmapObject beatmapObject)
         {
             var events = beatmapObject.events;
@@ -600,6 +614,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
             return false;
         }
+
+        /// <summary>
+        /// Checks if the runtime object can be pooled.
+        /// </summary>
+        /// <returns>Returns true if the runtime object can be pooled.</returns>
         public bool IsPoolSafe()
         {
             if (Spawner == null)

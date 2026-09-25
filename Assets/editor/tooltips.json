@@ -4662,6 +4662,27 @@
         // Physics
         [
           {
+            "name": "Object Modifier - getRaycast (Action)",
+            "tooltips": [
+              {
+                "desc": "getRaycast (Action)",
+                "hint": "Sends a raycast and passes the following values to other modifiers:<br><b>[var]_hit</b> - true/false if it hit an object.<br><b>[var]_x</b> - world space X position of the hit.<br><b>[var]_y</b> - world space Y position of the hit.<br><b>[var]_distance</b> - distance of the hit.<br>All values are 0 if nothing was hit.",
+                "lang": 0
+              }
+            ]
+          }, // getRaycast
+          {
+            "name": "Object Modifier - getRaycastPlayer (Action)",
+            "tooltips": [
+              {
+                "desc": "getRaycastPlayer (Action)",
+                "hint": "Sends a raycast and passes the following values to other modifiers:<br><b>[var]_hit</b> - true/false if it hit an object.<br><b>[var]_x</b> - world space X position of the hit.<br><b>[var]_y</b> - world space Y position of the hit.<br><b>[var]_distance</b> - distance of the hit.<br><b>[var]_index</b> - index of the player that was hit.<br>All values are 0 if nothing was hit.",
+                "lang": 0
+              }
+            ]
+          }, // getRaycastPlayer
+
+          {
             "name": "Object Modifier - bulletCollide (Trigger)",
             "tooltips": [
               {

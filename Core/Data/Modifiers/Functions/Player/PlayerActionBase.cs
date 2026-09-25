@@ -14,16 +14,22 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
 
         public PlayerActionBase(Selector selector) => this.selector = selector;
 
-        public PlayerActionBase(string name, Selector selector, params string[] values)
+        public PlayerActionBase(string name, Selector selector, int version, bool constant, params string[] values)
         {
             this.selector = selector;
             Name = name;
             if (selector != Selector.Nearest)
                 Name += selector.ToString();
-            SetupModifier(values);
+            SetupModifier(version, constant, values);
             if (selector == Selector.Index)
                 Modifier.values.Insert(0, "0");
         }
+
+        public PlayerActionBase(string name, Selector selector, bool constant, params string[] values) : this(name, selector, 0, constant, values) { }
+
+        public PlayerActionBase(string name, Selector selector, int version, params string[] values) : this(name, selector, version, true, values) { }
+
+        public PlayerActionBase(string name, Selector selector, params string[] values) : this(name, selector, 0, true, values) { }
 
         #endregion
 
