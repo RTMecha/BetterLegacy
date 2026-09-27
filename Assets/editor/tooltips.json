@@ -972,6 +972,26 @@
             }
           ]
         }, // awaitCounter
+        {
+          "name": "Object Modifier - delay (Action)",
+          "tooltips": [
+            {
+              "desc": "delay (Action)",
+              "hint": "Runs all modifiers afterwards up until delayEnd or the end of the modifier list at a set delay.",
+              "lang": 0
+            }
+          ]
+        }, // delay
+        {
+          "name": "Object Modifier - delayEnd (Action)",
+          "tooltips": [
+            {
+              "desc": "delayEnd (Action)",
+              "hint": "Marks the end of the delay modifier list.",
+              "lang": 0
+            }
+          ]
+        }, // delayEnd
         //{
         //  "name": "Object Modifier - else (Trigger)",
         //  "tooltips": [

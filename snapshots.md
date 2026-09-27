@@ -1,9 +1,10 @@
-﻿# ???
+﻿# snapshot-2026.9.2 - (Multiplayer Playtest) [Sep 25, 2026]
 ## Features
 ### Core
 - Added getRaycast and getRaycastPlayer modifiers. These modifiers sends a ray and send variables based on what was hit. [Blum]
 - Added settings that manage prefab pooling under Config Manager > Core > Level. [Blum]
 - Added onPlayerBoostedIndex, works the same as onPlayerBoosted but for individual players. [Blum]
+- Added delay and delayEnd modifiers. The delay modifier runs all modifiers after it up until the end or a delayEnd modifier at a delay. [Blum]
 
 ### Editor
 - The path an object takes can now be viewed by right clicking the timeline object or by turning on the setting: Config Manager > Editor > Motion Path > Always View Selected. [Blum]
@@ -11,8 +12,10 @@
 - THe playheads (timeline cursors) of other users are now represented in editor multiplayer. [Blum]
 - Objects selected by other players use the color of their playheads. [Blum]
 - Added "Hide Other Users" to Config Manager > Editor > Timeline. With it on, other users' playheads and players are hidden. [Blum]
-- Prefab collapsing and moving is supported. Expanding is yet to work. [Blum]
+- Prefab collapsing and moving is supported. Expanding doesn't fully work yet. [Blum]
 - When the host saves in the editor a notification is now sent to clients. [Blum]
+- Added editor restrictions to the Lobby Manager. With these settings, hosts can restrict what clients in the lobby can do in the editor. [Blum]
+- Added quick access to the Timeline Cursor setting in the Welcome dialog.
 
 ## Changes
 ### Core
@@ -20,7 +23,7 @@
 - trailRenderer modifiers now have a toggle "Affected by Scale". With it on, the start & end width of the trail attempts to match the object scale. [Blum]
 
 ### Editor
-- Objects are now almost fully synced in editor multiplayer. [Blum]
+- Most objects are now almost fully synced in editor multiplayer. [Blum]
 
 ## Fixes
 - Fixed onPlayerBoosted modifier not working.

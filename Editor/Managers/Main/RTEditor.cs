@@ -6764,6 +6764,17 @@ namespace BetterLegacy.Editor.Managers
 
         public void RefreshIntroDialog()
         {
+            var timelineCursorColorValue = RTColors.ColorToHexOptional(EditorConfig.Instance.TimelineCursorColor.Value);
+            IntroDialog.PlayHeadColorField.SetTextWithoutNotify(timelineCursorColorValue);
+            IntroDialog.PlayHeadColorField.onValueChanged.NewListener(_val =>
+            {
+                EditorConfig.Instance.TimelineCursorColor.Value = RTColors.HexToColor(_val);
+                timelineCursorColorValue = RTColors.ColorToHexOptional(EditorConfig.Instance.TimelineCursorColor.Value);
+            });
+            EditorContextMenu.AddContextMenu(IntroDialog.PlayHeadColorField.gameObject, EditorContextMenu.GetEditorColorFunctions(IntroDialog.PlayHeadColorField,
+                getValue: () => timelineCursorColorValue,
+                showValue: _val => EditorConfig.Instance.TimelineCursorColor.Value = RTColors.HexToColor(_val),
+                cancel: () => EditorConfig.Instance.TimelineCursorColor.Value = RTColors.HexToColor(timelineCursorColorValue)));
             for (int i = 0; i < IntroDialog.ComplexityToggles.Count; i++)
             {
                 var index = i;
