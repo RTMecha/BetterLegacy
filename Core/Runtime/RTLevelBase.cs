@@ -181,6 +181,8 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void Clear()
         {
+            PreTick();
+            PostTick();
             foreach (var runtimeModifiers in Modifiers)
                 runtimeModifiers.Clear();
             foreach (var runtimeModifiers in PrefabModifiers)
