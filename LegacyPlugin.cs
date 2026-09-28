@@ -43,9 +43,8 @@ namespace BetterLegacy
 
         /// <summary>
         /// Snapshot version of the mod. If left empty, it means the mod build is not a snapshot.
-        /// If you see this that means I successfully am on main!
         /// </summary>
-        public const string SNAPSHOT_VERSION = "snapshot-2026.9.2";
+        public const string SNAPSHOT_VERSION = "snapshot-2026.9.3";
         public static Version ModVersion => new Version(PluginInfo.PLUGIN_VERSION);
 
         public static List<BaseConfig> configs = new List<BaseConfig>();
