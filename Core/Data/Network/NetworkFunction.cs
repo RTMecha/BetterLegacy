@@ -470,7 +470,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void SubmitBeatmapObject(BeatmapObject beatmapObject)
         {
-            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects))
+            if (!ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects))
                 return;
             NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_BEATMAP_OBJECT, beatmapObject);
         }
@@ -479,7 +479,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void EditBeatmapObject(BeatmapObject beatmapObject, string updateContext = "", bool updateTimelineContext = true)
         {
-            if (NetworkManager.applyingNetworkChange)
+            if (NetworkManager.applyingNetworkChange || !ProjectArrhythmia.State.IsInLobby)
                 return;
             if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects) || (updateContext == ObjectContext.MODIFIERS && !NetworkPermissions.ClientAllows(x => x.CanUseModifiers)))
                 return;
@@ -520,7 +520,7 @@ namespace BetterLegacy.Core.Data.Network
             new StringParameter(joinedIDs));
         public static void SubmitDeleteObject(string id, ModifierReferenceType modifierReferenceType)
         {
-            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            if (!ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
             NetworkManager.inst.RunFunction(Group.Editor, SUBMIT_DELETE_OBJECT,
                 new StringParameter(id),
                 new IntParameter((int)modifierReferenceType));
@@ -532,7 +532,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void AddTag(string id, ModifierReferenceType modifierReferenceType)
         {
-            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            if (!ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
             NetworkManager.inst.RunFunction(Group.Editor, ADD_TAG,
                 new StringParameter(id),
                 new IntParameter((int)modifierReferenceType));
@@ -540,7 +540,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void RemoveTag(string id, ModifierReferenceType modifierReferenceType, int index)
         {
-            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            if (!ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
             NetworkManager.inst.RunFunction(Group.Editor, REMOVE_TAG,
                 new StringParameter(id),
                 new IntParameter((int)modifierReferenceType),
@@ -549,7 +549,7 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void ClearTags(string id, ModifierReferenceType modifierReferenceType)
         {
-            if (!NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
+            if (!ProjectArrhythmia.State.IsInLobby || !NetworkPermissions.ClientAllows(x => x.CanEditObjects)) return;
             NetworkManager.inst.RunFunction(Group.Editor, CLEAR_TAGS,
                 new StringParameter(id),
                 new IntParameter((int)modifierReferenceType));
