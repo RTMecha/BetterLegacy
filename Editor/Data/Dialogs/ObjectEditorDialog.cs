@@ -2346,13 +2346,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
                     PolygonShapeEditor.SidesField = sides.GetComponent<InputFieldStorage>();
 
-                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.addButton);
-                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.subButton);
-                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.leftGreaterButton);
-                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.middleButton);
-                    CoreHelper.Delete(PolygonShapeEditor.RadiusField.rightGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SidesField.addButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SidesField.subButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SidesField.leftGreaterButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SidesField.middleButton);
+                    CoreHelper.Delete(PolygonShapeEditor.SidesField.rightGreaterButton);
 
-                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.RadiusField);
+                    EditorThemeManager.ApplyInputField(PolygonShapeEditor.SidesField);
 
                     var sidesLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(sides.transform, "label", 0);
                     var sidesLabelText = sidesLabel.GetComponent<Text>();
