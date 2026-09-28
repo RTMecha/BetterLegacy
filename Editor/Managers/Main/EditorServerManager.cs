@@ -791,11 +791,11 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="pull">Pull function.</param>
         /// <param name="delete">Delete function.</param>
         /// <param name="verify">Verify function.</param>
-        public void RenderServerDialog(string url, IUploadable uploadable, IServerDialog dialog, Action upload, Action pull, Action delete, Action verify)
+        public void RenderServerDialog(string url, IUploadable uploadable, IServerDialog dialog, Action upload, Action pull, Action delete, Action verify, Action onEdit = null)
         {
             dialog.ServerVisibilityDropdown.options = CoreHelper.ToOptionData<ServerVisibility>();
             dialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)uploadable.Visibility);
-            dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => uploadable.Visibility = (ServerVisibility)_val);
+            dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => { uploadable.Visibility = (ServerVisibility)_val; onEdit?.Invoke(); });
 
             CoreHelper.DestroyChildren(dialog.CollaboratorsContent);
             if (string.IsNullOrEmpty(uploadable.UploaderID) || uploadable.UploaderID == LegacyPlugin.UserID)
@@ -814,17 +814,20 @@ namespace BetterLegacy.Editor.Managers
                         _val = RTString.ReplaceSpace(_val);
                         var oldVal = uploadable.Uploaders[index];
                         uploadable.Uploaders[index] = _val;
+                        onEdit?.Invoke();
 
                         EditorManager.inst.history.Add(new History.Command("Change Uploader",
                             () =>
                             {
                                 uploadable.Uploaders[index] = _val;
+                                onEdit?.Invoke();
                                 dialog.Open();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
                             {
                                 uploadable.Uploaders[index] = oldVal;
+                                onEdit?.Invoke();
                                 dialog.Open();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
@@ -836,6 +839,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
 
                             uploadable.Uploaders.Add(user);
+                            onEdit?.Invoke();
                             RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                             EditorManager.inst.history.Add(new History.Command("Add Collaborator",
@@ -844,6 +848,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (uploadable.Uploaders == null)
                                         uploadable.Uploaders = new List<ServerUser>();
                                     uploadable.Uploaders.Add(user);
+                                    onEdit?.Invoke();
                                     RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                                 },
                                 () =>
@@ -851,6 +856,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (uploadable.Uploaders == null)
                                         return;
                                     uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    onEdit?.Invoke();
                                     RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                                 }));
                         })),
@@ -859,6 +865,7 @@ namespace BetterLegacy.Editor.Managers
                             if (uploadable.Uploaders == null)
                                 uploadable.Uploaders = new List<ServerUser>();
                             uploadable.Uploaders.Add(string.Empty);
+                            onEdit?.Invoke();
                             RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                             EditorManager.inst.history.Add(new History.Command("Add Collaborator",
@@ -867,6 +874,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (uploadable.Uploaders == null)
                                         uploadable.Uploaders = new List<ServerUser>();
                                     uploadable.Uploaders.Add(string.Empty);
+                                    onEdit?.Invoke();
                                     RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                                 },
                                 () =>
@@ -874,6 +882,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (uploadable.Uploaders == null)
                                         return;
                                     uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    onEdit?.Invoke();
                                     RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                                 }));
                         }));
@@ -883,6 +892,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var oldUploader = uploadable.Uploaders[index];
                         uploadable.Uploaders.RemoveAt(index);
+                        onEdit?.Invoke();
                         RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                         EditorManager.inst.history.Add(new History.Command("Delete Uploader",
@@ -891,6 +901,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(index);
+                                onEdit?.Invoke();
                                 dialog.Open();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
@@ -899,6 +910,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Insert(index, oldUploader);
+                                onEdit?.Invoke();
                                 dialog.Open();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
@@ -930,6 +942,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Add(user);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
@@ -937,6 +950,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     }),
@@ -946,6 +960,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         uploadable.Uploaders.Add(user);
+                        onEdit?.Invoke();
                         RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                         EditorManager.inst.history.Add(new History.Command("Add Collaborator",
@@ -954,6 +969,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Add(user);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
@@ -961,6 +977,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     })),
@@ -969,6 +986,7 @@ namespace BetterLegacy.Editor.Managers
                         if (uploadable.Uploaders == null)
                             uploadable.Uploaders = new List<ServerUser>();
                         uploadable.Uploaders.Add(string.Empty);
+                        onEdit?.Invoke();
                         RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
 
                         EditorManager.inst.history.Add(new History.Command("Add Collaborator",
@@ -977,6 +995,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     uploadable.Uploaders = new List<ServerUser>();
                                 uploadable.Uploaders.Add(string.Empty);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             },
                             () =>
@@ -984,6 +1003,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (uploadable.Uploaders == null)
                                     return;
                                 uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                onEdit?.Invoke();
                                 RenderServerDialog(url, uploadable, dialog, upload, pull, delete, verify);
                             }));
                     }));
@@ -995,7 +1015,7 @@ namespace BetterLegacy.Editor.Managers
             if (hasID)
             {
                 dialog.ChangelogField.SetTextWithoutNotify(uploadable.Changelog);
-                dialog.ChangelogField.onValueChanged.NewListener(_val => uploadable.Changelog = _val);
+                dialog.ChangelogField.onValueChanged.NewListener(_val => { uploadable.Changelog = _val; onEdit?.Invoke(); });
             }
 
             dialog.ServerIDText.text = !string.IsNullOrEmpty(uploadable.ServerID) ? $"Server ID: {uploadable.ServerID} (Click to copy)" : "Server ID: No ID";

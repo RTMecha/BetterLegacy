@@ -2407,7 +2407,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditorDialog.ConvertPrefabButton.gameObject.SetActive(isExternal);
             PrefabEditorDialog.ConvertPrefabButton.OnClick.NewListener(() => { if (isExternal) ConvertPrefab(prefab); });
 
-            EditorServerManager.inst.RenderTagDialog(prefab, PrefabEditorDialog, EditorServerManager.DefaultTagRelation.Prefab);
+            EditorServerManager.inst.RenderTagDialog(prefab, PrefabEditorDialog, EditorServerManager.DefaultTagRelation.Prefab, () => UpdatePrefabFile(prefabPanel));
             EditorServerManager.inst.RenderServerDialog(
                 url: AlephNetwork.PrefabURL,
                 uploadable: prefab,
@@ -2415,7 +2415,8 @@ namespace BetterLegacy.Editor.Managers
                 upload: () => UploadPrefab(prefabPanel),
                 pull: () => PullServerPrefab(prefabPanel),
                 delete: () => DeleteServerPrefab(prefabPanel),
-                verify: null);
+                verify: null,
+                onEdit: () => UpdatePrefabFile(prefabPanel));
         }
 
         public void RenderPrefabEditorTypeSelector(PrefabType prefabType)
