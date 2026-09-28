@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
             {
                 Type.Normal => CreateModifier(Name, 2, new string[] { "Object Group", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "0", "True" }),
                 Type.Math => CreateModifier(Name, 2, new string[] { "Object Group", "0", "0", "0", "0", "0", "-99999", "99999", "(axis - 0) * 1 % 9999", "0", "True" }),
-                Type.Group => CreateModifier(Name, 2, new string[] { "var + 0", "0", "0", "var", "Object Group", "0", "0", "0", "-99999", "99999", "0" }),
+                Type.Group => CreateModifier(Name, 3, new string[] { "var + 0", "0", "0", "var", "Object Group", "0", "0", "0", "-99999", "99999", "0" }),
                 Type.Chain => CreateModifier(Name, 1, new string[] { "1", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "0", "True", "0.1", "True", "", "False" }),
                 _ => null,
             };
@@ -101,6 +101,7 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                 modifier.SetValue(2, "2");
                             modifier.version++;
                         }
+                        // update axis source
                         if (modifier.version == 1)
                         {
                             int a = 0;
@@ -111,6 +112,18 @@ namespace BetterLegacy.Core.Data.Modifiers.Functions
                                     modifier.SetValue(i + 7, "0");
                                 if (!string.IsNullOrEmpty(axisSourceRaw) && axisSourceRaw.ToLower() == "true")
                                     modifier.SetValue(i + 7, "1");
+                                a++;
+                            }
+                            modifier.version++;
+                        }
+                        // update from axis
+                        if (modifier.version == 2)
+                        {
+                            int a = 0;
+                            for (int i = 3; i < modifier.values.Count; i += 8)
+                            {
+                                if (modifier.GetInt(i + 2, 0) == 2 && modifier.GetInt(i + 3, 0) == 0)
+                                    modifier.SetValue(i + 3, "2");
                                 a++;
                             }
                             modifier.version++;
