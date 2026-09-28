@@ -1,3 +1,10 @@
+# snapshot-2026.9.3 - (Multiplayer Playtest) [Sep 29, 2026]
+## Fixes
+- Fixed issues related to multiplayer where some things could not be edited.
+- Fixed levels with markers not saving.
+- Update copyAxisGroup rotation axis.
+- Fixed Prefabs not saving when editing some values.
+
 # snapshot-2026.9.2 - (Multiplayer Playtest) [Sep 25, 2026]
 ## Features
 ### Core
