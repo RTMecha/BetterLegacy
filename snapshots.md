@@ -3,6 +3,7 @@
 - Fixed issues related to multiplayer where some things could not be edited.
 - Fixed levels with markers not saving.
 - Update copyAxisGroup rotation axis.
+- Fixed Prefabs not saving when editing some values.
 
 -------------------------------------------------------------------
 
