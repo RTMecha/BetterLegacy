@@ -1,4 +1,12 @@
-﻿# snapshot-2026.9.2 - (Multiplayer Playtest) [Sep 25, 2026]
+﻿# ???
+## Fixes
+- Fixed issues related to multiplayer where some things could not be edited.
+- Fixed levels with markers not saving.
+- Update copyAxisGroup rotation axis.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.9.2 - (Multiplayer Playtest) [Sep 25, 2026]
 ## Features
 ### Core
 - Added getRaycast and getRaycastPlayer modifiers. These modifiers sends a ray and send variables based on what was hit. [Blum]
