@@ -1,4 +1,10 @@
-﻿# snapshot-2026.9.3 - (Multiplayer Playtest) [Sep 29, 2026]
+﻿# ???
+## Fixes
+- Fixed the await modifier not resetting properly.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.9.3 - (Multiplayer Playtest) [Sep 29, 2026]
 ## Fixes
 - Fixed issues related to multiplayer where some things could not be edited.
 - Fixed levels with markers not saving.
