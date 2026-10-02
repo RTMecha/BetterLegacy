@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -13,7 +12,6 @@ using SteamworksFacepunch.Data;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
@@ -52,6 +50,10 @@ namespace BetterLegacy.Menus.UI.Popups
             /// </summary>
             Current,
             /// <summary>
+            /// Chat with other players in the lobby.
+            /// </summary>
+            Chat,
+            /// <summary>
             /// Creates and hosts a lobby.
             /// </summary>
             Create,
@@ -70,10 +72,6 @@ namespace BetterLegacy.Menus.UI.Popups
             /// Manages player settings.
             /// </summary>
             Settings,
-            /// <summary>
-            /// Chat with other players in the lobby.
-            /// </summary>
-            Chat,
         }
 
         public Transform tabs;
@@ -107,7 +105,14 @@ namespace BetterLegacy.Menus.UI.Popups
         public const int MAX_LOBBIES_PER_PAGE = 14;
 
         static Sprite closeSprite;
+
         #region Chat
+
+        public const string SYSTEM_NAME = "System";
+        public const string SYSTEM_COLOR_HEX = "F0756BFF";
+
+        public GameObject currentTabButton;
+
         public GameObject chatTabButton;
 
         public Transform chatContent;
@@ -128,6 +133,15 @@ namespace BetterLegacy.Menus.UI.Popups
         static int CHAT_FONT_SIZE => MenuConfig.Instance.ChatFontSize.Value;
         const float CHAT_SCROLL_SPEED = 30f;
         static readonly UnityEngine.Color CHAT_BACKGROUND = new UnityEngine.Color(0.06f, 0.06f, 0.06f, 1f);
+
+        readonly Dictionary<ChatMessage, bool> referenceValidity = new Dictionary<ChatMessage, bool>();
+        float nextReferenceRefresh;
+        const float REFERENCE_OUTLINE_THICKNESS = 1.5f;
+        const float REFERENCE_OUTLINE_HOVER_THICKNESS = 3f;
+
+        readonly List<(Text text, Func<string> build)> chatTimeUpdaters = new List<(Text, Func<string>)>();
+        float nextChatTimeRefresh;
+
         #endregion
 
         #endregion
@@ -180,6 +194,11 @@ namespace BetterLegacy.Menus.UI.Popups
                 tabTitleText.fontSize = 15;
                 tabTitleText.text = Lang.Current.GetOrDefault("popups.lobby." + value.ToString().ToLower(), value.ToString());
 
+                if (value == LobbyTab.Current)
+                {
+                    currentTabButton = tab;
+                    tab.SetActive(false);
+                }
                 if (value == LobbyTab.Create)
                     createTabTitle = tabTitleText;
                 if (value == LobbyTab.Edit)
@@ -484,6 +503,8 @@ namespace BetterLegacy.Menus.UI.Popups
             if (!closeSprite)
                 closeSprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/close.png"));
 
+            if (currentTabButton)
+                currentTabButton.SetActive(ProjectArrhythmia.State.IsInLobby);
             if (chatTabButton)
                 chatTabButton.SetActive(ProjectArrhythmia.State.IsInLobby);
             if (!ProjectArrhythmia.State.IsInLobby && CurrentTab == LobbyTab.Chat)
@@ -500,53 +521,10 @@ namespace BetterLegacy.Menus.UI.Popups
                         if (!ProjectArrhythmia.State.IsInLobby)
                             break;
 
-                        closeLobbyLabel.text = ProjectArrhythmia.State.IsHosting ? "Close Lobby" : "Leave Lobby";
                         closeLobbyLabel.text = ProjectArrhythmia.State.IsHosting ? Lang.Current.GetOrDefault("popups.lobby.close", "Close Lobby") : Lang.Current.GetOrDefault("popups.lobby.leave", "Leave Lobby");
                         LSHelpers.DeleteChildren(playersParent);
                         foreach (var member in SteamLobbyManager.inst.CurrentLobby.Members)
-                        {
-                            var gameObject = Creator.NewUIObject("Member", playersParent);
-                            gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
-
-                            // add hover ui here
-
-                            var image = gameObject.AddComponent<Image>();
-                            var button = gameObject.AddComponent<Button>();
-                            button.image = image;
-                            button.onClick.NewListener(() =>
-                            {
-                                SteamLobbyManager.Log($"ID: {member.Id}\n" +
-                                    $"Name: {member.Name}\n" +
-                                    $"Nickname: {member.Nickname}");
-                                SoundManager.inst.PlaySound(DefaultSounds.blip);
-                            });
-
-                            var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
-
-                            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                            EditorThemeManager.ApplyLightText(label);
-
-                            // handle kicking
-                            //if (ProjectArrhythmia.State.IsHosting)
-                            //{
-                            //    var kickObj = Creator.NewUIObject("kick", gameObject.transform);
-                            //    RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
-                            //    var kickObjImage = kickObj.AddComponent<Image>();
-                            //    var kickObjX = Creator.NewUIObject("x", kickObj.transform);
-                            //    var kickObjXImage = kickObjX.AddComponent<Image>();
-                            //    kickObjXImage.sprite = closeSprite;
-
-                            //    EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
-                            //    EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
-
-                            //    kickObj.AddComponent<Button>().onClick.AddListener(() =>
-                            //    {
-                            //        SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
-                            //            $"Name: {member.Name}\n" +
-                            //            $"Nickname: {member.Nickname}");
-                            //    });
-                            //}
-                        }
+                            GenerateMember(member);
                         break;
                     }
                 case LobbyTab.Create: {
@@ -826,6 +804,7 @@ namespace BetterLegacy.Menus.UI.Popups
                 GenerateSettingToggle(entry.name, entry.description, entry.get, entry.set, editable);
             }
         }
+
         void GenerateSettingToggle(string name, string description, Func<bool> get, Action<bool> set, bool editable)
         {
             if (!checkmarkSprite)
@@ -907,7 +886,207 @@ namespace BetterLegacy.Menus.UI.Popups
             CurrentTab = lobbyTab;
             Render();
         }
+
+        void GenerateMember(Friend member)
+        {
+            var gameObject = Creator.NewUIObject("Member", playersParent);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
+
+            var image = gameObject.AddComponent<Image>();
+            var button = gameObject.AddComponent<Button>();
+            button.image = image;
+            button.onClick.NewListener(() =>
+            {
+                SteamLobbyManager.Log($"ID: {member.Id}\n" +
+                    $"Name: {member.Name}\n" +
+                    $"Nickname: {member.Nickname}");
+                SoundManager.inst.PlaySound(DefaultSounds.blip);
+            });
+
+            var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
+
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(label);
+
+            // handle kicking
+            if (ProjectArrhythmia.State.IsHosting && member.Id != RTSteamManager.inst.steamUser.steamID)
+            {
+                var kickObj = Creator.NewUIObject("kick", gameObject.transform);
+                RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
+                var kickObjImage = kickObj.AddComponent<Image>();
+                var kickObjX = Creator.NewUIObject("x", kickObj.transform);
+                var kickObjXImage = kickObjX.AddComponent<Image>();
+                kickObjXImage.sprite = closeSprite;
+
+                EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
+
+                kickObj.AddComponent<Button>().onClick.AddListener(() =>
+                {
+                    SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
+                        $"Name: {member.Name}\n" +
+                        $"Nickname: {member.Nickname}");
+                    if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(member.Id, out int clientID))
+                        NetworkManager.inst.KickClient(clientID);
+                });
+            }
+        }
+
         #region Chat
+
+        /// <summary>
+        /// Adds a chat message.
+        /// </summary>
+        /// <param name="message">Chat message to add.</param>
+        public void AddChatMessage(ChatMessage message)
+        {
+            if (message == null || chatMessages.Exists(x => x.id == message.id))
+                return;
+            chatMessages.Add(message);
+            if (chatContent)
+                chatCards.Add(CreateChatCard(message));
+            while (chatMessages.Count > MAX_CHAT_MESSAGES)
+            {
+                referenceValidity.Remove(chatMessages[0]);
+                chatMessages.RemoveAt(0);
+                if (chatCards.Count > 0)
+                {
+                    var old = chatCards[0];
+                    chatCards.RemoveAt(0);
+                    if (old)
+                        CoreHelper.Delete(old);
+                }
+            }
+            if (chatContent && chatContent.gameObject.activeInHierarchy)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
+                SetChatScrollY(0f);
+            }
+        }
+
+        /// <summary>
+        /// Clears the chat history.
+        /// </summary>
+        public void ClearChat()
+        {
+            foreach (var card in chatCards)
+                if (card)
+                    CoreHelper.Delete(card);
+            chatCards.Clear();
+            chatMessages.Clear();
+            chatTimeUpdaters.Clear();
+            referenceValidity.Clear();
+        }
+
+        /// <summary>
+        /// Gets the chat message history.
+        /// </summary>
+        /// <param name="max">Max amount of messages to get.</param>
+        /// <param name="filter">Function to filter specific chat messages.</param>
+        /// <returns>Returns a list of chat messages from the history.</returns>
+        public List<ChatMessage> GetChatHistory(int max, Func<ChatMessage, bool> filter)
+        {
+            var result = new List<ChatMessage>();
+            for (int i = chatMessages.Count - 1; i >= 0 && result.Count < max; i--)
+                if (filter == null || filter(chatMessages[i]))
+                    result.Add(chatMessages[i]);
+            result.Reverse();
+            return result;
+        }
+
+        /// <summary>
+        /// Adds the chat message history from before the user joined the lobby.
+        /// </summary>
+        /// <param name="messages">List of messages to add.</param>
+        public void InsertChatHistory(List<ChatMessage> messages)
+        {
+            var added = false;
+            foreach (var message in messages)
+            {
+                if (chatMessages.Exists(x => x.id == message.id))
+                    continue;
+                chatMessages.Add(message);
+                added = true;
+            }
+            if (!added)
+                return;
+            var sorted = System.Linq.Enumerable.ToList(System.Linq.Enumerable.OrderBy(chatMessages, x => x.timeUtc));
+            chatMessages.Clear();
+            chatMessages.AddRange(sorted);
+            if (chatMessages.Count > MAX_CHAT_MESSAGES)
+                chatMessages.RemoveRange(0, chatMessages.Count - MAX_CHAT_MESSAGES);
+            RebuildChatCards();
+        }
+
+        /// <summary>
+        /// Adds a system message.
+        /// </summary>
+        /// <param name="text">Text of the message.</param>
+        /// <param name="referenceLevelPath">Referenced level path if a level should be referenced.</param>
+        /// <returns>Returns the chat message.</returns>
+        public ChatMessage AddSystemMessage(string text, string referenceLevelPath = null)
+        {
+            var message = new ChatMessage
+            {
+                name = SYSTEM_NAME,
+                colorHex = SYSTEM_COLOR_HEX,
+                text = text,
+                timeUtc = DateTime.UtcNow,
+                kind = ChatMessageKind.System,
+                referenceLevelPath = referenceLevelPath,
+            };
+            AddChatMessage(message);
+            return message;
+        }
+
+        /// <summary>
+        /// Updates the chat message card.
+        /// </summary>
+        /// <param name="message">Chat message to update.</param>
+        public void UpdateChatMessageCard(ChatMessage message)
+        {
+            if (message == null || !chatContent)
+                return;
+            var index = chatMessages.IndexOf(message);
+            if (index < 0 || index >= chatCards.Count)
+                return;
+            var old = chatCards[index];
+            var siblingIndex = old ? old.transform.GetSiblingIndex() : index;
+            var card = CreateChatCard(message);
+            card.transform.SetSiblingIndex(siblingIndex);
+            chatCards[index] = card;
+            if (old)
+                CoreHelper.Delete(old);
+
+            if (chatContent.gameObject.activeInHierarchy)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
+        }
+
+        /// <summary>
+        /// Rebuilds the chat message cards.
+        /// </summary>
+        public void RebuildChatCards()
+        {
+            if (!chatContent)
+                return;
+
+            chatTimeUpdaters.Clear();
+
+            foreach (var card in chatCards)
+                if (card)
+                    CoreHelper.Delete(card);
+            chatCards.Clear();
+
+            foreach (var message in chatMessages)
+                chatCards.Add(CreateChatCard(message));
+
+            if (chatContent.gameObject.activeInHierarchy)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
+                SetChatScrollY(0f);
+            }
+        }
+
         void ScrollChat(float delta) => SetChatScrollY(chatContent ? chatContent.AsRT().anchoredPosition.y - delta * CHAT_SCROLL_SPEED : 0f);
         void SetChatScrollY(float y)
         {
@@ -939,103 +1118,7 @@ namespace BetterLegacy.Menus.UI.Popups
             UpdateChatInputHeight();
             chatInput.ActivateInputField();
         }
-        public void AddChatMessage(ChatMessage message)
-        {
-            if (message == null || chatMessages.Exists(x => x.id == message.id))
-                return;
-            chatMessages.Add(message);
-            if (chatContent)
-                chatCards.Add(CreateChatCard(message));
-            while (chatMessages.Count > MAX_CHAT_MESSAGES)
-            {
-                referenceValidity.Remove(chatMessages[0]);
-                chatMessages.RemoveAt(0);
-                if (chatCards.Count > 0)
-                {
-                    var old = chatCards[0];
-                    chatCards.RemoveAt(0);
-                    if (old)
-                        CoreHelper.Delete(old);
-                }
-            }
-            if (chatContent && chatContent.gameObject.activeInHierarchy)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
-                SetChatScrollY(0f);
-            }
-        }
-        public void ClearChat()
-        {
-            foreach (var card in chatCards)
-                if (card)
-                    CoreHelper.Delete(card);
-            chatCards.Clear();
-            chatMessages.Clear();
-            chatTimeUpdaters.Clear();
-            referenceValidity.Clear();
-        }
-        public List<ChatMessage> GetChatHistory(int max, Func<ChatMessage, bool> filter)
-        {
-            var result = new List<ChatMessage>();
-            for (int i = chatMessages.Count - 1; i >= 0 && result.Count < max; i--)
-                if (filter == null || filter(chatMessages[i]))
-                    result.Add(chatMessages[i]);
-            result.Reverse();
-            return result;
-        }
-        public void InsertChatHistory(List<ChatMessage> messages)
-        {
-            var added = false;
-            foreach (var message in messages)
-            {
-                if (chatMessages.Exists(x => x.id == message.id))
-                    continue;
-                chatMessages.Add(message);
-                added = true;
-            }
-            if (!added)
-                return;
-            var sorted = System.Linq.Enumerable.ToList(System.Linq.Enumerable.OrderBy(chatMessages, x => x.timeUtc));
-            chatMessages.Clear();
-            chatMessages.AddRange(sorted);
-            if (chatMessages.Count > MAX_CHAT_MESSAGES)
-                chatMessages.RemoveRange(0, chatMessages.Count - MAX_CHAT_MESSAGES);
-            RebuildChatCards();
-        }
-        public const string SYSTEM_NAME = "System";
-        public const string SYSTEM_COLOR_HEX = "F0756BFF";
-        public ChatMessage AddSystemMessage(string text, string referenceLevelPath = null)
-        {
-            var message = new ChatMessage
-            {
-                name = SYSTEM_NAME,
-                colorHex = SYSTEM_COLOR_HEX,
-                text = text,
-                timeUtc = DateTime.UtcNow,
-                kind = ChatMessageKind.System,
-                referenceLevelPath = referenceLevelPath,
-            };
-            AddChatMessage(message);
-            return message;
-        }
-        public void UpdateChatMessageCard(ChatMessage message)
-        {
-            if (message == null || !chatContent)
-                return;
-            var index = chatMessages.IndexOf(message);
-            if (index < 0 || index >= chatCards.Count)
-                return;
-            var old = chatCards[index];
-            var siblingIndex = old ? old.transform.GetSiblingIndex() : index;
-            var card = CreateChatCard(message);
-            card.transform.SetSiblingIndex(siblingIndex);
-            chatCards[index] = card;
-            if (old)
-                CoreHelper.Delete(old);
 
-            if (chatContent.gameObject.activeInHierarchy)
-                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
-        }
         GameObject CreateChatCard(ChatMessage message)
         {
             var style = MenuConfig.Instance.ChatStyle.Value;
@@ -1074,10 +1157,6 @@ namespace BetterLegacy.Menus.UI.Popups
             AddReferenceOutline(card, RTColors.HexToColor(message.colorHex));
             return card;
         }
-        readonly Dictionary<ChatMessage, bool> referenceValidity = new Dictionary<ChatMessage, bool>();
-        float nextReferenceRefresh;
-        const float REFERENCE_OUTLINE_THICKNESS = 1.5f;
-        const float REFERENCE_OUTLINE_HOVER_THICKNESS = 3f;
         static bool HasReference(ChatMessage message) =>
             message.kind == ChatMessageKind.System && (!string.IsNullOrEmpty(message.referenceLevelPath) || message.referenceKind != ReferenceKind.None && !string.IsNullOrEmpty(message.referenceIds));
         enum ReferenceState { Valid, Unavailable, Missing }
@@ -1343,16 +1422,13 @@ namespace BetterLegacy.Menus.UI.Popups
             UnityEngine.Object.DestroyImmediate(temp);
             return measured;
         }
-        readonly List<(Text text, Func<string> build)> chatTimeUpdaters = new List<(Text, Func<string>)>();
-        float nextChatTimeRefresh;
         string FormatChatTime(DateTime localTime)
         {
             var showSeconds = MenuConfig.Instance.ChatShowSeconds.Value;
             switch (MenuConfig.Instance.ChatTimeFormat.Value)
             {
                 case ChatTimeFormat.Hour12: return localTime.ToString(showSeconds ? "hh:mm:ss tt" : "hh:mm tt");
-                case ChatTimeFormat.Relative:
-                    {
+                case ChatTimeFormat.Relative: {
                         var span = DateTime.Now - localTime;
                         var seconds = Mathf.Max(0, (int)span.TotalSeconds);
                         if (showSeconds && seconds < 60)
@@ -1387,27 +1463,6 @@ namespace BetterLegacy.Menus.UI.Popups
                     continue;
                 }
                 text.text = build();
-            }
-        }
-        public void RebuildChatCards()
-        {
-            if (!chatContent)
-                return;
-
-            chatTimeUpdaters.Clear();
-
-            foreach (var card in chatCards)
-                if (card)
-                    CoreHelper.Delete(card);
-            chatCards.Clear();
-
-            foreach (var message in chatMessages)
-                chatCards.Add(CreateChatCard(message));
-
-            if (chatContent.gameObject.activeInHierarchy)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(chatContent.AsRT());
-                SetChatScrollY(0f);
             }
         }
 
