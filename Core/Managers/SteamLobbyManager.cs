@@ -87,17 +87,17 @@ namespace BetterLegacy.Core.Managers
             if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.InEditor)
             {
                 if (TickCount % 4 == 0)
-                    Editor.Managers.EditorMultiplayer.BroadcastLocalPlayhead();
+                    EditorMultiplayer.BroadcastLocalPlayhead();
 
-                if (Editor.Managers.EditorMultiplayer.selectionDirty)
+                if (EditorMultiplayer.selectionDirty)
                 {
-                    Editor.Managers.EditorMultiplayer.BroadcastLocalSelection();
-                    Editor.Managers.EditorMultiplayer.selectionDirty = false;
+                    EditorMultiplayer.BroadcastLocalSelection();
+                    EditorMultiplayer.selectionDirty = false;
                 }
-                if (Editor.Managers.EditorMultiplayer.metadataDirty)
+                if (EditorMultiplayer.metadataDirty)
                 {
-                    Editor.Managers.EditorMultiplayer.BroadcastMetaData();
-                    Editor.Managers.EditorMultiplayer.metadataDirty = false;
+                    EditorMultiplayer.BroadcastMetaData();
+                    EditorMultiplayer.metadataDirty = false;
                 }
                 if (ProjectArrhythmia.State.IsHosting && GameData.Current && TickCount % 200 == 0)
                 {
@@ -833,7 +833,7 @@ namespace BetterLegacy.Core.Managers
             });
             PlayerManager.inst.players.ForLoop((player, index) => player.index = index);
 
-            Editor.Managers.EditorMultiplayer.RemovePeer(friend.Id);
+            EditorMultiplayer.RemovePeer(friend.Id);
 
             if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(friend.Id, out int id))
                 NetworkManager.inst.KickClient(id);
