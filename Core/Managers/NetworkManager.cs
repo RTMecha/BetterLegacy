@@ -198,21 +198,18 @@ namespace BetterLegacy.Core.Managers
             }),
             new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 1, reader =>
             {
+                var steamID = reader.ReadUInt64();
                 var list = new PacketList<PlayerSettings>(new List<PlayerSettings>());
                 list.ReadPacket(reader);
                 CoreHelper.Log($"Got player settings [{list.Count}]");
                 for (int i = 0; i < list.Count; i++)
                 {
                     var settings = list[i];
-                    // upsert by index. note: index is a local key with no owner id, so this only round-trips cleanly for single-local-player clients. see PlayerSettings TODO.
-                    if (PlayerManager.inst.playerSettings.TryFind(x => x.index == settings.index, out PlayerSettings existing))
-                        existing.CopyData(settings);
-                    else
-                        PlayerManager.inst.playerSettings.Add(settings);
-
                     // apply visual settings to a matching live player.
-                    if (PlayerManager.inst.players.TryFind(x => !x.IsLocalPlayer && x.index == settings.index, out PAPlayer player) && player.RuntimePlayer)
+                    if (PlayerManager.inst.players.TryFind(x => !x.IsLocalPlayer && x.ID == steamID && x.index == settings.index, out PAPlayer player) && player.RuntimePlayer)
                     {
+                        if (!string.IsNullOrEmpty(settings.displayName))
+                            player.DisplayName = settings.displayName;
                         player.ColorSlot = settings.colorSlot;
                         player.RuntimePlayer.UpdateModel();
                     }

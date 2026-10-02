@@ -334,7 +334,9 @@ namespace BetterLegacy.Core.Data.Network
                     new StringParameter(id),
                     new IntParameter(health));
 
-        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, SEND_PLAYER_SETTINGS, new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
+        public static void SendPlayerSettings() => NetworkManager.inst.RunFunction(Group.Player, SEND_PLAYER_SETTINGS,
+            new ULongParameter(RTSteamManager.inst.steamUser.steamID),
+            new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
 
         #endregion
 

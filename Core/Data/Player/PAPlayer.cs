@@ -58,9 +58,10 @@ namespace BetterLegacy.Core.Data.Player
             if (RTSteamManager.inst && RTSteamManager.inst.Initialized)
                 ID = RTSteamManager.inst.steamUser.steamID;
             var settings = GetPlayerSettings();
-            if (settings && !string.IsNullOrEmpty(settings.displayName))
+            if (settings)
             {
-                DisplayName = settings.displayName;
+                if (!string.IsNullOrEmpty(settings.displayName))
+                    DisplayName = settings.displayName;
                 colorSlot = settings.colorSlot;
             }
             Debug.Log($"{InputDataManager.className}Created new Custom Player [{this.index}]");
