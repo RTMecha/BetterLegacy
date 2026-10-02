@@ -3577,7 +3577,7 @@ namespace BetterLegacy.Editor.Managers
                             LevelPropertiesEditor.inst.RenderDialog();
                     }));
                     list.Add(new LabelElement("Start Offset"));
-                    list.Add(new NumberInputElement((GameData.Current?.data?.level?.LevelStartOffset ?? 0f).ToString(), _val =>
+                    var startOffsetElement = new NumberInputElement((GameData.Current?.data?.level?.LevelStartOffset ?? 0f).ToString(), _val =>
                     {
                         if (!float.TryParse(_val, out float num) || !GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
                             return;
@@ -3586,9 +3586,25 @@ namespace BetterLegacy.Editor.Managers
                         GameManager.inst.UpdateTimeline();
                         if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
                             LevelPropertiesEditor.inst.RenderDialog();
-                    }));
+                    });
+                    startOffsetElement.arrowHandler = new NumberInputElement.ArrowHandlerFloat
+                    {
+                        middleClicked = _val =>
+                        {
+                            if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                                return;
+                            GameData.Current.data.level.LevelStartOffset = AudioManager.inst.CurrentAudioSource.time;
+                            if (startOffsetElement.numberInputField)
+                                startOffsetElement.numberInputField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
+                            EditorTimeline.inst.UpdateTimelineSizes();
+                            GameManager.inst.UpdateTimeline();
+                            if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
+                                LevelPropertiesEditor.inst.RenderDialog();
+                        },
+                    };
+                    list.Add(startOffsetElement);
                     list.Add(new LabelElement("End Offset"));
-                    list.Add(new NumberInputElement((GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f).ToString(), _val =>
+                    var endOffsetElement = new NumberInputElement((GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f).ToString(), _val =>
                     {
                         if (!float.TryParse(_val, out float num) || !GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
                             return;
@@ -3597,7 +3613,23 @@ namespace BetterLegacy.Editor.Managers
                         GameManager.inst.UpdateTimeline();
                         if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
                             LevelPropertiesEditor.inst.RenderDialog();
-                    }));
+                    });
+                    endOffsetElement.arrowHandler = new NumberInputElement.ArrowHandlerFloat
+                    {
+                        middleClicked = _val =>
+                        {
+                            if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                                return;
+                            GameData.Current.data.level.LevelEndOffset = AudioManager.inst.CurrentAudioSource.clip.length - AudioManager.inst.CurrentAudioSource.time;
+                            if (endOffsetElement.numberInputField)
+                                endOffsetElement.numberInputField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
+                            EditorTimeline.inst.UpdateTimelineSizes();
+                            GameManager.inst.UpdateTimeline();
+                            if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
+                                LevelPropertiesEditor.inst.RenderDialog();
+                        },
+                    };
+                    list.Add(endOffsetElement);
                 }
                 if (ProjectArrhythmia.State.IsInLobby)
                 {
