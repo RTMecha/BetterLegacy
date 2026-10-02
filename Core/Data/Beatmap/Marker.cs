@@ -109,7 +109,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
-            id = jn["id"] ?? LSText.randomString(16);
+            id = jn["id"];
+            if (string.IsNullOrEmpty(id))
+                id = LSText.randomString(16);
             name = jn["name"] ?? string.Empty;
             desc = jn["desc"] ?? string.Empty;
             color = jn["col"].AsInt;
