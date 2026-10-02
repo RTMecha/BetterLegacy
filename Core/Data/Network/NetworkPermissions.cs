@@ -128,5 +128,6 @@ namespace BetterLegacy.Core.Data.Network
         public static bool BlockEditCheckpoints() => BlockEdit(x => x.CanEditObjects, "checkpoints");
         public static bool BlockEditMetaData() => BlockEdit(x => x.CanEditMetaData, "metadata");
         public static bool BlockEditAchievements() => BlockEdit(x => x.CanEditAchievements, "achievements");
+        public static bool BlockEditLevelProperties() => BlockEdit(x => x.CanEditLevelProperties, "level properties");
     }
 }

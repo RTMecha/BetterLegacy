@@ -1314,6 +1314,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
+            var canEdit = !NetworkPermissions.BlockEditObjects();
             var isSingle = selected.Count() == 1;
 
             TriggerHelper.InversableField(Field);
@@ -1516,6 +1517,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
                     Field.Text = Calc(calc).ToString();
             });
+            Field.SetInteractible(canEdit);
 
             Field.leftButton.gameObject.SetActive(isSingle);
             Field.rightButton.gameObject.SetActive(isSingle);
@@ -1701,6 +1703,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
+            var canEdit = !NetworkPermissions.BlockEditObjects();
             var isSingle = selected.Count() == 1;
 
             Dropdown.interactable = Display.interactible;
@@ -1868,6 +1871,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         NetworkFunction.EditBeatmapObject(beatmapObject);
                 }
             });
+            Dropdown.interactable = canEdit;
 
             TriggerHelper.AddEventTriggers(Dropdown.gameObject, TriggerHelper.ScrollDelta(Dropdown));
 
@@ -1887,6 +1891,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         NetworkFunction.EditBeatmapObject(beatmapObject);
                 }
             });
+            Apply.interactable = canEdit;
         }
 
         #endregion
@@ -1968,6 +1973,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
+            var canEdit = !NetworkPermissions.BlockEditObjects();
             var isSingle = selected.Count() == 1;
             var offValue = getOffValue?.Invoke() ?? 0f;
             var onValue = getOnValue?.Invoke() ?? 1f;
@@ -2064,6 +2070,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         NetworkFunction.EditBeatmapObject(beatmapObject);
                 }
             });
+            Toggle.interactable = canEdit;
 
             Apply.gameObject.SetActive(!isSingle);
             Apply.onClick.NewListener(() =>
@@ -2081,6 +2088,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         NetworkFunction.EditBeatmapObject(beatmapObject);
                 }
             });
+            Apply.interactable = canEdit;
         }
 
         #endregion

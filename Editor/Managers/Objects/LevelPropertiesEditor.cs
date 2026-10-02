@@ -12,6 +12,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Settings;
@@ -144,10 +145,16 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderDialog()
         {
+            var canEdit = !NetworkPermissions.BlockEditLevelProperties();
+
             Dialog.LevelStartOffsetField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
+            Dialog.LevelStartOffsetField.SetInteractible(canEdit);
             Dialog.LevelStartOffsetField.OnValueChanged.NewListener(_val =>
             {
                 if (!float.TryParse(_val, out float num))
+                    return;
+
+                if (NetworkPermissions.BlockEditLevelProperties())
                     return;
 
                 GameData.Current.data.level.LevelStartOffset = num;
@@ -155,19 +162,33 @@ namespace BetterLegacy.Editor.Managers
                 GameManager.inst.UpdateTimeline();
             });
 
-            Dialog.LevelStartOffsetField.middleButton.onClick.NewListener(() => Dialog.LevelStartOffsetField.Text = AudioManager.inst.CurrentAudioSource.time.ToString());
+            Dialog.LevelStartOffsetField.middleButton.interactable = canEdit;
+            Dialog.LevelStartOffsetField.middleButton.onClick.NewListener(() =>
+            {
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                    Dialog.LevelStartOffsetField.Text = AudioManager.inst.CurrentAudioSource.time.ToString();
+            });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.LevelStartOffsetField, max: AudioManager.inst.CurrentAudioSource.clip.length);
             TriggerHelper.AddEventTriggers(Dialog.LevelStartOffsetField.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.LevelStartOffsetField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             Dialog.ReverseToggle.SetIsOnWithoutNotify(GameData.Current.data.level.reverse);
-            Dialog.ReverseToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.reverse = _val);
+            Dialog.ReverseToggle.interactable = canEdit;
+            Dialog.ReverseToggle.onValueChanged.NewListener(_val =>
+            {
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                    GameData.Current.data.level.reverse = _val;
+            });
 
             Dialog.LevelEndOffsetField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
+            Dialog.LevelEndOffsetField.SetInteractible(canEdit);
             Dialog.LevelEndOffsetField.OnValueChanged.NewListener(_val =>
             {
                 if (!float.TryParse(_val, out float num))
+                    return;
+
+                if (NetworkPermissions.BlockEditLevelProperties())
                     return;
 
                 GameData.Current.data.level.LevelEndOffset = num;
@@ -182,13 +203,28 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.ScrollDelta(Dialog.LevelEndOffsetField.inputField, min: 0.1f, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             Dialog.AutoEndLevelToggle.SetIsOnWithoutNotify(GameData.Current.data.level.autoEndLevel);
-            Dialog.AutoEndLevelToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.autoEndLevel = _val);
+            Dialog.AutoEndLevelToggle.interactable = canEdit;
+            Dialog.AutoEndLevelToggle.onValueChanged.NewListener(_val =>
+            {
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                    GameData.Current.data.level.autoEndLevel = _val;
+            });
 
             Dialog.LevelEndFunctionDropdown.SetValueWithoutNotify((int)GameData.Current.data.level.endLevelFunc);
-            Dialog.LevelEndFunctionDropdown.onValueChanged.NewListener(_val => GameData.Current.data.level.endLevelFunc = (EndLevelFunction)_val);
+            Dialog.LevelEndFunctionDropdown.interactable = canEdit;
+            Dialog.LevelEndFunctionDropdown.onValueChanged.NewListener(_val =>
+            {
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                    GameData.Current.data.level.endLevelFunc = (EndLevelFunction)_val;
+            });
 
             Dialog.LevelEndDataField.SetTextWithoutNotify(GameData.Current.data.level.endLevelData);
-            Dialog.LevelEndDataField.onValueChanged.NewListener(_val => GameData.Current.data.level.endLevelData = _val);
+            Dialog.LevelEndDataField.interactable = canEdit;
+            Dialog.LevelEndDataField.onValueChanged.NewListener(_val =>
+            {
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                    GameData.Current.data.level.endLevelData = _val;
+            });
 
             CoroutineHelper.StartCoroutine(Dialog.LevelModifiers.RenderModifiers(GameData.Current));
 
