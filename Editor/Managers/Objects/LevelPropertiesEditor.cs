@@ -145,7 +145,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderDialog()
         {
-            var canEdit = !NetworkPermissions.BlockEditLevelProperties();
+            var canEdit = !NetworkPermissions.BlockEditLevelProperties(false);
 
             Dialog.LevelStartOffsetField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
             Dialog.LevelStartOffsetField.SetInteractible(canEdit);

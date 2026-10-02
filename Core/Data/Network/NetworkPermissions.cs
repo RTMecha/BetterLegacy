@@ -102,7 +102,7 @@ namespace BetterLegacy.Core.Data.Network
         public static bool ClientAllowsEvent(int type) => ClientAllows(x => type == THEME_EVENT_TYPE ? x.CanEditThemes : x.CanEditEvents);
         static float lastNotifyTime = -10f;
         public static bool IsReadOnly => ProjectArrhythmia.State.IsClient && LobbyInfo.HostLobbySettings != null && !LobbyInfo.HostLobbySettings.CanEdit;
-        public static bool BlockEdit(Func<LobbySettings, bool> allowed, string category)
+        public static bool BlockEdit(Func<LobbySettings, bool> allowed, string category, bool showNotification = true)
         {
             if (!ProjectArrhythmia.State.IsClient)
                 return false;
@@ -111,7 +111,7 @@ namespace BetterLegacy.Core.Data.Network
                 return false;
             if (settings.CanEdit && allowed(settings))
                 return false;
-            if (UnityEngine.Time.unscaledTime - lastNotifyTime > 1.5f && EditorManager.inst)
+            if (showNotification && UnityEngine.Time.unscaledTime - lastNotifyTime > 1.5f && EditorManager.inst)
             {
                 lastNotifyTime = UnityEngine.Time.unscaledTime;
                 var message = !settings.CanEdit ? "Can't make edits in read only." : $"Can't make edits to {category}.";
@@ -119,15 +119,17 @@ namespace BetterLegacy.Core.Data.Network
             }
             return true;
         }
-        public static bool BlockEditReadOnly() => BlockEdit(x => true, null);
-        public static bool BlockEditObjects() => BlockEdit(x => x.CanEditObjects, "objects");
-        public static bool BlockEditModifiers() => BlockEdit(x => x.CanUseModifiers, "modifiers");
-        public static bool BlockEditEvents(int type) => type == THEME_EVENT_TYPE ? BlockEdit(x => x.CanEditThemes, "themes") : BlockEdit(x => x.CanEditEvents, "events");
-        public static bool BlockEditMarkers() => BlockEdit(x => x.CanEditMarkers, "markers");
-        public static bool BlockEditPrefabs() => BlockEdit(x => x.CanExpandPrefabs, "prefabs");
-        public static bool BlockEditCheckpoints() => BlockEdit(x => x.CanEditObjects, "checkpoints");
-        public static bool BlockEditMetaData() => BlockEdit(x => x.CanEditMetaData, "metadata");
-        public static bool BlockEditAchievements() => BlockEdit(x => x.CanEditAchievements, "achievements");
-        public static bool BlockEditLevelProperties() => BlockEdit(x => x.CanEditLevelProperties, "level properties");
+        public static bool BlockEditReadOnly(bool showNotification = true) => BlockEdit(x => true, null, showNotification);
+        public static bool BlockEditObjects(bool showNotification = true) => BlockEdit(x => x.CanEditObjects, "objects", showNotification);
+        public static bool BlockEditModifiers(bool showNotification = true) => BlockEdit(x => x.CanUseModifiers, "modifiers", showNotification);
+        public static bool BlockEditEvents(int type, bool showNotification = true) => type == THEME_EVENT_TYPE
+            ? BlockEdit(x => x.CanEditThemes, "themes", showNotification)
+            : BlockEdit(x => x.CanEditEvents, "events", showNotification);
+        public static bool BlockEditMarkers(bool showNotification = true) => BlockEdit(x => x.CanEditMarkers, "markers", showNotification);
+        public static bool BlockEditPrefabs(bool showNotification = true) => BlockEdit(x => x.CanExpandPrefabs, "prefabs", showNotification);
+        public static bool BlockEditCheckpoints(bool showNotification = true) => BlockEdit(x => x.CanEditObjects, "checkpoints", showNotification);
+        public static bool BlockEditMetaData(bool showNotification = true) => BlockEdit(x => x.CanEditMetaData, "metadata", showNotification);
+        public static bool BlockEditAchievements(bool showNotification = true) => BlockEdit(x => x.CanEditAchievements, "achievements", showNotification);
+        public static bool BlockEditLevelProperties(bool showNotification = true) => BlockEdit(x => x.CanEditLevelProperties, "level properties", showNotification);
     }
 }

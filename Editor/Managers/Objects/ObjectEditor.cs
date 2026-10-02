@@ -1481,7 +1481,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.LDM = _val;
                 UpdateObject(beatmapObject, string.Empty, false);
             });
-            Dialog.LDMToggle.interactable = !NetworkPermissions.BlockEditObjects();
+            Dialog.LDMToggle.interactable = !NetworkPermissions.BlockEditObjects(false);
 
             EditorContextMenu.AddContextMenu(Dialog.LDMToggle.gameObject,
                 ButtonElement.SelectionButton(() => beatmapObject.detailMode == DetailMode.Normal, "Normal", () =>
@@ -1526,7 +1526,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.name = _val;
                 UpdateObject(beatmapObject, ObjectContext.EDITOR_UPDATE, true);
             });
-            Dialog.NameField.interactable = !NetworkPermissions.BlockEditObjects();
+            Dialog.NameField.interactable = !NetworkPermissions.BlockEditObjects(false);
         }
 
         /// <summary>
@@ -1557,7 +1557,7 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ObjectTypeDropdown.SetValueWithoutNotify(Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1));
             Dialog.ObjectTypeDropdown.onValueChanged.NewListener(_val => SetObjectType(beatmapObject, (BeatmapObject.ObjectType)_val));
-            Dialog.ObjectTypeDropdown.interactable = !NetworkPermissions.BlockEditObjects();
+            Dialog.ObjectTypeDropdown.interactable = !NetworkPermissions.BlockEditObjects(false);
         }
 
         /// <summary>
@@ -1600,7 +1600,7 @@ namespace BetterLegacy.Editor.Managers
                 if (ProjectArrhythmia.State.IsInLobby)
                     NetworkFunction.EditBeatmapObject(beatmapObject, ObjectContext.START_TIME);
             });
-            startTimeField.SetInteractible(!NetworkPermissions.BlockEditObjects());
+            startTimeField.SetInteractible(!NetworkPermissions.BlockEditObjects(false));
 
             TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField));
 

@@ -1314,7 +1314,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
-            var canEdit = !NetworkPermissions.BlockEditObjects();
+            var canEdit = !NetworkPermissions.BlockEditObjects(false);
             var isSingle = selected.Count() == 1;
 
             TriggerHelper.InversableField(Field);
@@ -1703,7 +1703,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
-            var canEdit = !NetworkPermissions.BlockEditObjects();
+            var canEdit = !NetworkPermissions.BlockEditObjects(false);
             var isSingle = selected.Count() == 1;
 
             Dropdown.interactable = Display.interactible;
@@ -1973,7 +1973,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!GameObject.activeSelf)
                 return;
 
-            var canEdit = !NetworkPermissions.BlockEditObjects();
+            var canEdit = !NetworkPermissions.BlockEditObjects(false);
             var isSingle = selected.Count() == 1;
             var offValue = getOffValue?.Invoke() ?? 0f;
             var onValue = getOnValue?.Invoke() ?? 1f;
