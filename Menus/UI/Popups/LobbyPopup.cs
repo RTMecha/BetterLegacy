@@ -1052,7 +1052,7 @@ namespace BetterLegacy.Menus.UI.Popups
                 referenceValidity[message] = valid;
                 name = SYSTEM_NAME;
                 color = ChatColorUtility.MakeReadable(RTColors.HexToColor(SYSTEM_COLOR_HEX), CHAT_BACKGROUND);
-                if (!valid)
+                if (!valid && (string.IsNullOrEmpty(message.referenceLevelPath) || ProjectArrhythmia.State.IsHosting))
                     text = "It's referencing somewhere else...";
             }
             GameObject card;

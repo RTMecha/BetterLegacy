@@ -1069,15 +1069,29 @@ namespace BetterLegacy.Editor.Managers
             var selected = timelineMarkers.FindAll(x => x.Marker && x.Selected);
             if (!selected.Contains(timelineMarker))
                 selected = new List<TimelineMarker> { timelineMarker };
-            var ids = string.Join(";", selected.Select(x => EditorTimeline.EncodeReference(x.Marker.id)));
+            foreach (var item in selected)
+                if (IsWeakMarkerID(item.Marker))
+                    item.Marker.id = LSText.randomString(16);
+            var ids = string.Join(";", selected.Select(x => $"{EditorTimeline.EncodeReference(x.Marker.id)}|{x.Index}"));
             var text = selected.Count == 1 ? $"{RTSteamManager.inst.steamUser.name} has referenced {timelineMarker.Marker.name}." : $"{RTSteamManager.inst.steamUser.name} has referenced {selected.Count} markers.";
             SteamLobbyManager.inst.SendChatMessage(text, ChatMessageKind.System, null, ReferenceKind.Marker, ids);
         }
         TimelineMarker FindReferencedMarker(string reference)
         {
-            var id = EditorTimeline.DecodeReference(reference);
-            return !string.IsNullOrEmpty(id) ? timelineMarkers.Find(x => x.Marker && x.Marker.id == id) : null;
+            var parts = reference.Split('|');
+            var id = EditorTimeline.DecodeReference(parts[0]);
+            var byId = !string.IsNullOrEmpty(id) ? timelineMarkers.FindAll(x => x.Marker && x.Marker.id == id) : new List<TimelineMarker>();
+            if (byId.Count == 1)
+                return byId[0];
+            if (parts.Length > 1 && int.TryParse(parts[1], out var index))
+            {
+                var atIndex = timelineMarkers.Find(x => x.Marker && x.Index == index);
+                if (atIndex && IsWeakMarkerID(atIndex.Marker))
+                    return atIndex;
+            }
+            return null;
         }
+        bool IsWeakMarkerID(Marker marker) => string.IsNullOrEmpty(marker.id) || marker.id == "null" || timelineMarkers.Count(x => x.Marker && x.Marker.id == marker.id) > 1;
         List<TimelineMarker> FindReferencedMarkers(string reference)
         {
             var result = new List<TimelineMarker>();
