@@ -1,11 +1,17 @@
 ﻿# ???
 ## Features
 ### Core
-- The Lobby Manager now has a chat sub tab.
+- The Lobby Manager now has a Chat tab.
+
+## Changes
+- The Current tab in the Lobby Manager will no longer display when the user is not in a lobby.
+- Moved the Random button from the tabs area to next to the search field in the List tab.
+- More Lobby Manager text language support.
 
 ## Fixes
 - Fixed the await modifier not resetting properly.
 - Fixed marker jumping keybinds not working.
+- Fixed player settings syncing (this was not intentional).
 
 -------------------------------------------------------------------
 
