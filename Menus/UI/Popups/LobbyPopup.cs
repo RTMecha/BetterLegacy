@@ -65,10 +65,6 @@ namespace BetterLegacy.Menus.UI.Popups
             /// </summary>
             List,
             /// <summary>
-            /// Joins a random lobby.
-            /// </summary>
-            Random,
-            /// <summary>
             /// Manages player settings.
             /// </summary>
             Settings,
@@ -106,12 +102,12 @@ namespace BetterLegacy.Menus.UI.Popups
 
         static Sprite closeSprite;
 
+        public GameObject currentTabButton;
+
         #region Chat
 
         public const string SYSTEM_NAME = "System";
         public const string SYSTEM_COLOR_HEX = "F0756BFF";
-
-        public GameObject currentTabButton;
 
         public GameObject chatTabButton;
 
@@ -218,14 +214,7 @@ namespace BetterLegacy.Menus.UI.Popups
                         SetTab(ProjectArrhythmia.State.IsInLobby ? LobbyTab.Edit : LobbyTab.Create);
                         return;
                     }
-                    if (value != LobbyTab.Random)
-                    {
-                        SetTab(value);
-                        return;
-                    }
-
-                    if (!ProjectArrhythmia.State.IsInLobby)
-                        SteamLobbyManager.inst.JoinRandomLobby();
+                    SetTab(value);
                 });
 
                 EditorThemeManager.ApplySelectable(tabButton, ThemeGroup.Function_2);
@@ -276,6 +265,58 @@ namespace BetterLegacy.Menus.UI.Popups
 
                             EditorThemeManager.ApplyGraphic(closeLobbyImage, ThemeGroup.Delete, true);
                             EditorThemeManager.ApplyGraphic(closeLobbyLabel, ThemeGroup.Delete_Text);
+                            break;
+                        }
+                    case LobbyTab.Chat: {
+                            var viewport = Creator.NewUIObject("Chat Viewport", tabObject.transform);
+                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.98f), new Vector2(0.136f, 0.08f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(viewport.transform.AsRT());
+                            chatViewportRT = viewport.transform.AsRT();
+                            var viewportImage = viewport.AddComponent<Image>();
+                            EditorThemeManager.ApplyGraphic(viewportImage, ThemeGroup.Background_2, true);
+                            viewport.AddComponent<RectMask2D>();
+                            var content = Creator.NewUIObject("Content", viewport.transform);
+                            chatContent = content.transform;
+                            var contentRT = content.transform.AsRT();
+                            contentRT.anchorMin = new Vector2(0f, 0f);
+                            contentRT.anchorMax = new Vector2(1f, 0f);
+                            contentRT.pivot = new Vector2(0.5f, 0f);
+                            contentRT.sizeDelta = Vector2.zero;
+                            contentRT.anchoredPosition = Vector2.zero;
+                            var contentVerticalLayoutGroup = content.AddComponent<VerticalLayoutGroup>();
+                            contentVerticalLayoutGroup.spacing = 6f;
+                            contentVerticalLayoutGroup.childAlignment = TextAnchor.LowerLeft;
+                            contentVerticalLayoutGroup.childControlHeight = false;
+                            contentVerticalLayoutGroup.childForceExpandHeight = false;
+                            var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
+                            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                            var scrollTrigger = viewport.AddComponent<EventTrigger>();
+                            var scrollEntry = new EventTrigger.Entry { eventID = EventTriggerType.Scroll };
+                            scrollEntry.callback.AddListener(data => ScrollChat(((PointerEventData)data).scrollDelta.y));
+                            scrollTrigger.triggers.Add(scrollEntry);
+                            var inputObj = numberFieldStorage.transform.Find("input").gameObject.Duplicate(tabObject.transform);
+                            inputObj.SetActive(true);
+                            chatInputRT = inputObj.transform.AsRT();
+                            new RectValues(new Vector2(0f, CHAT_INPUT_BOTTOM_OFFSET), new Vector2(1f, 0f), new Vector2(0.136f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, CHAT_INPUT_MIN_HEIGHT)).AssignToRectTransform(chatInputRT);
+                            chatInput = inputObj.GetComponent<InputField>();
+                            chatInput.textComponent.alignment = TextAnchor.LowerLeft;
+                            chatInput.textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
+                            chatInput.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
+                            chatInput.lineType = InputField.LineType.MultiLineNewline;
+                            chatInput.characterLimit = 0;
+                            chatInput.SetTextWithoutNotify(string.Empty);
+                            chatInput.onValueChanged.NewListener(_val => UpdateChatInputHeight());
+                            chatInput.onValidateInput = (text, charIndex, addedChar) =>
+                            {
+                                if (addedChar == '\n' && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                                {
+                                    SendChatFromInput();
+                                    return '\0';
+                                }
+                                return addedChar;
+                            };
+                            chatInput.GetPlaceholderText().text = "Message...";
+                            EditorThemeManager.ApplyInputField(chatInput, ThemeGroup.Search_Field_1);
+
                             break;
                         }
                     case LobbyTab.Create: {
@@ -403,7 +444,7 @@ namespace BetterLegacy.Menus.UI.Popups
                     case LobbyTab.List: {
                             var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(tabObject.transform);
                             searchField.SetActive(true);
-                            RectValues.LeftAnchored.AnchoredPosition(134f, 0f).SizeDelta(856f, 32f).AssignToRectTransform(searchField.transform.AsRT());
+                            RectValues.LeftAnchored.AnchoredPosition(134f, 0f).SizeDelta(724f, 32f).AssignToRectTransform(searchField.transform.AsRT());
                             var searchFieldInput = searchField.GetComponent<InputField>();
                             searchFieldInput.textComponent.alignment = TextAnchor.MiddleLeft;
                             searchFieldInput.SetTextWithoutNotify(string.Empty);
@@ -416,6 +457,31 @@ namespace BetterLegacy.Menus.UI.Popups
                             searchFieldInput.GetPlaceholderText().text = "Search lobby...";
                             EditorThemeManager.ApplyInputField(searchFieldInput, ThemeGroup.Search_Field_1);
 
+                            var random = Creator.NewUIObject("Random", tabObject.transform);
+                            RectValues.RightAnchored.SizeDelta(132f, 32f).AssignToRectTransform(random.transform.AsRT());
+
+                            var randomBase = Creator.NewUIObject("Image", random.transform);
+                            RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(randomBase.transform.AsRT());
+                            var randomButtonBaseImage = randomBase.AddComponent<Image>();
+
+                            var randomTitle = Creator.NewUIObject("Title", randomBase.transform);
+                            RectValues.FullAnchored.AssignToRectTransform(randomTitle.transform.AsRT());
+                            var randomTitleText = randomTitle.AddComponent<Text>();
+                            randomTitleText.alignment = TextAnchor.MiddleCenter;
+                            randomTitleText.font = Font.GetDefault();
+                            randomTitleText.fontSize = 15;
+                            randomTitleText.text = Lang.Current.GetOrDefault("popups.lobby.random", "Random");
+
+                            var randomButton = randomBase.AddComponent<Button>();
+                            randomButton.onClick.NewListener(() =>
+                            {
+                                if (!ProjectArrhythmia.State.IsInLobby)
+                                    SteamLobbyManager.inst.JoinRandomLobby();
+                            });
+
+                            EditorThemeManager.ApplySelectable(randomButton, ThemeGroup.Function_2);
+                            EditorThemeManager.ApplyGraphic(randomTitleText, ThemeGroup.Function_2_Text);
+
                             lobbyContent = Creator.NewUIObject("Content", tabObject.transform).transform;
                             var contentVerticalLayoutGroup = lobbyContent.gameObject.AddComponent<VerticalLayoutGroup>();
                             contentVerticalLayoutGroup.spacing = 8f;
@@ -425,9 +491,6 @@ namespace BetterLegacy.Menus.UI.Popups
 
                             break;
                         }
-                    case LobbyTab.Random: {
-                            break;
-                        }
                     case LobbyTab.Settings: {
                             playerSettingsContent = Creator.NewUIObject("Content", tabObject.transform).transform;
                             var contentVerticalLayoutGroup = playerSettingsContent.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -435,58 +498,6 @@ namespace BetterLegacy.Menus.UI.Popups
                             contentVerticalLayoutGroup.childControlHeight = false;
                             contentVerticalLayoutGroup.childForceExpandHeight = false;
                             new RectValues(Vector2.zero, new Vector2(0.995f, 0.95f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(playerSettingsContent.AsRT());
-                            break;
-                        }
-                    case LobbyTab.Chat: {
-                            var viewport = Creator.NewUIObject("Chat Viewport", tabObject.transform);
-                            new RectValues(Vector2.zero, new Vector2(0.995f, 0.98f), new Vector2(0.136f, 0.08f), new Vector2(0.5f, 0.5f), Vector2.zero).AssignToRectTransform(viewport.transform.AsRT());
-                            chatViewportRT = viewport.transform.AsRT();
-                            var viewportImage = viewport.AddComponent<Image>();
-                            EditorThemeManager.ApplyGraphic(viewportImage, ThemeGroup.Background_2, true);
-                            viewport.AddComponent<RectMask2D>();
-                            var content = Creator.NewUIObject("Content", viewport.transform);
-                            chatContent = content.transform;
-                            var contentRT = content.transform.AsRT();
-                            contentRT.anchorMin = new Vector2(0f, 0f);
-                            contentRT.anchorMax = new Vector2(1f, 0f);
-                            contentRT.pivot = new Vector2(0.5f, 0f);
-                            contentRT.sizeDelta = Vector2.zero;
-                            contentRT.anchoredPosition = Vector2.zero;
-                            var contentVerticalLayoutGroup = content.AddComponent<VerticalLayoutGroup>();
-                            contentVerticalLayoutGroup.spacing = 6f;
-                            contentVerticalLayoutGroup.childAlignment = TextAnchor.LowerLeft;
-                            contentVerticalLayoutGroup.childControlHeight = false;
-                            contentVerticalLayoutGroup.childForceExpandHeight = false;
-                            var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
-                            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                            var scrollTrigger = viewport.AddComponent<EventTrigger>();
-                            var scrollEntry = new EventTrigger.Entry { eventID = EventTriggerType.Scroll };
-                            scrollEntry.callback.AddListener(data => ScrollChat(((PointerEventData)data).scrollDelta.y));
-                            scrollTrigger.triggers.Add(scrollEntry);
-                            var inputObj = numberFieldStorage.transform.Find("input").gameObject.Duplicate(tabObject.transform);
-                            inputObj.SetActive(true);
-                            chatInputRT = inputObj.transform.AsRT();
-                            new RectValues(new Vector2(0f, CHAT_INPUT_BOTTOM_OFFSET), new Vector2(1f, 0f), new Vector2(0.136f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, CHAT_INPUT_MIN_HEIGHT)).AssignToRectTransform(chatInputRT);
-                            chatInput = inputObj.GetComponent<InputField>();
-                            chatInput.textComponent.alignment = TextAnchor.LowerLeft;
-                            chatInput.textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
-                            chatInput.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
-                            chatInput.lineType = InputField.LineType.MultiLineNewline;
-                            chatInput.characterLimit = 0;
-                            chatInput.SetTextWithoutNotify(string.Empty);
-                            chatInput.onValueChanged.NewListener(_val => UpdateChatInputHeight());
-                            chatInput.onValidateInput = (text, charIndex, addedChar) =>
-                            {
-                                if (addedChar == '\n' && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
-                                {
-                                    SendChatFromInput();
-                                    return '\0';
-                                }
-                                return addedChar;
-                            };
-                            chatInput.GetPlaceholderText().text = "Message...";
-                            EditorThemeManager.ApplyInputField(chatInput, ThemeGroup.Search_Field_1);
-
                             break;
                         }
                 }
@@ -536,9 +547,6 @@ namespace BetterLegacy.Menus.UI.Popups
                     }
                 case LobbyTab.List: {
                         GetLobbies();
-                        break;
-                    }
-                case LobbyTab.Random: {
                         break;
                     }
                 case LobbyTab.Settings: {
@@ -633,7 +641,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 #region Player Index
 
-                var playerIndexLabel = GenerateText(gameObject.transform, "Index", RectValues.Default.SizeDelta(300f, 32f));
+                var playerIndexLabel = GenerateText(gameObject.transform, Lang.Current.GetOrDefault("popups.lobby.local_player_index", "Local Player Index"), RectValues.Default.SizeDelta(300f, 32f));
                 EditorThemeManager.ApplyLightText(playerIndexLabel);
 
                 var playerIndexField = numberFieldStorage.Duplicate(gameObject.transform, "Player Index").GetComponent<InputFieldStorage>();
@@ -646,6 +654,8 @@ namespace BetterLegacy.Menus.UI.Popups
                         return;
                     playerSettings.index = num;
                     SteamLobbyManager.inst.SaveLobbySettings();
+                    if (ProjectArrhythmia.State.IsOnlineMultiplayer)
+                        NetworkFunction.SendPlayerSettings();
                     if (!ProjectArrhythmia.State.InEditor)
                         return;
                     PlayerManager.inst.RespawnPlayers();
@@ -660,7 +670,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 #region Model ID
 
-                var modelIDLabel = GenerateText(gameObject.transform, "Model ID", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
+                var modelIDLabel = GenerateText(gameObject.transform, Lang.Current.GetOrDefault("popups.lobby.model_id", "Model ID"), RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
                 EditorThemeManager.ApplyLightText(modelIDLabel);
 
                 var modelID = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform);
@@ -677,7 +687,7 @@ namespace BetterLegacy.Menus.UI.Popups
                     if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
                         PlayerManager.inst.RespawnPlayer(player);
                     if (ProjectArrhythmia.State.IsOnlineMultiplayer)
-                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
+                        NetworkFunction.SendPlayerSettings();
                 });
                 modelIDField.GetPlaceholderText().text = "Set ID...";
                 EditorThemeManager.ApplyInputField(modelIDField, ThemeGroup.Search_Field_1);
@@ -686,7 +696,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 #region Color Slot
 
-                var colorSlotLabel = GenerateText(gameObject.transform, "Color Slot", RectValues.Default.SizeDelta(300f, 32f));
+                var colorSlotLabel = GenerateText(gameObject.transform, Lang.Current.GetOrDefault("popups.lobby.color_slot", "Color Slot"), RectValues.Default.SizeDelta(300f, 32f));
                 EditorThemeManager.ApplyLightText(colorSlotLabel);
 
                 var colorSlotField = numberFieldStorage.Duplicate(gameObject.transform, "Color Slot").GetComponent<InputFieldStorage>();
@@ -706,7 +716,7 @@ namespace BetterLegacy.Menus.UI.Popups
                     if (player.RuntimePlayer)
                         player.RuntimePlayer.colorSlot = num;
                     if (ProjectArrhythmia.State.IsOnlineMultiplayer)
-                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
+                        NetworkFunction.SendPlayerSettings();
                 });
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(colorSlotField, min: -1, max: int.MaxValue);
@@ -718,7 +728,7 @@ namespace BetterLegacy.Menus.UI.Popups
 
                 #region Display Name
 
-                var displayNameLabel = GenerateText(gameObject.transform, "Display Name", RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
+                var displayNameLabel = GenerateText(gameObject.transform, Lang.Current.GetOrDefault("popups.lobby.display_name", "Display Name"), RectValues.Default.AnchoredPosition(-200f, 300f).SizeDelta(300f, 32f));
                 EditorThemeManager.ApplyLightText(displayNameLabel);
 
                 var displayName = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform);
@@ -735,7 +745,7 @@ namespace BetterLegacy.Menus.UI.Popups
                     if (PlayerManager.inst.players.TryFind(x => x.localIndex == playerSettings.index, out var player))
                         PlayerManager.inst.RespawnPlayer(player);
                     if (ProjectArrhythmia.State.IsOnlineMultiplayer)
-                        Core.Data.Network.NetworkFunction.SendPlayerSettings();
+                        NetworkFunction.SendPlayerSettings();
                 });
                 displayNameField.GetPlaceholderText().text = "Set name...";
                 EditorThemeManager.ApplyInputField(displayNameField, ThemeGroup.Search_Field_1);
@@ -761,7 +771,7 @@ namespace BetterLegacy.Menus.UI.Popups
                 RenderPlayerSettings();
             });
 
-            var label = GenerateText(addObject.transform, "Add Settings", RectValues.FullAnchored.SizeDelta(-12f, 0f));
+            var label = GenerateText(addObject.transform, Lang.Current.GetOrDefault("popups.lobby.add_local_player_settings", "Add Local Player Settings"), RectValues.FullAnchored.SizeDelta(-12f, 0f));
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(label);
@@ -1179,6 +1189,7 @@ namespace BetterLegacy.Menus.UI.Popups
                 case ReferenceKind.Marker: found = RTMarkerEditor.inst.IsMarkerReferenceValid(message.referenceIds); break;
                 case ReferenceKind.Keyframes: found = EditorTimeline.inst.IsKeyframeReferenceValid(message.referenceIds); break;
                 case ReferenceKind.Layer: found = int.TryParse(message.referenceIds, out var layer) && layer >= 0; break;
+                case ReferenceKind.Time: found = float.TryParse(message.referenceIds, out var time) && time >= 0; break;
                 default: found = false; break;
             }
             return found ? ReferenceState.Valid : ReferenceState.Missing;
@@ -1270,6 +1281,13 @@ namespace BetterLegacy.Menus.UI.Popups
                     if (int.TryParse(referenceIds, out var layer))
                     {
                         EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
+                        success = true;
+                    }
+                    break;
+                case ReferenceKind.Time:
+                    if (float.TryParse(referenceIds, out var time))
+                    {
+                        AudioManager.inst.SetMusicTime(time);
                         success = true;
                     }
                     break;
