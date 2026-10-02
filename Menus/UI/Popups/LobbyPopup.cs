@@ -82,6 +82,12 @@ namespace BetterLegacy.Menus.UI.Popups
 
         public InputField nameField;
 
+        public InputField passwordField;
+        GameObject passwordPrompt;
+        InputField promptInput;
+        Text promptTitle;
+        Text promptStatus;
+        Lobby promptLobby;
         public InputFieldStorage playerCountField;
 
         public Dropdown visibilityDropdown;
@@ -351,6 +357,15 @@ namespace BetterLegacy.Menus.UI.Popups
 
                             #endregion
 
+                            var passwordLabel = GenerateText(tabObject.transform, "Password", RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f));
+                            EditorThemeManager.ApplyLightText(passwordLabel);
+                            passwordField = CreatePasswordInput(tabObject.transform, 0f, 400f, "(No Password)");
+                            passwordField.SetTextWithoutNotify(string.Empty);
+                            passwordField.onEndEdit.NewListener(_val =>
+                            {
+                                SteamLobbyManager.inst.LobbySettings.Password = _val ?? string.Empty;
+                                SteamLobbyManager.inst.SaveLobbySettings();
+                            });
                             #region Player Count
 
                             var playerCountLabel = GenerateText(tabObject.transform, "Player Count", RectValues.Default.AnchoredPosition(-200f, 200f).SizeDelta(300f, 32f));
@@ -614,9 +629,15 @@ namespace BetterLegacy.Menus.UI.Popups
                     var image = gameObject.AddComponent<Image>();
                     var button = gameObject.AddComponent<Button>();
                     button.image = image;
-                    button.onClick.NewListener(() => SteamLobbyManager.inst.JoinLobby(lobby));
+                    button.onClick.NewListener(() =>
+                    {
+                        if (lobby.GetData(SteamLobbyManager.HAS_PASSWORD) == "1")
+                            ShowPasswordPrompt(lobby);
+                        else
+                            SteamLobbyManager.inst.JoinLobby(lobby);
+                    });
 
-                    var label = GenerateText(gameObject.transform, lobby.GetName() ?? "Invalid", RectValues.FullAnchored.SizeDelta(-12f, 0f));
+                    var label = GenerateText(gameObject.transform, (lobby.GetName() ?? "Invalid") + (lobby.GetData(SteamLobbyManager.HAS_PASSWORD) == "1" ? " [Password]" : string.Empty), RectValues.FullAnchored.SizeDelta(-12f, 0f));
 
                     EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                     EditorThemeManager.ApplyLightText(label);
@@ -859,7 +880,76 @@ namespace BetterLegacy.Menus.UI.Popups
                 NetworkFunction.SendHostLobbySettings();
         }
 
-        public void OnLobbyJoined() => SetTab(LobbyTab.Current);
+        public void OnLobbyJoined()
+        {
+            HidePasswordPrompt();
+            SetTab(LobbyTab.Current);
+        }
+        public void OnJoinRejected(Lobby lobby)
+        {
+            SetTab(LobbyTab.List);
+            ShowPasswordPrompt(lobby, "Incorrect password.");
+        }
+        void HidePasswordPrompt()
+        {
+            if (passwordPrompt)
+                passwordPrompt.SetActive(false);
+        }
+        void ShowPasswordPrompt(Lobby lobby, string status = "")
+        {
+            if (!passwordPrompt)
+            {
+                passwordPrompt = Creator.NewUIObject("Password Prompt", gameObject.transform);
+                RectValues.Default.SizeDelta(500f, 220f).AssignToRectTransform(passwordPrompt.transform.AsRT());
+                var promptImage = passwordPrompt.AddComponent<Image>();
+                EditorThemeManager.ApplyGraphic(promptImage, ThemeGroup.Background_3, true);
+                promptTitle = GenerateText(passwordPrompt.transform, string.Empty, RectValues.Default.AnchoredPosition(0f, 76f).SizeDelta(460f, 32f), TextAnchor.MiddleCenter);
+                EditorThemeManager.ApplyLightText(promptTitle);
+                promptInput = CreatePasswordInput(passwordPrompt.transform, 30f, 420f, "Password...");
+                promptStatus = GenerateText(passwordPrompt.transform, string.Empty, RectValues.Default.AnchoredPosition(0f, -10f).SizeDelta(460f, 32f), TextAnchor.MiddleCenter);
+                EditorThemeManager.ApplyLightText(promptStatus);
+                GeneratePromptButton("Join", -110f, () =>
+                {
+                    promptStatus.text = string.Empty;
+                    var password = promptInput.text;
+                    promptInput.SetTextWithoutNotify(string.Empty);
+                    HidePasswordPrompt();
+                    SteamLobbyManager.inst.JoinLobby(promptLobby, password);
+                });
+                GeneratePromptButton("Cancel", 110f, HidePasswordPrompt);
+            }
+            promptLobby = lobby;
+            promptTitle.text = lobby.GetName() ?? "Lobby";
+            promptStatus.text = status;
+            promptInput.SetTextWithoutNotify(string.Empty);
+            passwordPrompt.SetActive(true);
+            passwordPrompt.transform.SetAsLastSibling();
+        }
+        InputField CreatePasswordInput(Transform parent, float y, float width, string placeholder)
+        {
+            var input = numberFieldStorage.transform.Find("input").gameObject.Duplicate(parent);
+            input.SetActive(true);
+            RectValues.Default.AnchoredPosition(0f, y).SizeDelta(width, 32f).AssignToRectTransform(input.transform.AsRT());
+            var field = input.GetComponent<InputField>();
+            field.textComponent.alignment = TextAnchor.MiddleLeft;
+            field.contentType = InputField.ContentType.Password;
+            field.onValueChanged.ClearAll();
+            field.GetPlaceholderText().text = placeholder;
+            EditorThemeManager.ApplyInputField(field, ThemeGroup.Search_Field_1);
+            return field;
+        }
+        void GeneratePromptButton(string text, float x, Action onClick)
+        {
+            var buttonObject = Creator.NewUIObject(text, passwordPrompt.transform);
+            RectValues.Default.AnchoredPosition(x, -70f).SizeDelta(200f, 32f).AssignToRectTransform(buttonObject.transform.AsRT());
+            var buttonImage = buttonObject.AddComponent<Image>();
+            var button = buttonObject.AddComponent<Button>();
+            button.image = buttonImage;
+            button.onClick.NewListener(() => onClick());
+            var buttonLabel = GenerateText(buttonObject.transform, text, RectValues.FullAnchored.SizeDelta(-12f, 0f), TextAnchor.MiddleCenter);
+            EditorThemeManager.ApplyGraphic(buttonImage, ThemeGroup.Function_1, true);
+            EditorThemeManager.ApplyGraphic(buttonLabel, ThemeGroup.Function_1_Text);
+        }
 
         public override void Tick()
         {

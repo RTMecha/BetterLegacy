@@ -1484,6 +1484,7 @@ namespace BetterLegacy.Core.Managers
                 connection?.Close();
         }
 
+        public bool IsConnectedToServer => serverConnection;
         public void OnClientConnected(ServerNetworkConnection connection)
         {
             serverConnection = connection;
@@ -1599,7 +1600,7 @@ namespace BetterLegacy.Core.Managers
                 throw new Exception("Tried calling a client rpc while transport is null!");
             foreach (var connection in clientConnections)
             {
-                if (ServerSelfPeerConnection == connection.Value)
+                if (ServerSelfPeerConnection == connection.Value || !SteamLobbyManager.inst.IsNetAuthorized(connection.Key))
                     continue;
 
                 connection.Value.SendRpcToTransport(data, sendType);
@@ -1608,6 +1609,8 @@ namespace BetterLegacy.Core.Managers
 
         internal void OnServerTransportDataReceived(ClientNetworkConnection connection, ArraySegment<byte> data)
         {
+            if (!SteamLobbyManager.inst.IsNetAuthorized(connection.connectionID))
+                return;
             if (data.Count < 2)
             {
                 CoreHelper.LogError($"Data was too small.");

@@ -52,6 +52,22 @@ namespace BetterLegacy.Core.Managers
 
         public bool AllLoaded => sceneLoaded && songLoaded && gameDataLoaded;
 
+        public const string AUTH_MARKER = "BLAUTH";
+        public const string HAS_PASSWORD = "HasPassword";
+        readonly HashSet<ulong> authorizedMembers = new HashSet<ulong>();
+        string hostPassword;
+        string joinPassword;
+        bool awaitingAuth;
+        public bool HostHasPassword => ProjectArrhythmia.State.IsHosting && !string.IsNullOrEmpty(hostPassword);
+        public bool IsMemberAuthorized(ulong id) => !HostHasPassword || authorizedMembers.Contains(id);
+        public bool IsNetAuthorized(int netId) =>
+            !HostHasPassword || netId == 0 ||
+            (Transport.Instance && Transport.Instance.steamIDToNetID.Any(pair => pair.Value == netId && authorizedMembers.Contains(pair.Key)));
+        static string AuthHash(string password, ulong steamId, ulong lobbyId)
+        {
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+                return System.BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes($"{password}\n{steamId}\n{lobbyId}"))).Replace("-", string.Empty);
+        }
         /* logic notes
         - when a client joins the lobby, all current players from that client get sent to the server.
         - and GameData gets sent from the server to all clients
@@ -123,6 +139,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             LobbySettings = RTFile.CreateFromFile<LobbySettings>(path);
             LobbyPopup.Instance.nameField?.SetTextWithoutNotify(LobbySettings.Name);
+            LobbyPopup.Instance.passwordField?.SetTextWithoutNotify(LobbySettings.Password);
             LobbyPopup.Instance.playerCountField?.SetTextWithoutNotify(LobbySettings.PlayerCount.ToString());
             LobbyPopup.Instance.visibilityDropdown?.SetValueWithoutNotify((int)LobbySettings.Visibility);
             Log("Loaded lobby settings!");
@@ -164,6 +181,8 @@ namespace BetterLegacy.Core.Managers
             }
 
             Log($"Creating a lobby");
+            hostPassword = LobbySettings.Password;
+            authorizedMembers.Clear();
             ProjectArrhythmia.State.IsHosting = true;
             RTSteamManager.inst.StartServer();
             SteamMatchmaking.CreateLobbyAsync(LobbySettings.PlayerCount);
@@ -198,7 +217,7 @@ namespace BetterLegacy.Core.Managers
                     Log($"Lobby {i}\n" +
                         $"ID: {lobby.Id}\n" +
                         $"Owner: {lobby.Owner.Name} - {lobby.Owner.Id}");
-                    if (IsValidLobby(lobby))
+                    if (IsValidLobby(lobby) && lobby.GetData(HAS_PASSWORD) != "1")
                         lobbyQueue.Add(lobby);
                 }
 
@@ -233,8 +252,9 @@ namespace BetterLegacy.Core.Managers
         /// Joins a specific lobby.
         /// </summary>
         /// <param name="lobby">Lobby reference.</param>
-        public void JoinLobby(Lobby lobby)
+        public void JoinLobby(Lobby lobby, string password = null)
         {
+            joinPassword = password;
             if (PlayerManager.inst.NoPlayers)
                 SceneHelper.LoadInputSelect(() => CoroutineHelper.StartCoroutine(IJoinLobby(lobby)));
             else
@@ -263,6 +283,9 @@ namespace BetterLegacy.Core.Managers
         public void LeaveLobby()
         {
             ProjectArrhythmia.State.IsInLobby = false;
+            authorizedMembers.Clear();
+            hostPassword = null;
+            awaitingAuth = false;
             CurrentLobby.Leave();
             LobbyPopup.Instance?.ClearChat();
             ClearLoaded();
@@ -719,16 +742,24 @@ namespace BetterLegacy.Core.Managers
 
             if (parts != null && parts.Length >= 4 && parts[0] == LOAD_MARKER)
             {
-                if (parts[1] == "REPORT" && ProjectArrhythmia.State.IsHosting && int.TryParse(parts[3], out var reportedPercent))
+                if (parts[1] == "REPORT" && ProjectArrhythmia.State.IsHosting && IsMemberAuthorized(friend.Id.Value) && int.TryParse(parts[3], out var reportedPercent))
                     ApplyLoadReport(parts[2], friend.Id, reportedPercent);
                 else if (parts[1] == "STATE")
                     ApplyIncomingLoadState(parts);
                 return;
             }
 
-            if (parts != null && parts.Length >= 2 && parts[0] == HISTORY_MARKER)
+            if (parts != null && parts.Length >= 3 && parts[0] == AUTH_MARKER)
             {
                 if (parts[1] == "REQ" && ProjectArrhythmia.State.IsHosting && friend.Id != RTSteamManager.inst.steamUser.steamID)
+                    HandleAuthRequest(lobby, friend, parts[2]);
+                else if (parts[1] == "RES" && !ProjectArrhythmia.State.IsHosting && friend.Id == lobby.Owner.Id && parts.Length >= 4 && parts[2] == RTSteamManager.inst.steamUser.steamID.Value.ToString())
+                    HandleAuthResponse(lobby, parts[3] == "1");
+                return;
+            }
+            if (parts != null && parts.Length >= 2 && parts[0] == HISTORY_MARKER)
+            {
+                if (parts[1] == "REQ" && ProjectArrhythmia.State.IsHosting && friend.Id != RTSteamManager.inst.steamUser.steamID && IsMemberAuthorized(friend.Id.Value))
                     SendChatHistory(friend.Id.Value);
                 else if (parts[1] == "RES" && !ProjectArrhythmia.State.IsHosting && friend.Id == lobby.Owner.Id)
                 {
@@ -809,8 +840,59 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        void HandleAuthRequest(Lobby lobby, Friend friend, string proof)
+        {
+            if (!HostHasPassword || authorizedMembers.Contains(friend.Id.Value))
+                return;
+            var accepted = proof == AuthHash(hostPassword, friend.Id.Value, lobby.Id.Value);
+            if (accepted)
+                authorizedMembers.Add(friend.Id.Value);
+            SendChat(string.Join(CHAT_DELIMITER.ToString(), AUTH_MARKER, "RES", friend.Id.Value.ToString(), accepted ? "1" : "0"));
+            if (accepted)
+            {
+                SendSystemChatMessage($"{friend.Name} has joined the lobby.");
+                HandleMemberJoined(friend);
+            }
+            else if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(friend.Id, out int netId))
+                NetworkManager.inst.KickClient(netId);
+        }
+        void HandleAuthResponse(Lobby lobby, bool accepted)
+        {
+            if (!awaitingAuth)
+                return;
+            awaitingAuth = false;
+            joinPassword = null;
+            if (accepted)
+            {
+                CompleteClientEntry(lobby);
+                return;
+            }
+            LeaveLobby();
+            LobbyPopup.Instance?.OnJoinRejected(lobby);
+        }
+        void CompleteClientEntry(Lobby lobby)
+        {
+            RequestChatHistory();
+            if (Transport.Instance && NetworkManager.inst.IsConnectedToServer)
+                SyncPlayersToServer();
+            else
+            {
+                NetworkManager.inst.onClientConnectedTemp += connection => SyncPlayersToServer();
+                if (!Transport.Instance)
+                    RTSteamManager.inst.StartClient(lobby.Owner.Id);
+            }
+            foreach (var lobbyMember in lobby.Members)
+            {
+                AddPlayerToLoadList(lobbyMember.Id);
+                if (lobby.GetMemberData(lobbyMember, IS_LOADED) == "1")
+                    SetLoaded(lobbyMember.Id);
+            }
+        }
         void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
+            if (ProjectArrhythmia.State.IsHosting && HostHasPassword && friend.Id != RTSteamManager.inst.steamUser.steamID && !authorizedMembers.Contains(friend.Id.Value))
+                return;
+            authorizedMembers.Remove(friend.Id.Value);
             Log($"Member left: [{friend.Name}]");
 
             SoundManager.inst.PlaySound(DefaultSounds.Block); // maybe add a new sound?
@@ -841,6 +923,12 @@ namespace BetterLegacy.Core.Managers
 
         void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
+            if (lobby.GetData(HAS_PASSWORD) == "1" || HostHasPassword)
+                return;
+            HandleMemberJoined(friend);
+        }
+        void HandleMemberJoined(Friend friend)
+        {
             Log($"Member joined: [{friend.Name}]");
 
             SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
@@ -849,7 +937,8 @@ namespace BetterLegacy.Core.Managers
             try
             {
                 LobbyPopup.Instance.Render();
-                LobbyPopup.Instance.AddSystemMessage($"{friend.Name} has joined the lobby.");
+                if (!HostHasPassword)
+                    LobbyPopup.Instance.AddSystemMessage($"{friend.Name} has joined the lobby.");
             }
             catch
             {
@@ -896,23 +985,14 @@ namespace BetterLegacy.Core.Managers
             }
 
             LobbyPopup.Instance?.ClearChat();
-            RequestChatHistory();
 
-            if (!Transport.Instance)
+            if (lobby.GetData(HAS_PASSWORD) == "1")
             {
-                NetworkManager.inst.onClientConnectedTemp += connection => SyncPlayersToServer();
-                RTSteamManager.inst.StartClient(lobby.Owner.Id);
+                awaitingAuth = true;
+                SendChat(string.Join(CHAT_DELIMITER.ToString(), AUTH_MARKER, "REQ", AuthHash(joinPassword ?? string.Empty, RTSteamManager.inst.steamUser.steamID.Value, lobby.Id.Value)));
+                return;
             }
-            else
-                SyncPlayersToServer();
-            foreach (var lobbyMember in lobby.Members)
-            {
-                //if (lobbyMember.Id != RTSteamManager.inst.steamUser.steamID)
-                //    PlayerManager.Players.Add(new PAPlayer(PlayerManager.Players.Count, lobbyMember.Id));
-                AddPlayerToLoadList(lobbyMember.Id);
-                if (lobby.GetMemberData(lobbyMember, IS_LOADED) == "1")
-                    SetLoaded(lobbyMember.Id);
-            }
+            CompleteClientEntry(lobby);
         }
 
         void OnLobbyCreated(Result result, Lobby lobby)
@@ -955,6 +1035,8 @@ namespace BetterLegacy.Core.Managers
             lobby.SetData("ModSnapshot", LegacyPlugin.SNAPSHOT_VERSION);
             lobby.SetData("GameVersion", ProjectArrhythmia.VANILLA_VERSION);
             lobby.SetData("BetterLegacy", "true");
+            if (HostHasPassword)
+                lobby.SetData(HAS_PASSWORD, "1");
             lobby.SetData("LobbyName", LobbySettings.Name);
             if (!string.IsNullOrEmpty(LobbySettings.Channel))
                 lobby.SetData("LobbyChannel", LobbySettings.Channel);

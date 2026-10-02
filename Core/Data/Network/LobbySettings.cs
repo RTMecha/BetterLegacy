@@ -302,7 +302,7 @@ namespace BetterLegacy.Core.Data.Network
             Visibility = (LobbyVisibility)reader.ReadByte();
             State = (LobbyState)reader.ReadByte();
             Channel = reader.ReadString();
-            Password = reader.ReadString();
+            reader.ReadString();
             CanViewLevels = reader.ReadBoolean();
             CanEdit = reader.ReadBoolean();
             CanViewEditorLevels = reader.ReadBoolean();
@@ -331,7 +331,7 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write((byte)Visibility);
             writer.Write((byte)State);
             writer.Write(Channel);
-            writer.Write(Password);
+            writer.Write(string.Empty);
             writer.Write(CanViewLevels);
             writer.Write(CanEdit);
             writer.Write(CanViewEditorLevels);
