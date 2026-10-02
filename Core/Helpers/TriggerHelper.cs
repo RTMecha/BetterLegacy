@@ -7,7 +7,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
@@ -498,7 +500,8 @@ namespace BetterLegacy.Core.Helpers
             if (timelineKeyframe.isObjectKeyframe)
             {
                 var animatable = timelineKeyframe.animatable;
-                EditorContextMenu.inst.ShowContextMenu(
+                var objectKeyframeElements = new List<EditorElement>
+                {
                     new ButtonElement("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(animatable.StartTime + timelineKeyframe.Time)),
                     new ButtonElement("Set KF to Cursor", () =>
                     {
@@ -557,12 +560,23 @@ namespace BetterLegacy.Core.Helpers
                                     break;
                                 }
                         }
-                    })
-                    );
+                    }),
+                };
+                if (ProjectArrhythmia.State.IsInLobby)
+                {
+                    objectKeyframeElements.Add(new SpacerElement());
+                    objectKeyframeElements.Add(new ButtonElement("Reference Keyframe", () =>
+                    {
+                        var ids = EditorTimeline.GetKeyframeReference(timelineKeyframe, animatable, out var count);
+                        SteamLobbyManager.inst.SendChatMessage($"{RTSteamManager.inst.steamUser.name} has referenced {count} keyframe{(count == 1 ? string.Empty : "s")}.", ChatMessageKind.System, null, ReferenceKind.Keyframes, ids);
+                    }));
+                }
+                EditorContextMenu.inst.ShowContextMenu(objectKeyframeElements);
             }
             else
             {
-                EditorContextMenu.inst.ShowContextMenu(
+                var eventKeyframeElements = new List<EditorElement>
+                {
                     new ButtonElement("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(timelineKeyframe.Time)),
                     new ButtonElement("Set KF to Cursor", () =>
                     {
@@ -588,8 +602,18 @@ namespace BetterLegacy.Core.Helpers
                     new ButtonElement("Paste", () => RTEventEditor.inst.PasteKeyframes()),
                     new ButtonElement("Copy Data", () => RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedKeyframe?.timelineKeyframe)),
                     new ButtonElement("Paste Data", () => RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType)),
-                    new ButtonElement("Delete", RTEditor.inst.Delete)
-                    );
+                    new ButtonElement("Delete", RTEditor.inst.Delete),
+                };
+                if (ProjectArrhythmia.State.IsInLobby)
+                {
+                    eventKeyframeElements.Add(new SpacerElement());
+                    eventKeyframeElements.Add(new ButtonElement("Reference Keyframe", () =>
+                    {
+                        var ids = EditorTimeline.GetKeyframeReference(timelineKeyframe, null, out var count);
+                        SteamLobbyManager.inst.SendChatMessage($"{RTSteamManager.inst.steamUser.name} has referenced {count} keyframe{(count == 1 ? string.Empty : "s")}.", ChatMessageKind.System, null, ReferenceKind.Keyframes, ids);
+                    }));
+                }
+                EditorContextMenu.inst.ShowContextMenu(eventKeyframeElements);
             }
         });
 

@@ -1526,7 +1526,7 @@ namespace BetterLegacy.Core.Managers
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
-            var handler = HandleChunkData(reader);
+            var handler = HandleChunkData(reader, id);
             if (handler.Item1 && GetNetworkFunctions(group).TryFind(x => x.id == id && x.side != NetworkFunction.Side.Server, out NetworkFunction function))
             {
                 applyingNetworkChange = true;
@@ -1623,7 +1623,7 @@ namespace BetterLegacy.Core.Managers
             var group = (NetworkFunction.Group)reader.ReadInt32();
             var id = reader.ReadInt32();
             //var handler = await HandleChunkData(reader);
-            var handler = HandleChunkData(reader);
+            var handler = HandleChunkData(reader, id);
             bool allowed = NetworkPermissions.IsServerAllowed(group, id);
             if (allowed && handler.Item1)
                 allowed = NetworkPermissions.IsServerAllowedPayload(group, id, handler.Item2);
@@ -1638,8 +1638,26 @@ namespace BetterLegacy.Core.Managers
             handler.Item2.Dispose();
         }
 
+        static readonly HashSet<int> LEVEL_LOAD_FUNCTION_IDS = new HashSet<int>
+        {
+            NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL,
+            NetworkFunction.SEND_EDITOR_LEVEL,
+            NetworkFunction.LOAD_CLIENT_LEVEL,
+            NetworkFunction.SEND_ARCADE_LEVEL,
+            NetworkFunction.SEND_STEAM_LEVEL,
+        };
+        void ReportChunkProgress(int id, NetworkWriterQueue writerQueue)
+        {
+            var levelId = SteamLobbyManager.inst.activeLoadLevelId;
+            if (string.IsNullOrEmpty(levelId) || writerQueue.dataLength <= 0 || !LEVEL_LOAD_FUNCTION_IDS.Contains(id))
+                return;
+
+            var percent = (int) (writerQueue.writer.Position / (float) writerQueue.dataLength * 100f);
+            SteamLobbyManager.inst.ReportLevelLoadProgress(levelId, percent);
+        }
+
         //async Task<(bool, NetworkReader)> HandleChunkData(NetworkReader reader)
-        (bool, NetworkReader) HandleChunkData(NetworkReader reader)
+        (bool, NetworkReader) HandleChunkData(NetworkReader reader, int id)
         {
             var dataLength = reader.ReadInt64();
             var uniqueID = reader.ReadString();
@@ -1663,6 +1681,7 @@ namespace BetterLegacy.Core.Managers
             //writer.Write(CoreHelper.Decompress(reader.ReadBytes(currentDataLength)));
             writerQueue.writer.Write(SevenZip.SevenZipExtractor.ExtractBytes(reader.ReadBytes(currentDataLength)));
             sw.Stop();
+            ReportChunkProgress(id, writerQueue);
 
             if (totalChunkSize > MAX_BUFFER_SIZE)
                 RunFunction(NetworkFunction.SEND_CHUNK_DATA, new NetworkFunction.StringParameter(uniqueID));

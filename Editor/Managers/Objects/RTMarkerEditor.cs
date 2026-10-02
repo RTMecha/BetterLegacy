@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
@@ -910,7 +911,10 @@ namespace BetterLegacy.Editor.Managers
         /// Shows the marker context menu for a timeline marker.
         /// </summary>
         /// <param name="timelineMarker">Timeline marker to use.</param>
-        public void ShowMarkerContextMenu(TimelineMarker timelineMarker) => EditorContextMenu.inst.ShowContextMenu(
+        public void ShowMarkerContextMenu(TimelineMarker timelineMarker)
+        {
+            var elements = new List<EditorElement>
+            {
             new ButtonElement("Open", () => SetCurrentMarker(timelineMarker)),
             new ButtonElement("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
             new ButtonElement("Select All Markers", () =>
@@ -1048,8 +1052,68 @@ namespace BetterLegacy.Editor.Managers
             new SpacerElement(),
             new ButtonElement("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker)),
             new SpacerElement(),
-            new ButtonElement("Convert to Planner Note", timelineMarker.ToPlannerNote)
-            );
+            new ButtonElement("Convert to Planner Note", timelineMarker.ToPlannerNote),
+            };
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                elements.Add(new SpacerElement());
+                elements.Add(new ButtonElement("Reference Marker", () => ReferenceMarker(timelineMarker)));
+            }
+
+            EditorContextMenu.inst.ShowContextMenu(elements);
+        }
+        void ReferenceMarker(TimelineMarker timelineMarker)
+        {
+            if (!timelineMarker.Marker)
+                return;
+            var selected = timelineMarkers.FindAll(x => x.Marker && x.Selected);
+            if (!selected.Contains(timelineMarker))
+                selected = new List<TimelineMarker> { timelineMarker };
+            var ids = string.Join(";", selected.Select(x => EditorTimeline.EncodeReference(x.Marker.id)));
+            var text = selected.Count == 1 ? $"{RTSteamManager.inst.steamUser.name} has referenced {timelineMarker.Marker.name}." : $"{RTSteamManager.inst.steamUser.name} has referenced {selected.Count} markers.";
+            SteamLobbyManager.inst.SendChatMessage(text, ChatMessageKind.System, null, ReferenceKind.Marker, ids);
+        }
+        TimelineMarker FindReferencedMarker(string reference)
+        {
+            var id = EditorTimeline.DecodeReference(reference);
+            return !string.IsNullOrEmpty(id) ? timelineMarkers.Find(x => x.Marker && x.Marker.id == id) : null;
+        }
+        List<TimelineMarker> FindReferencedMarkers(string reference)
+        {
+            var result = new List<TimelineMarker>();
+            foreach (var item in reference.Split(';'))
+            {
+                var timelineMarker = FindReferencedMarker(item);
+                if (!timelineMarker)
+                    return null;
+                if (!result.Contains(timelineMarker))
+                    result.Add(timelineMarker);
+            }
+            return result;
+        }
+        bool HasMarkerData => GameData.Current && GameData.Current.data && GameData.Current.data.markers != null;
+        public bool IsMarkerReferenceValid(string reference) => !string.IsNullOrEmpty(reference) && HasMarkerData && FindReferencedMarkers(reference) != null;
+        public bool ReferenceMarkerByID(string reference, bool add)
+        {
+            if (string.IsNullOrEmpty(reference) || !HasMarkerData)
+                return false;
+            RenderMarkers();
+            var referenced = FindReferencedMarkers(reference);
+            if (referenced == null)
+                return false;
+            referenced = referenced.OrderBy(x => x.Time).ToList();
+            var first = referenced[0];
+            var firstMarker = first.Marker;
+            if (firstMarker.layers != null && firstMarker.layers.Count > 0 && !EditorConfig.Instance.ShowMarkersOnAllLayers.Value && !firstMarker.VisibleOnLayer(EditorTimeline.inst.Layer))
+                EditorTimeline.inst.SetLayer(firstMarker.layers[0], EditorTimeline.LayerType.Objects);
+            if (add)
+                first.Selected = true;
+            else
+                SetCurrentMarker(first, true, true);
+            for (int i = 1; i < referenced.Count; i++)
+                referenced[i].Selected = true;
+            return true;
+        }
 
         /// <summary>
         /// Creates a timeline marker for the marker at a specific index.

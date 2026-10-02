@@ -2506,6 +2506,44 @@ namespace BetterLegacy
         GlobalFolder,
     }
 
+    /// <summary>
+    /// How multiplayer chat messages are displayed.
+    /// </summary>
+    public enum ChatStyle
+    {
+        /// <summary>
+        /// Simple style. The name and message appear on the same line with no line breaks, uses triangle brackets.
+        /// </summary>
+        Simple,
+        /// <summary>
+        /// Terminal style. A header line ([Name - Time]) followed by the message on the next line.
+        /// </summary>
+        Terminal,
+        /// <summary>
+        /// Story style. The message text on the left with a name / time region pinned to the right, references the story mode.
+        /// </summary>
+        Story,
+    }
+
+    /// <summary>
+    /// How the time of a multiplayer chat message is displayed.
+    /// </summary>
+    public enum ChatTimeFormat
+    {
+        /// <summary>
+        /// 24-hour time (HH:MM).
+        /// </summary>
+        Hour24,
+        /// <summary>
+        /// 12-hour time (HH:MM AM/PM).
+        /// </summary>
+        Hour12,
+        /// <summary>
+        /// Time since the message was sent (1 minute ago, 2 hours ago).
+        /// </summary>
+        Relative,
+    }
+
     #endregion
 
     #region Misc

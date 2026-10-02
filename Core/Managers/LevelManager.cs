@@ -465,6 +465,8 @@ namespace BetterLegacy.Core.Managers
 
             if (ProjectArrhythmia.State.IsInLobby)
             {
+                if (ProjectArrhythmia.State.IsHosting)
+                    SteamLobbyManager.inst.StartLevelLoadSession(level, true);
                 NetworkFunction.SetClientLoaded();
                 NetworkFunction.LoadClientLevel(level);
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)
@@ -481,6 +483,8 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             GameManager.inst.gameState = GameManager.State.Playing;
+            if (ProjectArrhythmia.State.IsInLobby)
+                BetterLegacy.Menus.UI.Popups.LobbyPopup.Instance?.Close();
             yield return new WaitForSeconds(0.2f);
 
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
@@ -757,6 +761,8 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             GameManager.inst.gameState = GameManager.State.Playing;
+            if (ProjectArrhythmia.State.IsInLobby)
+                BetterLegacy.Menus.UI.Popups.LobbyPopup.Instance?.Close();
             yield return new WaitForSeconds(0.2f);
 
             AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);

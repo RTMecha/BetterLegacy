@@ -343,6 +343,9 @@ namespace BetterLegacy.Patchers
             Instance.ScreenScale = Screen.width / 1920f;
             Instance.ScreenScaleInverse = 1f / Instance.ScreenScale;
 
+            if (RTEditor.inst && RTEditor.inst.chatTitleBarButton && RTEditor.inst.chatTitleBarButton.activeSelf != ProjectArrhythmia.State.IsInLobby)
+                RTEditor.inst.chatTitleBarButton.SetActive(ProjectArrhythmia.State.IsInLobby);
+
             if (ProjectArrhythmia.State.Playing)
             {
                 if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !ProjectArrhythmia.Input.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)

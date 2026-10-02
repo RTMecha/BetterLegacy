@@ -1161,6 +1161,8 @@ namespace BetterLegacy.Editor.Managers
             if (ProjectArrhythmia.State.IsInLobby)
             {
                 RTEditor.inst.InfoPopup.SetInfo($"Waiting for players to load...");
+                if (ProjectArrhythmia.State.IsHosting)
+                    SteamLobbyManager.inst.StartLevelLoadSession(level, false);
                 NetworkFunction.SetClientLoaded();
                 NetworkFunction.LoadClientEditorLevel(level);
                 while (!SteamLobbyManager.inst.IsEveryoneLoaded)

@@ -651,7 +651,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             if (ProjectArrhythmia.State.IsClient)
             {
-                NetworkFunction.RequestHost($"{RTSteamManager.inst.steamUser.name} wants to open the level [{System.IO.Path.GetFileName(Path)}]!");
+                SteamLobbyManager.inst.SendSystemChatMessage($"{RTSteamManager.inst.steamUser.name} referenced level {System.IO.Path.GetFileName(Path)}.", Path);
                 return;
             }
 

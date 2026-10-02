@@ -5,6 +5,7 @@ using System.Linq;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Network;
@@ -263,6 +264,7 @@ namespace BetterLegacy.Core.Managers
         {
             ProjectArrhythmia.State.IsInLobby = false;
             CurrentLobby.Leave();
+            LobbyPopup.Instance?.ClearChat();
             ClearLoaded();
             Editor.Managers.EditorMultiplayer.Clear();
         }
@@ -272,6 +274,93 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="message">Message to send.</param>
         public void SendChat(string message) => CurrentLobby.SendChatString(message);
+
+        public const string CHAT_MARKER = "BLCHAT";
+
+        const char CHAT_DELIMITER = '\u001F';
+        public void SendChatMessage(string text, ChatMessageKind kind = ChatMessageKind.Player, string referenceLevelPath = null, ReferenceKind referenceKind = ReferenceKind.None, string referenceIds = null)
+        {
+            if (string.IsNullOrEmpty(text) || !ProjectArrhythmia.State.IsInLobby)
+                return;
+            var name = (CoreConfig.Instance.DisplayName.Value ?? "Player").Replace(CHAT_DELIMITER.ToString(), string.Empty);
+            var colorHex = RTColors.ColorToHex(EditorConfig.Instance.TimelineCursorColor.Value);
+            var ticks = System.DateTime.UtcNow.Ticks;
+            var payload = string.Join(CHAT_DELIMITER.ToString(), CHAT_MARKER, name, colorHex, ticks.ToString(), (int) kind, referenceLevelPath, (int) referenceKind, referenceIds, System.Guid.NewGuid().ToString("N"), text);
+            SendChat(payload);
+            if (kind == ChatMessageKind.System && (referenceKind != ReferenceKind.None || !string.IsNullOrEmpty(referenceLevelPath)) && LobbyPopup.Instance)
+            {
+                LobbyPopup.Instance.Open();
+                LobbyPopup.Instance.SetTab(LobbyPopup.LobbyTab.Chat);
+            }
+        }
+        public void SendSystemChatMessage(string text, string referenceLevelPath = null) => SendChatMessage(text, ChatMessageKind.System, referenceLevelPath);
+        public const string HISTORY_MARKER = "BLHIST";
+        const char HISTORY_RECORD_DELIMITER = '';
+        const int HISTORY_MAX_MESSAGES = 200;
+        const int HISTORY_MAX_CHUNK_LENGTH = 3000;
+        static string SanitizeHistoryField(string value) => value?.Replace(CHAT_DELIMITER.ToString(), string.Empty).Replace(HISTORY_RECORD_DELIMITER.ToString(), string.Empty) ?? string.Empty;
+        void RequestChatHistory()
+        {
+            if (!ProjectArrhythmia.State.IsInLobby || ProjectArrhythmia.State.IsHosting)
+                return;
+            SendChat(string.Join(CHAT_DELIMITER.ToString(), HISTORY_MARKER, "REQ"));
+        }
+        void SendChatHistory(ulong targetId)
+        {
+            if (!LobbyPopup.Instance)
+                return;
+            var history = LobbyPopup.Instance.GetChatHistory(HISTORY_MAX_MESSAGES, message => !loadSessionCards.ContainsValue(message));
+            var header = string.Join(CHAT_DELIMITER.ToString(), HISTORY_MARKER, "RES", targetId.ToString()) + CHAT_DELIMITER;
+            var builder = new System.Text.StringBuilder();
+            foreach (var message in history)
+            {
+                var record = string.Join(CHAT_DELIMITER.ToString(),
+                    SanitizeHistoryField(message.name),
+                    SanitizeHistoryField(message.colorHex),
+                    message.timeUtc.Ticks.ToString(),
+                    (int)message.kind,
+                    SanitizeHistoryField(message.referenceLevelPath),
+                    (int)message.referenceKind,
+                    SanitizeHistoryField(message.referenceIds),
+                    message.id.ToString("N"),
+                    SanitizeHistoryField(message.text));
+                if (builder.Length > 0 && builder.Length + record.Length + 1 > HISTORY_MAX_CHUNK_LENGTH)
+                {
+                    SendChat(header + builder);
+                    builder.Clear();
+                }
+                if (builder.Length > 0)
+                    builder.Append(HISTORY_RECORD_DELIMITER);
+                builder.Append(record);
+            }
+            if (builder.Length > 0)
+                SendChat(header + builder);
+        }
+        void ApplyChatHistory(string records)
+        {
+            if (!LobbyPopup.Instance || string.IsNullOrEmpty(records))
+                return;
+            var messages = new List<ChatMessage>();
+            foreach (var record in records.Split(HISTORY_RECORD_DELIMITER))
+            {
+                var fields = record.Split(new[] { CHAT_DELIMITER }, 9);
+                if (fields.Length < 9)
+                    continue;
+                messages.Add(new ChatMessage
+                {
+                    name = fields[0],
+                    colorHex = fields[1],
+                    timeUtc = long.TryParse(fields[2], out var ticks) ? new System.DateTime(ticks, System.DateTimeKind.Utc) : System.DateTime.UtcNow,
+                    kind = int.TryParse(fields[3], out var kindValue) ? (ChatMessageKind)kindValue : ChatMessageKind.Player,
+                    referenceLevelPath = string.IsNullOrEmpty(fields[4]) ? null : fields[4],
+                    referenceKind = int.TryParse(fields[5], out var referenceKindValue) ? (ReferenceKind)referenceKindValue : ReferenceKind.None,
+                    referenceIds = string.IsNullOrEmpty(fields[6]) ? null : fields[6],
+                    id = System.Guid.TryParse(fields[7], out var id) ? id : System.Guid.NewGuid(),
+                    text = fields[8],
+                });
+            }
+            LobbyPopup.Instance.InsertChatHistory(messages);
+        }
 
         /// <summary>
         /// Checks if a lobby is valid. Specifically for other mods / vanilla that have their own lobbies.
@@ -345,19 +434,347 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        #region Load Progress
+
+        public const string LOAD_MARKER = "BLLOAD";
+
+        static string GetLevelLoadId(BetterLegacy.Core.Data.Level.Level level) => RTFile.RemoveEndSlash(level.path);
+
+        static string GetLevelDisplayName(BetterLegacy.Core.Data.Level.Level level) =>
+            level.metadata && level.metadata.song ? level.metadata.song.title : System.IO.Path.GetFileName(RTFile.RemoveEndSlash(level.path));
+
+        class LevelLoadSession
+        {
+            public string levelId;
+            public string levelName;
+            public bool isArcade;
+            public readonly Dictionary<SteamId, string> statusText = new Dictionary<SteamId, string>();
+            public readonly Dictionary<SteamId, float> lastPercent = new Dictionary<SteamId, float>();
+            public readonly Dictionary<SteamId, System.DateTime> lastSampleTime = new Dictionary<SteamId, System.DateTime>();
+            public readonly Dictionary<SteamId, bool> done = new Dictionary<SteamId, bool>();
+        }
+
+        readonly Dictionary<string, LevelLoadSession> loadSessions = new Dictionary<string, LevelLoadSession>();
+        readonly Dictionary<string, ChatMessage> loadSessionCards = new Dictionary<string, ChatMessage>();
+        class LoadMemberDisplay
+        {
+            public string status;
+            public bool numeric;
+            public bool hasEta;
+            public float fromPercent;
+            public float toPercent;
+            public float fromEta;
+            public float toEta;
+            public float startTime;
+            public float duration = 1f;
+            public float lastUpdate = -1f;
+            public float Progress(float now) => UnityEngine.Mathf.Clamp01((now - startTime) / UnityEngine.Mathf.Max(duration, 0.01f));
+            public float Percent(float now) => UnityEngine.Mathf.Lerp(fromPercent, toPercent, Progress(now));
+            public float Eta(float now) => UnityEngine.Mathf.Lerp(fromEta, toEta, Progress(now));
+        }
+        class LoadDisplay
+        {
+            public readonly List<ulong> order = new List<ulong>();
+            public readonly Dictionary<ulong, LoadMemberDisplay> members = new Dictionary<ulong, LoadMemberDisplay>();
+            public string levelName;
+            public bool dirty;
+        }
+        readonly Dictionary<string, LoadDisplay> loadDisplays = new Dictionary<string, LoadDisplay>();
+        float nextLoadDisplayRender;
+        static readonly System.Text.RegularExpressions.Regex LoadStatusRegex = new System.Text.RegularExpressions.Regex(@"^(\d+)%\.\.\.(?:(\d+(?:\.\d+)?)s|\.\.\.)$");
+        void UpdateLoadMember(LoadDisplay display, ulong id, string status, float now)
+        {
+            if (!display.members.TryGetValue(id, out var member))
+            {
+                member = new LoadMemberDisplay();
+                display.members[id] = member;
+                display.order.Add(id);
+            }
+            var match = LoadStatusRegex.Match(status);
+            if (!match.Success)
+            {
+                member.numeric = false;
+                member.status = status;
+                return;
+            }
+            var percent = float.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+            var hasEta = match.Groups[2].Success;
+            var eta = hasEta ? float.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) : 0f;
+            member.fromPercent = member.numeric ? member.Percent(now) : percent;
+            member.fromEta = member.numeric && member.hasEta && hasEta ? member.Eta(now) : eta;
+            member.toPercent = percent;
+            member.toEta = eta;
+            member.hasEta = hasEta;
+            member.duration = member.lastUpdate >= 0f ? UnityEngine.Mathf.Clamp(now - member.lastUpdate, 0.25f, 3f) : 1f;
+            member.startTime = now;
+            member.lastUpdate = now;
+            member.numeric = true;
+        }
+        string BuildLoadText(LoadDisplay display, float now)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Loading Level {display.levelName}...");
+            foreach (var id in display.order)
+            {
+                var member = display.members[id];
+                SteamId steamId = id;
+                var status = member.numeric ? $"{UnityEngine.Mathf.RoundToInt(member.Percent(now))}%...{(member.hasEta ? UnityEngine.Mathf.RoundToInt(member.Eta(now)) + "s" : "...")}" : member.status;
+                sb.AppendLine($"{new Friend(steamId).Name}: [{status}]");
+            }
+            return sb.ToString().TrimEnd();
+        }
+        public void TickLoadDisplays()
+        {
+            if (loadDisplays.Count == 0 || UnityEngine.Time.unscaledTime < nextLoadDisplayRender)
+                return;
+            var now = UnityEngine.Time.unscaledTime;
+            nextLoadDisplayRender = now + 0.1f;
+            foreach (var pair in loadDisplays)
+            {
+                var display = pair.Value;
+                if (!display.dirty || !loadSessionCards.TryGetValue(pair.Key, out var message))
+                    continue;
+                message.text = BuildLoadText(display, now);
+                LobbyPopup.Instance?.UpdateChatMessageCard(message);
+                var animating = false;
+                foreach (var member in display.members.Values)
+                    if (member.numeric && member.Progress(now) < 1f)
+                        animating = true;
+                display.dirty = animating;
+            }
+        }
+        public string activeLoadLevelId;
+
+        public void StartLevelLoadSession(BetterLegacy.Core.Data.Level.Level level, bool isArcade) => StartLevelLoadSession(GetLevelLoadId(level), GetLevelDisplayName(level), isArcade);
+
+        public void StartLevelLoadSession(string levelId, string levelName, bool isArcade)
+        {
+            if (!ProjectArrhythmia.State.IsHosting || string.IsNullOrEmpty(levelId) || loadSessions.ContainsKey(levelId))
+                return;
+
+            var session = new LevelLoadSession { levelId = levelId, levelName = levelName, isArcade = isArcade };
+            var selfId = RTSteamManager.inst.steamUser.steamID;
+            session.statusText[selfId] = "Done";
+            session.done[selfId] = true;
+            loadSessions[levelId] = session;
+
+            var allDone = true;
+            foreach (var member in CurrentLobby.Members)
+                if (!session.done.GetValueOrDefault(member.Id, false))
+                {
+                    allDone = false;
+                    break;
+                }
+
+            BroadcastLoadState(session, allDone);
+            if (allDone)
+                loadSessions.Remove(levelId);
+        }
+
+        public void ReportLevelLoadProgress(string levelId, int percent)
+        {
+            if (string.IsNullOrEmpty(levelId) || !ProjectArrhythmia.State.IsInLobby)
+                return;
+
+            if (ProjectArrhythmia.State.IsHosting)
+            {
+                ApplyLoadReport(levelId, RTSteamManager.inst.steamUser.steamID, percent);
+                return;
+            }
+
+            var payload = string.Join(CHAT_DELIMITER.ToString(), LOAD_MARKER, "REPORT", levelId, percent.ToString());
+            SendChat(payload);
+        }
+
+        void ApplyLoadReport(string levelId, SteamId steamId, int percent)
+        {
+            if (!loadSessions.TryGetValue(levelId, out var session) || session.done.GetValueOrDefault(steamId, false))
+                return;
+
+            var now = System.DateTime.UtcNow;
+            string text;
+            if (percent >= 100)
+            {
+                text = "Parsing...";
+            }
+            else
+            {
+                var eta = "...";
+                if (session.lastPercent.TryGetValue(steamId, out var lastPercent) && session.lastSampleTime.TryGetValue(steamId, out var lastTime))
+                {
+                    var deltaPercent = percent - lastPercent;
+                    var deltaTime = (now - lastTime).TotalSeconds;
+                    if (deltaPercent > 0f && deltaTime > 0f)
+                        eta = $"{System.Math.Round((100f - percent) / deltaPercent * deltaTime)}s";
+                }
+                text = $"{percent}%...{eta}";
+            }
+
+            session.lastPercent[steamId] = percent;
+            session.lastSampleTime[steamId] = now;
+            session.statusText[steamId] = text;
+            BroadcastLoadState(session, false);
+        }
+
+        void OnLevelLoadPlayerDone(SteamId steamId)
+        {
+            foreach (var session in loadSessions.Values)
+            {
+                if (session.done.GetValueOrDefault(steamId, false))
+                    continue;
+
+                session.statusText[steamId] = "Done";
+                session.done[steamId] = true;
+
+                var allDone = true;
+                foreach (var member in CurrentLobby.Members)
+                {
+                    if (!session.done.GetValueOrDefault(member.Id, false))
+                    {
+                        allDone = false;
+                        break;
+                    }
+                }
+
+                BroadcastLoadState(session, allDone);
+                if (allDone)
+                    loadSessions.Remove(session.levelId);
+            }
+        }
+
+        void BroadcastLoadState(LevelLoadSession session, bool finished)
+        {
+            var lines = string.Join(";", session.statusText.Select(x => $"{(ulong) x.Key}:{x.Value}"));
+            var payload = string.Join(CHAT_DELIMITER.ToString(), LOAD_MARKER, "STATE", session.levelId, session.levelName, session.isArcade ? "1" : "0", finished ? "1" : "0", lines);
+            SendChat(payload);
+        }
+
+        void ApplyIncomingLoadState(string[] parts)
+        {
+            if (parts.Length < 7)
+                return;
+
+            var levelId = parts[2];
+            var levelName = parts[3];
+            var isArcade = parts[4] == "1";
+            var finished = parts[5] == "1";
+            var lines = parts[6];
+
+            string text;
+            if (finished)
+            {
+                text = isArcade ? $"Played level {levelName}." : $"Opened level {levelName}.";
+                if (activeLoadLevelId == levelId)
+                    activeLoadLevelId = null;
+            }
+            else
+            {
+                if (!loadDisplays.TryGetValue(levelId, out var display))
+                    loadDisplays[levelId] = display = new LoadDisplay();
+                display.levelName = levelName;
+                var now = UnityEngine.Time.unscaledTime;
+                if (!string.IsNullOrEmpty(lines))
+                    foreach (var line in lines.Split(';'))
+                    {
+                        var split = line.Split(new[] { ':' }, 2);
+                        if (split.Length < 2 || !ulong.TryParse(split[0], out var rawId))
+                            continue;
+                        UpdateLoadMember(display, rawId, split[1], now);
+                    }
+                display.dirty = true;
+                text = BuildLoadText(display, now);
+                if (!ProjectArrhythmia.State.IsHosting)
+                    activeLoadLevelId = levelId;
+            }
+            if (loadSessionCards.TryGetValue(levelId, out var message))
+            {
+                message.text = text;
+                LobbyPopup.Instance?.UpdateChatMessageCard(message);
+            }
+            else
+            {
+                message = LobbyPopup.Instance?.AddSystemMessage(text);
+                if (message != null)
+                    loadSessionCards[levelId] = message;
+                if (!finished && LobbyPopup.Instance)
+                {
+                    LobbyPopup.Instance.Open();
+                    LobbyPopup.Instance.SetTab(LobbyPopup.LobbyTab.Chat);
+                }
+            }
+            if (finished)
+            {
+                loadSessionCards.Remove(levelId);
+                loadDisplays.Remove(levelId);
+            }
+        }
+
+        #endregion
+
         #region Events
 
         void OnChatMessage(Lobby lobby, Friend friend, string message)
         {
-            // handle chat message through chat bubble
-            Log($"{friend.Name} says {message}");
+            var parts = string.IsNullOrEmpty(message) ? null : message.Split(new[] { CHAT_DELIMITER }, 9);
+
+            if (parts != null && parts.Length >= 4 && parts[0] == LOAD_MARKER)
+            {
+                if (parts[1] == "REPORT" && ProjectArrhythmia.State.IsHosting && int.TryParse(parts[3], out var reportedPercent))
+                    ApplyLoadReport(parts[2], friend.Id, reportedPercent);
+                else if (parts[1] == "STATE")
+                    ApplyIncomingLoadState(parts);
+                return;
+            }
+
+            if (parts != null && parts.Length >= 2 && parts[0] == HISTORY_MARKER)
+            {
+                if (parts[1] == "REQ" && ProjectArrhythmia.State.IsHosting && friend.Id != RTSteamManager.inst.steamUser.steamID)
+                    SendChatHistory(friend.Id.Value);
+                else if (parts[1] == "RES" && !ProjectArrhythmia.State.IsHosting && friend.Id == lobby.Owner.Id)
+                {
+                    var historyParts = message.Split(new[] { CHAT_DELIMITER }, 4);
+                    if (historyParts.Length >= 4 && historyParts[2] == RTSteamManager.inst.steamUser.steamID.Value.ToString())
+                        ApplyChatHistory(historyParts[3]);
+                }
+                return;
+            }
+
+            ChatMessage chat;
+            var chatParts = parts != null && parts[0] == CHAT_MARKER ? message.Split(new[] { CHAT_DELIMITER }, 10) : null;
+            if (chatParts != null && chatParts.Length >= 10)
+            {
+                chat = new ChatMessage
+                {
+                    name = chatParts[1],
+                    colorHex = chatParts[2],
+                    timeUtc = long.TryParse(chatParts[3], out var ticks) ? new System.DateTime(ticks, System.DateTimeKind.Utc) : System.DateTime.UtcNow,
+                    kind = int.TryParse(chatParts[4], out var kindValue) ? (ChatMessageKind) kindValue : ChatMessageKind.Player,
+                    referenceLevelPath = string.IsNullOrEmpty(chatParts[5]) ? null : chatParts[5],
+                    referenceKind = int.TryParse(chatParts[6], out var referenceKindValue) ? (ReferenceKind) referenceKindValue : ReferenceKind.None,
+                    referenceIds = string.IsNullOrEmpty(chatParts[7]) ? null : chatParts[7],
+                    id = System.Guid.TryParse(chatParts[8], out var chatId) ? chatId : System.Guid.NewGuid(),
+                    text = chatParts[9],
+                };
+            }
+            else // foreign / vanilla chat: show it raw with the Steam name
+            {
+                chat = new ChatMessage
+                {
+                    name = friend.Name,
+                    colorHex = "FFFFFFFF",
+                    timeUtc = System.DateTime.UtcNow,
+                    text = message,
+                };
+            }
+
             try
             {
-                LobbyPopup.Instance.Render();
+                if (LobbyPopup.Instance)
+                    LobbyPopup.Instance.AddChatMessage(chat);
             }
-            catch
+            catch (System.Exception ex)
             {
-
+                LogError($"Failed to add chat message: {ex}");
             }
         }
 
@@ -380,6 +797,8 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             SetLoaded(friend.Id);
+            if (ProjectArrhythmia.State.IsHosting)
+                OnLevelLoadPlayerDone(friend.Id);
             try
             {
                 LobbyPopup.Instance.Render();
@@ -400,6 +819,7 @@ namespace BetterLegacy.Core.Managers
             try
             {
                 LobbyPopup.Instance.Render();
+                LobbyPopup.Instance.AddSystemMessage($"{friend.Name} has left the lobby.");
             }
             catch
             {
@@ -429,6 +849,7 @@ namespace BetterLegacy.Core.Managers
             try
             {
                 LobbyPopup.Instance.Render();
+                LobbyPopup.Instance.AddSystemMessage($"{friend.Name} has joined the lobby.");
             }
             catch
             {
@@ -438,9 +859,17 @@ namespace BetterLegacy.Core.Managers
             if (ProjectArrhythmia.State.IsHosting)
             {
                 if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
-                    NetworkFunction.LoadClientEditorLevel(EditorLevelManager.inst.CurrentLevel, friend.Id);
+                {
+                    var level = EditorLevelManager.inst.CurrentLevel;
+                    StartLevelLoadSession(level, false);
+                    NetworkFunction.LoadClientEditorLevel(level, friend.Id);
+                }
                 else if (ProjectArrhythmia.State.InGame)
-                    NetworkFunction.LoadClientLevel(LevelManager.CurrentLevel, friend.Id);
+                {
+                    var level = LevelManager.CurrentLevel;
+                    StartLevelLoadSession(level, true);
+                    NetworkFunction.LoadClientLevel(level, friend.Id);
+                }
                 else
                     NetworkFunction.SetClientScene(SceneHelper.Current, true, -1);
             }
@@ -465,6 +894,9 @@ namespace BetterLegacy.Core.Managers
                 SetLoaded(lobby.Owner.Id);
                 return;
             }
+
+            LobbyPopup.Instance?.ClearChat();
+            RequestChatHistory();
 
             if (!Transport.Instance)
             {
@@ -494,6 +926,8 @@ namespace BetterLegacy.Core.Managers
             Log($"Lobby created!");
             CurrentLobby = lobby;
             ProjectArrhythmia.State.IsInLobby = true;
+            LobbyPopup.Instance?.ClearChat();
+            LobbyPopup.Instance?.AddSystemMessage($"{RTSteamManager.inst.steamUser.name} has started a lobby.");
 
             switch (LobbySettings.Visibility)
             {

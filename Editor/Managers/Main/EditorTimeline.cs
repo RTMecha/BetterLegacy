@@ -678,6 +678,220 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public static string EncodeReference(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+            var bytes = new byte[value.Length * 2];
+            for (int i = 0; i < value.Length; i++)
+            {
+                bytes[i * 2] = (byte)(value[i] >> 8);
+                bytes[i * 2 + 1] = (byte)(value[i] & 0xFF);
+            }
+            return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        }
+        public static string DecodeReference(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+            try
+            {
+                var base64 = value.Replace('-', '+').Replace('_', '/');
+                base64 = base64.PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
+                var bytes = Convert.FromBase64String(base64);
+                var chars = new char[bytes.Length / 2];
+                for (int i = 0; i < chars.Length; i++)
+                    chars[i] = (char)((bytes[i * 2] << 8) | bytes[i * 2 + 1]);
+                return new string(chars);
+            }
+            catch
+            {
+                return value;
+            }
+        }
+        public static string GetObjectReference(TimelineObject timelineObject)
+        {
+            if (!GameData.Current || !timelineObject)
+                return string.Empty;
+            return EncodeReference(timelineObject.ID);
+        }
+        TimelineObject ResolveObjectReference(string item)
+        {
+            if (string.IsNullOrEmpty(item) || !GameData.Current)
+                return null;
+            var id = DecodeReference(item);
+            return !string.IsNullOrEmpty(id) ? timelineObjects.Find(x => x.ID == id) : null;
+        }
+        public bool ReferenceObjects(string ids, bool add)
+        {
+            if (string.IsNullOrEmpty(ids))
+                return false;
+            var matches = new List<TimelineObject>();
+            var items = ids.Split(';');
+            foreach (var item in items)
+            {
+                var timelineObject = ResolveObjectReference(item);
+                if (timelineObject && !matches.Contains(timelineObject))
+                    matches.Add(timelineObject);
+            }
+            if (matches.IsEmpty())
+                return false;
+            if (matches.Count < items.Length)
+                EditorManager.inst.DisplayNotification($"Only found {matches.Count} of {items.Length} referenced objects.", 3f, EditorManager.NotificationType.Warning);
+            var earliest = matches.OrderBy(x => x.Time).First();
+            if (!add && matches.Count == 1)
+            {
+                SetCurrentObject(earliest, true);
+                return true;
+            }
+            if (!add)
+                DeselectAllObjects();
+            foreach (var timelineObject in matches)
+            {
+                timelineObject.Selected = true;
+                timelineObject.timeOffset = 0f;
+                timelineObject.binOffset = 0;
+            }
+            if (!add)
+            {
+                AudioManager.inst.SetMusicTime(earliest.Time);
+                SetLayer(earliest.Layer, LayerType.Objects);
+                SetBinPosition(earliest.Bin);
+            }
+            HandleSelection(SelectedObjects);
+            return true;
+        }
+        public bool ReferenceKeyframe(string ids)
+        {
+            if (string.IsNullOrEmpty(ids))
+                return false;
+            var resolved = ResolveKeyframeReference(ids);
+            if (resolved == null)
+                return false;
+            var coords = resolved.coords;
+            var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
+            if (resolved.isObjectKeyframe)
+            {
+                var animatable = resolved.animatable;
+                SetCurrentObject(resolved.timelineObject, true);
+                if (animatable is BeatmapObject && ObjectEditor.inst.Dialog.Timeline != null)
+                {
+                    for (int i = 0; i < coords.Count; i++)
+                        ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(animatable, coords[i].type, coords[i].index, i == 0, i != 0);
+                }
+                else
+                    AudioManager.inst.SetMusicTime(Mathf.Clamp(animatable.GetEventKeyframes(coords[0].type)[coords[0].index].time + animatable.StartTime, 0f, clipLength));
+            }
+            else
+            {
+                var events = GameData.Current.events;
+                SetLayer(coords[0].type / RTEventEditor.EVENT_LIMIT, LayerType.Events);
+                EventEditor.inst.currentEventType = coords[0].type;
+                RTEventEditor.inst.SetCurrentKeyframe(coords[0].type, coords[0].index);
+                for (int i = 1; i < coords.Count; i++)
+                    RTEventEditor.inst.AddSelectedKeyframe(coords[i].type, coords[i].index);
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(events[coords[0].type][coords[0].index].time, 0f, clipLength));
+            }
+            if (coords.Count < resolved.total)
+                EditorManager.inst.DisplayNotification($"Only found {coords.Count} of {resolved.total} referenced keyframes.", 3f, EditorManager.NotificationType.Warning);
+            return true;
+        }
+        class KeyframeReferenceData
+        {
+            public bool isObjectKeyframe;
+            public TimelineObject timelineObject;
+            public IAnimatable animatable;
+            public List<KeyframeCoord> coords = new List<KeyframeCoord>();
+            public int total;
+        }
+        KeyframeReferenceData ResolveKeyframeReference(string ids)
+        {
+            if (string.IsNullOrEmpty(ids) || !GameData.Current)
+                return null;
+            var parts = ids.Split('|');
+            var data = new KeyframeReferenceData();
+            if (parts.Length == 3 && parts[0] == "1")
+            {
+                var referencedObjectID = DecodeReference(parts[1]);
+                data.timelineObject = timelineObjects.Find(x => x.ID == referencedObjectID);
+                if (!data.timelineObject)
+                    return null;
+                data.isObjectKeyframe = true;
+                data.animatable = data.timelineObject.isBeatmapObject ? (IAnimatable)data.timelineObject.GetData<BeatmapObject>() : data.timelineObject.isPrefabObject ? (IAnimatable)data.timelineObject.GetData<PrefabObject>() : null;
+                if (data.animatable == null)
+                    return null;
+                var items = parts[2].Split(',');
+                data.total = items.Length;
+                foreach (var item in items)
+                {
+                    var coordParts = item.Split(':');
+                    if (coordParts.Length < 2 || !int.TryParse(coordParts[0], out var type) || !int.TryParse(coordParts[1], out var index))
+                        continue;
+                    var keyframes = data.animatable.GetEventKeyframes(type);
+                    if (keyframes == null || index < 0 || index >= keyframes.Count)
+                        continue;
+                    data.coords.Add(new KeyframeCoord(type, index));
+                }
+                if (data.coords.IsEmpty())
+                    return null;
+                var animatable = data.animatable;
+                data.coords = data.coords.OrderBy(x => animatable.GetEventKeyframes(x.type)[x.index].time).ToList();
+                return data;
+            }
+            if (parts.Length == 2 && parts[0] == "0")
+            {
+                var events = GameData.Current.events;
+                var items = parts[1].Split(',');
+                data.total = items.Length;
+                foreach (var item in items)
+                {
+                    var coordParts = item.Split(':');
+                    if (coordParts.Length < 2 || !int.TryParse(coordParts[0], out var type) || !int.TryParse(coordParts[1], out var index) || type < 0 || type >= events.Count)
+                        continue;
+                    var list = events[type];
+                    var keyframeID = coordParts.Length >= 3 ? DecodeReference(coordParts[2]) : null;
+                    var byId = !string.IsNullOrEmpty(keyframeID) ? list.FindIndex(x => x.id == keyframeID) : -1;
+                    if (byId >= 0)
+                        data.coords.Add(new KeyframeCoord(type, byId));
+                }
+                if (data.coords.IsEmpty())
+                    return null;
+                data.coords = data.coords.OrderBy(x => events[x.type][x.index].time).ToList();
+                return data;
+            }
+            return null;
+        }
+        public bool IsKeyframeReferenceValid(string ids)
+        {
+            var resolved = ResolveKeyframeReference(ids);
+            return resolved != null && resolved.coords.Count == resolved.total;
+        }
+        public bool IsObjectReferenceValid(string ids)
+        {
+            if (string.IsNullOrEmpty(ids) || !GameData.Current)
+                return false;
+            foreach (var item in ids.Split(';'))
+                if (!ResolveObjectReference(item))
+                    return false;
+            return true;
+        }
+        public static string GetKeyframeReference(TimelineKeyframe timelineKeyframe, IAnimatable animatable, out int count)
+        {
+            if (animatable != null)
+            {
+                var selected = animatable.TimelineKeyframes.FindAll(x => x.Selected);
+                if (!selected.Contains(timelineKeyframe))
+                    selected = new List<TimelineKeyframe> { timelineKeyframe };
+                count = selected.Count;
+                return $"1|{EncodeReference(animatable.ID)}|{string.Join(",", selected.Select(x => $"{x.Type}:{x.Index}"))}";
+            }
+            var selectedEvents = RTEventEditor.inst.SelectedKeyframes;
+            if (!selectedEvents.Contains(timelineKeyframe))
+                selectedEvents = new List<TimelineKeyframe> { timelineKeyframe };
+            count = selectedEvents.Count;
+            return $"0|{string.Join(",", selectedEvents.Select(x => $"{x.Type}:{x.Index}:{EncodeReference(x.ID)}"))}";
+        }
+
         /// <summary>
         /// Deletes all selected timeline objects.
         /// </summary>

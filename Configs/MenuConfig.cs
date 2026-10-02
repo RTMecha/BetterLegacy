@@ -86,6 +86,45 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Chat
+
+        /// <summary>
+        /// The display style of multiplayer chat messages.
+        /// </summary>
+        public Setting<ChatStyle> ChatStyle { get; set; }
+
+        /// <summary>
+        /// If the player's playhead color is applied to the message (name for Simple / Terminal, text for Story).
+        /// </summary>
+        public Setting<bool> ChatUseNameColor { get; set; }
+
+        /// <summary>
+        /// Story style: the absolute horizontal distance between the name and the time.
+        /// </summary>
+        public Setting<float> ChatNameDistance { get; set; }
+
+        /// <summary>
+        /// Opacity of each chat message's background box. The Story name / time region uses double this value.
+        /// </summary>
+        public Setting<float> ChatMessageOpacity { get; set; }
+
+        /// <summary>
+        /// Font size of chat messages.
+        /// </summary>
+        public Setting<int> ChatFontSize { get; set; }
+
+        /// <summary>
+        /// How the time of chat messages is displayed.
+        /// </summary>
+        public Setting<ChatTimeFormat> ChatTimeFormat { get; set; }
+
+        /// <summary>
+        /// If seconds are shown in chat message times (HH:MM:SS / "5 seconds ago").
+        /// </summary>
+        public Setting<bool> ChatShowSeconds { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -116,6 +155,18 @@ namespace BetterLegacy.Configs
 
             #endregion
 
+            #region Chat
+
+            ChatStyle = BindEnum(this, CHAT, "Style", BetterLegacy.ChatStyle.Terminal, "How chat messages are displayed.");
+            ChatUseNameColor = Bind(this, CHAT, "Use Name Color", true, "If the player's playhead color is applied to the message (name for Simple / Terminal, text for Story).");
+            ChatNameDistance = Bind(this, CHAT, "Name Distance", 200f, "Story style: absolute horizontal distance between the name and the time.", 0f, 1000f);
+            ChatMessageOpacity = Bind(this, CHAT, "Message Opacity", 0.08f, "Opacity of each message's background box. The Story name / time region uses double this.", 0f, 1f);
+            ChatFontSize = Bind(this, CHAT, "Font Size", 16, "Font size of chat messages.", 8, 48);
+            ChatTimeFormat = BindEnum(this, CHAT, "Time Format", BetterLegacy.ChatTimeFormat.Hour24, "How the time of chat messages is displayed. 24-hour is HH:MM, 12-hour is HH:MM AM/PM, Relative counts up (1 minute ago).");
+            ChatShowSeconds = Bind(this, CHAT, "Show Seconds", false, "If seconds are shown in chat message times (HH:MM:SS / 5 seconds ago).");
+
+            #endregion
+
             Save();
         }
 
@@ -128,6 +179,20 @@ namespace BetterLegacy.Configs
             MusicIndex.SettingChanged += MusicChanged;
             MusicGlobalPath.SettingChanged += MusicChanged;
             PlayInputSelectMusic.SettingChanged += InputSelectMusicChanged;
+
+            ChatStyle.SettingChanged += ChatDisplayChanged;
+            ChatUseNameColor.SettingChanged += ChatDisplayChanged;
+            ChatNameDistance.SettingChanged += ChatDisplayChanged;
+            ChatMessageOpacity.SettingChanged += ChatDisplayChanged;
+            ChatFontSize.SettingChanged += ChatDisplayChanged;
+            ChatTimeFormat.SettingChanged += ChatDisplayChanged;
+            ChatShowSeconds.SettingChanged += ChatDisplayChanged;
+        }
+
+        void ChatDisplayChanged()
+        {
+            if (Menus.UI.Popups.LobbyPopup.Instance)
+                Menus.UI.Popups.LobbyPopup.Instance.RebuildChatCards();
         }
 
         void MusicChanged()
@@ -153,6 +218,7 @@ namespace BetterLegacy.Configs
 
         public const string GENERAL = "General";
         public const string MUSIC = "Music";
+        public const string CHAT = "Chat";
 
         #endregion
     }

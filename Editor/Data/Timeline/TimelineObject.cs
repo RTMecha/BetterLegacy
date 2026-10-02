@@ -12,6 +12,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
@@ -715,7 +716,10 @@ namespace BetterLegacy.Editor.Data.Timeline
                 typeIcon.transform.Find("type").GetComponent<Image>().sprite = icon;
         }
 
-        public void ShowContextMenu() => EditorContextMenu.inst.ShowContextMenu(
+        public void ShowContextMenu()
+        {
+            var elements = new List<EditorElement>
+            {
                 new ButtonElement("Select", () => EditorTimeline.inst.SetCurrentObject(this)),
                 new ButtonElement("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(this)),
                 new ButtonElement("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
@@ -1051,8 +1055,46 @@ namespace BetterLegacy.Editor.Data.Timeline
                                 break;
                             }
                     }
-                })
-                );
+                }),
+            };
+
+            if (ProjectArrhythmia.State.IsInLobby)
+            {
+                elements.Add(new SpacerElement());
+                elements.Add(new ButtonElement("Reference Selection", ReferenceSelection));
+            }
+
+            EditorContextMenu.inst.ShowContextMenu(elements);
+        }
+
+        void ReferenceSelection()
+        {
+            var selected = EditorTimeline.inst.SelectedObjects;
+            if (selected.IsEmpty())
+                return;
+            const int maxIDsLength = 3000;
+            var batch = new List<string>();
+            var length = 0;
+            foreach (var item in selected.Select(x => EditorTimeline.GetObjectReference(x)))
+            {
+                if (batch.Count > 0 && length + item.Length + 1 > maxIDsLength)
+                {
+                    SendObjectReference(batch);
+                    batch.Clear();
+                    length = 0;
+                }
+                batch.Add(item);
+                length += item.Length + 1;
+            }
+            if (batch.Count > 0)
+                SendObjectReference(batch);
+        }
+        static void SendObjectReference(List<string> items)
+        {
+            var count = items.Count;
+            var text = $"{RTSteamManager.inst.steamUser.name} has referenced {count} object{(count == 1 ? string.Empty : "s")}.";
+            SteamLobbyManager.inst.SendChatMessage(text, ChatMessageKind.System, null, ReferenceKind.Objects, string.Join(";", items));
+        }
 
         public void ShowColorContextMenu(InputField inputField, string currentHexColor) => EditorContextMenu.inst.ShowContextMenu(EditorContextMenu.GetEditorColorFunctions(inputField, () => currentHexColor));
 

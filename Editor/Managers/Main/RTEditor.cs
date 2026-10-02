@@ -70,6 +70,12 @@ namespace BetterLegacy.Editor.Managers
         public Transform titleBar;
 
         /// <summary>
+        /// The "Chat" title bar button. Only shown while in a multiplayer lobby; opens the Lobby Manager in the Chat tab.
+        /// </summary>
+        public GameObject chatTitleBarButton;
+        public GameObject hideOtherUsersDropdown;
+
+        /// <summary>
         /// The undo button.
         /// </summary>
         public FunctionButtonStorage undoButton;
@@ -3690,29 +3696,42 @@ namespace BetterLegacy.Editor.Managers
                 new ButtonElement("View Events", () => EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer, EditorTimeline.LayerType.Events)));
 
             EditorContextMenu.AddContextMenu(layersObj,
-                getEditorElements: () => new List<EditorElement>
+                getEditorElements: () =>
                 {
-                    new ButtonElement("List Layers with Objects", CoreHelper.ListObjectLayers),
-                    new ButtonElement("Next Free Layer", () =>
+                    var list = new List<EditorElement>
                     {
-                        var layer = 0;
-                        while (GameData.Current.beatmapObjects.Has(x => x.editorData && x.editorData.Layer == layer))
-                            layer++;
-                        EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
-                    }),
-                    ButtonElement.ToggleButton("Toggle Object Preview Visibility", () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value, () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value),
-                    new ButtonElement("Pin Editor Layer", () =>
+                        new ButtonElement("List Layers with Objects", CoreHelper.ListObjectLayers),
+                        new ButtonElement("Next Free Layer", () =>
+                        {
+                            var layer = 0;
+                            while (GameData.Current.beatmapObjects.Has(x => x.editorData && x.editorData.Layer == layer))
+                                layer++;
+                            EditorTimeline.inst.SetLayer(layer, EditorTimeline.LayerType.Objects);
+                        }),
+                        ButtonElement.ToggleButton("Toggle Object Preview Visibility", () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value, () => EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value),
+                        new ButtonElement("Pin Editor Layer", () =>
+                        {
+                            PinnedLayerEditor.inst.PinCurrentEditorLayer();
+                            PinnedLayerEditor.inst.Popup.Open();
+                            PinnedLayerEditor.inst.RenderPopup();
+                        }),
+                        new ButtonElement("View Pinned Editor Layers", () =>
+                        {
+                            PinnedLayerEditor.inst.Popup.Open();
+                            PinnedLayerEditor.inst.RenderPopup();
+                        }),
+                        new ButtonElement("View Editor Groups", EditorTimeline.inst.OpenEditorGroupsPopup),
+                    };
+                    if (ProjectArrhythmia.State.IsInLobby)
                     {
-                        PinnedLayerEditor.inst.PinCurrentEditorLayer();
-                        PinnedLayerEditor.inst.Popup.Open();
-                        PinnedLayerEditor.inst.RenderPopup();
-                    }),
-                    new ButtonElement("View Pinned Editor Layers", () =>
-                    {
-                        PinnedLayerEditor.inst.Popup.Open();
-                        PinnedLayerEditor.inst.RenderPopup();
-                    }),
-                    new ButtonElement("View Editor Groups", EditorTimeline.inst.OpenEditorGroupsPopup)
+                        list.Add(new SpacerElement());
+                        list.Add(new ButtonElement("Reference Layer", () =>
+                        {
+                            var layer = EditorTimeline.inst.Layer;
+                            SteamLobbyManager.inst.SendChatMessage($"{RTSteamManager.inst.steamUser.name} has referenced layer {layer + 1}.", ChatMessageKind.System, null, ReferenceKind.Layer, layer.ToString());
+                        }));
+                    }
+                    return list;
                 });
         }
 
@@ -4197,10 +4216,12 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Show Lobby Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () => LobbyPopup.Instance?.Open());
 
-            EditorHelper.AddEditorDropdown("Hide Other Users", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () =>
+            hideOtherUsersDropdown = EditorHelper.AddEditorDropdown("Hide Other Users", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}")), () =>
             {
                 EditorConfig.Instance.HideOtherUsers.Value = !EditorConfig.Instance.HideOtherUsers.Value;
             });
+            if (hideOtherUsersDropdown)
+                hideOtherUsersDropdown.SetActive(ProjectArrhythmia.State.IsInLobby);
 
             EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
@@ -4247,6 +4268,28 @@ namespace BetterLegacy.Editor.Managers
                 var text = titleBar.Find($"{dropdownName}/Text").GetComponent<Text>();
                 LangObject.Init(text, "editor.titlebar." + EditorHelper.dropdownDisplayNames[i].ToLower(), EditorHelper.dropdownDisplayNames[i]);
             }
+            var chatMenu = titleBar.Find("Help").gameObject.Duplicate(titleBar, "Chat");
+            var chatDropdown = chatMenu.transform.Find("Help Dropdown");
+            if (chatDropdown)
+                CoreHelper.Delete(chatDropdown.gameObject);
+            var chatMenuText = chatMenu.transform.Find("Text").GetComponent<Text>();
+            var chatMenuLangObject = chatMenuText.GetComponent<LangObject>();
+            if (chatMenuLangObject)
+                UnityEngine.Object.Destroy(chatMenuLangObject);
+            chatMenuText.text = "Chat";
+            var chatButton = chatMenu.GetComponent<Button>();
+            chatButton.onClick.NewListener(() =>
+            {
+                EditorManager.inst.ClearPopups();
+                if (LobbyPopup.Instance)
+                {
+                    LobbyPopup.Instance.Open();
+                    LobbyPopup.Instance.SetTab(LobbyPopup.LobbyTab.Chat);
+                }
+            });
+            EditorThemeManager.ApplyGraphic(chatMenu.transform.Find("Text").GetComponent<Text>(), ThemeGroup.Title_Bar_Text);
+            chatMenu.SetActive(false);
+            chatTitleBarButton = chatMenu;
         }
 
         void SetupDoggo()

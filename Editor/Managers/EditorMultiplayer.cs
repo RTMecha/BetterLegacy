@@ -47,16 +47,18 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ApplyPlayhead(ulong id, float time, int layer, EditorTimeline.LayerType layerType, Color color)
         {
-            if (!Peers.TryGetValue(id, out var peer))
+            var isNewPeer = !Peers.TryGetValue(id, out var peer);
+            if (isNewPeer)
             {
                 peer = new EditorPeer { id = id };
                 Peers[id] = peer;
             }
-
             peer.playheadTime = time;
             peer.layer = layer;
             peer.layerType = layerType;
             peer.color = color;
+            if (isNewPeer)
+                RenderPlayheads();
         }
 
         public static void ApplySelection(ulong id, HashSet<string> newSet)
@@ -158,7 +160,18 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             EnsureGhostPool();
-
+            if (!ghostPoolParent)
+                return;
+            var timelineParent = EditorTimeline.inst.timelineObjectsParent.transform;
+            if (ghostPoolParent.transform.parent != timelineParent)
+            {
+                ghostPoolParent.transform.SetParent(timelineParent, false);
+                RectValues.FullAnchored.AssignToRectTransform(ghostPoolParent.transform.AsRT());
+            }
+            if (ghostPoolParent.transform.GetSiblingIndex() != timelineParent.childCount - 1)
+                ghostPoolParent.transform.SetAsLastSibling();
+            if (!ghostPoolParent.activeSelf)
+                ghostPoolParent.SetActive(true);
             nextGhostPoolIndex = 0;
 
             foreach (var peer in Peers.Values)
@@ -179,7 +192,10 @@ namespace BetterLegacy.Editor.Managers
 
                 float xPos = peer.playheadTime * EditorManager.inst.Zoom;
                 rect.anchoredPosition = new Vector2(xPos, 0f);
-                image.color = peer.color;
+                var peerColor = peer.color;
+                if (peerColor.a < 0.05f)
+                    peerColor.a = 1f;
+                image.color = peerColor;
             }
 
             while (nextGhostPoolIndex < ghostPool.Count)

@@ -227,8 +227,6 @@ namespace BetterLegacy.Core.Helpers
             if (ProjectArrhythmia.State.IsInLobby && ProjectArrhythmia.State.IsHosting && Enum.TryParse(level.Replace(" ", "_"), true, out SceneName sceneName))
                 NetworkFunction.SetClientScene(sceneName, showLoading, -1);
 
-            LobbyPopup.Instance?.Close();
-
             PreviousScene = CurrentScene;
             CurrentScene = level;
 
