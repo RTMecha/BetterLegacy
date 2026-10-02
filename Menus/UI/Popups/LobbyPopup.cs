@@ -1359,7 +1359,7 @@ namespace BetterLegacy.Menus.UI.Popups
                             return seconds == 1 ? "1 second ago" : $"{seconds} seconds ago";
                         var minutes = seconds / 60;
                         if (minutes < 1)
-                            return "1 minute ago";
+                            return "just now";
                         if (minutes < 60)
                             return minutes == 1 ? "1 minute ago" : $"{minutes} minutes ago";
                         var hours = minutes / 60;
