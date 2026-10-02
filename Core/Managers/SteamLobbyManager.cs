@@ -8,6 +8,7 @@ using SteamworksFacepunch.Data;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -41,37 +42,111 @@ namespace BetterLegacy.Core.Managers
 
         Dictionary<SteamId, bool> loadedPlayers = new Dictionary<SteamId, bool>();
 
+        /// <summary>
+        /// Scene loaded state.
+        /// </summary>
         public const string SCENE_LOADED = "SceneLoaded";
+
+        /// <summary>
+        /// <see cref="UnityEngine.AudioClip"/> loaded state.
+        /// </summary>
         public const string SONG_LOADED = "SongLoaded";
+
+        /// <summary>
+        /// <see cref="GameData"/> loaded state.
+        /// </summary>
         public const string GAME_DATA_LOADED = "GameDataLoaded";
+
+        /// <summary>
+        /// Is loaded state.
+        /// </summary>
         public const string IS_LOADED = "IsLoaded";
 
+        /// <summary>
+        /// If the scene has loaded.
+        /// </summary>
         public bool sceneLoaded;
+
+        /// <summary>
+        /// If the current <see cref="UnityEngine.AudioClip"/> has loaded.
+        /// </summary>
         public bool songLoaded;
+
+        /// <summary>
+        /// If the <see cref="GameData"/> has loaded.
+        /// </summary>
         public bool gameDataLoaded;
 
+        /// <summary>
+        /// If the user has loaded the scene, song and gamedata.
+        /// </summary>
         public bool AllLoaded => sceneLoaded && songLoaded && gameDataLoaded;
 
+        #region Password
+
+        /// <summary>
+        /// Auth state.
+        /// </summary>
         public const string AUTH_MARKER = "BLAUTH";
+
+        /// <summary>
+        /// Lobby has password state.
+        /// </summary>
         public const string HAS_PASSWORD = "HasPassword";
+
         readonly HashSet<ulong> authorizedMembers = new HashSet<ulong>();
         string hostPassword;
         string joinPassword;
         bool awaitingAuth;
+
+        /// <summary>
+        /// If the host's lobby set a password.
+        /// </summary>
         public bool HostHasPassword => ProjectArrhythmia.State.IsHosting && !string.IsNullOrEmpty(hostPassword);
+
+        /// <summary>
+        /// If a member is authorized.
+        /// </summary>
+        /// <param name="id">Identification of the member.</param>
+        /// <returns>Returns <see langword="true"/> if there is no password or the user has correctly authenticated, otherwise returns <see langword="false"/>.</returns>
         public bool IsMemberAuthorized(ulong id) => !HostHasPassword || authorizedMembers.Contains(id);
+
+        /// <summary>
+        /// If a network ID is authorized.
+        /// </summary>
+        /// <param name="netId">Network identification.</param>
+        /// <returns>Returns <see langword="true"/> if there is no password or the user has correctly authenticated, otherwise returns <see langword="false"/>.</returns>
         public bool IsNetAuthorized(int netId) =>
             !HostHasPassword || netId == 0 ||
             (Transport.Instance && Transport.Instance.steamIDToNetID.Any(pair => pair.Value == netId && authorizedMembers.Contains(pair.Key)));
+
         static string AuthHash(string password, ulong steamId, ulong lobbyId)
         {
             using (var sha = System.Security.Cryptography.SHA256.Create())
                 return System.BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes($"{password}\n{steamId}\n{lobbyId}"))).Replace("-", string.Empty);
         }
-        /* logic notes
-        - when a client joins the lobby, all current players from that client get sent to the server.
-        - and GameData gets sent from the server to all clients
-         */
+
+        #endregion
+
+        #region Chat
+
+        /// <summary>
+        /// Chat marker.
+        /// </summary>
+        public const string CHAT_MARKER = "BLCHAT";
+
+        const char CHAT_DELIMITER = '\u001F';
+
+        /// <summary>
+        /// Chat history marker.
+        /// </summary>
+        public const string HISTORY_MARKER = "BLHIST";
+
+        const char HISTORY_RECORD_DELIMITER = '';
+        const int HISTORY_MAX_MESSAGES = 200;
+        const int HISTORY_MAX_CHUNK_LENGTH = 3000;
+
+        #endregion
 
         #endregion
 
@@ -126,12 +201,20 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        #region Settings
+
+        /// <summary>
+        /// Saves the lobby settings.
+        /// </summary>
         public void SaveLobbySettings()
         {
             LobbySettings.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.GetFileName()));
             Log("Saved lobby settings!");
         }
 
+        /// <summary>
+        /// Loads the lobby settings.
+        /// </summary>
         public void LoadLobbySettings()
         {
             var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings", LobbySettings.MAIN_FILE_NAME);
@@ -145,6 +228,13 @@ namespace BetterLegacy.Core.Managers
             Log("Loaded lobby settings!");
         }
 
+        #endregion
+
+        #region Sync Players
+
+        /// <summary>
+        /// Syncs local players to the host.
+        /// </summary>
         public void SyncPlayersToServer()
         {
             PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.inst.players);
@@ -152,12 +242,20 @@ namespace BetterLegacy.Core.Managers
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
+        /// <summary>
+        /// Syncs host players to all clients.
+        /// </summary>
         public void SyncPlayersToClients()
         {
             NetworkFunction.SendHostLobbySettings();
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_CLIENT_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
 
+        #endregion
+
+        /// <summary>
+        /// Deletes the temporary lobby level cache.
+        /// </summary>
         public void DeleteLobbyLevelCache() => RTFile.DeleteDirectory(RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level"));
 
         #region Lobby
@@ -298,9 +396,6 @@ namespace BetterLegacy.Core.Managers
         /// <param name="message">Message to send.</param>
         public void SendChat(string message) => CurrentLobby.SendChatString(message);
 
-        public const string CHAT_MARKER = "BLCHAT";
-
-        const char CHAT_DELIMITER = '\u001F';
         public void SendChatMessage(string text, ChatMessageKind kind = ChatMessageKind.Player, string referenceLevelPath = null, ReferenceKind referenceKind = ReferenceKind.None, string referenceIds = null)
         {
             if (string.IsNullOrEmpty(text) || !ProjectArrhythmia.State.IsInLobby)
@@ -317,10 +412,7 @@ namespace BetterLegacy.Core.Managers
             }
         }
         public void SendSystemChatMessage(string text, string referenceLevelPath = null) => SendChatMessage(text, ChatMessageKind.System, referenceLevelPath);
-        public const string HISTORY_MARKER = "BLHIST";
-        const char HISTORY_RECORD_DELIMITER = '';
-        const int HISTORY_MAX_MESSAGES = 200;
-        const int HISTORY_MAX_CHUNK_LENGTH = 3000;
+
         static string SanitizeHistoryField(string value) => value?.Replace(CHAT_DELIMITER.ToString(), string.Empty).Replace(HISTORY_RECORD_DELIMITER.ToString(), string.Empty) ?? string.Empty;
         void RequestChatHistory()
         {
@@ -402,6 +494,10 @@ namespace BetterLegacy.Core.Managers
 
         #region Load State
 
+        /// <summary>
+        /// Sets the scene loaded state.
+        /// </summary>
+        /// <param name="sceneLoaded">State to set.</param>
         public void SetSceneLoaded(bool sceneLoaded)
         {
             this.sceneLoaded = sceneLoaded;
@@ -410,6 +506,10 @@ namespace BetterLegacy.Core.Managers
                 CurrentLobby.SetMemberData(IS_LOADED, "1");
         }
 
+        /// <summary>
+        /// Sets the <see cref="UnityEngine.AudioClip"/> loaded state.
+        /// </summary>
+        /// <param name="songLoaded">State to set.</param>
         public void SetSongLoaded(bool songLoaded)
         {
             this.songLoaded = songLoaded;
@@ -418,6 +518,10 @@ namespace BetterLegacy.Core.Managers
                 CurrentLobby.SetMemberData(IS_LOADED, "1");
         }
 
+        /// <summary>
+        /// Sets the <see cref="GameData"/> loaded state.
+        /// </summary>
+        /// <param name="gameDataLoaded">State to set.</param>
         public void SetGameDataLoaded(bool gameDataLoaded)
         {
             this.gameDataLoaded = gameDataLoaded;
@@ -451,8 +555,15 @@ namespace BetterLegacy.Core.Managers
 
         void RemovePlayerFromLoadList(SteamId id) => loadedPlayers.Remove(id);
 
+        /// <summary>
+        /// Sets a lobby member as loaded.
+        /// </summary>
+        /// <param name="id">Lobby member ID.</param>
         public void SetLoaded(SteamId id) => loadedPlayers[id] = true;
 
+        /// <summary>
+        /// Clears the loaded players list.
+        /// </summary>
         public void ClearLoaded() => loadedPlayers.Clear();
 
         #endregion
@@ -461,9 +572,9 @@ namespace BetterLegacy.Core.Managers
 
         public const string LOAD_MARKER = "BLLOAD";
 
-        static string GetLevelLoadId(BetterLegacy.Core.Data.Level.Level level) => RTFile.RemoveEndSlash(level.path);
+        static string GetLevelLoadId(Level level) => RTFile.RemoveEndSlash(level.path);
 
-        static string GetLevelDisplayName(BetterLegacy.Core.Data.Level.Level level) =>
+        static string GetLevelDisplayName(Level level) =>
             level.metadata && level.metadata.song ? level.metadata.song.title : System.IO.Path.GetFileName(RTFile.RemoveEndSlash(level.path));
 
         class LevelLoadSession
@@ -568,7 +679,7 @@ namespace BetterLegacy.Core.Managers
         }
         public string activeLoadLevelId;
 
-        public void StartLevelLoadSession(BetterLegacy.Core.Data.Level.Level level, bool isArcade) => StartLevelLoadSession(GetLevelLoadId(level), GetLevelDisplayName(level), isArcade);
+        public void StartLevelLoadSession(Level level, bool isArcade) => StartLevelLoadSession(GetLevelLoadId(level), GetLevelDisplayName(level), isArcade);
 
         public void StartLevelLoadSession(string levelId, string levelName, bool isArcade)
         {
