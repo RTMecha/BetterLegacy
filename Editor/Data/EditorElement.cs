@@ -1057,7 +1057,7 @@ namespace BetterLegacy.Editor.Data
     {
         #region Constructors
 
-        public NumberInputElement()
+        public NumberInputElement(string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             value = default;
             onValueChanged = default;
@@ -1066,7 +1066,7 @@ namespace BetterLegacy.Editor.Data
             arrowHandler = new ArrowHandlerFloat();
         }
 
-        public NumberInputElement(string value, Action<string> onValueChanged)
+        public NumberInputElement(string value, Action<string> onValueChanged, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.value = value;
             this.onValueChanged = onValueChanged;
@@ -1075,7 +1075,7 @@ namespace BetterLegacy.Editor.Data
             arrowHandler = new ArrowHandlerFloat();
         }
         
-        public NumberInputElement(string value, Action<string> onValueChanged, ArrowHandler arrowHandler)
+        public NumberInputElement(string value, Action<string> onValueChanged, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.value = value;
             this.onValueChanged = onValueChanged;
@@ -1085,7 +1085,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(string value, Action<string> onValueChanged, Action<string> onEndEdit, ArrowHandler arrowHandler)
+        public NumberInputElement(string value, Action<string> onValueChanged, Action<string> onEndEdit, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.value = value;
             this.onValueChanged = onValueChanged;
@@ -1095,7 +1095,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(string value, Action<string> onValueChanged, string placeholder, ArrowHandler arrowHandler)
+        public NumberInputElement(string value, Action<string> onValueChanged, string placeholder, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.value = value;
             this.onValueChanged = onValueChanged;
@@ -1105,7 +1105,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(string value, Action<string> onValueChanged, Action<string> onEndEdit, string placeholder, ArrowHandler arrowHandler)
+        public NumberInputElement(string value, Action<string> onValueChanged, Action<string> onEndEdit, string placeholder, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.value = value;
             this.onValueChanged = onValueChanged;
@@ -1115,7 +1115,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged)
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.getValue = getValue;
             this.onValueChanged = onValueChanged;
@@ -1124,7 +1124,7 @@ namespace BetterLegacy.Editor.Data
             arrowHandler = new ArrowHandlerFloat();
         }
 
-        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, ArrowHandler arrowHandler)
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.getValue = getValue;
             this.onValueChanged = onValueChanged;
@@ -1134,7 +1134,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, ArrowHandler arrowHandler)
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.getValue = getValue;
             this.onValueChanged = onValueChanged;
@@ -1144,7 +1144,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, string placeholder, ArrowHandler arrowHandler)
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, string placeholder, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.getValue = getValue;
             this.onValueChanged = onValueChanged;
@@ -1154,7 +1154,7 @@ namespace BetterLegacy.Editor.Data
                 this.arrowHandler = arrowHandler;
         }
 
-        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, string placeholder, ArrowHandler arrowHandler)
+        public NumberInputElement(Func<string> getValue, Action<string> onValueChanged, Action<string> onEndEdit, string placeholder, ArrowHandler arrowHandler, string tooltipGroup = null, Func<bool> shouldGenerate = null) : base(tooltipGroup, shouldGenerate)
         {
             this.getValue = getValue;
             this.onValueChanged = onValueChanged;
