@@ -1,4 +1,11 @@
-﻿# snapshot-2026.10.1 - (Multiplayer Playtest) [Oct 2, 2026]
+﻿# ???
+## Features
+### Core
+- Lobbies can now have passwords.
+
+-------------------------------------------------------------------
+
+# snapshot-2026.10.1 - (Multiplayer Playtest) [Oct 2, 2026]
 ## Features
 ### Core
 - The Lobby Manager now has a Chat tab. This includes a new "Chat" sub tab added to the Menus Config. Members of the lobby can chat here as well as see system messages, which will inform users of level loading progress. [Blum]
