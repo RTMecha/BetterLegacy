@@ -95,12 +95,16 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         Marker,
         /// <summary>
+        /// The chat message references a list of event keyframes that can be selected when clicking the message.
+        /// </summary>
+        Keyframes,
+        /// <summary>
         /// The chat message references a layer that the user can be sent to when clicking the message.
         /// </summary>
         Layer,
         /// <summary>
-        /// The chat message references a list of event keyframes that can be selected when clicking the message.
+        /// The chat message references a song time that the user can go to.
         /// </summary>
-        Keyframes,
+        Time,
     }
 }
