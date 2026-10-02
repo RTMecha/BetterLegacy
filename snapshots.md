@@ -1,6 +1,11 @@
 ﻿# ???
+## Features
+### Core
+- The Lobby Manager now has a chat sub tab.
+
 ## Fixes
 - Fixed the await modifier not resetting properly.
+- Fixed marker jumping keybinds not working.
 
 -------------------------------------------------------------------
 
