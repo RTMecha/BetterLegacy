@@ -1,7 +1,7 @@
 ﻿# ???
 ## Features
 ### Core
-- The Lobby Manager now has a Chat tab.
+- The Lobby Manager now has a Chat tab. This includes a new "Chat" sub tab added to the Menus Config.
 
 ## Changes
 - The Current tab in the Lobby Manager will no longer display when the user is not in a lobby.
