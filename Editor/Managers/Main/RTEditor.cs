@@ -1384,7 +1384,6 @@ namespace BetterLegacy.Editor.Managers
             SetupNotificationValues();
             SetupTimelineBar();
             SetupTimelineTriggers();
-            SetupCreateObjects();
             SetupTitleBar();
             SetupDoggo();
             SetupTimelinePreview();
@@ -2648,12 +2647,6 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="regen">If IDs should be regenerated.</param>
         public void Cut(bool regen = true) => Copy(true, regen: regen);
 
-        /// <summary>
-        /// Copies objects based on mouse position and current dialog.
-        /// </summary>
-        /// <param name="cut">If the objects should be removed.</param>
-        /// <param name="dup">If the objects should be pasted.</param>
-        /// <param name="regen">If IDs should be regenerated.</param>
         static bool BlockTimelineEdit()
         {
             if (EditorTimeline.inst.isOverMainTimeline && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -2661,6 +2654,12 @@ namespace BetterLegacy.Editor.Managers
             return NetworkPermissions.BlockEditObjects();
         }
 
+        /// <summary>
+        /// Copies objects based on mouse position and current dialog.
+        /// </summary>
+        /// <param name="cut">If the objects should be removed.</param>
+        /// <param name="dup">If the objects should be pasted.</param>
+        /// <param name="regen">If IDs should be regenerated.</param>
         public void Copy(bool cut = false, bool dup = false, bool regen = true)
         {
             if ((cut || dup) && BlockTimelineEdit())
@@ -3548,6 +3547,75 @@ namespace BetterLegacy.Editor.Managers
             var createBG = backgroundButton.transform.Find("BG Options Popup/create").GetComponent<Button>();
             createBG.onClick.NewListener(() => RTBackgroundEditor.inst.CreateNewBackground());
 
+            #region Context Menus
+
+            var timeEventTrigger = timeDefault.GetComponent<EventTrigger>();
+            timeEventTrigger.triggers.Clear();
+            timeEventTrigger.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+            {
+                var pointerEventData = (PointerEventData)eventData;
+                if (pointerEventData.button == PointerEventData.InputButton.Left)
+                    AudioManager.inst.SetMusicTime(GameData.Current?.data?.level?.LevelStartOffset ?? 0f);
+            }));
+
+            Func<List<EditorElement>> getSongTimeEditorElements = () =>
+            {
+                var list = new List<EditorElement>();
+                if (!EditorManager.inst.hasLoadedLevel)
+                    return list;
+                if (!NetworkPermissions.BlockEditLevelProperties())
+                {
+                    list.Add(new ButtonElement("Reset Offsets", () =>
+                    {
+                        if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                            return;
+                        GameData.Current.data.level.LevelStartOffset = 0f;
+                        GameData.Current.data.level.LevelEndOffset = 0.1f;
+                        EditorTimeline.inst.UpdateTimelineSizes();
+                        GameManager.inst.UpdateTimeline();
+                        if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
+                            LevelPropertiesEditor.inst.RenderDialog();
+                    }));
+                    list.Add(new LabelElement("Start Offset"));
+                    list.Add(new NumberInputElement((GameData.Current?.data?.level?.LevelStartOffset ?? 0f).ToString(), _val =>
+                    {
+                        if (!float.TryParse(_val, out float num) || !GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                            return;
+                        GameData.Current.data.level.LevelStartOffset = num;
+                        EditorTimeline.inst.UpdateTimelineSizes();
+                        GameManager.inst.UpdateTimeline();
+                        if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
+                            LevelPropertiesEditor.inst.RenderDialog();
+                    }));
+                    list.Add(new LabelElement("End Offset"));
+                    list.Add(new NumberInputElement((GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f).ToString(), _val =>
+                    {
+                        if (!float.TryParse(_val, out float num) || !GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                            return;
+                        GameData.Current.data.level.LevelEndOffset = num;
+                        EditorTimeline.inst.UpdateTimelineSizes();
+                        GameManager.inst.UpdateTimeline();
+                        if (LevelPropertiesEditor.inst && LevelPropertiesEditor.inst.Dialog && LevelPropertiesEditor.inst.Dialog.IsCurrent)
+                            LevelPropertiesEditor.inst.RenderDialog();
+                    }));
+                }
+                if (ProjectArrhythmia.State.IsInLobby)
+                {
+                    list.Add(new SpacerElement());
+                    list.Add(new ButtonElement("Reference", () =>
+                    {
+                        var time = AudioManager.inst.CurrentAudioSource.time;
+                        SteamLobbyManager.inst.SendChatMessage($"{RTSteamManager.inst.steamUser.name} has referenced time {time}.", ChatMessageKind.System, null, ReferenceKind.Time, time.ToString());
+                    }));
+                }
+                return list;
+            };
+
+            EditorContextMenu.AddContextMenu(timeObj,
+                getEditorElements: getSongTimeEditorElements);
+            EditorContextMenu.AddContextMenu(timeDefault,
+                getEditorElements: getSongTimeEditorElements);
+
             EditorContextMenu.AddContextMenu(objectButton,
                 leftClick: () =>
                 {
@@ -3733,6 +3801,8 @@ namespace BetterLegacy.Editor.Managers
                     }
                     return list;
                 });
+
+            #endregion
         }
 
         void SetupTimelineTriggers()
@@ -3891,48 +3961,6 @@ namespace BetterLegacy.Editor.Managers
                 }),
                 TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false),
                 TriggerHelper.StartDragTrigger(), TriggerHelper.DragTrigger(), TriggerHelper.EndDragTrigger());
-        }
-
-        void SetupCreateObjects()
-        {
-            //var dialog = EditorManager.inst.GetDialog("Object Options Popup").Dialog;
-
-            //var persistent = dialog.Find("persistent").gameObject.GetComponent<Button>();
-            //dialog.Find("persistent/text").gameObject.GetComponent<Text>().text = "No Autokill";
-            //persistent.onClick.ClearAll();
-            //persistent.onClick.AddListener(() => ObjectEditor.inst.CreateNewNoAutokillObject());
-
-            //var empty = dialog.Find("empty").gameObject.GetComponent<Button>();
-            //empty.onClick.ClearAll();
-            //empty.onClick.AddListener(() => ObjectEditor.inst.CreateNewEmptyObject());
-
-            //var decoration = dialog.Find("decoration").gameObject.GetComponent<Button>();
-            //decoration.onClick.ClearAll();
-            //decoration.onClick.AddListener(() => ObjectEditor.inst.CreateNewDecorationObject());
-
-            //var helper = dialog.Find("helper").gameObject.GetComponent<Button>();
-            //helper.onClick.ClearAll();
-            //helper.onClick.AddListener(() => ObjectEditor.inst.CreateNewHelperObject());
-
-            //var normal = dialog.Find("normal").gameObject.GetComponent<Button>();
-            //normal.onClick.ClearAll();
-            //normal.onClick.AddListener(() => ObjectEditor.inst.CreateNewNormalObject());
-
-            //var circle = dialog.Find("shapes/circle").gameObject.GetComponent<Button>();
-            //circle.onClick.ClearAll();
-            //circle.onClick.AddListener(() => ObjectEditor.inst.CreateNewCircleObject());
-
-            //var triangle = dialog.Find("shapes/triangle").gameObject.GetComponent<Button>();
-            //triangle.onClick.ClearAll();
-            //triangle.onClick.AddListener(() => ObjectEditor.inst.CreateNewTriangleObject());
-
-            //var text = dialog.Find("shapes/text").gameObject.GetComponent<Button>();
-            //text.onClick.ClearAll();
-            //text.onClick.AddListener(() => ObjectEditor.inst.CreateNewTextObject());
-
-            //var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
-            //hexagon.onClick.ClearAll();
-            //hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
         }
 
         void SetupTitleBar()
@@ -4292,6 +4320,7 @@ namespace BetterLegacy.Editor.Managers
             chatTitleBarButton = chatMenu;
         }
 
+        // based on a hidden unused doggo loading sprite
         void SetupDoggo()
         {
             var doggoBase = Creator.NewUIObject("loading base", InfoPopup.GameObject.transform);
@@ -4645,22 +4674,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.ApplyGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
-
-                //for (int i = 1; i < options.childCount - 1; i++)
-                //{
-                //    var child = options.GetChild(i);
-
-                //    EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                //    EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
-                //}
-
-                //for (int i = 0; i < options.Find("shapes").childCount; i++)
-                //{
-                //    var child = options.Find("shapes").GetChild(i);
-
-                //    EditorThemeManager.ApplyGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                //    EditorThemeManager.ApplyGraphic(child.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-                //}
             }
 
             // BG Options
