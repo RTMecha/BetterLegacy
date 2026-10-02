@@ -357,15 +357,6 @@ namespace BetterLegacy.Menus.UI.Popups
 
                             #endregion
 
-                            var passwordLabel = GenerateText(tabObject.transform, "Password", RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f));
-                            EditorThemeManager.ApplyLightText(passwordLabel);
-                            passwordField = CreatePasswordInput(tabObject.transform, 0f, 400f, "(No Password)");
-                            passwordField.SetTextWithoutNotify(string.Empty);
-                            passwordField.onEndEdit.NewListener(_val =>
-                            {
-                                SteamLobbyManager.inst.LobbySettings.Password = _val ?? string.Empty;
-                                SteamLobbyManager.inst.SaveLobbySettings();
-                            });
                             #region Player Count
 
                             var playerCountLabel = GenerateText(tabObject.transform, "Player Count", RectValues.Default.AnchoredPosition(-200f, 200f).SizeDelta(300f, 32f));
@@ -426,6 +417,20 @@ namespace BetterLegacy.Menus.UI.Popups
                             });
 
                             EditorThemeManager.ApplyDropdown(visibilityDropdown);
+
+                            #endregion
+
+                            #region Password
+
+                            var passwordLabel = GenerateText(tabObject.transform, "Password", RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f));
+                            EditorThemeManager.ApplyLightText(passwordLabel);
+                            passwordField = CreatePasswordInput(tabObject.transform, 0f, 400f, "(No Password)");
+                            passwordField.SetTextWithoutNotify(string.Empty);
+                            passwordField.onEndEdit.NewListener(_val =>
+                            {
+                                SteamLobbyManager.inst.LobbySettings.Password = _val ?? string.Empty;
+                                SteamLobbyManager.inst.SaveLobbySettings();
+                            });
 
                             #endregion
 
@@ -880,16 +885,112 @@ namespace BetterLegacy.Menus.UI.Popups
                 NetworkFunction.SendHostLobbySettings();
         }
 
+        /// <summary>
+        /// Function occurs when the user joins a lobby.
+        /// </summary>
         public void OnLobbyJoined()
         {
             HidePasswordPrompt();
             SetTab(LobbyTab.Current);
         }
+
+        /// <summary>
+        /// Function occurs when the user is rejected from the lobby. So sad.
+        /// </summary>
+        /// <param name="lobby"></param>
         public void OnJoinRejected(Lobby lobby)
         {
             SetTab(LobbyTab.List);
             ShowPasswordPrompt(lobby, "Incorrect password.");
         }
+
+        public override void Tick()
+        {
+            if ((!ConfigPopup.Instance || !ConfigPopup.Instance.watchingKeybind) && Input.GetKeyDown(CoreConfig.Instance.OpenLobbyKey.Value))
+                Toggle();
+
+            if (chatTabButton && chatTabButton.activeSelf != ProjectArrhythmia.State.IsInLobby)
+                chatTabButton.SetActive(ProjectArrhythmia.State.IsInLobby);
+            UpdateChatTimes();
+            UpdateReferenceValidity();
+            SteamLobbyManager.inst?.TickLoadDisplays();
+
+            if (RTEditor.inst && RTEditor.inst.hideOtherUsersDropdown && RTEditor.inst.hideOtherUsersDropdown.activeSelf != ProjectArrhythmia.State.IsInLobby)
+                RTEditor.inst.hideOtherUsersDropdown.SetActive(ProjectArrhythmia.State.IsInLobby);
+            // update list every 1000 ticks
+            if (!Active || CurrentTab != LobbyTab.List)
+                return;
+
+            if (ProjectArrhythmia.State.IsInLobby)
+                return;
+
+            tickCount++;
+
+            if (tickCount % 1000 != 0)
+                return;
+
+            Render();
+        }
+
+        public GameObject GetTab(LobbyTab lobbyTab) => tabObjects[(int)lobbyTab];
+
+        /// <summary>
+        /// Sets the lobby tab.
+        /// </summary>
+        /// <param name="lobbyTab">Tab to set.</param>
+        public void SetTab(LobbyTab lobbyTab)
+        {
+            CurrentTab = lobbyTab;
+            Render();
+        }
+
+        void GenerateMember(Friend member)
+        {
+            var gameObject = Creator.NewUIObject("Member", playersParent);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
+
+            var image = gameObject.AddComponent<Image>();
+            var button = gameObject.AddComponent<Button>();
+            button.image = image;
+            button.onClick.NewListener(() =>
+            {
+                SteamLobbyManager.Log($"ID: {member.Id}\n" +
+                    $"Name: {member.Name}\n" +
+                    $"Nickname: {member.Nickname}");
+                SoundManager.inst.PlaySound(DefaultSounds.blip);
+            });
+
+            var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
+
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(label);
+
+            // handle kicking
+            if (ProjectArrhythmia.State.IsHosting && member.Id != RTSteamManager.inst.steamUser.steamID)
+            {
+                var kickObj = Creator.NewUIObject("kick", gameObject.transform);
+                RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
+                var kickObjImage = kickObj.AddComponent<Image>();
+                var kickObjX = Creator.NewUIObject("x", kickObj.transform);
+                var kickObjXImage = kickObjX.AddComponent<Image>();
+                kickObjXImage.sprite = closeSprite;
+
+                EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
+
+                kickObj.AddComponent<Button>().onClick.AddListener(() =>
+                {
+                    SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
+                        $"Name: {member.Name}\n" +
+                        $"Nickname: {member.Nickname}");
+                    if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(member.Id, out int clientID))
+                        NetworkManager.inst.KickClient(clientID);
+                });
+            }
+        }
+
+        #region Password
+        
         void HidePasswordPrompt()
         {
             if (passwordPrompt)
@@ -951,86 +1052,7 @@ namespace BetterLegacy.Menus.UI.Popups
             EditorThemeManager.ApplyGraphic(buttonLabel, ThemeGroup.Function_1_Text);
         }
 
-        public override void Tick()
-        {
-            if ((!ConfigPopup.Instance || !ConfigPopup.Instance.watchingKeybind) && Input.GetKeyDown(CoreConfig.Instance.OpenLobbyKey.Value))
-                Toggle();
-
-            if (chatTabButton && chatTabButton.activeSelf != ProjectArrhythmia.State.IsInLobby)
-                chatTabButton.SetActive(ProjectArrhythmia.State.IsInLobby);
-            UpdateChatTimes();
-            UpdateReferenceValidity();
-            SteamLobbyManager.inst?.TickLoadDisplays();
-
-            if (RTEditor.inst && RTEditor.inst.hideOtherUsersDropdown && RTEditor.inst.hideOtherUsersDropdown.activeSelf != ProjectArrhythmia.State.IsInLobby)
-                RTEditor.inst.hideOtherUsersDropdown.SetActive(ProjectArrhythmia.State.IsInLobby);
-            // update list every 1000 ticks
-            if (!Active || CurrentTab != LobbyTab.List)
-                return;
-
-            if (ProjectArrhythmia.State.IsInLobby)
-                return;
-
-            tickCount++;
-
-            if (tickCount % 1000 != 0)
-                return;
-
-            Render();
-        }
-
-        public GameObject GetTab(LobbyTab lobbyTab) => tabObjects[(int)lobbyTab];
-
-        public void SetTab(LobbyTab lobbyTab)
-        {
-            CurrentTab = lobbyTab;
-            Render();
-        }
-
-        void GenerateMember(Friend member)
-        {
-            var gameObject = Creator.NewUIObject("Member", playersParent);
-            gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
-
-            var image = gameObject.AddComponent<Image>();
-            var button = gameObject.AddComponent<Button>();
-            button.image = image;
-            button.onClick.NewListener(() =>
-            {
-                SteamLobbyManager.Log($"ID: {member.Id}\n" +
-                    $"Name: {member.Name}\n" +
-                    $"Nickname: {member.Nickname}");
-                SoundManager.inst.PlaySound(DefaultSounds.blip);
-            });
-
-            var label = GenerateText(gameObject.transform, member.Nickname ?? member.Name ?? member.Id.ToString(), RectValues.FullAnchored.SizeDelta(-12f, 0f));
-
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(label);
-
-            // handle kicking
-            if (ProjectArrhythmia.State.IsHosting && member.Id != RTSteamManager.inst.steamUser.steamID)
-            {
-                var kickObj = Creator.NewUIObject("kick", gameObject.transform);
-                RectValues.RightAnchored.AssignToRectTransform(kickObj.transform.AsRT());
-                var kickObjImage = kickObj.AddComponent<Image>();
-                var kickObjX = Creator.NewUIObject("x", kickObj.transform);
-                var kickObjXImage = kickObjX.AddComponent<Image>();
-                kickObjXImage.sprite = closeSprite;
-
-                EditorThemeManager.ApplyGraphic(kickObjImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(kickObjXImage, ThemeGroup.Delete_Text);
-
-                kickObj.AddComponent<Button>().onClick.AddListener(() =>
-                {
-                    SteamLobbyManager.Log($"Kicking user: {member.Id}\n" +
-                        $"Name: {member.Name}\n" +
-                        $"Nickname: {member.Nickname}");
-                    if (Transport.Instance && Transport.Instance.steamIDToNetID.TryGetValue(member.Id, out int clientID))
-                        NetworkManager.inst.KickClient(clientID);
-                });
-            }
-        }
+        #endregion
 
         #region Chat
 
