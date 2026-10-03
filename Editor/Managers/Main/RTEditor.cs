@@ -4825,6 +4825,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="dialog">Tag dialog.</param>
         public void RenderTags(IModifyable modifyable, ITagDialog dialog)
         {
+            var canEdit = !NetworkPermissions.BlockEditObjects(false);
             var tagsScrollView = dialog.TagsScrollView;
             EditorHelper.SetComplexity(tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject, "tags", Complexity.Advanced);
             EditorHelper.SetComplexity(tagsScrollView.gameObject, "tags", Complexity.Advanced);
@@ -4841,10 +4842,20 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(dialog.TagsContent, index.ToString());
                 gameObject.transform.localScale = Vector3.one;
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.interactable = canEdit;
                 input.SetTextWithoutNotify(tag);
-                input.onValueChanged.NewListener(_val => modifyable.Tags[index] = _val);
+                input.onValueChanged.NewListener(_val =>
+                {
+                    if (NetworkPermissions.BlockEditObjects())
+                    {
+                        input.SetTextWithoutNotify(modifyable.Tags[index]);
+                        return;
+                    }    
+                    modifyable.Tags[index] = _val;
+                });
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.Interactable = canEdit;
                 deleteStorage.OnClick.NewListener(() =>
                 {
                     modifyable.Tags.RemoveAt(index);
@@ -4860,8 +4871,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyDeleteButton(deleteStorage);
 
                 EditorContextMenu.AddContextMenu(input.gameObject,
-                    new EditorElementGroup(() => true, EditorContextMenu.GetNameFunctions(input)),
-                    new EditorElementGroup(() => true,
+                    new EditorElementGroup(() => canEdit, EditorContextMenu.GetNameFunctions(input)),
+                    new EditorElementGroup(() => canEdit,
                         new SpacerElement(),
                         new ButtonElement("Copy to Clipboard", () =>
                         {
@@ -4876,6 +4887,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonElement("Paste Tag List (Override)", () =>
                         {
+                            if (NetworkPermissions.BlockEditObjects())
+                                return;
                             var orig = new List<string>(modifyable.Tags);
                             modifyable.Tags.Clear();
                             modifyable.Tags.AddRange(copiedTags);
@@ -4897,6 +4910,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonElement("Paste Tag List (Add)", () =>
                         {
+                            if (NetworkPermissions.BlockEditObjects())
+                                return;
                             var orig = new List<string>(modifyable.Tags);
                             modifyable.Tags.AddRange(copiedTags);
                             RenderTags(modifyable, dialog);
@@ -4917,6 +4932,8 @@ namespace BetterLegacy.Editor.Managers
                         new SpacerElement(),
                         new ButtonElement("Clear Tags", () =>
                         {
+                            if (NetworkPermissions.BlockEditObjects())
+                                return;
                             var orig = new List<string>(modifyable.Tags);
                             modifyable.Tags.Clear();
                             RenderTags(modifyable, dialog);
@@ -4937,7 +4954,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Cleared tags from the object!", 2f, EditorManager.NotificationType.Success);
                         }),
                         new SpacerElement()),
-                    new EditorElementGroup(() => true, EditorContextMenu.GetMoveIndexFunctions(modifyable.Tags, index, movedIndex =>
+                    new EditorElementGroup(() => canEdit, EditorContextMenu.GetMoveIndexFunctions(modifyable.Tags, index, movedIndex =>
                     {
                         RenderTags(modifyable, dialog);
                         EditorManager.inst.history.Add(new History.Command("Move Tag",
@@ -4955,6 +4972,9 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
+
+            if (!canEdit)
+                return;
 
             var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.TagsContent);
             add.Text = "Add Tag";
@@ -5049,6 +5069,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="dialog">Parent dialog.</param>
         public void RenderParent(IParentable parentable, IParentDialog dialog, bool advancedParent)
         {
+            var canEdit = !NetworkPermissions.BlockEditObjects(false);
             string parent = parentable.Parent;
 
             dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
@@ -5062,6 +5083,8 @@ namespace BetterLegacy.Editor.Managers
                     parentable.UpdateParentChain();
                     if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                         NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                     RenderParent(parentable, dialog, advancedParent);
                 }));
 
@@ -5111,7 +5134,6 @@ namespace BetterLegacy.Editor.Managers
                 dialog.ParentButton.OnClick.ClearAll();
                 dialog.ParentMoreButton.onClick.ClearAll();
                 dialog.ParentClearButton.onClick.ClearAll();
-
                 return;
             }
 
@@ -5129,11 +5151,12 @@ namespace BetterLegacy.Editor.Managers
                 dialog.ParentInfo.tooltipLangauges[0].hint = "Object parented to the camera.";
             }
 
-            dialog.ParentButton.Interactable = p != null;
-            dialog.ParentMoreButton.interactable = p != null;
+            dialog.ParentButton.Interactable = p != null && canEdit;
+            dialog.ParentMoreButton.interactable = p != null && canEdit;
 
             dialog.ParentSettingsParent.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
 
+            dialog.ParentClearButton.interactable = canEdit;
             dialog.ParentClearButton.onClick.NewListener(() =>
             {
                 if (parentable.CustomParent != null)
@@ -5146,6 +5169,8 @@ namespace BetterLegacy.Editor.Managers
                 parentable.UpdateParentChain();
                 if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                     NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
+                if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                    NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                 RenderParent(parentable, dialog, advancedParent);
             });
 
@@ -5155,12 +5180,12 @@ namespace BetterLegacy.Editor.Managers
                 dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
                 dialog.ParentButton.OnClick.ClearAll();
                 dialog.ParentMoreButton.onClick.ClearAll();
-
                 return;
             }
 
             dialog.ParentButton.Text = p;
 
+            dialog.ParentButton.Interactable = canEdit;
             dialog.ParentButton.OnClick.NewListener(() =>
             {
                 if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
@@ -5183,6 +5208,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
 
             EditorHelper.SetComplexity(dialog.ParentDesyncToggle.gameObject, "parent/desync", Complexity.Advanced);
+            dialog.ParentDesyncToggle.interactable = canEdit;
             dialog.ParentDesyncToggle.SetIsOnWithoutNotify(parentable.ParentDesync);
             dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
             {
@@ -5190,6 +5216,8 @@ namespace BetterLegacy.Editor.Managers
                 parentable.UpdateParentChain();
                 if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                     NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
+                if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                    NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
             });
 
             for (int i = 0; i < dialog.ParentSettings.Count; i++)
@@ -5199,6 +5227,7 @@ namespace BetterLegacy.Editor.Managers
                 var index = i;
 
                 // Parent Type
+                parentSetting.activeToggle.interactable = canEdit;
                 parentSetting.activeToggle.SetIsOnWithoutNotify(parentable.GetParentType(i));
                 parentSetting.activeToggle.onValueChanged.NewListener(_val =>
                 {
@@ -5206,24 +5235,30 @@ namespace BetterLegacy.Editor.Managers
                     parentable.UpdateParentChain();
                     if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                         NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                 });
 
                 // Parent Offset
+                parentSetting.offsetField.interactable = canEdit;
                 parentSetting.offsetField.SetTextWithoutNotify(parentable.GetParentOffset(i).ToString());
                 parentSetting.offsetField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        parentable.SetParentOffset(index, num);
-                        parentable.UpdateParentChain();
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    parentable.SetParentOffset(index, num);
+                    parentable.UpdateParentChain();
                     if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                         NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
-                    }
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                 });
 
                 TriggerHelper.AddEventTriggers(parentSetting.offsetField.gameObject, TriggerHelper.ScrollDelta(parentSetting.offsetField));
 
                 // Parent Additive
+                parentSetting.additiveToggle.interactable = canEdit;
                 parentSetting.additiveToggle.SetIsOnWithoutNotify(parentable.GetParentAdditive(i));
                 parentSetting.additiveToggle.onValueChanged.NewListener(_val =>
                 {
@@ -5231,19 +5266,24 @@ namespace BetterLegacy.Editor.Managers
                     parentable.UpdateParentChain();
                     if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                         NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                 });
 
                 // Parent Parallax
+                parentSetting.parallaxField.interactable = canEdit;
                 parentSetting.parallaxField.SetTextWithoutNotify(parentable.ParentParallax[index].ToString());
                 parentSetting.parallaxField.onValueChanged.NewListener(_val =>
                 {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        parentable.ParentParallax[index] = num;
-                        parentable.UpdateParentChain();
+                    if (!float.TryParse(_val, out float num))
+                        return;
+
+                    parentable.ParentParallax[index] = num;
+                    parentable.UpdateParentChain();
                     if (ProjectArrhythmia.State.IsInLobby && parentable is BeatmapObject parentObject)
                         NetworkFunction.EditBeatmapObject(parentObject, updateTimelineContext: false);
-                    }
+                    if (ProjectArrhythmia.State.IsInLobby && parentable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject, PrefabObjectContext.PARENT);
                 });
 
                 TriggerHelper.AddEventTriggers(parentSetting.parallaxField.gameObject, TriggerHelper.ScrollDelta(parentSetting.parallaxField));
@@ -5271,6 +5311,10 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
                     if (ProjectArrhythmia.State.IsInLobby && editable is BeatmapObject layerObject)
                         NetworkFunction.EditBeatmapObject(layerObject);
+                    if (ProjectArrhythmia.State.IsInLobby && editable is PrefabObject prefabObject)
+                        NetworkFunction.EditPrefabObject(prefabObject);
+                    if (ProjectArrhythmia.State.IsInLobby && editable is BackgroundObject backgroundObject)
+                        NetworkFunction.EditBackgroundObject(backgroundObject);
                     RenderEditorLayer(editable, editorLayerUI);
                 });
             EditorContextMenu.AddContextMenu(editorLayerUI.EditorLayerField.gameObject,
@@ -5281,6 +5325,10 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(editable));
                         if (ProjectArrhythmia.State.IsInLobby && editable is BeatmapObject layerObject)
                             NetworkFunction.EditBeatmapObject(layerObject);
+                        if (ProjectArrhythmia.State.IsInLobby && editable is PrefabObject prefabObject)
+                            NetworkFunction.EditPrefabObject(prefabObject);
+                        if (ProjectArrhythmia.State.IsInLobby && editable is BackgroundObject backgroundObject)
+                            NetworkFunction.EditBackgroundObject(backgroundObject);
                         RenderEditorLayer(editable, editorLayerUI);
                     }));
         }
