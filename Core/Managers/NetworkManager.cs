@@ -203,11 +203,10 @@ namespace BetterLegacy.Core.Managers
             }),
             new NetworkFunction(Side.Server, NetworkFunction.SEND_PLAYER_INPUT_READY, 1, reader =>
                 SteamLobbyManager.inst.SetInputReady(reader.ReadUInt64())),
-            new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 1, reader =>
+            new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 2, reader =>
             {
                 var steamID = reader.ReadUInt64();
-                var list = new PacketList<PlayerSettings>(new List<PlayerSettings>());
-                list.ReadPacket(reader);
+                var list = Packet.CreatePacketList<PlayerSettings>(reader);
                 CoreHelper.Log($"Got player settings [{list.Count}]");
                 for (int i = 0; i < list.Count; i++)
                 {
