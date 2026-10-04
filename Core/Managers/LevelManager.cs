@@ -69,6 +69,34 @@ namespace BetterLegacy.Core.Managers
         /// The level that is currently being played if the game is in the arcade.
         /// </summary>
         public static Level CurrentLevel { get; set; }
+        public static Dictionary<string, byte[]> ServingLevels { get; } = new Dictionary<string, byte[]>();
+        public static Dictionary<string, byte[]> ReceivedLevelData { get; } = new Dictionary<string, byte[]>();
+        public static List<QueueLevelRef> SyncedQueue { get; } = new List<QueueLevelRef>();
+        static Coroutine queuePrefetchCoroutine;
+        public static void StartQueuePrefetch()
+        {
+            if (!ProjectArrhythmia.State.IsClient)
+                return;
+            if (queuePrefetchCoroutine != null)
+                CoroutineHelper.StopCoroutine(queuePrefetchCoroutine);
+            queuePrefetchCoroutine = CoroutineHelper.StartCoroutine(IPrefetchQueue());
+        }
+        static IEnumerator IPrefetchQueue()
+        {
+            for (int i = 1; i < SyncedQueue.Count; i++)
+            {
+                var queueRef = SyncedQueue[i];
+                if (LevelCacheManager.TryGetLevel(queueRef.id, queueRef.hash, out _))
+                    continue;
+
+                Log($"Prefetching queued level [{queueRef.id}] ({i}/{SyncedQueue.Count - 1}).");
+                ReceivedLevelData.Remove(queueRef.id);
+                NetworkFunction.RequestLevelData(queueRef.id);
+                while (!ReceivedLevelData.ContainsKey(queueRef.id))
+                    yield return null;
+                ReceivedLevelData.Remove(queueRef.id);
+            }
+        }
 
         /// <summary>
         /// The current hub level to return to.
@@ -261,6 +289,8 @@ namespace BetterLegacy.Core.Managers
                 SteamLobbyManager.inst.SetSceneLoaded(true);
                 SteamLobbyManager.inst.SetSongLoaded(true);
                 SteamLobbyManager.inst.SetGameDataLoaded(true);
+                if (ProjectArrhythmia.State.IsInLobby && HasQueue)
+                    NetworkFunction.SyncArcadeQueue();
             }
 
             RandomHelper.HostSeed = string.Empty;
@@ -534,6 +564,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="reader">The current network reader.</param>
         public static IEnumerator IPlayClient(NetworkReader reader)
         {
+            Menus.InterfaceManager.inst.CloseMenus();
             LoadingFromHere = true;
             LevelEnded = false;
 
@@ -544,11 +575,23 @@ namespace BetterLegacy.Core.Managers
             var inStory = reader.ReadBoolean();
             var chapter = reader.ReadInt32();
             var levelSequence = reader.ReadInt32();
-            var zipLength = reader.ReadInt32();
-            var zipBytes = reader.ReadBytes(zipLength);
+            var levelId = reader.ReadString();
+            var hash = reader.ReadString();
             var formatType = reader.ReadInt32();
             var playersData = Packet.CreateFromPacket<PlayersData>(reader);
             var saveData = Packet.CreateFromPacket<SaveData>(reader);
+            byte[] zipBytes;
+            if (LevelCacheManager.TryGetLevel(levelId, hash, out zipBytes))
+                Log($"Using cached level data for [{levelId}], skipping download.");
+            else
+            {
+                Log($"No matching cached level data for [{levelId}], requesting from host.");
+                ReceivedLevelData.Remove(levelId);
+                NetworkFunction.RequestLevelData(levelId);
+                while (!ReceivedLevelData.TryGetValue(levelId, out zipBytes))
+                    yield return null;
+                ReceivedLevelData.Remove(levelId);
+            }
 
             var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/temp/lobby_level");
             RTFile.DeleteDirectory(path);
@@ -1408,6 +1451,8 @@ namespace BetterLegacy.Core.Managers
             var ranks = Rank.Null.GetValues();
             return Rank.Null.TryGetValue(x => hitsNormalized.Sum() >= x.MinHits && hitsNormalized.Sum() <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
         }
+        public static List<PlayerDataPoint> GetPlayerDataPoints(List<PlayerDataPoint> dataPoints, string playerId) => dataPoints.FindAll(x => x.playerId == playerId);
+        public static Rank GetPlayerLevelRank(List<PlayerDataPoint> hits, string playerId) => GetLevelRank(GetPlayerDataPoints(hits, playerId));
 
         /// <summary>
         /// Gets a level rank by hit count.
@@ -1442,5 +1487,27 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #endregion
+    }
+    public class QueueLevelRef : IPacket
+    {
+        public QueueLevelRef() { }
+
+        public QueueLevelRef(string id, string hash)
+        {
+            this.id = id;
+            this.hash = hash;
+        }
+        public string id;
+        public string hash;
+        public void ReadPacket(NetworkReader reader)
+        {
+            id = reader.ReadString();
+            hash = reader.ReadString();
+        }
+        public void WritePacket(NetworkWriter writer)
+        {
+            writer.Write(id);
+            writer.Write(hash);
+        }
     }
 }

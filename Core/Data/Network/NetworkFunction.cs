@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -105,6 +106,7 @@ namespace BetterLegacy.Core.Data.Network
         public const int SEND_SERVER_PLAYER_DATA = 74362567;
         public const int SEND_MULTI_PLAYER_DATA = 476256437;
         public const int SEND_PLAYER_SETTINGS = 8734345;
+        public const int SEND_PLAYER_INPUT_READY = 674839201;
 
         public const int UPDATE_PLAYER_DATA = 83553876;
 
@@ -176,6 +178,10 @@ namespace BetterLegacy.Core.Data.Network
         public const int SET_CLIENT_PLAYING_STATE = 124853777;
 
         public const int LOAD_CLIENT_LEVEL = 8637528;
+        public const int REQUEST_LEVEL_DATA = 836425719;
+        public const int SEND_LEVEL_DATA = 274839561;
+        public const int SYNC_ARCADE_QUEUE = 193847562;
+        public const int REQUEST_LEVEL_REFERENCE = 657483921;
 
         public const int LOAD_CLIENT_EDITOR_LEVEL = 32583295;
 
@@ -338,6 +344,8 @@ namespace BetterLegacy.Core.Data.Network
             new ULongParameter(RTSteamManager.inst.steamUser.steamID),
             new PacketList<PlayerSettings>(PlayerManager.inst.playerSettings));
 
+        public static void SendPlayerInputReady() => NetworkManager.inst.RunFunction(Group.Player, SEND_PLAYER_INPUT_READY,
+            new ULongParameter(RTSteamManager.inst.steamUser.steamID));
         #endregion
 
         #region Interface
@@ -428,17 +436,51 @@ namespace BetterLegacy.Core.Data.Network
 
         public static void SetClientPlayingState(bool state) => NetworkManager.inst.RunFunction(Group.Game, SET_CLIENT_PLAYING_STATE, new BoolParameter(state));
 
-        public static void LoadClientLevel(Level.Level level, SteamId? steamId = null) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_LEVEL, steamId,
-            new StringParameter(RandomHelper.CurrentSeed),
-            RTBeatmap.Current,
-            new BoolParameter(ProjectArrhythmia.State.InStory),
-            new IntParameter(StoryManager.inst.currentPlayingChapterIndex),
-            new IntParameter(StoryManager.inst.currentPlayingLevelSequenceIndex),
-            new ByteArrayParameter(level.ReadZipBytes()),
-            new IntParameter(level.IsVG ? 1 : level.isStory ? 2 : 0),
-            PlayersData.Current,
-            level.saveData ??= new Level.SaveData(level)
-            );
+        public static void LoadClientLevel(Level.Level level, SteamId? steamId = null)
+        {
+            var zipBytes = level.ReadZipBytes();
+            var hash = LevelCacheManager.ComputeHash(zipBytes);
+            LevelManager.ServingLevels[level.id] = zipBytes;
+            NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_LEVEL, steamId,
+                new StringParameter(RandomHelper.CurrentSeed),
+                RTBeatmap.Current,
+                new BoolParameter(ProjectArrhythmia.State.InStory),
+                new IntParameter(StoryManager.inst.currentPlayingChapterIndex),
+                new IntParameter(StoryManager.inst.currentPlayingLevelSequenceIndex),
+                new StringParameter(level.id),
+                new StringParameter(hash),
+                new IntParameter(level.IsVG ? 1 : level.isStory ? 2 : 0),
+                PlayersData.Current,
+                level.saveData ??= new Level.SaveData(level)
+                );
+        }
+        public static void RequestLevelData(string levelId) => NetworkManager.inst.RunFunction(Group.Game, REQUEST_LEVEL_DATA,
+            new ULongParameter(RTSteamManager.inst.steamUser.steamID),
+            new StringParameter(levelId));
+        public static void SendLevelData(SteamId steamId, string levelId, string hash, byte[] bytes) => NetworkManager.inst.RunFunction(Group.Game, SEND_LEVEL_DATA, steamId,
+            new StringParameter(levelId),
+            new StringParameter(hash),
+            new ByteArrayParameter(bytes));
+        public static void SyncArcadeQueue()
+        {
+            if (!ProjectArrhythmia.State.IsHosting)
+                return;
+            var queue = LevelManager.ArcadeQueue;
+            var refs = new List<QueueLevelRef>(queue.Count);
+            foreach (var level in queue)
+            {
+                if (!LevelManager.ServingLevels.TryGetValue(level.id, out var zipBytes))
+                {
+                    zipBytes = level.ReadZipBytes();
+                    LevelManager.ServingLevels[level.id] = zipBytes;
+                }
+                var hash = LevelCacheManager.ComputeHash(zipBytes);
+                refs.Add(new QueueLevelRef(level.id, hash));
+            }
+            NetworkManager.inst.RunFunction(Group.Game, SYNC_ARCADE_QUEUE, new PacketList<QueueLevelRef>(refs));
+            CoreHelper.Log($"[Net] Host synced arcade queue [{refs.Count}] entries.");
+        }
+        public static void RequestLevelReference(string levelId) => NetworkManager.inst.RunFunction(Group.Game, REQUEST_LEVEL_REFERENCE, new StringParameter(levelId));
 
         public static void LoadClientEditorLevel(Level.Level level, SteamId? steamId = null) => NetworkManager.inst.RunFunction(Group.Game, LOAD_CLIENT_EDITOR_LEVEL, steamId,
             new StringParameter(EditorManager.inst.currentLoadedLevel),

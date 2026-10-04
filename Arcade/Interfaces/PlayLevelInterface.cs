@@ -340,6 +340,28 @@ namespace BetterLegacy.Arcade.Interfaces
                 textColor = 6,
             });
 
+            if (ProjectArrhythmia.State.IsClient)
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Reference Button",
+                    rect = RectValues.Default.AnchoredPosition(-500f, -260f).SizeDelta(600f, 64f),
+                    selectionPosition = new Vector2Int(0, 4),
+                    text = "<size=40><b><align=center>[ REFERENCE ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () => NetworkFunction.RequestLevelReference(CurrentLevel.id),
+                });
+            }
+            else
+            {
             elements.Add(new MenuButton
             {
                 id = "3525734",
@@ -381,13 +403,16 @@ namespace BetterLegacy.Arcade.Interfaces
                         else
                             LevelManager.CurrentLevel = CurrentLevel;
                     }
-                    else if (!LevelManager.ArcadeQueue.IsEmpty())
+                    else if (!LevelManager.ArcadeQueue.IsEmpty() && LevelManager.ArcadeQueue.Has(x => x.id == CurrentLevel.id))
                     {
-                        LevelManager.currentQueueIndex = 0;
-                        LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];
+                        LevelManager.currentQueueIndex = LevelManager.ArcadeQueue.FindIndex(x => x.id == CurrentLevel.id);
+                        LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
                     }
                     else
+                    {
+                        LevelManager.ArcadeQueue.Clear();
                         LevelManager.CurrentLevel = CurrentLevel;
+                    }
 
                     if (!LevelManager.CurrentLevel)
                         return;
@@ -666,6 +691,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     challengeText.textUI.text = challengeText.text;
                 },
             });
+            }
 
             var achievements = CurrentLevel.GetAchievements();
             if (!achievements.IsEmpty())
@@ -788,9 +814,6 @@ namespace BetterLegacy.Arcade.Interfaces
         /// </summary>
         public void Close()
         {
-            if (ProjectArrhythmia.State.IsClient)
-                return;
-
             var onReturn = this.onReturn;
             InterfaceManager.inst.CloseMenus();
 

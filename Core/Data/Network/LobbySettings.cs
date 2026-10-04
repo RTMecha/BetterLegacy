@@ -58,6 +58,8 @@ namespace BetterLegacy.Core.Data.Network
         /// If users can view levels and request them to be opened.
         /// </summary>
         public bool CanViewLevels { get; set; } = true;
+        public bool AllowMultipleLocalPlayers { get; set; }
+        public bool SeparateRank { get; set; }
 
         #endregion
 
@@ -190,6 +192,8 @@ namespace BetterLegacy.Core.Data.Network
             Channel = orig.Channel;
             Password = orig.Password;
             CanViewLevels = orig.CanViewLevels;
+            AllowMultipleLocalPlayers = orig.AllowMultipleLocalPlayers;
+            SeparateRank = orig.SeparateRank;
             CanEdit = orig.CanEdit;
             CanViewEditorLevels = orig.CanViewEditorLevels;
             CanImportPrefabs = orig.CanImportPrefabs;
@@ -224,6 +228,10 @@ namespace BetterLegacy.Core.Data.Network
                 Password = string.Empty;
             if (jn["can_view_levels"] != null)
                 CanViewLevels = jn["can_view_levels"].AsBool;
+            if (jn["allow_multiple_local_players"] != null)
+                AllowMultipleLocalPlayers = jn["allow_multiple_local_players"].AsBool;
+            if (jn["separate_rank"] != null)
+                SeparateRank = jn["separate_rank"].AsBool;
             if (jn["can_edit"] != null)
                 CanEdit = jn["can_edit"].AsBool;
             if (jn["can_view_editor_levels"] != null)
@@ -273,6 +281,8 @@ namespace BetterLegacy.Core.Data.Network
             jn["channel"] = Channel ?? string.Empty;
             jn["password"] = Password ?? string.Empty;
             jn["can_view_levels"] = CanViewLevels;
+            jn["allow_multiple_local_players"] = AllowMultipleLocalPlayers;
+            jn["separate_rank"] = SeparateRank;
             jn["can_edit"] = CanEdit;
             jn["can_view_editor_levels"] = CanViewEditorLevels;
             jn["can_import_prefabs"] = CanImportPrefabs;
@@ -304,6 +314,8 @@ namespace BetterLegacy.Core.Data.Network
             Channel = reader.ReadString();
             reader.ReadString();
             CanViewLevels = reader.ReadBoolean();
+            AllowMultipleLocalPlayers = reader.ReadBoolean();
+            SeparateRank = reader.ReadBoolean();
             CanEdit = reader.ReadBoolean();
             CanViewEditorLevels = reader.ReadBoolean();
             CanImportPrefabs = reader.ReadBoolean();
@@ -333,6 +345,8 @@ namespace BetterLegacy.Core.Data.Network
             writer.Write(Channel);
             writer.Write(string.Empty);
             writer.Write(CanViewLevels);
+            writer.Write(AllowMultipleLocalPlayers);
+            writer.Write(SeparateRank);
             writer.Write(CanEdit);
             writer.Write(CanViewEditorLevels);
             writer.Write(CanImportPrefabs);

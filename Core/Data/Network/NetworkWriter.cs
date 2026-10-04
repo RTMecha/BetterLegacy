@@ -189,17 +189,39 @@ namespace BetterLegacy.Core.Data.Network
                     writer.Write(data[i]);
             }
         }
+        const int MAX_SPRITE_DIMENSION = 512;
         public void Write(Sprite sprite, bool jpg)
         {
             bool hasIcon = sprite && sprite.texture;
             writer.Write(hasIcon);
-            if (hasIcon)
+            if (!hasIcon)
+                return;
+            var sourceTexture = sprite.texture;
+            var texture = sourceTexture;
+            if (sourceTexture.width > MAX_SPRITE_DIMENSION || sourceTexture.height > MAX_SPRITE_DIMENSION)
             {
-                var data = jpg ? sprite.texture.EncodeToJPG() : sprite.texture.EncodeToPNG();
-                writer.Write(data.Length);
-                for (int i = 0; i < data.Length; i++)
-                    writer.Write(data[i]);
+                var scale = (float)MAX_SPRITE_DIMENSION / Mathf.Max(sourceTexture.width, sourceTexture.height);
+                var width = Mathf.Max(1, Mathf.RoundToInt(sourceTexture.width * scale));
+                var height = Mathf.Max(1, Mathf.RoundToInt(sourceTexture.height * scale));
+                var sourcePixels = sourceTexture.GetPixels();
+                var resultPixels = new Color[width * height];
+                for (int y = 0; y < height; y++)
+                {
+                    var sourceY = Mathf.Min(sourceTexture.height - 1, y * sourceTexture.height / height);
+                    for (int x = 0; x < width; x++)
+                    {
+                        var sourceX = Mathf.Min(sourceTexture.width - 1, x * sourceTexture.width / width);
+                        resultPixels[y * width + x] = sourcePixels[sourceY * sourceTexture.width + sourceX];
+                    }
+                }
+                texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+                texture.SetPixels(resultPixels);
+                texture.Apply();
             }
+            var data = jpg ? texture.EncodeToJPG() : texture.EncodeToPNG();
+            writer.Write(data.Length);
+            for (int i = 0; i < data.Length; i++)
+                writer.Write(data[i]);
         }
         public void Write(Texture2D texture2D, bool jpg)
         {

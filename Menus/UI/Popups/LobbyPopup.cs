@@ -816,6 +816,8 @@ namespace BetterLegacy.Menus.UI.Popups
             }
             var toggles = new (string name, string description, Func<bool> get, Action<bool> set)[]
             {
+                ("Allow Multiple Local Players", "If the player can connect more than one player per user.", () => settings.AllowMultipleLocalPlayers, v => settings.AllowMultipleLocalPlayers = v),
+                ("Separate Rank", "If each player's hits should be ranked separately.", () => settings.SeparateRank, v => settings.SeparateRank = v),
                 ("Read-Only", "If the player can edit the level at all.", () => !settings.CanEdit, v => settings.CanEdit = !v),
                 ("Can View Editor Levels", "If the player can view the host's editor level list.", () => settings.CanViewEditorLevels, v => settings.CanViewEditorLevels = v),
                 ("Can Import Prefabs", "If the player can import prefabs from their external prefab list.", () => settings.CanImportPrefabs, v => settings.CanImportPrefabs = v),

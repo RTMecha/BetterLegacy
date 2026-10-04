@@ -142,6 +142,7 @@ namespace BetterLegacy.Core.Managers
                         PlayerManager.inst.players.Add(player);
                     }
                 }
+                CoreHelper.Log($"[Net] Client applied SEND_CLIENT_PLAYER_DATA. players=[{string.Join(",", PlayerManager.inst.players.Select(x => $"{x.id}:local={x.IsLocalPlayer}:idx={x.index}"))}]");
                 if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
                     PlayerManager.inst.SpawnPlayers(PlayerManager.inst.GetSpawnPosition());
             }),
@@ -149,7 +150,10 @@ namespace BetterLegacy.Core.Managers
             {
                 var list = new PacketList<PAPlayer>(new List<PAPlayer>());
                 list.ReadPacket(reader);
-                CoreHelper.Log($"Got players [{list.Count}]");
+                var incomingIds = new List<string>();
+                for (int j = 0; j < list.Count; j++)
+                    incomingIds.Add(list[j].id);
+                CoreHelper.Log($"[Net] Host got SEND_SERVER_PLAYER_DATA [{list.Count}] incoming=[{string.Join(",", incomingIds)}]");
                 for (int i = 0; i < list.Count; i++)
                 {
                     var player = list[i];
@@ -159,6 +163,7 @@ namespace BetterLegacy.Core.Managers
                 PlayerManager.inst.players.Sort((a, b) => b.IsLocalPlayer.CompareTo(a.IsLocalPlayer));
                 for (int i = 0; i < PlayerManager.inst.players.Count; i++)
                     PlayerManager.inst.players[i].index = i;
+                CoreHelper.Log($"[Net] Host roster after merge. players=[{string.Join(",", PlayerManager.inst.players.Select(x => $"{x.id}:local={x.IsLocalPlayer}:idx={x.index}"))}]");
                 SteamLobbyManager.inst.SyncPlayersToClients();
                 if (ProjectArrhythmia.State.InEditor && EditorManager.inst.hasLoadedLevel)
                     PlayerManager.inst.RespawnPlayers();
@@ -196,6 +201,8 @@ namespace BetterLegacy.Core.Managers
                         player.ReadPacket(reader);
                 }
             }),
+            new NetworkFunction(Side.Server, NetworkFunction.SEND_PLAYER_INPUT_READY, 1, reader =>
+                SteamLobbyManager.inst.SetInputReady(reader.ReadUInt64())),
             new NetworkFunction(NetworkFunction.SEND_PLAYER_SETTINGS, 1, reader =>
             {
                 var steamID = reader.ReadUInt64();
@@ -341,8 +348,9 @@ namespace BetterLegacy.Core.Managers
             new NetworkFunction(Side.Client, NetworkFunction.INIT_ARCADE_INTERFACE, 1, reader =>
             {
                 var count = reader.ReadInt32();
+                var discard = new ArcadeInterface.Tab();
                 for (int i = 0; i < count; i++)
-                    ArcadeInterface.Tab.tabs[i].ReadPacket(reader);
+                    discard.ReadPacket(reader);
                 ArcadeInterface.Init();
             }),
 
@@ -544,7 +552,58 @@ namespace BetterLegacy.Core.Managers
                     PauseInterface.UnPause();
             }),
 
-            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 9, reader => LevelManager.PlayClient(reader, RTBeatmap.Current.EndOfLevel)),
+            new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_LEVEL, 10, reader => LevelManager.PlayClient(reader, RTBeatmap.Current.EndOfLevel)),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_LEVEL_DATA, 2, reader =>
+            {
+                var steamId = reader.ReadUInt64();
+                var levelId = reader.ReadString();
+                CoreHelper.Log($"[Net] Client {steamId} requested level data for [{levelId}]");
+                if (LevelManager.ServingLevels.TryGetValue(levelId, out var bytes))
+                    NetworkFunction.SendLevelData(steamId, levelId, LevelCacheManager.ComputeHash(bytes), bytes);
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SEND_LEVEL_DATA, 3, reader =>
+            {
+                var levelId = reader.ReadString();
+                var hash = reader.ReadString();
+                var byteCount = reader.ReadInt32();
+                var bytes = reader.ReadBytes(byteCount);
+                LevelCacheManager.StoreLevel(levelId, hash, bytes);
+                LevelManager.ReceivedLevelData[levelId] = bytes;
+            }),
+            new NetworkFunction(Side.Client, NetworkFunction.SYNC_ARCADE_QUEUE, 1, reader =>
+            {
+                var list = new PacketList<QueueLevelRef>(new List<QueueLevelRef>());
+                list.ReadPacket(reader);
+                LevelManager.SyncedQueue.Clear();
+                for (int i = 0; i < list.Count; i++)
+                    LevelManager.SyncedQueue.Add(list[i]);
+                CoreHelper.Log($"[Net] Synced arcade queue [{list.Count}] entries.");
+                LevelCacheManager.SetPinnedLevels(LevelManager.SyncedQueue.Select(x => (x.id, x.hash)));
+                LevelManager.ArcadeQueue.Clear();
+                foreach (var queueRef in LevelManager.SyncedQueue)
+                {
+                    var level = LevelManager.Levels.Find(x => x.id == queueRef.id) ?? RTSteamManager.inst.Levels.Find(x => x.id == queueRef.id);
+                    if (level)
+                        LevelManager.ArcadeQueue.Add(level);
+                }
+                LevelManager.currentQueueIndex = 0;
+
+                LevelManager.StartQueuePrefetch();
+            }),
+            new NetworkFunction(Side.Server, NetworkFunction.REQUEST_LEVEL_REFERENCE, 1, reader =>
+            {
+                var levelId = reader.ReadString();
+                var level = LevelManager.Levels.Find(x => x.id == levelId)
+                    ?? RTSteamManager.inst.Levels.Find(x => x.id == levelId)
+                    ?? LevelManager.ArcadeQueue.Find(x => x.id == levelId);
+                if (!level)
+                {
+                    CoreHelper.LogError($"[Net] Could not resolve referenced level [{levelId}].");
+                    return;
+                }
+                CoreHelper.Log($"[Net] Client referenced level [{levelId}], opening it on host.");
+                PlayLevelInterface.Init(level);
+            }),
             new NetworkFunction(Side.Client, NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL, 4, reader =>
             {
                 if (!ProjectArrhythmia.State.InEditor)
@@ -1529,6 +1588,7 @@ namespace BetterLegacy.Core.Managers
             {
                 applyingNetworkChange = true;
                 try { function.Run(handler.Item2); }
+                catch (Exception ex) { CoreHelper.LogError($"Failed to run client network function [{id}]: {ex}"); }
                 finally { applyingNetworkChange = false; }
             }
             handler.Item2.Dispose();
@@ -1633,6 +1693,7 @@ namespace BetterLegacy.Core.Managers
             {
                 applyingNetworkChange = true;
                 try { function.Run(handler.Item2); }
+                catch (Exception ex) { CoreHelper.LogError($"Failed to run server network function [{id}]: {ex}"); }
                 finally { applyingNetworkChange = false; }
             }
             handler.Item2.Dispose();
@@ -1643,6 +1704,7 @@ namespace BetterLegacy.Core.Managers
             NetworkFunction.LOAD_CLIENT_EDITOR_LEVEL,
             NetworkFunction.SEND_EDITOR_LEVEL,
             NetworkFunction.LOAD_CLIENT_LEVEL,
+            NetworkFunction.SEND_LEVEL_DATA,
             NetworkFunction.SEND_ARCADE_LEVEL,
             NetworkFunction.SEND_STEAM_LEVEL,
         };

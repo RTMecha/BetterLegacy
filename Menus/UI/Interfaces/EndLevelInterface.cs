@@ -10,11 +10,13 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Network;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Menus.UI.Popups;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -46,9 +48,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
             var metadata = LevelManager.CurrentLevel.metadata;
 
             int prevHits = LevelManager.CurrentLevel.saveData ? LevelManager.CurrentLevel.saveData.Hits : -1;
+            bool separateRank = ProjectArrhythmia.State.IsInLobby &&
+                (ProjectArrhythmia.State.IsClient ? LobbyInfo.HostLobbySettings?.SeparateRank == true : SteamLobbyManager.inst.LobbySettings.SeparateRank);
+            string localPlayerId = separateRank ? PlayerManager.inst.players.Find(x => x.IsLocalPlayer)?.id : null;
+            var hitsSource = localPlayerId != null ? LevelManager.GetPlayerDataPoints(RTBeatmap.Current.hits, localPlayerId) : RTBeatmap.Current.hits;
+            var deathsSource = localPlayerId != null ? LevelManager.GetPlayerDataPoints(RTBeatmap.Current.deaths, localPlayerId) : RTBeatmap.Current.deaths;
+            var boostsSource = localPlayerId != null ? LevelManager.GetPlayerDataPoints(RTBeatmap.Current.boosts, localPlayerId) : RTBeatmap.Current.boosts;
 
             CoreHelper.Log($"Setting More Info");
-            var hitsNormalized = LevelManager.GetHitsNormalized(RTBeatmap.Current.hits);
+            var hitsNormalized = LevelManager.GetHitsNormalized(hitsSource);
             CoreHelper.Log($"Setting Level Ranks");
             var rank = Rank.Null.TryGetValue(x => hitsNormalized.Sum() >= x.MinHits && hitsNormalized.Sum() <= x.MaxHits, out Rank _rank) ? _rank : Rank.Null;
             var prevLevelRank = Rank.Null.TryGetValue(x => prevHits >= x.MinHits && prevHits <= x.MaxHits, out Rank _prevRank) ? _prevRank : Rank.Null;
@@ -61,6 +69,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             AchievementManager.inst.CheckLevelEndAchievements(metadata, rank);
 
+            if (ProjectArrhythmia.State.IsHosting && ProjectArrhythmia.State.IsInLobby && RTBeatmap.Current.challengeMode.Damageable)
+                PostProgressReport(separateRank, metadata.beatmap.name);
             CoreHelper.Log($"Setting End UI");
             string easy = LSColors.GetThemeColorHex("easy");
             string normal = LSColors.GetThemeColorHex("normal");
@@ -124,20 +134,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     text = "<voffset=0.6em>" + text;
 
-                    if (prevHits > RTBeatmap.Current.hits.Count && prevLevelRank != Rank.Null)
+                    if (prevHits > hitsSource.Count && prevLevelRank != Rank.Null)
                         text += $"       <voffset=0em><size=300%>{prevLevelRank.Format()}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{rank.Format()}";
                     else
                         text += $"       <voffset=0em><size=300%>{rank.Format()}";
                 }
 
                 if (line == 7)
-                    text = "<voffset=0.6em>" + text + $"       <voffset=0em><size=300%><color=#{LSColors.ColorToHex(rank.Color)}><b>{LevelManager.CalculateAccuracy(RTBeatmap.Current.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}%</b></color>";
+                    text = "<voffset=0.6em>" + text + $"       <voffset=0em><size=300%><color=#{LSColors.ColorToHex(rank.Color)}><b>{LevelManager.CalculateAccuracy(hitsSource.Count, AudioManager.inst.CurrentAudioSource.clip.length)}%</b></color>";
                 if (line == 9)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You died a total of {RTBeatmap.Current.deaths.Count} times.</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You died a total of {deathsSource.Count} times.</b></color>";
                 if (line == 10)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You got hit a total of {RTBeatmap.Current.hits.Count} times</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You got hit a total of {hitsSource.Count} times</b></color>";
                 if (line == 11)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You boosted a total of {RTBeatmap.Current.boosts.Count} times</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You boosted a total of {boostsSource.Count} times</b></color>";
                 if (line == 12)
                     text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>Song length is {RTString.SecondsToTime(AudioManager.inst.CurrentAudioSource.clip.length)}</b></color>";
                 if (line == 13)
@@ -192,7 +202,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             else
             {
                 var nextLevel = LevelManager.NextLevelInCollection;
-                if (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
+                if (!ProjectArrhythmia.State.IsClient && (LevelManager.CurrentLevelCollection && (metadata.song.Difficulty == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue))
                 {
                     if (nextLevel)
                         CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
@@ -219,7 +229,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     });
                 }
 
-                if (LevelManager.HasQueue)
+                if (!ProjectArrhythmia.State.IsClient && LevelManager.HasQueue)
                     elements.Add(new MenuButton
                     {
                         id = "674",
@@ -323,6 +333,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             Theme = CoreHelper.CurrentBeatmapTheme;
 
             base.UpdateTheme();
+        }
+        static void PostProgressReport(bool separateRank, string levelName)
+        {
+            if (!separateRank)
+            {
+                var collectiveRank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
+                LobbyPopup.Instance?.AddSystemMessage($"Progress Report ({levelName}): [{collectiveRank.Format()}]");
+                return;
+            }
+
+            var results = PlayerManager.inst.players
+                .Select(player => (name: player.DisplayName, rank: LevelManager.GetPlayerLevelRank(RTBeatmap.Current.hits, player.id)))
+                .OrderBy(x => x.rank == Rank.Null ? int.MaxValue : x.rank.Ordinal)
+                .ToList();
+
+            var lines = string.Join("\n", results.Select(x => $"{x.name}: [{x.rank.Format()}]"));
+            LobbyPopup.Instance?.AddSystemMessage($"Progress Report ({levelName}):\n{lines}");
         }
 
         /// <summary>

@@ -44,6 +44,7 @@ namespace BetterLegacy.Core.Data.Player
         /// Time the data was triggered at.
         /// </summary>
         public float time;
+        public string playerId;
 
         #endregion
 
@@ -54,6 +55,7 @@ namespace BetterLegacy.Core.Data.Player
             position = orig.position;
             checkpointIndex = orig.checkpointIndex;
             time = orig.time;
+            playerId = orig.playerId;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -61,6 +63,7 @@ namespace BetterLegacy.Core.Data.Player
             position = jn["pos"].AsVector3();
             checkpointIndex = jn["check"].AsInt;
             time = jn["t"].AsFloat;
+            playerId = jn["player_id"];
         }
 
         public override JSONNode ToJSON()
@@ -72,6 +75,8 @@ namespace BetterLegacy.Core.Data.Player
             if (checkpointIndex != 0)
                 jn["check"] = checkpointIndex;
             jn["t"] = time;
+            if (!string.IsNullOrEmpty(playerId))
+                jn["player_id"] = playerId;
 
             return jn;
         }
@@ -81,6 +86,7 @@ namespace BetterLegacy.Core.Data.Player
             position = reader.ReadVector3();
             checkpointIndex = reader.ReadInt32();
             time = reader.ReadSingle();
+            playerId = reader.ReadString();
         }
 
         public void WritePacket(NetworkWriter writer)
@@ -88,6 +94,7 @@ namespace BetterLegacy.Core.Data.Player
             writer.Write(position);
             writer.Write(checkpointIndex);
             writer.Write(time);
+            writer.Write(playerId ?? string.Empty);
         }
 
         #endregion

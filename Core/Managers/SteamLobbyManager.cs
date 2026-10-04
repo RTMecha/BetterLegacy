@@ -237,7 +237,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void SyncPlayersToServer()
         {
-            PlayerManager.inst.localPlayers = new List<PAPlayer>(PlayerManager.inst.players);
+            PlayerManager.inst.localPlayers = PlayerManager.inst.players.FindAll(x => x.IsLocalPlayer);
             PlayerManager.inst.SetLocalIndexes();
             NetworkManager.inst.RunFunction(NetworkFunction.Group.Player, NetworkFunction.SEND_SERVER_PLAYER_DATA, new PacketList<PAPlayer>(PlayerManager.inst.players));
         }
@@ -387,6 +387,7 @@ namespace BetterLegacy.Core.Managers
             CurrentLobby.Leave();
             LobbyPopup.Instance?.ClearChat();
             ClearLoaded();
+            ClearInputReady();
             Editor.Managers.EditorMultiplayer.Clear();
         }
 
@@ -565,6 +566,15 @@ namespace BetterLegacy.Core.Managers
         /// Clears the loaded players list.
         /// </summary>
         public void ClearLoaded() => loadedPlayers.Clear();
+        #endregion
+        #region Input Ready
+        Dictionary<SteamId, bool> inputReadyPlayers = new Dictionary<SteamId, bool>();
+        public bool IsPlayerInputReady(SteamId id) => inputReadyPlayers.GetValueOrDefault(id, false);
+        public bool IsEveryoneInputReady => !inputReadyPlayers.ContainsValue(false);
+        void AddPlayerToInputReadyList(SteamId id) => inputReadyPlayers.TryAdd(id, false);
+        void RemovePlayerFromInputReadyList(SteamId id) => inputReadyPlayers.Remove(id);
+        public void SetInputReady(SteamId id) => inputReadyPlayers[id] = true;
+        public void ClearInputReady() => inputReadyPlayers.Clear();
 
         #endregion
 
@@ -995,6 +1005,7 @@ namespace BetterLegacy.Core.Managers
             foreach (var lobbyMember in lobby.Members)
             {
                 AddPlayerToLoadList(lobbyMember.Id);
+                AddPlayerToInputReadyList(lobbyMember.Id);
                 if (lobby.GetMemberData(lobbyMember, IS_LOADED) == "1")
                     SetLoaded(lobbyMember.Id);
             }
@@ -1009,6 +1020,7 @@ namespace BetterLegacy.Core.Managers
             SoundManager.inst.PlaySound(DefaultSounds.Block); // maybe add a new sound?
 
             RemovePlayerFromLoadList(friend.Id);
+            RemovePlayerFromInputReadyList(friend.Id);
             try
             {
                 LobbyPopup.Instance.Render();
@@ -1045,6 +1057,7 @@ namespace BetterLegacy.Core.Managers
             SoundManager.inst.PlaySound(DefaultSounds.SpawnPlayer);
 
             AddPlayerToLoadList(friend.Id);
+            AddPlayerToInputReadyList(friend.Id);
             try
             {
                 LobbyPopup.Instance.Render();

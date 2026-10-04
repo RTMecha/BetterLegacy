@@ -534,7 +534,8 @@ namespace BetterLegacy.Core.Components.Player
             {
                 try
                 {
-                    return !Core ? string.Empty : $"<#{LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(ColorSlot, 4)))}>{Core.DisplayName}{(index != 0 ? " " + index : string.Empty)} " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
+                    var indexSuffix = !ProjectArrhythmia.State.IsInLobby && index != 0 ? " " + index : string.Empty;
+                    return !Core ? string.Empty : $"<#{LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(ColorSlot, 4)))}>{Core.DisplayName}{indexSuffix} " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
                 }
                 catch (Exception)
                 {
@@ -2822,7 +2823,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 RTBeatmap.Current.playerBoosted = true;
                 if (rb)
-                    RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position));
+                    RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position) { playerId = Core ? Core.id : null });
             }
             playerBoosted = true;
             CanBoost = false;

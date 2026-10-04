@@ -338,11 +338,11 @@ namespace BetterLegacy.Core.Managers
 
         public PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => players.Find(x => x.device == inputDevice);
 
-        public bool DeviceNotConnected(InputDevice inputDevice) => !players.Has(x => !x.IsLocalPlayer || x.device == inputDevice);
+        public bool DeviceNotConnected(InputDevice inputDevice) => !players.Has(x => x.IsLocalPlayer && x.device == inputDevice);
 
         public PAPlayer FindPlayerUsingKeyboard() => players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
 
-        public bool KeyboardNotConnected() => !players.Has(x => !x.IsLocalPlayer || x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+        public bool KeyboardNotConnected() => !players.Has(x => x.IsLocalPlayer && (x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard));
 
         public void RemovePlayer(PAPlayer player)
         {
@@ -516,12 +516,12 @@ namespace BetterLegacy.Core.Managers
                 }
             };
 
-            if (IncludeOtherPlayersInRank || runtimePlayer.index == 0)
+            if (ProjectArrhythmia.State.IsInLobby || IncludeOtherPlayersInRank || runtimePlayer.index == 0)
             {
                 runtimePlayer.playerDeathEvent += _val =>
                 {
                     if (!ProjectArrhythmia.State.InEditor)
-                        RTBeatmap.Current.deaths.Add(new PlayerDataPoint(_val));
+                        RTBeatmap.Current.deaths.Add(new PlayerDataPoint(_val) { playerId = player.id });
                     else
                         AchievementManager.inst.UnlockAchievement("death_hd");
                 };
@@ -529,7 +529,7 @@ namespace BetterLegacy.Core.Managers
                 if (!ProjectArrhythmia.State.InEditor)
                     runtimePlayer.playerHitEvent += (int _health, Vector3 _val) =>
                     {
-                        RTBeatmap.Current.hits.Add(new PlayerDataPoint(_val));
+                        RTBeatmap.Current.hits.Add(new PlayerDataPoint(_val) { playerId = player.id });
                     };
             }
 

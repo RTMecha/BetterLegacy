@@ -149,8 +149,6 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public const string ACHIEVEMENTS_LSA = "achievements.lsa";
 
-        const int SEND_ICON_DIVIDER = 4;
-
         #endregion
 
         /// <summary>
@@ -341,7 +339,7 @@ namespace BetterLegacy.Core.Data.Level
             writer.Write(isInterface);
         }
 
-        // resize the texture
+        const int MAX_ICON_DIMENSION = 512;
         void SendTexture(Sprite sprite, NetworkWriter writer)
         {
             if (!sprite)
@@ -350,14 +348,36 @@ namespace BetterLegacy.Core.Data.Level
                 //CoreHelper.Log($"Icon was invalid, so couldn't send.");
                 return;
             }
-            var texture = new Texture2D(sprite.texture.width, sprite.texture.height, sprite.texture.format, false);
-            texture.LoadImage(sprite.texture.EncodeToJPG());
-            texture.wrapMode = sprite.texture.wrapMode;
-            texture.filterMode = sprite.texture.filterMode;
-            texture.Resize(texture.width / SEND_ICON_DIVIDER, texture.height / SEND_ICON_DIVIDER);
-            texture.Apply();
+            var sourceTexture = sprite.texture;
+            if (sourceTexture.width <= MAX_ICON_DIMENSION && sourceTexture.height <= MAX_ICON_DIMENSION)
+            {
+                writer.Write(sourceTexture, true);
+                return;
+            }
+            var scale = (float)MAX_ICON_DIMENSION / Mathf.Max(sourceTexture.width, sourceTexture.height);
+            var width = Mathf.Max(1, Mathf.RoundToInt(sourceTexture.width * scale));
+            var height = Mathf.Max(1, Mathf.RoundToInt(sourceTexture.height * scale));
+            var texture = DownscaleTexture(sourceTexture, width, height);
             writer.Write(texture, true);
             //CoreHelper.Log($"Icon was valid [{sprite.texture.width} x {sprite.texture.height}] to [{texture.width} x {texture.height}]");
+        }
+        static Texture2D DownscaleTexture(Texture2D source, int width, int height)
+        {
+            var sourcePixels = source.GetPixels();
+            var resultPixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                var sourceY = Mathf.Min(source.height - 1, y * source.height / height);
+                for (int x = 0; x < width; x++)
+                {
+                    var sourceX = Mathf.Min(source.width - 1, x * source.width / width);
+                    resultPixels[y * width + x] = sourcePixels[sourceY * source.width + sourceX];
+                }
+            }
+            var result = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            result.SetPixels(resultPixels);
+            result.Apply();
+            return result;
         }
 
         /// <summary>
